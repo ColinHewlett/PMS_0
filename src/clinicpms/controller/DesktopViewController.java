@@ -8,6 +8,7 @@ package clinicpms.controller;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
+import clinicpms.store.AccessStore;
 import clinicpms.store.CSVMigrationManager;
 import clinicpms.store.interfaces.IStore;
 import clinicpms.store.Store;
@@ -281,6 +282,17 @@ public class DesktopViewController extends ViewController{
                  * 
                  */
                 CSVMigrationManager.action(Store.MigrationMethod.CSV_MIGRATION_INTEGRITY_PROCESS);
+            }
+            catch (StoreException ex){
+                JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+            }
+        }
+        else if(e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.MIGRATE_PATIENT_DATE_CLEANED_IN_ACCESS.toString())){
+            try{
+                AccessStore store = AccessStore.getInstance();
+                store.tidyPatientImportedDate();
             }
             catch (StoreException ex){
                 JOptionPane.showMessageDialog(getView(),

@@ -95,7 +95,7 @@
                       <Component id="pnlGuardianDetails" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="pnlRecallDetails" min="-2" pref="96" max="-2" attributes="0"/>
-                      <EmptySpace pref="10" max="32767" attributes="0"/>
+                      <EmptySpace pref="7" max="32767" attributes="0"/>
                       <Component id="pnlPatientNotes" min="-2" pref="94" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
@@ -175,14 +175,14 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jblForenames" min="-2" pref="67" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
                               <Component id="txtForenames" min="-2" pref="151" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="cmbGender" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="cmbGender" min="-2" pref="65" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="lblTitle" min="-2" pref="26" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="cmbTitle" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="cmbTitle" min="-2" pref="43" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -201,7 +201,7 @@
                           <Component id="txtAddressPostcode" min="-2" pref="71" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -260,9 +260,9 @@
                               <Component id="txtPhone1" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jblPhoneHome" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <EmptySpace min="4" pref="4" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                                   <Component id="jblPhone2" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
@@ -271,7 +271,6 @@
                                   </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                                   <Component id="txtPhone2" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                                   <Component id="txtDOB" min="-2" max="-2" attributes="0"/>
@@ -309,6 +308,7 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cmbTitle">
           <Properties>
+            <Property name="editable" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="4">
                 <StringItem index="0" value="Mr"/>
@@ -381,12 +381,9 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cmbGender">
           <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="3">
-                <StringItem index="0" value="Male"/>
-                <StringItem index="1" value="Female"/>
-                <StringItem index="2" value="Other"/>
-              </StringArray>
+            <Property name="editable" type="boolean" value="true"/>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(new String[] { &quot;Male&quot;, &quot;Female&quot;, &quot;Trans&quot; })" type="code"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -577,9 +574,9 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel1" min="-2" pref="91" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="cmbSelectPatient" min="-2" pref="208" max="-2" attributes="0"/>
+                  <Component id="jLabel1" min="-2" pref="85" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="cmbSelectPatient" min="-2" pref="194" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="jButton2" min="-2" pref="151" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -589,11 +586,13 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="cmbSelectPatient" alignment="3" max="32767" attributes="0"/>
-                      <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="cmbSelectPatient" alignment="1" min="-2" pref="23" max="-2" attributes="0"/>
+                      <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                          <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               </Group>
@@ -611,6 +610,7 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cmbSelectPatient">
           <Properties>
+            <Property name="editable" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="new DefaultComboBoxModel&lt;EntityDescriptor.Patient&gt;()" type="code"/>
             </Property>
@@ -715,7 +715,7 @@
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           <Component id="lblGuardianIsAPatient" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="cmbIsGuardianAPatient" min="-2" max="-2" attributes="0"/>
+                          <Component id="cmbIsGuardianAPatient" min="-2" pref="43" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="lblGuardianPatientName" min="-2" max="-2" attributes="0"/>
@@ -753,6 +753,7 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cmbIsGuardianAPatient">
           <Properties>
+            <Property name="editable" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="2">
                 <StringItem index="0" value="No"/>
@@ -771,6 +772,7 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cmbSelectGuardian">
           <Properties>
+            <Property name="editable" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="new DefaultComboBoxModel&lt;EntityDescriptor.Patient&gt;()" type="code"/>
             </Property>

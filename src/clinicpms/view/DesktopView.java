@@ -21,6 +21,7 @@ import javax.swing.JSeparator;
 public class DesktopView extends javax.swing.JFrame{
     
     private DesktopViewController controller = null;
+    private JMenuItem mniMigrationPatientDataCleanedInAccess = null;
     private JMenuItem mniMigrationKeyIntegrityCheck = null;
     private JMenuItem mniMigratePatientDBFToCSV = null;
     private JMenuItem mniMigrateAppointmentDBFToCSV = null;
@@ -46,21 +47,6 @@ public class DesktopView extends javax.swing.JFrame{
                         DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
                 DesktopView.this.getController().actionPerformed(actionEvent);
             }
-            // WINDOW_CLOSED event handler
-            /**
-             * This event occurs when the view's dispose() method is called by
-             * the controller and causes the application to close
-             */
-            /*
-            @Override
-            public void windowClosed(WindowEvent e) {
-                super.windowClosed(e);
-                // Close application if you want to with System.exit(0)
-                // but don't forget to dispose of all resources 
-                // like child frames, threads, ...
-                System.exit(0);
-            }
-            */
         };
 
         // when you press "X" the WINDOW_CLOSING event is called but that is it
@@ -83,6 +69,7 @@ public class DesktopView extends javax.swing.JFrame{
         /**
          * MENU initialisation
          */
+        mniMigrationPatientDataCleanedInAccess = new JMenuItem("Migrated Patients Access Preprocessed");
         mniMigrateAppointmentDBFToCSV = new JMenuItem("DBF appointments to CSV");
         mniMigratePatientDBFToCSV = new JMenuItem("DBF patients to CSV");
         mniMigrationKeyIntegrityCheck = new JMenuItem("Key integrity check");
@@ -95,9 +82,11 @@ public class DesktopView extends javax.swing.JFrame{
         this.mnuView.add(mniMigrateAppointmentDBFToCSV);
         this.mnuView.add(mniMigratePatientDBFToCSV);
         this.mnuView.add(mniMigrationKeyIntegrityCheck);
+        this.mnuView.add(mniMigrationPatientDataCleanedInAccess);
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
 
+        mniMigrationPatientDataCleanedInAccess.addActionListener((ActionEvent e) -> mniMigrationPatientDataCleanedInAccessActionPerformed());
         mniMigrationKeyIntegrityCheck.addActionListener((ActionEvent e) -> mniMigrationKeyIntegrityCheckActionPerformed());
         mniMigrateAppointmentDBFToCSV.addActionListener((ActionEvent e) -> mniMigrateAppointmentDBFToCSVActionPerformed());
         mniMigratePatientDBFToCSV.addActionListener((ActionEvent e) -> mniMigratePatientDBFToCSVActionPerformed());
@@ -220,6 +209,13 @@ public class DesktopView extends javax.swing.JFrame{
                 DesktopViewControllerActionEvent.MIGRATE_INTEGRITY_CHECK.toString());
         this.getController().actionPerformed(actionEvent);
     }
+    private void mniMigrationPatientDataCleanedInAccessActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.MIGRATE_PATIENT_DATE_CLEANED_IN_ACCESS.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+   
     private void mniAppointmentViewActionPerformed() {                                        
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,

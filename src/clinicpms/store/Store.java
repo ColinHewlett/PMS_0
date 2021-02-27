@@ -24,7 +24,8 @@ import java.util.Comparator;
 public abstract class Store implements IStore {
     public enum MigrationMethod{    CSV_APPOINTMENT_FILE_CONVERTER,
                                     CSV_MIGRATION_INTEGRITY_PROCESS,
-                                    CSV_PATIENT_FILE_CONVERTER
+                                    CSV_PATIENT_FILE_CONVERTER,
+                                    ACCESS_PATIENT_PREPROCESS
                                 }
     public enum Storage{CSV,
                         ACCESS, 

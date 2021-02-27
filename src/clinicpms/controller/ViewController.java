@@ -45,7 +45,8 @@ public abstract class ViewController implements ActionListener{
                                             DESKTOP_VIEW_PATIENTS_REQUEST,
                                             MIGRATE_APPOINTMENT_DBF_TO_CSV,
                                             MIGRATE_PATIENT_DBF_TO_CSV,
-                                            MIGRATE_INTEGRITY_CHECK
+                                            MIGRATE_INTEGRITY_CHECK,
+                                            MIGRATE_PATIENT_DATE_CLEANED_IN_ACCESS
     }
     
     public enum DesktopViewControllerPropertyEvent{
