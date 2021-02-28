@@ -83,10 +83,13 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_VIEW_CLOSED,
                                             PATIENT_VIEW_CREATE_REQUEST,
                                             PATIENT_VIEW_UPDATE_REQUEST,
+                                            PATIENT_GUARDIAN_REQUEST,
+                                            PATIENT_GUARDIANS_REQUEST
                                             }
     public static enum PatientViewControllerPropertyEvent {
                                             PATIENT_RECEIVED,
-                                            PATIENTS_RECEIVED}
+                                            PATIENTS_RECEIVED,
+                                            PATIENT_GUARDIANS_RECEIVED}
 
     public enum ViewMode {CREATE,
                           UPDATE}

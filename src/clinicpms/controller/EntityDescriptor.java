@@ -331,7 +331,7 @@ public class EntityDescriptor {
                 return false; 
 
             // type casting of the argument.  
-            EntityDescriptor.Patient patient = (EntityDescriptor.Patient) obj; 
+            EntityDescriptor.PatientGuardian patient = (EntityDescriptor.PatientGuardian) obj; 
 
             // comparing the state of argument with  
             // the state of 'this' Object. 

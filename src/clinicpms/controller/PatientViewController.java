@@ -138,7 +138,10 @@ public class PatientViewController extends ViewController {
                 RenderedPatient g = renderPatient(patient.getGuardian());
                 getNewEntityDescriptor().getPatientGuardian().setData(g);  
             }
+            else
+                getNewEntityDescriptor().getPatientGuardian().setData(null);
         }
+        else getNewEntityDescriptor().getPatientGuardian().setData(null);
         ArrayList<Appointment> appointments;
         if (patient.getAppointmentHistory().getDentalAppointments().size() > 0){
             appointments = patient.getAppointmentHistory().getDentalAppointments();
@@ -320,6 +323,26 @@ public class PatientViewController extends ViewController {
                     pcEvent = new PropertyChangeEvent(this,
                                 PatientViewControllerPropertyEvent.
                                         PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);  
+                }
+                catch (StoreException ex){
+                    //UnspecifiedError action
+                }
+            }
+        }
+        else if (e.getActionCommand().equals(
+                PatientViewControllerActionEvent.PATIENT_GUARDIAN_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            patient = deserialisePatientFromEDRequest();
+            
+            if (patient.getKey() != null){
+                try{
+                    ArrayList<Patient> patients = new Patients().getPatients();
+                    setOldEntityDescriptor(getNewEntityDescriptor());
+                    serialisePatientsToEDCollection(patients);
+                    pcEvent = new PropertyChangeEvent(this,
+                                PatientViewControllerPropertyEvent.
+                                        PATIENT_GUARDIANS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);  
                 }
                 catch (StoreException ex){

@@ -509,16 +509,6 @@ public class AccessStore extends Store {
         String result = null;
         String firstLetter =  null;
         String otherLetters = null;
-        /*
-        if (Character.isDigit(part.charAt(0))){
-            result = part;
-        }
-        else{
-            firstLetter = part.substring(0,1).toUpperCase();
-            otherLetters = part.substring(1).toLowerCase();
-            result =  firstLetter + otherLetters;
-        }
-        */
         firstLetter = part.substring(0,1).toUpperCase();
         otherLetters = part.substring(1).toLowerCase();
         result =  firstLetter + otherLetters;
