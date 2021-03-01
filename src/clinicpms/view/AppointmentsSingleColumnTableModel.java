@@ -26,13 +26,6 @@ public class AppointmentsSingleColumnTableModel extends DefaultTableModel{
     public ArrayList<EntityDescriptor.Appointment> getAppointments(){
         return this.appointments;
     }
-   
-    /*
-    public AppointmentsSingleColumnTableModel(ArrayList<EntityDescriptor.Appointment> appointments, String header){
-        //this.appointments = appointments;
-        //this.header = header;
-    }
-*/
 
     @Override
     public int getRowCount(){

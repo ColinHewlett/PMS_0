@@ -32,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.border.TitledBorder;
 //import javax.swing.event.InternalFrameListener;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
@@ -57,6 +58,11 @@ import javax.swing.table.DefaultTableModel;
  */
 public class PatientView extends View
                                     {
+    private enum BorderTitles { Appointment_history,
+                                Contact_details,
+                                Guardian_details,
+                                Recall_details,
+                                Notes}
     private enum TitleItem {Mr,
                             Miss,
                             Mrs,
@@ -93,7 +99,10 @@ public class PatientView extends View
      */
     public PatientView(ActionListener myController, EntityDescriptor ed) {
         initComponents();
-
+        /**
+         * initialise appointment history table look and feel
+         */
+        
         /**
          * Establish an InternalFrameListener for when the view is closed 
          */
@@ -438,23 +447,15 @@ public class PatientView extends View
         }
     }
     private void populateAppointmentsHistoryTable(ArrayList<EntityDescriptor.Appointment> appointments, String header){
+        
+            
         AppointmentsSingleColumnTableModel.appointments = appointments;
-       //AppointmentsSingleColumnTableModel.header = header;
         tableModel = new AppointmentsSingleColumnTableModel();
-        
-        
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
-        while(it.hasNext()){
-            EntityDescriptor.Appointment appointment = it.next();
-            Object[] row = {appointment.getData().getStart(),
-                            appointment.getData().getDuration(),
-                            appointment.getData().getNotes()};
-           // tableModel.addRow(row);
-        }
         this.tblAppointmentHistory.setModel(tableModel);
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         TableColumnModel columnModel = this.tblAppointmentHistory.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(105);
         columnModel.getColumn(1).setPreferredWidth(105);
@@ -466,7 +467,24 @@ public class PatientView extends View
                 (DefaultTableCellRenderer) tblAppointmentHistory.getTableHeader().getDefaultRenderer();
         renderer.setHorizontalAlignment(0);
 
-
+        if (appointments.size() > 0){
+            this.tblAppointmentHistory.setVisible(true);
+            this.scrAppointmentHistory.getColumnHeader().setVisible(true);
+            TitledBorder titledBorder = (TitledBorder)this.pnlAppointmentHistory.getBorder();
+            titledBorder.setTitle(
+                    BorderTitles.Appointment_history.toString().replace('_', ' ') + 
+                            " (" + String.valueOf(appointments.size() + ")"));
+            this.pnlAppointmentHistory.repaint();
+        }
+        else {
+            this.tblAppointmentHistory.setVisible(false);
+            this.scrAppointmentHistory.getColumnHeader().setVisible(false);
+                //this.tblAppointmentHistory = null;
+               //this.tblAppointmentHistory.setVisible(false); 
+            TitledBorder titledBorder = (TitledBorder)this.pnlAppointmentHistory.getBorder();
+            titledBorder.setTitle(BorderTitles.Appointment_history.toString().replace('_', ' '));
+            this.scrAppointmentHistory.repaint();
+        }
     }
     /**
      * The method initialises the patient view's appointment history view 
