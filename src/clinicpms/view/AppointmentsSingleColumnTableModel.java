@@ -58,13 +58,18 @@ public class AppointmentsSingleColumnTableModel extends DefaultTableModel{
         EntityDescriptor.Appointment appointment = getAppointments().get(row);
         for (COLUMN column: COLUMN.values()){
             if (column.ordinal() == columnIndex){
-                result =
-                        switch (column){
-                            case Duration -> appointment.getData().getDuration();
-                            case From -> appointment.getData().getStart();
-                            case Notes -> appointment.getData().getNotes();   
-                        };
-                break;
+                if (appointment == null){
+                    return null;
+                }
+                else{
+                    result =
+                            switch (column){
+                                case Duration -> appointment.getData().getDuration();
+                                case From -> appointment.getData().getStart();
+                                case Notes -> appointment.getData().getNotes();   
+                            };
+                    break;
+                }
             }
         }
         return result;

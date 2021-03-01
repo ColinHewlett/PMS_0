@@ -27,7 +27,10 @@ public class AppointmentsTableDurationRenderer extends JLabel implements TableCe
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
         boolean hasFocus, int row, int column){
-        super.setText(renderDuration((Duration)value));
+        if (value!=null){
+            super.setText(renderDuration((Duration)value));
+        }
+        else super.setText("");
         return this;
     }
     

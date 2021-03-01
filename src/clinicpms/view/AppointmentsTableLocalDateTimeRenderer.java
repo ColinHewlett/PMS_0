@@ -30,8 +30,11 @@ public class AppointmentsTableLocalDateTimeRenderer extends JLabel implements Ta
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
         boolean hasFocus, int row, int column)
     {
-        LocalDateTime startTime = (LocalDateTime)value;
-        super.setText(startTime.format(ddMMyyhhmm12Format));
+        if (value != null){
+            LocalDateTime startTime = (LocalDateTime)value;
+            super.setText(startTime.format(ddMMyyhhmm12Format));
+        }
+        else super.setText("");
         return this;
     }
 }
