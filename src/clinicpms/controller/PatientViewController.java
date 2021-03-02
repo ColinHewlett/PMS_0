@@ -8,7 +8,6 @@ package clinicpms.controller;
 import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
 import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
 import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
-import clinicpms.controller.EntityDescriptor;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
@@ -133,10 +132,12 @@ public class PatientViewController extends ViewController {
     private void serialisePatientToEDPatient(Patient patient) throws StoreException{
         RenderedPatient p = renderPatient(patient);
         getNewEntityDescriptor().getPatient().setData(p);
+        getNewEntityDescriptor().getRequest().getPatient().setData(p);
         if (patient.getIsGuardianAPatient()){
             if (patient.getGuardian() != null){
                 RenderedPatient g = renderPatient(patient.getGuardian());
                 getNewEntityDescriptor().getPatientGuardian().setData(g);  
+                getNewEntityDescriptor().getRequest().getPatientGuardian().setData(g);
             }
             else
                 getNewEntityDescriptor().getPatientGuardian().setData(null);

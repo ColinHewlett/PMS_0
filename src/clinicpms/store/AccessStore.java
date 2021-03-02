@@ -96,7 +96,8 @@ public class AccessStore extends Store {
         return appointments;
     }
     public Patient update(Patient p) throws StoreException{
-        return null;
+        runSQL(PatientQuery.UPDATE_PATIENT, p, new ArrayList<Patient>());
+        return read(p);
     }
     public Appointment update(Appointment a) throws StoreException{
         return null;

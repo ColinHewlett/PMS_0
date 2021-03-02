@@ -13,10 +13,13 @@ import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
 import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
 import clinicpms.view.exceptions.CrossCheckErrorException;
 import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.*;
+import java.awt.FlowLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.time.Duration;
@@ -39,9 +42,9 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JTextField;
 
 
 /**
@@ -74,12 +77,10 @@ public class PatientView extends View
                              Trans}
     private enum YesNoItem {No,
                             Yes}
-    private enum ViewMode {CREATE,
-                           UPDATE}
+    private enum ViewMode {Create_new_patient,
+                           Update_patient_details}
     private enum Category{DENTAL, HYGIENE}
-    private ViewMode viewMode = ViewMode.CREATE;
-    private static final String CREATE_BUTTON = "Create new patient";
-    private static final String UPDATE_BUTTON = "Update patient";
+    private ViewMode viewMode = null;
 
     //state variable which support the IView interface
     DateTimeFormatter dmyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -99,49 +100,34 @@ public class PatientView extends View
      * @param ed EntityDescriptor
      */
     public PatientView(ActionListener myController, EntityDescriptor ed) {
-        initComponents();
-        /**
-         * initialise appointment history table look and feel
-         */
-        
-        /**
-         * Establish an InternalFrameListener for when the view is closed 
-         */
-        new InternalFrameAdapter(){
-            @Override  
-            public void internalFrameClosed(InternalFrameEvent e) {
-                ActionEvent actionEvent = new ActionEvent(
-                        this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
-                getMyController().actionPerformed(actionEvent);
-            }
-        };
-        /**
-         * Determines action when the window "X" is clicked, which will fire an
-         * InternalFrameEvent.INTERNAL_FRAME_CLOSED event for the above
-         * listener to let the view controller know what's happening
-         */
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        
-        //initialise the spinner controls
-        this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
-        //this.spnHygieneRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
+        //store references to view controller and entity descriptor
         setMyController(myController);
         setEntityDescriptor(ed);
-        populatePatientSelector(this.cmbSelectPatient); //populate list of patients to select from
+        //initialise the netbeans created gui
+        initComponents();
+        //initialise view closure options
+        addInternalFrameClosingListener();
+        //initialise the spinner controls
+        this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
+        //populate list of patients to select from for this patient and patient's guardian if applicable
+        populatePatientSelector(this.cmbSelectPatient); 
+        populatePatientSelector(this.cmbSelectGuardian);
         this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
-        populatePatientSelector(this.cmbSelectGuardian); //populate list of patients to select from
+        //initialise fields in view to CREATE new patient mode
 
-        initialiseViewMode(ViewMode.CREATE);//view start off in CREATE mode
-
-        dobPicker = new DatePicker();
+        //initialise the the date pickers the view uses
+        DatePickerSettings dateSettings = new DatePickerSettings();
+        dateSettings.setAllowEmptyDates(true);
+        this.dobPicker = new DatePicker(dateSettings);
         dobPicker.addDateChangeListener(new DOBDateChangeListener());
-        dentalRecallPicker = new DatePicker();
-        dentalRecallPicker.addDateChangeListener(new DentalRecallDateChangeListener());
         
+        //dentalRecallPicker = new DatePicker();
+        
+        //pnlRecallDate.add(dentalRecallPicker);
+        //pnlRecallDate.setLayout(new FlowLayout());
+        //dentalRecallPicker.addDateChangeListener(new DentalRecallDateChangeListener());
         pnlContactDetails.add(dobPicker);
-        pnlRecallDetails.add(dentalRecallPicker);
-        
+        //pnlRecallDetails.add(dentalRecallPicker);
         txtDOB.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -153,7 +139,8 @@ public class PatientView extends View
             }
             
         });
-        
+        clearViewForCreateNewPatient();
+        /*
         txtDentalRecallDate.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -164,13 +151,20 @@ public class PatientView extends View
                 dentalRecallPicker.openPopup();
             }
         });
+        */
     }
     
+    /**
+     * Establish an InternalFrameListener for when the view is closed 
+     * Setting DISPOSE_ON_CLOSE action when the window "X" is clicked, fires
+     * InternalFrameEvent.INTERNAL_FRAME_CLOSED event for the listener to let 
+     * the view controller know what's happening
+     */
+    @Override
     public void addInternalFrameClosingListener(){
         /**
          * Establish an InternalFrameListener for when the view is closed 
          */
-        
         internalFrameAdapter = new InternalFrameAdapter(){
             @Override  
             public void internalFrameClosing(InternalFrameEvent e) {
@@ -181,16 +175,7 @@ public class PatientView extends View
             }
         };
         this.addInternalFrameListener(internalFrameAdapter);
-    }
-    
-    private void initialiseViewMode(ViewMode value){
-        setViewMode(value);
-        if (getViewMode().equals(ViewMode.CREATE)){
-            this.btnCreateUpdatePatient.setText(CREATE_BUTTON);
-        }
-        else if (getViewMode().equals(ViewMode.UPDATE)){
-            this.btnCreateUpdatePatient.setText(UPDATE_BUTTON);
-        }
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
     private void populatePatientSelector(JComboBox<EntityDescriptor.Patient> selector){
         DefaultComboBoxModel<EntityDescriptor.Patient> model = 
@@ -211,6 +196,7 @@ public class PatientView extends View
     }
     private void setViewMode(ViewMode value){
         viewMode = value;
+        this.btnCreateUpdatePatient.setText(value.toString().replace('_',' '));
     }
     
     @Override
@@ -240,7 +226,7 @@ public class PatientView extends View
                 PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
-            this.btnCreateUpdatePatient.setText(UPDATE_BUTTON);
+            setViewMode(ViewMode.Update_patient_details);
             initialisePatientViewComponentFromED();   
         }
         else if (e.getPropertyName().equals(
@@ -524,7 +510,8 @@ public class PatientView extends View
     private int getAge(LocalDate dob){
         return Period.between(dob, LocalDate.now()).getYears();
     }
-    private void clearPatientView(){
+    private void clearViewForCreateNewPatient(){
+        setViewMode(ViewMode.Create_new_patient);
         this.cmbSelectPatient.setSelectedIndex(-1);
         populateAppointmentsHistoryTable(new ArrayList<EntityDescriptor.Appointment>(), "" );
         setCounty(null);
@@ -586,8 +573,6 @@ public class PatientView extends View
         getEntityDescriptor().getRequest().getPatient().getData().setGender(getGender());
         getEntityDescriptor().getRequest().getPatient().getData().setDentalRecallDate(getDentalRecallDate());
         getEntityDescriptor().getRequest().getPatient().getData().setDentalRecallFrequency(getDentalRecallFrequency());
-        //getEntityDescriptor().getRequest().getPatient().getData().setHygieneRecallDate(getHygieneRecallDate());
-       //getEntityDescriptor().getRequest().getPatient().getData().setHygieneRecallFrequency(getHygieneRecallFrequency());
         getEntityDescriptor().getRequest().getPatient().getData().setIsGuardianAPatient(getIsGuardianAPatient());
         getEntityDescriptor().getRequest().getPatient().getData().setLine1(getLine1());
         getEntityDescriptor().getRequest().getPatient().getData().setLine2(getLine2());
@@ -787,6 +772,15 @@ public class PatientView extends View
     }
     private LocalDate getDentalRecallDate(){
         LocalDate value = null;
+        if (!dentalRecallPicker.getText().equals("")){
+            try{
+                value = LocalDate.parse(this.dentalRecallPicker.getText(),myFormat);
+            }
+            catch (DateTimeParseException e){
+                //UnspecifiedErrorAction
+            } 
+        }
+        /*
         if (!this.txtDentalRecallDate.getText().equals("")){
             try{
                 value = LocalDate.parse(this.txtDentalRecallDate.getText(),myFormat);
@@ -795,15 +789,24 @@ public class PatientView extends View
                 //UnspecifiedErrorAction
             } 
         }
+        */
         return value;
     }
     private void setDentalRecallDate(LocalDate dentalRecallDate){
+        if (dentalRecallDate == null){
+            this.recallDatePicker.setText("");
+        }
+        else{
+            this.recallDatePicker.setText(dentalRecallDate.format(myFormat));
+        }
+        /*
         if (dentalRecallDate == null){
             this.txtDentalRecallDate.setText("");
         }
         else{
             this.txtDentalRecallDate.setText(dentalRecallDate.format(myFormat));
         }
+        */
     }
     private Integer getDentalRecallFrequency(){
         return (Integer)this.spnDentalRecallFrequency.getValue();
@@ -884,10 +887,19 @@ public class PatientView extends View
         lblGuardianIsAPatient = new javax.swing.JLabel();
         cmbIsGuardianAPatient = new javax.swing.JComboBox<YesNoItem>();
         pnlRecallDetails = new javax.swing.JPanel();
-        lblDATE = new javax.swing.JLabel();
-        lblFREQUENCY = new javax.swing.JLabel();
-        txtDentalRecallDate = new javax.swing.JTextField();
+        recallDatePicker = null;
+        //
+        DatePickerSettings dateSettings = new DatePickerSettings();
+        dateSettings.setVisibleDateTextField(false);
+        dateSettings.setGapBeforeButtonPixels(0);
+
+        recallDatePicker = new com.github.lgooddatepicker.components.DatePicker(dateSettings);
+        txtRecallDate = new javax.swing.JTextField();
         spnDentalRecallFrequency = new javax.swing.JSpinner();
+        jPanel7 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         scpPatientNotes = new javax.swing.JScrollPane();
         txaPatientNotes = new javax.swing.JTextArea();
@@ -1096,7 +1108,7 @@ public class PatientView extends View
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1151,7 +1163,7 @@ public class PatientView extends View
                 .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(47, 47, 47)
                 .addComponent(btnClearPatientSelection, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1219,42 +1231,78 @@ public class PatientView extends View
 
         pnlRecallDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Recall details", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        lblDATE.setText("Date");
+        txtRecallDate.setPreferredSize(new Dimension(100,20));
+        //pnlRecallDatePicker.add(txtRecallDate);
+        //pnlRecallDatePicker.setLayout(new FlowLayout());
 
-        lblFREQUENCY.setText("Frequency (months)");
+        txtRecallDate.setText("jTextField1");
 
         spnDentalRecallFrequency.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         spnDentalRecallFrequency.setToolTipText("recall frequency (months)");
 
+        jLabel2.setText("Date");
+
+        jLabel3.setText("Frequency");
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addContainerGap())
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(jLabel2)
+                .addGap(14, 14, 14)
+                .addComponent(jLabel3)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jLabel4.setText("months");
+
         javax.swing.GroupLayout pnlRecallDetailsLayout = new javax.swing.GroupLayout(pnlRecallDetails);
         pnlRecallDetails.setLayout(pnlRecallDetailsLayout);
         pnlRecallDetailsLayout.setHorizontalGroup(
-            pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
-                .addGap(30, 30, 30)
-                .addComponent(lblDATE, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lblFREQUENCY)
-                .addContainerGap())
+            pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(txtDentalRecallDate, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(spnDentalRecallFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(36, 36, 36))
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
+                        .addComponent(recallDatePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtRecallDate, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
+                        .addComponent(spnDentalRecallFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel4)))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         pnlRecallDetailsLayout.setVerticalGroup(
             pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblDATE)
-                    .addComponent(lblFREQUENCY))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(recallDatePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtRecallDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
                 .addGroup(pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtDentalRecallDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(spnDentalRecallFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spnDentalRecallFrequency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
+                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(10, 10, 10))
         );
 
         jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Notes", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
@@ -1270,7 +1318,7 @@ public class PatientView extends View
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(scpPatientNotes)
+                .addComponent(scpPatientNotes, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -1328,19 +1376,20 @@ public class PatientView extends View
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pnlAppointmentHistory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 10, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pnlAppointmentHistory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(pnlContactDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(pnlRecallDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(pnlRecallDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1353,12 +1402,12 @@ public class PatientView extends View
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
-                        .addComponent(pnlRecallDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pnlRecallDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
                         .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(10, 10, 10)
                 .addComponent(pnlAppointmentHistory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -1370,17 +1419,19 @@ public class PatientView extends View
     private void btnCreateUpdatePatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdatePatientActionPerformed
         // TODO add your handling code here:
         initialiseEntityFromView();
-        if (getViewMode().equals(ViewMode.CREATE)){
-            ActionEvent actionEvent = new ActionEvent(
+        switch (getViewMode()){
+            case Create_new_patient ->{
+                ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
                 PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
-            this.getMyController().actionPerformed(actionEvent);
-        }
-        else if (getViewMode().equals(ViewMode.UPDATE)){
-            ActionEvent actionEvent = new ActionEvent(
+                this.getMyController().actionPerformed(actionEvent);
+            }
+            case Update_patient_details ->{
+                ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
                 PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
-            this.getMyController().actionPerformed(actionEvent);
+                this.getMyController().actionPerformed(actionEvent);
+            }
         }
     }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
 
@@ -1451,7 +1502,7 @@ public class PatientView extends View
     }//GEN-LAST:event_cmbSelectGuardianActionPerformed
 
     private void btnClearPatientSelectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearPatientSelectionActionPerformed
-        clearPatientView();
+        clearViewForCreateNewPatient();
     }//GEN-LAST:event_btnClearPatientSelectionActionPerformed
 
     private void cmbSelectPatientActionPerformed(){
@@ -1476,22 +1527,24 @@ public class PatientView extends View
     private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectPatient;
     private javax.swing.JComboBox<TitleItem> cmbTitle;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JLabel jblCounty;
     private javax.swing.JLabel jblForenames;
     private javax.swing.JLabel jblPhone2;
     private javax.swing.JLabel jblPhoneHome;
     private javax.swing.JLabel jblPostcode;
     private javax.swing.JLabel lblAddress;
-    private javax.swing.JLabel lblDATE;
     private javax.swing.JLabel lblDOB;
     private javax.swing.JLabel lblDOB1;
-    private javax.swing.JLabel lblFREQUENCY;
     private javax.swing.JLabel lblGender;
     private javax.swing.JLabel lblGuardianIsAPatient;
     private javax.swing.JLabel lblGuardianPatientName;
@@ -1501,6 +1554,7 @@ public class PatientView extends View
     private javax.swing.JPanel pnlAppointmentHistory;
     private javax.swing.JPanel pnlContactDetails;
     private javax.swing.JPanel pnlRecallDetails;
+    private com.github.lgooddatepicker.components.DatePicker recallDatePicker;
     private javax.swing.JScrollPane scpPatientNotes;
     private javax.swing.JScrollPane scrAppointmentHistory;
     private javax.swing.JSpinner spnDentalRecallFrequency;
@@ -1513,10 +1567,10 @@ public class PatientView extends View
     private javax.swing.JTextField txtAddressPostcode;
     private javax.swing.JTextField txtAddressTown;
     private javax.swing.JTextField txtDOB;
-    private javax.swing.JTextField txtDentalRecallDate;
     private javax.swing.JTextField txtForenames;
     private javax.swing.JTextField txtPhone1;
     private javax.swing.JTextField txtPhone2;
+    private javax.swing.JTextField txtRecallDate;
     private javax.swing.JTextField txtSurname;
     // End of variables declaration//GEN-END:variables
     private DatePicker dobPicker;
@@ -1536,7 +1590,7 @@ public class PatientView extends View
             else txtDOB.setText("");
         }
     }
-
+/*
     class DentalRecallDateChangeListener implements DateChangeListener {
         @Override
         public void dateChanged(DateChangeEvent event) {
@@ -1548,7 +1602,7 @@ public class PatientView extends View
             else txtDentalRecallDate.setText("");
         }
     }
-    
+  */  
     /*
     class HygieneRecallDateChangeListener implements DateChangeListener {
         @Override
