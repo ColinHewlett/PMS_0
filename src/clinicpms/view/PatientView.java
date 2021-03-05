@@ -40,6 +40,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.border.TitledBorder;
 //import javax.swing.event.InternalFrameListener;
 import javax.swing.JComboBox;
+import javax.swing.JInternalFrame;
 import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.JTableHeader;
@@ -108,7 +109,7 @@ public class PatientView extends View
         //initialise the netbeans created gui
         initComponents();
         //initialise view closure options
-        addInternalFrameClosingListener();
+        //addInternalFrameClosingListener();
         //initialise the spinner controls
         this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
         //populate list of patients to select from for this patient and patient's guardian if applicable
@@ -142,7 +143,7 @@ public class PatientView extends View
          */
         internalFrameAdapter = new InternalFrameAdapter(){
             @Override  
-            public void internalFrameClosing(InternalFrameEvent e) {
+            public void internalFrameClosed(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
                         PatientView.this,ActionEvent.ACTION_PERFORMED,
                         ViewController.PatientViewControllerActionEvent.PATIENT_VIEW_CLOSED.toString());
@@ -150,7 +151,7 @@ public class PatientView extends View
             }
         };
         this.addInternalFrameListener(internalFrameAdapter);
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
     }
     private void populatePatientSelector(JComboBox<EntityDescriptor.Patient> selector){
         DefaultComboBoxModel<EntityDescriptor.Patient> model = 
@@ -202,14 +203,18 @@ public class PatientView extends View
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(ViewMode.Update_patient_details);
-            initialisePatientViewComponentFromED();   
+            initialisePatientViewComponentFromED(); 
+            String frameTitle = getEntityDescriptor().getPatient().toString();
+            this.setTitle(frameTitle);
         }
         else if (e.getPropertyName().equals(
                 PatientViewControllerPropertyEvent.NULL_PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(ViewMode.Create_new_patient);
-            initialisePatientViewComponentFromED();   
+            initialisePatientViewComponentFromED();
+            this.setTitle("Patient view");
+            
         }
         else if (e.getPropertyName().equals(
                 PatientViewControllerPropertyEvent.PATIENTS_RECEIVED.toString())){

@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 public class EntityDescriptor {
     private EntityDescriptor.Appointment appointment = null;
     private EntityDescriptor.Patient patient = null;
-    private EntityDescriptor.PatientGuardian patientGuardian = null;
+    private EntityDescriptor.Patient patientGuardian = null;
     private EntityDescriptor.PatientAppointmentHistory patientAppointmentHistory = null;
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
@@ -26,7 +26,7 @@ public class EntityDescriptor {
     protected EntityDescriptor() {
         appointment = new EntityDescriptor.Appointment();
         patient = new EntityDescriptor.Patient();
-        patientGuardian = new EntityDescriptor.PatientGuardian();
+        patientGuardian = new EntityDescriptor.Patient();
         patientAppointmentHistory = new EntityDescriptor.PatientAppointmentHistory();
         appointments = new EntityDescriptor.Appointments();     
         patients = new EntityDescriptor.Patients();  
@@ -49,11 +49,11 @@ public class EntityDescriptor {
         patient = value;
     }
     
-    public EntityDescriptor.PatientGuardian getPatientGuardian(){
+    public EntityDescriptor.Patient getPatientGuardian(){
         return patientGuardian;
     }
     
-    protected void setPatientGuardian(EntityDescriptor.PatientGuardian value){
+    protected void setPatientGuardian(EntityDescriptor.Patient value){
         patientGuardian = value;
     }
     

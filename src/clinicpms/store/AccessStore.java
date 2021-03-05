@@ -23,11 +23,13 @@ import java.util.Iterator;
  */
 public class AccessStore extends Store {
     public enum AppointmentQuery   {
-                            FETCH_APPOINTMENTS_FOR_DAY,
-                            FETCH_APPOINTMENTS_FOR_PATIENT,
+                            READ_APPOINTMENTS_FOR_DAY,
+                            READ_APPOINTMENTS_FOR_PATIENT,
                             UPDATE_APPOINTMENT}
-    public enum PatientQuery   {FETCH_ALL_PATIENTS,
-                                FETCH_PATIENT_WITH_KEY,
+    public enum PatientQuery   {CREATE_PATIENT,
+                                READ_ALL_PATIENTS,
+                                READ_HIGHEST_KEY,
+                                READ_PATIENT_WITH_KEY,
                                 UPDATE_PATIENT}
 
     private static AccessStore instance;
@@ -38,12 +40,14 @@ public class AccessStore extends Store {
             + "//Databases//Access//ClinicPMS.accdb;showSchema=true";
     
     DateTimeFormatter ymdFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-    
+    private void setConnection(Connection con){
+        this.connection = con;
+    }
     private Connection getConnection()throws StoreException{
         Connection result = null;
         if (connection == null){
             try{
-                result = DriverManager.getConnection(databaseURL);
+                connection = DriverManager.getConnection(databaseURL);
             }
             catch (SQLException ex){
                 message = ex.getMessage();
@@ -52,8 +56,7 @@ public class AccessStore extends Store {
                 ExceptionType.SQL_EXCEPTION);
             }
         }
-        else result = connection;
-        return result;
+        return connection;
     }
     
     public AccessStore()throws StoreException{
@@ -61,15 +64,23 @@ public class AccessStore extends Store {
     }
     public static AccessStore getInstance() throws StoreException{
         AccessStore result = null;
-        if (instance == null) result = new AccessStore();
+        if (instance == null) {
+            result = new AccessStore();
+            instance = result;
+        }
         else result = instance;
+        
         return result;
     }
     public Appointment create(Appointment a) throws StoreException{
         return null;
     }
     public Patient create(Patient p) throws StoreException{
-        return null;
+        ArrayList<Patient> value = runSQL(PatientQuery.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
+        p.setKey(value.get(0).getKey()+1);
+        value = runSQL(PatientQuery.CREATE_PATIENT, p, new ArrayList<Patient>());
+        value = runSQL(PatientQuery.READ_PATIENT_WITH_KEY, p, new ArrayList<Patient>());
+        return value.get(0);
     }
     public void delete(Appointment a) throws StoreException{
         
@@ -82,22 +93,34 @@ public class AccessStore extends Store {
     }
     public Patient read(Patient p) throws StoreException{
         ArrayList<Patient> patients = 
-                runSQL(PatientQuery.FETCH_PATIENT_WITH_KEY,p,  new ArrayList<Patient>());
-        return patients.get(0);
+                runSQL(PatientQuery.READ_PATIENT_WITH_KEY,p,  new ArrayList<Patient>());
+        Patient patient = patients.get(0);
+        if (patient.getGuardian()!=null){
+            patients = runSQL(PatientQuery.READ_PATIENT_WITH_KEY, patient.getGuardian(), new ArrayList<Patient>());  
+        }
+        patient.setGuardian(patients.get(0));
+        return patient;
     }
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException{
         ArrayList<Appointment> appointments = 
-                runSQL(AppointmentQuery.FETCH_APPOINTMENTS_FOR_PATIENT,day, new ArrayList<Appointment>());
+                runSQL(AppointmentQuery.READ_APPOINTMENTS_FOR_PATIENT,day, new ArrayList<Appointment>());
         return appointments;
     }
     public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
         ArrayList<Appointment> appointments = 
-                runSQL(AppointmentQuery.FETCH_APPOINTMENTS_FOR_PATIENT,p, new ArrayList<Appointment>());
+                runSQL(AppointmentQuery.READ_APPOINTMENTS_FOR_PATIENT,p, new ArrayList<Appointment>());
         return appointments;
     }
+    public ArrayList<Patient> readPatients() throws StoreException{
+        ArrayList<Patient> patients = 
+                runSQL(PatientQuery.READ_ALL_PATIENTS,new Patient(), new ArrayList<Patient>());
+        return patients;
+    }
+    
     public Patient update(Patient p) throws StoreException{
         runSQL(PatientQuery.UPDATE_PATIENT, p, new ArrayList<Patient>());
-        return read(p);
+        Patient updatedPatient = read(p);
+        return updatedPatient;
     }
     public Appointment update(Appointment a) throws StoreException{
         return null;
@@ -120,9 +143,16 @@ public class AccessStore extends Store {
                     String phone1 = rs.getString("phone1");
                     String phone2 = rs.getString("phone2");
                     String gender = rs.getString("gender");
+                    String notes = rs.getString("notes");
                     LocalDate dob = rs.getObject("dob", LocalDate.class);
+                    if (dob.getYear() == 1899){
+                        dob = null;
+                    }
                     int recallFrequency = rs.getInt("recallFrequency");
                     LocalDate recallDate = rs.getObject("recallDate", LocalDate.class);
+                    if (recallDate.getYear() == 1899){
+                        recallDate = null;
+                    }
                     boolean isGuardianAPatient = rs.getBoolean("isGuardianAPatient");
                     Integer guardianKey = rs.getInt("guardianKey");  
 
@@ -148,6 +178,7 @@ public class AccessStore extends Store {
                             patient.setGuardian(p);
                         }
                     }
+                    patient.setNotes(notes);
                     result.add(patient);
                 }
             }
@@ -184,18 +215,26 @@ public class AccessStore extends Store {
     }
     
     private ArrayList<Patient> runSQL(
-            PatientQuery q, Object entity, ArrayList<Patient> patients)throws StoreException{
+            PatientQuery q, Object entity, ArrayList<Patient> result)throws StoreException{
         Patient patient = (Patient)entity;
-        ArrayList<Patient> records = patients;
         String sql =
                 switch (q){
-                    case FETCH_PATIENT_WITH_KEY ->
+                    case READ_HIGHEST_KEY ->
+                "SELECT MAX(key) as highest_key "
+                + "FROM Patient;";
+                    case CREATE_PATIENT ->
+                "INSERT INTO Patient "
+                + "(title, forenames, surname, line1, line2,"
+                + "town, county, postcode,phone1, phone2, gender, dob,"
+                + "isGuardianAPatient, recallFrequency, recallDate, notes,key) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                    case READ_PATIENT_WITH_KEY ->
                 "SELECT key, title, forenames, surname, line1, line2, "
                 + "town, county, postcode, gender, dob, isGuardianAPatient, "
                 + "phone1, phone2, recallFrequency, recallDate, notes, guardianKey "
                 + "FROM Patient "
                 + "WHERE key=?;";
-                    case FETCH_ALL_PATIENTS -> "SELECT * FROM Patient;";
+                    case READ_ALL_PATIENTS -> "SELECT * FROM Patient ORDER BY surname, forenames ASC;";
                     case UPDATE_PATIENT ->
                 "UPDATE PATIENT "
                 + "SET title = ?, "
@@ -217,28 +256,84 @@ public class AccessStore extends Store {
                 + "guardianKey = ? "
                 + "WHERE key = ? ;";};
         switch (q){
-            case FETCH_PATIENT_WITH_KEY -> {
+            case READ_HIGHEST_KEY -> {
+                try{
+                    Integer key = null;
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    ResultSet rs = preparedStatement.executeQuery();
+                    if (rs.next()){
+                        key = (int)rs.getLong("highest_key");
+                    }
+                    patient.setKey(key);
+                    result.add(patient);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during a READ_HIGHEST_KEY query",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            case CREATE_PATIENT -> {
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    /*
+                    if (patient.getName().getTitle()!=null) 
+                        preparedStatement.setString(1, patient.getName().getTitle());
+                    else preparedStatement.setString(1, "");
+                    */
+                    preparedStatement.setString(1, patient.getName().getTitle());
+                    preparedStatement.setString(2, patient.getName().getForenames());
+                    preparedStatement.setString(3, patient.getName().getSurname());
+                    preparedStatement.setString(4, patient.getAddress().getLine1());
+                    preparedStatement.setString(5, patient.getAddress().getLine2());
+                    preparedStatement.setString(6, patient.getAddress().getTown());
+                    preparedStatement.setString(7, patient.getAddress().getCounty());
+                    preparedStatement.setString(8, patient.getAddress().getPostcode());
+                    preparedStatement.setString(9, patient.getPhone1());
+                    preparedStatement.setString(10, patient.getPhone2());
+                    preparedStatement.setString(11, patient.getGender());
+                    if (patient.getDOB()!=null) preparedStatement.setDate(12, java.sql.Date.valueOf(patient.getDOB()));
+                    else preparedStatement.setDate(12, java.sql.Date.valueOf(LocalDate.of(1899,1,1)));
+                    preparedStatement.setBoolean(13, patient.getIsGuardianAPatient());
+                    preparedStatement.setInt(14, patient.getRecall().getDentalFrequency());
+                    if (patient.getRecall().getDentalDate()!=null) 
+                        preparedStatement.setDate(15, java.sql.Date.valueOf(patient.getRecall().getDentalDate()));
+                    else preparedStatement.setDate(15, java.sql.Date.valueOf(LocalDate.of(1899,1,1)));
+                    preparedStatement.setString(16, patient.getNotes());
+                    preparedStatement.setLong(17, patient.getKey());
+                    preparedStatement.executeUpdate();
+                    //Connection connection = getConnection();
+                    //connection.close();
+                    //this.setConnection(null);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during an CREATE_PATIENT statement",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            case READ_PATIENT_WITH_KEY -> {
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patient.getKey());
                     ResultSet rs = preparedStatement.executeQuery();
-                    records = getPatientsFromRS(rs);
+                    result = getPatientsFromRS(rs);
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                     + "StoreException message -> exception raised during a FETCH_PATIENT_WITH_KEY query",
+                     + "StoreException message -> exception raised during a READ_PATIENT_WITH_KEY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
             }
-            case FETCH_ALL_PATIENTS ->{
+            case READ_ALL_PATIENTS ->{
                 try{
                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql); 
                    ResultSet rs = preparedStatement.executeQuery();
-                   records = getPatientsFromRS(rs);
+                   result = getPatientsFromRS(rs);
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                     + "StoreException message -> exception raised during a FETCH_ALL_PATIENTS query",
+                     + "StoreException message -> exception raised during a READ_ALL_PATIENTS query",
                     ExceptionType.SQL_EXCEPTION);
                 }
             }
@@ -257,21 +352,19 @@ public class AccessStore extends Store {
                     preparedStatement.setString(10, patient.getPhone2());
                     preparedStatement.setString(11, patient.getGender());
                     if (patient.getDOB()!=null) preparedStatement.setDate(12, java.sql.Date.valueOf(patient.getDOB()));
-                    else preparedStatement.setDate(12, java.sql.Date.valueOf(LocalDate.of(1,1,1)));
+                    else preparedStatement.setDate(12, java.sql.Date.valueOf(LocalDate.of(1899,1,1)));
                     preparedStatement.setBoolean(13, patient.getIsGuardianAPatient());
                     preparedStatement.setInt(14, patient.getRecall().getDentalFrequency());
                     if (patient.getRecall().getDentalDate()!=null) 
                         preparedStatement.setDate(15, java.sql.Date.valueOf(patient.getRecall().getDentalDate()));
-                    else preparedStatement.setDate(15, java.sql.Date.valueOf(LocalDate.of(1,1,1)));
+                    else preparedStatement.setDate(15, java.sql.Date.valueOf(LocalDate.of(1899,1,1)));
                     preparedStatement.setString(16, patient.getNotes());
                     if (patient.getGuardian()!=null){
                         preparedStatement.setLong(17, patient.getGuardian().getKey());
                     }
                     else preparedStatement.setLong(17, 0);
                     preparedStatement.setLong(18, patient.getKey());
-                    int rowsUpdated = preparedStatement.executeUpdate();
-                    rowsUpdated = rowsUpdated;
-                    //records = getPatientsFromRS(rs);
+                    preparedStatement.executeUpdate();
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
@@ -280,7 +373,7 @@ public class AccessStore extends Store {
                 }
             }
         }
-        return records;            
+        return result;            
     }
     private ArrayList<Appointment> runSQL(
             AppointmentQuery q, Object entity, ArrayList<Appointment> appointments) throws StoreException{
@@ -288,13 +381,13 @@ public class AccessStore extends Store {
         String sql = null;
         sql = 
                 switch (q){
-                    case FETCH_APPOINTMENTS_FOR_PATIENT ->
+                    case READ_APPOINTMENTS_FOR_PATIENT ->
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.PatientKey = ? " +
                 "ORDER BY a.Start DESC";
                         
-                    case FETCH_APPOINTMENTS_FOR_DAY ->
+                    case READ_APPOINTMENTS_FOR_DAY ->
                 "select *"
                 + "from appointment as a "
                 + "where DatePart(\"yyyy\",a.start) = ? "
@@ -304,7 +397,7 @@ public class AccessStore extends Store {
                     case UPDATE_APPOINTMENT -> "";
         };
         switch (q){
-            case FETCH_APPOINTMENTS_FOR_PATIENT -> {
+            case READ_APPOINTMENTS_FOR_PATIENT -> {
                 Patient patient = (Patient)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
@@ -314,11 +407,11 @@ public class AccessStore extends Store {
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                            + "StoreException message -> exception raised during a FETCH_APPOINTMENTS_FOR_PATIENT query",
+                            + "StoreException message -> exception raised during a READ_APPOINTMENTS_FOR_PATIENT query",
                     ExceptionType.SQL_EXCEPTION);
                 }
             }
-            case FETCH_APPOINTMENTS_FOR_DAY -> {
+            case READ_APPOINTMENTS_FOR_DAY -> {
                 LocalDate day = (LocalDate)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
@@ -330,7 +423,7 @@ public class AccessStore extends Store {
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                            + "StoreException message -> exception raised during a FETCH_APPOINTMENTS_FOR_DAY query",
+                            + "StoreException message -> exception raised during a READ_APPOINTMENTS_FOR_DAY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
             }
@@ -341,7 +434,7 @@ public class AccessStore extends Store {
     public void tidyPatientImportedDate()throws StoreException{
         //for each record in patient
         ArrayList<Patient> updatedPatients = null;
-        ArrayList<Patient> patients = runSQL(PatientQuery.FETCH_ALL_PATIENTS,
+        ArrayList<Patient> patients = runSQL(PatientQuery.READ_ALL_PATIENTS,
                 new Patient(), new ArrayList<Patient>());
         Iterator<Patient> patientsIT = patients.iterator();
         while (patientsIT.hasNext()){
@@ -515,8 +608,6 @@ public class AccessStore extends Store {
         result =  firstLetter + otherLetters;
         return result;
     }
-    
-    
 
 
 }

@@ -78,6 +78,7 @@ public abstract class ViewController implements ActionListener{
                               HYGIENE_APPOINTMENT_HISTORY}
     
     public static enum PatientViewControllerActionEvent {
+                                            NULL_PATIENT_REQUEST,
                                             PATIENT_REQUEST,
                                             PATIENTS_REQUEST,
                                             PATIENT_VIEW_CLOSED,
@@ -87,6 +88,7 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_GUARDIANS_REQUEST
                                             }
     public static enum PatientViewControllerPropertyEvent {
+                                            NULL_PATIENT_RECEIVED,
                                             PATIENT_RECEIVED,
                                             PATIENTS_RECEIVED,
                                             PATIENT_GUARDIANS_RECEIVED}

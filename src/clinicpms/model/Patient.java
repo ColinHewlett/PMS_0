@@ -102,9 +102,9 @@ public class Patient {
 
     public class Name {
 
-        private String forenames;
-        private String surname;
-        private String title;
+        private String forenames = null;
+        private String surname = null;
+        private String title = null;
 
         public String getForenames() {
             return forenames;
@@ -225,13 +225,15 @@ public class Patient {
     public class AppointmentHistory{
 
         public ArrayList<Appointment> getDentalAppointments()throws StoreException{
-            return new Appointments().getAppointmentsFor(
+            if (Patient.this.getKey()!=null) return new Appointments().getAppointmentsFor(
                     Patient.this,Appointment.Category.DENTAL);
+            else return null;
         }
-
+        
         public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
-            return new Appointments().getAppointmentsFor(
+            if (Patient.this.getKey()!=null) return new Appointments().getAppointmentsFor(
                     Patient.this,Appointment.Category.HYGIENE);
+            else return null;
         }
     }
     

@@ -195,7 +195,6 @@ public class DesktopViewController extends ViewController{
 
                 this.getView().getDeskTop().add(pvc.getView());
                 pvc.getView().setVisible(true);
-                pvc.getView().setTitle("Appointments");
                 pvc.getView().setClosable(false);
                 pvc.getView().setMaximizable(false);
                 pvc.getView().setIconifiable(true);

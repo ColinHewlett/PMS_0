@@ -6,7 +6,9 @@
 package clinicpms.model;
 
 import clinicpms.store.CSVStore;
+import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
+import clinicpms.store.interfaces.IStore;
 import java.util.ArrayList;
 
 /**
@@ -15,6 +17,7 @@ import java.util.ArrayList;
  */
 public class Patients {
     public ArrayList<Patient> getPatients() throws StoreException{
-        return CSVStore.getInstance().readPatients();
+        IStore store = Store.factory();
+        return store.readPatients();
     }
 }
