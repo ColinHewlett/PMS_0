@@ -40,6 +40,7 @@ public interface IStore {
     public Patient read(Patient p) throws StoreException;
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException;
     public ArrayList<Appointment> readAppointments(Patient p, Category c) throws StoreException;
+    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
     public ArrayList<Patient> readPatients() throws StoreException;
     public Patient update(Patient p) throws StoreException;
     public Appointment update(Appointment a) throws StoreException;  

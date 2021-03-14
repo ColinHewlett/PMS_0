@@ -15,10 +15,13 @@ import clinicpms.store.Store;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.DesktopView;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.JOptionPane;
 
 /**
@@ -169,12 +172,12 @@ public class DesktopViewController extends ViewController{
                 this.getView().getDeskTop().add(avc.getView());
                 avc.getView().setVisible(true);
                 avc.getView().setTitle("Appointments");
-                avc.getView().setClosable(true);
+                avc.getView().setClosable(false);
                 avc.getView().setMaximizable(false);
                 avc.getView().setIconifiable(true);
                 avc.getView().setResizable(false);
                 avc.getView().setSelected(true);
-                avc.getView().setSize(800,400);
+                avc.getView().setSize(760,550);
             }
             catch (StoreException ex){
                 JOptionPane.showMessageDialog(getView(),
@@ -310,7 +313,8 @@ public class DesktopViewController extends ViewController{
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {    
+    public static void main(String[] args) {   
+        Border border = null;
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
             /**
@@ -332,7 +336,9 @@ public class DesktopViewController extends ViewController{
                     break;
                 }
             }
-
+            
+            javax.swing.UIManager.getDefaults().put("TableHeader.cellBorder",new LineBorder(Color.RED,2));
+            border = javax.swing.UIManager.getBorder("TableHeader.cellBorder");
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(DesktopView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {

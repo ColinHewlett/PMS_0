@@ -5,6 +5,7 @@
  */
 package clinicpms.controller;
 import java.awt.event.ActionListener;
+import java.time.format.DateTimeFormatter;
 /**
  *
  * @author colin
@@ -24,7 +25,9 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_CREATE_VIEW_REQUEST,
                                             APPOINTMENT_UPDATE_VIEW_REQUEST,/*of selected appt*/
                                             APPOINTMENTS_VIEW_CLOSED,
-                                            APPOINTMENTS_REQUEST/*triggered by day selection*/
+                                            APPOINTMENTS_FOR_DAY_REQUEST,/*triggered by day selection*/
+                                            APPOINTMENT_SLOTS_FROM_DATE_REQUEST,
+                                            EMPTY_SLOT_SCANNER_DIALOG_REQUEST
                                             }
     public enum AppointmentViewDialogActionEvent {
                                             APPOINTMENT_VIEW_CLOSE_REQUEST,
@@ -35,7 +38,8 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_RECEIVED
                                             }
     public enum AppointmentViewControllerPropertyEvent {
-                                            APPOINTMENTS_RECEIVED
+                                            APPOINTMENTS_FOR_DAY_RECEIVED,
+                                            APPOINTMENT_SLOTS_FROM_DAY_RECEIVED 
                                             }
     
     public enum DesktopViewControllerActionEvent {
@@ -52,6 +56,11 @@ public abstract class ViewController implements ActionListener{
     public enum DesktopViewControllerPropertyEvent{
                                             
     }
+    
+    public enum EmptySlotSearchCriteriaDialogActionEvent {EMPTY_SLOT_SCANNER_CLOSE_REQUEST,
+                                                          EMPTY_SLOT_SCANNER_SETTINGS_REQUEST}
+    
+    public enum EmptySlotSearchCriteriaDialogPropertyEvent {EMPTY_SLOT_SCANNER_SETTINGS_RECEIVED}
 
     public enum PatientField {
                               KEY,
@@ -94,8 +103,9 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_GUARDIANS_RECEIVED}
 
     public enum ViewMode {CREATE,
-                          UPDATE}
-     
+                          UPDATE} 
     
-    //public abstract JInternalFrame getView(); 
+    public DateTimeFormatter dmyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");
+    public DateTimeFormatter recallFormat = DateTimeFormatter.ofPattern("MMMM/yyyy");
 }

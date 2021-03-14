@@ -113,4 +113,9 @@ public class Appointments{
         IStore store = Store.factory();
         return store.readAppointments(day);
     }
+    
+    public ArrayList<Appointment>getAppointmentsFrom(LocalDate day) throws StoreException{
+        IStore store = Store.factory();
+        return store.readAppointmentsFrom(day);
+    }
 }

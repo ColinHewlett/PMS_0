@@ -48,6 +48,9 @@ public class PostgreSQLStore extends Store {
     public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
         return null;
     }
+    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
+        return null;
+    }
     public ArrayList<Patient> readPatients() throws StoreException{
         return null;
     }

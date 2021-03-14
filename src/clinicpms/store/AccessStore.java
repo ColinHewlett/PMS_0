@@ -22,11 +22,13 @@ import java.util.Iterator;
  * @author colin
  */
 public class AccessStore extends Store {
-    public enum AppointmentQuery   {
+    public enum AppointmentSQL   {
                             READ_APPOINTMENTS_FOR_DAY,
+                            READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENTS_FOR_PATIENT,
                             UPDATE_APPOINTMENT}
-    public enum PatientQuery   {CREATE_PATIENT,
+
+    public enum PatientSQL   {CREATE_PATIENT,
                                 READ_ALL_PATIENTS,
                                 READ_HIGHEST_KEY,
                                 READ_PATIENT_WITH_KEY,
@@ -76,10 +78,10 @@ public class AccessStore extends Store {
         return null;
     }
     public Patient create(Patient p) throws StoreException{
-        ArrayList<Patient> value = runSQL(PatientQuery.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
+        ArrayList<Patient> value = runSQL(PatientSQL.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
         p.setKey(value.get(0).getKey()+1);
-        value = runSQL(PatientQuery.CREATE_PATIENT, p, new ArrayList<Patient>());
-        value = runSQL(PatientQuery.READ_PATIENT_WITH_KEY, p, new ArrayList<Patient>());
+        value = runSQL(PatientSQL.CREATE_PATIENT, p, new ArrayList<Patient>());
+        value = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, p, new ArrayList<Patient>());
         return value.get(0);
     }
     public void delete(Appointment a) throws StoreException{
@@ -93,32 +95,49 @@ public class AccessStore extends Store {
     }
     public Patient read(Patient p) throws StoreException{
         ArrayList<Patient> patients = 
-                runSQL(PatientQuery.READ_PATIENT_WITH_KEY,p,  new ArrayList<Patient>());
+                runSQL(PatientSQL.READ_PATIENT_WITH_KEY,p,  new ArrayList<Patient>());
         Patient patient = patients.get(0);
         if (patient.getGuardian()!=null){
-            patients = runSQL(PatientQuery.READ_PATIENT_WITH_KEY, patient.getGuardian(), new ArrayList<Patient>());  
+            patients = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, patient.getGuardian(), new ArrayList<Patient>());  
         }
         patient.setGuardian(patients.get(0));
         return patient;
     }
+    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
+        ArrayList<Appointment> appointments = 
+                runSQL(AppointmentSQL.READ_APPOINTMENTS_FROM_DAY,day, new ArrayList<Appointment>());
+        Iterator<Appointment> it = appointments.iterator();
+        while(it.hasNext()){
+            Appointment appointment = it.next();
+            Patient p =read(appointment.getPatient());
+            appointment.setPatient(p);
+        }
+        return appointments;
+    }
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException{
         ArrayList<Appointment> appointments = 
-                runSQL(AppointmentQuery.READ_APPOINTMENTS_FOR_PATIENT,day, new ArrayList<Appointment>());
+                runSQL(AppointmentSQL.READ_APPOINTMENTS_FOR_DAY,day, new ArrayList<Appointment>());
+        Iterator<Appointment> it = appointments.iterator();
+        while(it.hasNext()){
+            Appointment appointment = it.next();
+            Patient p =read(appointment.getPatient());
+            appointment.setPatient(p);
+        }
         return appointments;
     }
     public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
         ArrayList<Appointment> appointments = 
-                runSQL(AppointmentQuery.READ_APPOINTMENTS_FOR_PATIENT,p, new ArrayList<Appointment>());
+                runSQL(AppointmentSQL.READ_APPOINTMENTS_FOR_PATIENT,p, new ArrayList<Appointment>());
         return appointments;
     }
     public ArrayList<Patient> readPatients() throws StoreException{
         ArrayList<Patient> patients = 
-                runSQL(PatientQuery.READ_ALL_PATIENTS,new Patient(), new ArrayList<Patient>());
+                runSQL(PatientSQL.READ_ALL_PATIENTS,new Patient(), new ArrayList<Patient>());
         return patients;
     }
     
     public Patient update(Patient p) throws StoreException{
-        runSQL(PatientQuery.UPDATE_PATIENT, p, new ArrayList<Patient>());
+        runSQL(PatientSQL.UPDATE_PATIENT, p, new ArrayList<Patient>());
         Patient updatedPatient = read(p);
         return updatedPatient;
     }
@@ -198,11 +217,14 @@ public class AccessStore extends Store {
                     LocalDateTime start = rs.getObject("Start", LocalDateTime.class);
                     Duration duration = Duration.ofMinutes(rs.getLong("Duration"));
                     String notes = rs.getString("Notes"); 
+                    int patientKey = rs.getInt("PatientKey");
                     Appointment appointment = new Appointment();
                     appointment.setKey(key);
                     appointment.setStart(start);
                     appointment.setDuration(duration);
                     appointment.setNotes(notes);
+                    appointment.setPatient(new Patient(patientKey));
+                    appointment.setStatus(Appointment.Status.BOOKED);
                     result.add(appointment);
                 }
             }  
@@ -215,7 +237,7 @@ public class AccessStore extends Store {
     }
     
     private ArrayList<Patient> runSQL(
-            PatientQuery q, Object entity, ArrayList<Patient> result)throws StoreException{
+            PatientSQL q, Object entity, ArrayList<Patient> result)throws StoreException{
         Patient patient = (Patient)entity;
         String sql =
                 switch (q){
@@ -376,11 +398,16 @@ public class AccessStore extends Store {
         return result;            
     }
     private ArrayList<Appointment> runSQL(
-            AppointmentQuery q, Object entity, ArrayList<Appointment> appointments) throws StoreException{
+            AppointmentSQL q, Object entity, ArrayList<Appointment> appointments) throws StoreException{
         ArrayList<Appointment> records = appointments;
         String sql = null;
         sql = 
                 switch (q){
+                    case READ_APPOINTMENTS_FROM_DAY ->
+                "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
+                "FROM Appointment AS a " +
+                "WHERE a.Start >= ? "
+                + "ORDER BY a.Start ASC;";
                     case READ_APPOINTMENTS_FOR_PATIENT ->
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
@@ -392,11 +419,27 @@ public class AccessStore extends Store {
                 + "from appointment as a "
                 + "where DatePart(\"yyyy\",a.start) = ? "
                 + "AND  DatePart(\"m\",a.start) = ? "
-                + "AND  DatePart(\"d\",a.start) = ?;";  
+                + "AND  DatePart(\"d\",a.start) = ? "
+                + "ORDER BY a.start ASC;";  
                         
                     case UPDATE_APPOINTMENT -> "";
         };
         switch (q){
+            case READ_APPOINTMENTS_FROM_DAY -> {
+                LocalDate day = (LocalDate)entity;
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    preparedStatement.setDate(1, java.sql.Date.valueOf(day));
+                    ResultSet rs = preparedStatement.executeQuery();
+                    records = getAppointmentsFromRS(rs);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised during a READ_APPOINTMENTS_FROM_DAY query",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+                
+            }
             case READ_APPOINTMENTS_FOR_PATIENT -> {
                 Patient patient = (Patient)entity;
                 try{
@@ -434,7 +477,7 @@ public class AccessStore extends Store {
     public void tidyPatientImportedDate()throws StoreException{
         //for each record in patient
         ArrayList<Patient> updatedPatients = null;
-        ArrayList<Patient> patients = runSQL(PatientQuery.READ_ALL_PATIENTS,
+        ArrayList<Patient> patients = runSQL(PatientSQL.READ_ALL_PATIENTS,
                 new Patient(), new ArrayList<Patient>());
         Iterator<Patient> patientsIT = patients.iterator();
         while (patientsIT.hasNext()){
@@ -450,7 +493,7 @@ public class AccessStore extends Store {
             if(patient.getGender()==null) patient.setGender("");
             patient1 = updateGender(patient);
             patient.setGender(patient1.getGender());
-            runSQL(PatientQuery.UPDATE_PATIENT, patient, new ArrayList<Patient>());
+            runSQL(PatientSQL.UPDATE_PATIENT, patient, new ArrayList<Patient>());
         } 
     }
     

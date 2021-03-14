@@ -12,13 +12,17 @@ import clinicpms.model.Patients;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.AppointmentsForDayView;
 import clinicpms.view.AppointmentViewDialog;
+import clinicpms.view.AppointmentEditorDialog;
+import clinicpms.view.EmptySlotScannerSettingsDialog;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +53,7 @@ public class AppointmentViewController extends ViewController{
     private PropertyChangeEvent pcEvent = null;
     private JFrame owningFrame = null;
     private ViewController.ViewMode viewMode = null;
+    //private AppointmentEditorDialog dialog = null;
     private AppointmentViewDialog dialog = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     
@@ -65,9 +70,10 @@ public class AppointmentViewController extends ViewController{
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
         setEntityDescriptorFromView(getNewEntityDescriptor());
-        getAppointmentsForSelectedDay();
+        //getAppointmentsForSelectedDay();
         this.view = new AppointmentsForDayView(this, getNewEntityDescriptor());
-        this.view.addInternalFrameClosingListener();    
+        this.view.addInternalFrameClosingListener(); 
+        this.view.initialiseView();
     }
     @Override
     public void actionPerformed(ActionEvent e){
@@ -84,11 +90,12 @@ public class AppointmentViewController extends ViewController{
                                                 pcSupport.removePropertyChangeListener(this.view);
                                                 pcSupport.addPropertyChangeListener(view);
                                                 doAppointmentsForDayViewActions(e);}
-            case "DialogForAppointmentDefinition" -> {pcSupport.removePropertyChangeListener(view);
+            case "AppointmentEditorDialog" -> {pcSupport.removePropertyChangeListener(view);
                                                         pcSupport.removePropertyChangeListener(this.dialog);
                                                         pcSupport.addPropertyChangeListener(this.dialog);
                                                         doAppointmentViewDialogActions(e);}
             case "DesktopViewController" -> doDesktopViewControllerAction(e);
+            case "EmptySlotScannerSettingsDialog" -> {doEmptySlotScannerSettingsDialogActions(e);}
         }
     }
     
@@ -101,6 +108,34 @@ public class AppointmentViewController extends ViewController{
                 getView().setClosed(true);
             }
             catch (PropertyVetoException ex){
+                //UnspecifiedError action
+            }
+        }
+    }
+    private void doEmptySlotScannerSettingsDialogActions(ActionEvent e){
+        if (e.getActionCommand().equals(EmptySlotSearchCriteriaDialogActionEvent.
+                EMPTY_SLOT_SCANNER_CLOSE_REQUEST.toString())){
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));   
+        }
+        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
+            try{
+                this.appointments =
+                    new Appointments().getAppointmentsFrom(day);
+                ArrayList<Appointment> availableSlotsOfDuration = 
+                        getAvailableSlotsOfDuration(
+                                this.appointments,duration,day);
+                serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            catch (StoreException ex){
                 //UnspecifiedError action
             }
         }
@@ -156,18 +191,34 @@ public class AppointmentViewController extends ViewController{
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
-            this.myController.actionPerformed(actionEvent);
+            this.myController.actionPerformed(actionEvent);   
+        }
+        
+        else if (e.getActionCommand().equals(   
+                AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
+            /**
+             * EMPTY_SLOT_SCANNER_DIALOG_REQUEST empty slot scanner requested by view
+             * -- construct a new dialog with a newly initialised EntityDescriptor, owning Frame
+             */
+            this.dialog = new EmptySlotScannerSettingsDialog(
+                    this,getNewEntityDescriptor(),this.owningFrame);
+            this.dialog.setVisible(true);
         }
         else if (e.getActionCommand().equals(
             /**
              * APPOINTMENTS_REQUEST would be sent by view on a change of the selected day
              */
-            AppointmentViewControllerActionEvent.APPOINTMENTS_REQUEST.toString())){
+            AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
             try{
-                getAppointmentsForSelectedDay();
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                serialiseAppointmentsToEDCollection(this.appointments);
                 pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString(),
+                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                     getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
             }
@@ -186,7 +237,7 @@ public class AppointmentViewController extends ViewController{
                     serialiseAppointmentToEDAppointment(appointment);
                     serialisePatientsToEDCollection(patients);
                     
-                    this.dialog = new AppointmentViewDialog(this,getNewEntityDescriptor(),
+                    this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
                             this.owningFrame, ViewController.ViewMode.UPDATE);
                 }
                 catch (StoreException ex){
@@ -196,85 +247,195 @@ public class AppointmentViewController extends ViewController{
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
             initialiseNewEntityDescriptor();
-            this.dialog = new AppointmentViewDialog(this,getNewEntityDescriptor(),
+            this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
                     this.owningFrame, ViewController.ViewMode.CREATE);
             this.dialog.setVisible(true);
         }
+        
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
             if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
                 Appointment appointment = new Appointment(
                         getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
                 try{
                     appointment.delete();
-                    getAppointmentsForSelectedDay();
+                    LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+                    this.appointments = new Appointments().getAppointmentsFor(day);
+                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(
+                            this.appointments,day);
+                    serialiseAppointmentsToEDCollection(this.appointments);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
                 }
                 catch (StoreException ex){
                     //UnspecifiedError action
                 }
             }
-        }
+        }   
     }
-    private void getAppointmentsForSelectedDay() throws StoreException{
-        LocalDateTime nextEmptySlotStartTime;
-        ArrayList<Appointment> apptsForDayIncludingEmptySlots = new ArrayList<>();
-        LocalDate theDay = getEntityDescriptorFromView().getRequest().getDay();
-        if (theDay != null){
-            /*this.appointments = 
-                new Appointments().getAppointmentsForDayIncludingEmptyAppointmentSlots(theDay);*/
-            this.appointments =
-                    new Appointments().getAppointmentsFor(theDay);
-            Iterator it = appointments.iterator();
-            nextEmptySlotStartTime = LocalDateTime.of(theDay, 
-                                                  ClinicPMS.FIRST_APPOINTMENT_SLOT);
-            /**
-             * check for no appointments on this day if no appointment create a
-             * single empty slot for whole day
-             */
-            if (appointments.isEmpty()) {
-                apptsForDayIncludingEmptySlots.add(createEmptyAppointmentSlot(
-                                                    nextEmptySlotStartTime));
-            } 
-            /**
-             * At least one appointment scheduled, calculate empty slot intervals
-             * interleaved appropriately (time ordered) with scheduled
-             * appointment(s)
-             */
-            else { 
-                while (it.hasNext()) {
-                    Appointment appointment = (Appointment) it.next();
-                    Duration durationToNextSlot = Duration.between(
-                            nextEmptySlotStartTime,appointment.getStart() );
-                    /**
-                     * check if no time exists between next scheduled appointment
-                     * If so update nextEmptySlotStartTime to immediately follow
-                     * the current scheduled appointment
-                     */
-                    if (durationToNextSlot.isZero()) {
-                        nextEmptySlotStartTime = 
-                                appointment.getStart().plusMinutes(appointment.getDuration().toMinutes());
-                        apptsForDayIncludingEmptySlots.add(appointment);
-                    } 
-                    /**
-                     * If time exists between nextEmptySlotTime and the current 
-                     * appointment,
-                     * -- create an empty appointment slot to fill the gap
-                     * -- re-initialise nextEmptySlotTime to immediately follow the
-                     *    the current appointment
-                     */
-                    else {
-                        Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime,
-                                Duration.between(nextEmptySlotStartTime, appointment.getStart()).abs());
-                        apptsForDayIncludingEmptySlots.add(emptySlot);
-                        apptsForDayIncludingEmptySlots.add(appointment);
-                        nextEmptySlotStartTime =
-                                appointment.getStart().plusMinutes(appointment.getDuration().toMinutes());
-                        
+    /**
+     * 
+     * @param appointments all recorded appointments from a selected date 
+     * @param duration minimum duration of an appointment slot to be included
+     * @return ArrayList<Appointment> slots which meet specified minimum duration 
+     */
+    private ArrayList<Appointment> getAvailableSlotsOfDuration(
+            ArrayList<Appointment> appointments,Duration duration, LocalDate searchStartDay){
+        
+        ArrayList<Appointment> result = new ArrayList<>();
+        ArrayList<Appointment> appointmentsForSingleDay = new ArrayList<>();
+        ArrayList<ArrayList<Appointment>> appointmentsGroupedByDay = new ArrayList<>();
+        LocalDate currentDate = null;
+        Iterator<Appointment> it = appointments.iterator();
+        while(it.hasNext()){
+            Appointment appointment = it.next();
+            if (currentDate==null) currentDate = appointment.getStart().toLocalDate();
+            if (appointment.getStart().toLocalDate().equals(currentDate)) appointmentsForSingleDay.add(appointment);
+            else {
+                appointmentsGroupedByDay.add(appointmentsForSingleDay);
+                currentDate = appointment.getStart().toLocalDate();
+                appointmentsForSingleDay = new ArrayList<Appointment>();
+                appointmentsForSingleDay.add(appointment);
+            }
+        }
+        Iterator<ArrayList<Appointment>> it1 = appointmentsGroupedByDay.iterator();
+        //appointmentsForSingleDay.clear();
+        
+        /**
+         * -- current day initialised to start day of search
+         * -- for each day group of appts
+         * ----while current day before date of day group of appts and practice day 
+         * ------ create another day group containing single all day slot and add these to search result
+         * ----process this day group of appts (adding any unbooked slots) adding to search result if duration permits
+         */
+        currentDate = searchStartDay;
+        while(it1.hasNext()){
+            appointmentsForSingleDay = it1.next();
+            LocalDate appointmentsForSingleDayDate = appointmentsForSingleDay.get(0).getStart().toLocalDate();
+            while(currentDate.isBefore(appointmentsForSingleDayDate)){
+                if(currentDate.getDayOfWeek().equals(DayOfWeek.TUESDAY) 
+                            || currentDate.getDayOfWeek().equals(DayOfWeek.THURSDAY)
+                            || currentDate.getDayOfWeek().equals(DayOfWeek.FRIDAY))
+                        result.add(this.createEmptyAppointmentSlot(
+                              currentDate.atTime(ClinicPMS.FIRST_APPOINTMENT_SLOT))); 
+                currentDate = currentDate.plusDays(1); 
+            }
+            ArrayList<Appointment> slotsForDay = 
+                    getAppointmentsForSelectedDayIncludingEmptySlots(
+                            appointmentsForSingleDay, appointmentsForSingleDayDate); 
+            Iterator<Appointment> it2 = slotsForDay.iterator();
+            //currentDate = null;
+            while(it2.hasNext()){
+                Appointment slot = it2.next();
+                if (slot.getStatus().equals(Appointment.Status.UNBOOKED)){
+                    long slotDuration = slot.getDuration().toMinutes();
+                    if (slotDuration >= duration.toMinutes()){
+                        result.add(slot);
                     }
+                }
+            } 
+            currentDate = currentDate.plusDays(1);
+        } 
+        /**
+         * check and process days which have no appointments on, as follows
+         * -- consecutive appointment-less days are merged into a single slot 
+         * -- the single slot duration represents in hours the number of consecutive days
+         */
+        
+        boolean multiDayIntervalHasStarted = false;
+        Appointment multiDayIntervalWithNoAppointments = null;
+        ArrayList<Appointment> finalisedResult = new ArrayList<>();
+        it = result.iterator();
+        while(it.hasNext()){
+            Appointment appointment = it.next();
+
+            if (appointment.getDuration().toHours() == 8){
+                if (!multiDayIntervalHasStarted) {
+                    multiDayIntervalHasStarted = true;
+                    multiDayIntervalWithNoAppointments = new Appointment();
+                    multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                    multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(8));
+                    multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                }
+                else{
+                    duration = multiDayIntervalWithNoAppointments.getDuration();
+                    multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
+                } 
+            }
+            else if (multiDayIntervalHasStarted){
+                finalisedResult.add(multiDayIntervalWithNoAppointments);
+                multiDayIntervalHasStarted = false;
+                finalisedResult.add(appointment);
+            }
+            else finalisedResult.add(appointment);  
+        }
+        return finalisedResult;
+    }
+    private ArrayList<Appointment> getAppointmentsForSelectedDayIncludingEmptySlots(
+            ArrayList<Appointment> appointments, LocalDate day) {
+        LocalDateTime nextEmptySlotStartTime;
+        nextEmptySlotStartTime = LocalDateTime.of(day, 
+                                                  ClinicPMS.FIRST_APPOINTMENT_SLOT);
+        ArrayList<Appointment> apptsForDayIncludingEmptySlots = new ArrayList<>();      
+        Iterator<Appointment> it = appointments.iterator();
+        /**
+         * check for no appointments on this day if no appointment create a
+         * single empty slot for whole day
+         */
+        if (appointments.isEmpty()) {
+            apptsForDayIncludingEmptySlots.add(createEmptyAppointmentSlot(
+                                                nextEmptySlotStartTime));
+        } 
+        /**
+         * At least one appointment scheduled, calculate empty slot intervals
+         * interleaved appropriately (time ordered) with scheduled
+         * appointment(s)
+         */
+        else { 
+            while (it.hasNext()) {
+                Appointment appointment = it.next();
+                Duration durationToNextSlot = Duration.between(
+                        nextEmptySlotStartTime,appointment.getStart() );
+                /**
+                 * check if no time exists between next scheduled appointment
+                 * If so update nextEmptySlotStartTime to immediately follow
+                 * the current scheduled appointment
+                 */
+                if (durationToNextSlot.isZero()) {
+                    nextEmptySlotStartTime = 
+                            appointment.getStart().plusMinutes(appointment.getDuration().toMinutes());
+                    apptsForDayIncludingEmptySlots.add(appointment);
+                } 
+                /**
+                 * If time exists between nextEmptySlotTime and the current 
+                 * appointment,
+                 * -- create an empty appointment slot to fill the gap
+                 * -- re-initialise nextEmptySlotTime to immediately follow the
+                 *    the current appointment
+                 */
+                else {
+                    Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime,
+                            Duration.between(nextEmptySlotStartTime, appointment.getStart()).abs());
+                    apptsForDayIncludingEmptySlots.add(emptySlot);
+                    apptsForDayIncludingEmptySlots.add(appointment);
+                    nextEmptySlotStartTime =
+                            appointment.getStart().plusMinutes(appointment.getDuration().toMinutes());
                 }
             }
         }
-        initialiseNewEntityDescriptor();
-        serialiseAppointmentsToEDCollection(apptsForDayIncludingEmptySlots);
+        Appointment lastAppointment = 
+                apptsForDayIncludingEmptySlots.get(apptsForDayIncludingEmptySlots.size()-1);
+        if (lastAppointment.getStatus().equals(Appointment.Status.BOOKED)){
+            //check if bookable time after last appointment
+            Duration durationToDayEnd = 
+                    Duration.between(nextEmptySlotStartTime.toLocalTime(), ClinicPMS.LAST_APPOINTMENT_SLOT).abs();
+            if (!durationToDayEnd.isZero()) {
+                Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime);
+                apptsForDayIncludingEmptySlots.add(emptySlot);
+            }
+        }
+        return apptsForDayIncludingEmptySlots;
     }
     private Appointment createEmptyAppointmentSlot(LocalDateTime start){
         Appointment appointment = new Appointment();
@@ -440,20 +601,23 @@ public class AppointmentViewController extends ViewController{
         while(appointmentsIterator.hasNext()){
             Appointment appointment = appointmentsIterator.next();
             RenderedAppointment renderedAppointment = renderAppointment(appointment);
-            getNewEntityDescriptor().getAppointment().setData(renderedAppointment);
+            EntityDescriptor.Appointment edAppointment = new EntityDescriptor().getAppointment();
+            edAppointment.setData(renderedAppointment);
             if (appointment.getStatus() == Appointment.Status.BOOKED){
-                getNewEntityDescriptor().getAppointment().getData().IsEmptySlot(false);
+                edAppointment.getData().IsEmptySlot(false);
                 if (appointment.getPatient()!=null){
                     RenderedPatient appointee = renderPatient(appointment.getPatient());
-                    getNewEntityDescriptor().getAppointment().setAppointee(new EntityDescriptor().getPatient());
-                    getNewEntityDescriptor().getAppointment().getAppointee().setData(appointee);
+                    EntityDescriptor.Patient edPatient = new EntityDescriptor().getPatient();
+                    edPatient.setData(appointee);
+                    edAppointment.setAppointee(edPatient);
                 }
             }
             else{
-                getNewEntityDescriptor().getAppointment().getData().IsEmptySlot(true);
+                edAppointment.setAppointee(null);
+                edAppointment.getData().IsEmptySlot(true);
             }
-            getNewEntityDescriptor().getAppointments().getData().add(getNewEntityDescriptor().getAppointment());
-        }
+            getNewEntityDescriptor().getAppointments().getData().add(edAppointment);
+        }    
     }
    
     private void serialisePatientsToEDCollection(ArrayList<Patient> patients) throws StoreException{
@@ -485,4 +649,5 @@ public class AppointmentViewController extends ViewController{
     private void setView(AppointmentsForDayView view ){
         this.view = view;
     }
+    
 }

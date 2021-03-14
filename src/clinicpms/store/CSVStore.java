@@ -1017,6 +1017,9 @@ public class CSVStore extends Store {
             throw new StoreException(e.getMessage(), ExceptionType.CSV_EXCEPTION);
         }  
     }
+    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
+        return null;
+    }
     
     private List<String[]> readAppointmentsAsStringArrayList() throws StoreException{
         try{

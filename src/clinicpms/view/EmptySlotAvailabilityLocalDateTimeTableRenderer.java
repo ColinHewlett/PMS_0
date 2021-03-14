@@ -5,9 +5,9 @@
  */
 package clinicpms.view;
 
-import clinicpms.controller.EntityDescriptor;
 import java.awt.Component;
-import java.awt.Font;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
@@ -16,9 +16,10 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author colin
  */
-public class AppointmentsTablePatientRenderer  extends JLabel implements TableCellRenderer{
+public class EmptySlotAvailabilityLocalDateTimeTableRenderer extends JLabel implements TableCellRenderer{
+    private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("(EEE) dd/MM/yy HH:mm ");
     
-    public AppointmentsTablePatientRenderer()
+    public EmptySlotAvailabilityLocalDateTimeTableRenderer()
     {
         //Font f = super.getFont();
         // bold
@@ -29,16 +30,11 @@ public class AppointmentsTablePatientRenderer  extends JLabel implements TableCe
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
         boolean hasFocus, int row, int column)
     {
-        EntityDescriptor.Patient patient = (EntityDescriptor.Patient)value;
-        if (patient == null) {
-            super.setText("NOT BOOKED");
-            super.setHorizontalAlignment(JLabel.CENTER);
+        if (value != null){
+            LocalDateTime startTime = (LocalDateTime)value;
+            setText(startTime.format(emptySlotFormat));
         }
-        else {
-            super.setText(patient.toString());
-            super.setHorizontalAlignment(JLabel.LEFT);
-        }
-
+        else super.setText("");
         return this;
     }
 }

@@ -24,7 +24,7 @@ public class Appointment {
     private String notes = null;
     private Patient patient = null;
     private Category category = null;
-    private Status status = Status.BOOKED;
+    private Status status = Appointment.Status.BOOKED;
     
     public static enum Category{DENTAL, HYGIENE, ALL}
 
@@ -86,10 +86,10 @@ public class Appointment {
     public void setKey(Integer key) {
         this.key = key;
     }
-    public Status getStatus(){
+    public Appointment.Status getStatus(){
         return this.status;
     }
-    public void setStatus(Status value){
+    public void setStatus(Appointment.Status value){
         this.status = value;
     }       
 

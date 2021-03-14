@@ -6,6 +6,7 @@
 package clinicpms.controller;
 
 import java.util.ArrayList;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -414,12 +415,14 @@ public class EntityDescriptor {
         private EntityDescriptor.Appointment appointment = null;
         private EntityDescriptor.Patient guardian = null;
         private LocalDate day = null;
+        private Duration duration = null;
 
         protected Request() {
             appointment = new EntityDescriptor.Appointment();
             patient = new EntityDescriptor.Patient();
             guardian = new EntityDescriptor.Patient();
             day = LocalDate.now();
+            duration = Duration.ZERO;
         }
         
         public EntityDescriptor.Patient getPatient() {
@@ -448,6 +451,14 @@ public class EntityDescriptor {
 
         public LocalDate getDay(){
             return day;
+        }
+        
+        public Duration getDuration(){
+            return duration;
+        }
+        
+        public void setDuration(Duration value){
+            duration = value;
         }
         
         public void setDay(LocalDate value){

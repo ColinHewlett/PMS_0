@@ -31,8 +31,6 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.Iterator;
 //import javax.swing.JInternalFrame;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.InternalFrameAdapter;
@@ -103,16 +101,10 @@ public class PatientView extends View
      * @param ed EntityDescriptor
      */
     public PatientView(ActionListener myController, EntityDescriptor ed) {
-        //store references to view controller and entity descriptor
         setMyController(myController);
         setEntityDescriptor(ed);
-        //initialise the netbeans created gui
         initComponents();
-        //initialise view closure options
-        //addInternalFrameClosingListener();
-        //initialise the spinner controls
         this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
-        //populate list of patients to select from for this patient and patient's guardian if applicable
         populatePatientSelector(this.cmbSelectPatient); 
         populatePatientSelector(this.cmbSelectGuardian);
         this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
@@ -1556,20 +1548,5 @@ public class PatientView extends View
             }         
         }
     }
-        
- 
-    /*
-    class HygieneRecallDateChangeListener implements DateChangeListener {
-        @Override
-        public void dateChanged(DateChangeEvent event) {
-            LocalDate date = event.getNewDate();
-            if (date != null) {
-                DateTimeFormatter myFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                txtHygieneRecallDate.setText(date.format(myFormat));
-            }
-            else txtHygieneRecallDate.setText("");
-        }
-    }
-*/
 
 }

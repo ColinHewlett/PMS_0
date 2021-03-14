@@ -6,18 +6,18 @@
 package clinicpms.view;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.time.Duration;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
+
 /**
  *
  * @author colin
  */
-public class AppointmentsTableDurationRenderer extends JLabel implements TableCellRenderer{
+public class EmptySlotAvailabilityDurationTableRenderer extends JLabel implements TableCellRenderer{
     
-    public AppointmentsTableDurationRenderer()
+    public EmptySlotAvailabilityDurationTableRenderer()
     {
         //Font f = super.getFont();
         // bold
@@ -28,13 +28,23 @@ public class AppointmentsTableDurationRenderer extends JLabel implements TableCe
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
         boolean hasFocus, int row, int column){
         if (value!=null){
-            super.setText(renderDuration((Duration)value));
+            Duration duration = (Duration)value;
+            if (duration.toHours() < 8) setText(renderDuration(duration));
+            else setText(renderDayDuration(duration));
         }
         else super.setText("");
         return this;
     }
     
+    private String renderDayDuration(Duration duration){
+        
+        return null;
+    }
+    
     private String renderDuration(Duration duration){
+        long practiceDays = duration.toHours() / 8;
+        
+        
         String result;
         int hours = getHoursFromDuration(duration.toMinutes());
         int minutes = getMinutesFromDuration(duration.toMinutes());

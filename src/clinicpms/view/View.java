@@ -8,6 +8,7 @@ package clinicpms.view;
 import clinicpms.view.interfaces.IView;
 import clinicpms.view.interfaces.IViewInternalFrameListener;
 import java.beans.PropertyChangeListener;
+import java.time.format.DateTimeFormatter;
 import javax.swing.JInternalFrame;
 
 /**
@@ -16,6 +17,7 @@ import javax.swing.JInternalFrame;
  */
 public abstract class View extends JInternalFrame
                            implements PropertyChangeListener,IView, IViewInternalFrameListener{
+    
     public View(){
         super("Appointments view",true,true,true,true);
         
