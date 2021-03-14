@@ -442,16 +442,23 @@ public class PatientView extends View
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
         this.tblAppointmentHistory.setModel(tableModel);
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        
         TableColumnModel columnModel = this.tblAppointmentHistory.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(105);
+        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         columnModel.getColumn(1).setPreferredWidth(105);
+        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         columnModel.getColumn(2).setPreferredWidth(232);
+        columnModel.getColumn(2).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+        
         JTableHeader tableHeader = this.tblAppointmentHistory.getTableHeader();
-        tableHeader.setBackground(Color.LIGHT_GRAY);
-        tableHeader.setOpaque(false);
+        tableHeader.setBackground(new Color(220,220,220));
+        tableHeader.setOpaque(true);
+        /*
         DefaultTableCellRenderer renderer = 
                 (DefaultTableCellRenderer) tblAppointmentHistory.getTableHeader().getDefaultRenderer();
         renderer.setHorizontalAlignment(0);
+        
         TitledBorder titledBorder;
         switch (appointmentsCount){
             case 0:
@@ -474,6 +481,7 @@ public class PatientView extends View
                 this.pnlAppointmentHistory.repaint();
                 break;
         }
+        */
     }
     /**
      * The method initialises the patient view's appointment history view 
@@ -1069,7 +1077,7 @@ public class PatientView extends View
                 .addContainerGap())
         );
 
-        pnlAppointmentHistory.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Appointment history", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+        pnlAppointmentHistory.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Appointment history (top of list is latest or next apppointment)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         scrAppointmentHistory.setRowHeaderView(null);
         scrAppointmentHistory.setViewportView(tblAppointmentHistory);
@@ -1204,11 +1212,13 @@ public class PatientView extends View
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel3)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel3)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(

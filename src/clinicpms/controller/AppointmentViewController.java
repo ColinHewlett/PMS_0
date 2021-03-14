@@ -239,6 +239,7 @@ public class AppointmentViewController extends ViewController{
                     
                     this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
                             this.owningFrame, ViewController.ViewMode.UPDATE);
+                    this.dialog.setVisible(true);
                 }
                 catch (StoreException ex){
                     //UnspecifiedError action

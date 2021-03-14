@@ -99,7 +99,7 @@ public class AppointmentsForDayView extends View{
     private void initialiseEDSelectionFromView(int row){
         if (row > -1){
             getEntityDescriptor().getRequest().setAppointment(
-                    getEntityDescriptor().getAppointments().getData().get(row));
+                    getEntityDescriptor().getAppointments().getData().get(row));          
         }
     }
 
@@ -115,6 +115,7 @@ public class AppointmentsForDayView extends View{
         initComponents();
         dayDatePicker.addDateChangeListener(new DayDatePickerChangeListener());
         setEmptySlotAvailabilityTableListener();
+        this.tblAppointments.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         //setTableHeaderCellBorderRendering();
         
     }
@@ -167,7 +168,8 @@ public class AppointmentsForDayView extends View{
         JTableHeader tableHeader = this.tblAppointments.getTableHeader();
         tableHeader.setBackground(new Color(220,220,220));
         tableHeader.setOpaque(true);
-        
+        this.tblAppointments.setRowSelectionAllowed(true);
+        //this.tblAppointments.setRowSelectionInterval(0, 4);
         /*
         DefaultTableCellRenderer renderer = 
                 (DefaultTableCellRenderer) tblAppointments.getTableHeader().getDefaultRenderer();
@@ -450,7 +452,7 @@ public class AppointmentsForDayView extends View{
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
     private void btnUpdateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateAppointmentActionPerformed
-        int row = this.tblAppointmentsForDay.getSelectedRow();
+        int row = this.tblAppointments.getSelectedRow();
         if (row == -1){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
         }

@@ -26,6 +26,7 @@ public class AccessStore extends Store {
                             READ_APPOINTMENTS_FOR_DAY,
                             READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENTS_FOR_PATIENT,
+                            READ_APPOINTMENT_WITH_KEY,
                             UPDATE_APPOINTMENT}
 
     public enum PatientSQL   {CREATE_PATIENT,
@@ -91,7 +92,16 @@ public class AccessStore extends Store {
         
     }
     public Appointment read(Appointment a) throws StoreException{
-        return null;
+        ArrayList<Patient> patients = null;
+        ArrayList<Appointment> appointments = 
+                runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY,a,  new ArrayList<Appointment>());
+        Appointment appointment = appointments.get(0);
+        if (appointment.getPatient()!=null){
+            patients = runSQL(PatientSQL.READ_PATIENT_WITH_KEY,appointment.getPatient(), new ArrayList<Patient>());
+            Patient patient = patients.get(0);
+            appointment.setPatient(patient);
+        }
+        return appointment;
     }
     public Patient read(Patient p) throws StoreException{
         ArrayList<Patient> patients = 
@@ -403,6 +413,10 @@ public class AccessStore extends Store {
         String sql = null;
         sql = 
                 switch (q){
+                    case READ_APPOINTMENT_WITH_KEY ->
+                "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes "
+                + "FROM Appointment AS a "
+                + "WHERE a.Key = ?;";
                     case READ_APPOINTMENTS_FROM_DAY ->
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
@@ -412,8 +426,7 @@ public class AccessStore extends Store {
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.PatientKey = ? " +
-                "ORDER BY a.Start DESC";
-                        
+                "ORDER BY a.Start DESC";    
                     case READ_APPOINTMENTS_FOR_DAY ->
                 "select *"
                 + "from appointment as a "
@@ -425,6 +438,20 @@ public class AccessStore extends Store {
                     case UPDATE_APPOINTMENT -> "";
         };
         switch (q){
+            case READ_APPOINTMENT_WITH_KEY -> {
+                Appointment appointment = (Appointment)entity;
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    preparedStatement.setLong(1, appointment.getKey());
+                    ResultSet rs = preparedStatement.executeQuery();
+                    records = getAppointmentsFromRS(rs);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised during a READ_APPOINTMENT_WITH_KEY query",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
             case READ_APPOINTMENTS_FROM_DAY -> {
                 LocalDate day = (LocalDate)entity;
                 try{

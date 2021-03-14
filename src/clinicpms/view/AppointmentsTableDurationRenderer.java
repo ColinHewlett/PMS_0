@@ -31,6 +31,15 @@ public class AppointmentsTableDurationRenderer extends JLabel implements TableCe
             super.setText(renderDuration((Duration)value));
         }
         else super.setText("");
+        
+        if (isSelected) {
+            setBackground(table.getSelectionBackground());
+            setForeground(table.getSelectionForeground());
+        } else {
+            setBackground(table.getBackground());
+            setForeground(table.getForeground());
+        }
+        setOpaque(true);
         return this;
     }
     

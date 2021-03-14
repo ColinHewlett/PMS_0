@@ -33,12 +33,21 @@ public class AppointmentsTablePatientRenderer  extends JLabel implements TableCe
         if (patient == null) {
             super.setText("NOT BOOKED");
             super.setHorizontalAlignment(JLabel.CENTER);
+
+
         }
         else {
             super.setText(patient.toString());
             super.setHorizontalAlignment(JLabel.LEFT);
         }
-
+        if (isSelected) {
+            setBackground(table.getSelectionBackground());
+            setForeground(table.getSelectionForeground());
+        } else {
+            setBackground(table.getBackground());
+            setForeground(table.getForeground());
+        }
+        setOpaque(true);
         return this;
     }
 }
