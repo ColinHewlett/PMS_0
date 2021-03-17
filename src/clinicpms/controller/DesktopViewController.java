@@ -15,6 +15,7 @@ import clinicpms.store.Store;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.DesktopView;
+import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -90,7 +91,6 @@ public class DesktopViewController extends ViewController{
                     this.requestViewControllersToCloseViews();
                 }
             }
-
         }
     }
     private void doPatientViewControllerAction(ActionEvent e){

@@ -10,6 +10,7 @@ import clinicpms.controller.ViewController;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Font;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -80,10 +81,13 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         this.spnStartTime.setModel(new SpinnerListModel(reverseTimes(this.times)));
         this.spnStartTime.setValue(getDefaultTime());
         initialiseViewMode(getViewMode());
+        
+        /*
         if (getViewMode().equals(ViewController.ViewMode.UPDATE)){
             initialiseViewFromED();
         }
         else this.populatePatientSelector(this.cmbSelectPatient);
+        */
     }
     
     @Override
@@ -99,6 +103,18 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         return this.entityDescriptor;
     }
     
+    public void initialiseView(){
+        populatePatientSelector(this.cmbSelectPatient);
+        this.cmbSelectPatient.setSelectedIndex(-1);
+        if (getViewMode().equals(ViewController.ViewMode.UPDATE)){
+            DateTimeFormatter hhmmFormat = DateTimeFormatter.ofPattern("HH:mm");
+            this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
+            this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
+            this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
+            this.txaNotes.setText(getEntityDescriptor().getAppointment().getData().getNotes());
+            this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getAppointment().getAppointee());
+        }
+    }
     private void setEntityDescriptor(EntityDescriptor value){
         this.entityDescriptor = value;
     }
@@ -152,7 +168,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         getEntityDescriptor().getRequest().getAppointment().getData().
                 setDuration(Duration.ofMinutes(getDurationFromView()));
         getEntityDescriptor().getRequest().getAppointment().getData().
-                setNotes(this.txtNotes.getText());
+                setNotes(this.txaNotes.getText());
     }
     private LocalDateTime getStartDateTime(){
         return getEntityDescriptor().getRequest().getDay().atTime(
@@ -170,7 +186,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
         this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
         this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
-        this.txtNotes.setText(getEntityDescriptor().getAppointment().getData().getNotes());
+        this.txaNotes.setText(getEntityDescriptor().getAppointment().getData().getNotes());
         populatePatientSelector(this.cmbSelectPatient);
         if (!getEntityDescriptor().getAppointment().getData().IsEmptySlot()){
             this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getAppointment().getAppointee());
@@ -262,7 +278,8 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         spnStartTime = new javax.swing.JSpinner();
         lblDialogForAppointmentDefinitionTitle4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        txtNotes = new javax.swing.JTextArea();
+        txaNotes = new javax.swing.JTextArea();
+        txaNotes.setFont(new Font("Tahoma",Font.PLAIN,11));
         jPanel3 = new javax.swing.JPanel();
         spnDurationHours = new javax.swing.JSpinner(new SpinnerNumberModel(0,0,8,1));
         spnDurationMinutes = new javax.swing.JSpinner(new SpinnerNumberModel(0,0,55,5));
@@ -284,9 +301,9 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
 
         lblDialogForAppointmentDefinitionTitle4.setText("Notes");
 
-        txtNotes.setColumns(20);
-        txtNotes.setRows(5);
-        jScrollPane1.setViewportView(txtNotes);
+        txaNotes.setColumns(20);
+        txaNotes.setRows(5);
+        jScrollPane1.setViewportView(txaNotes);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 255)), "Duration"));
 
@@ -438,7 +455,26 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }//GEN-LAST:event_btnCancelActionPerformed
     private void btnCreateUpdateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdateAppointmentActionPerformed
+        evt = null;
         initialiseEntityDescriptorFromView();
+        switch (getViewMode()){
+            case CREATE -> {
+                evt = new ActionEvent(AppointmentEditorDialog.this,
+                        ActionEvent.ACTION_PERFORMED,
+                        ViewController.AppointmentViewDialogActionEvent.
+                                APPOINTMENT_VIEW_CREATE_REQUEST.toString());
+                AppointmentEditorDialog.this.getMyController().actionPerformed(evt); 
+            }
+            case UPDATE -> {
+                evt = new ActionEvent(AppointmentEditorDialog.this,
+                        ActionEvent.ACTION_PERFORMED,
+                        ViewController.AppointmentViewDialogActionEvent.
+                                APPOINTMENT_VIEW_UPDATE_REQUEST.toString());
+                AppointmentEditorDialog.this.getMyController().actionPerformed(evt); 
+                
+            }
+        }
+        
     }//GEN-LAST:event_btnCreateUpdateAppointmentActionPerformed
     private int checkOKToCloseDialog(){
         String[] options = {"Yes", "No"};
@@ -468,6 +504,6 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
     private javax.swing.JSpinner spnDurationHours;
     private javax.swing.JSpinner spnDurationMinutes;
     private javax.swing.JSpinner spnStartTime;
-    private javax.swing.JTextArea txtNotes;
+    private javax.swing.JTextArea txaNotes;
     // End of variables declaration//GEN-END:variables
 }

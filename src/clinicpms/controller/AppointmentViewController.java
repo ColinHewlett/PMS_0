@@ -17,6 +17,8 @@ import clinicpms.view.EmptySlotScannerSettingsDialog;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -26,6 +28,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JDialog;
@@ -41,6 +44,12 @@ import javax.swing.event.InternalFrameEvent;
 
 
 public class AppointmentViewController extends ViewController{
+
+    private enum RequestedAppointmentState{ AFTER_PREVIOUS_SLOT,
+                                            OVERLAPS_END_TIME_OF_PREVIOUS_SLOT,
+                                            OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT,
+                                            APPOINTMENT_ADDED_TO_SCHEDULE,
+                                            ERROR_ADDING_APPOINTMENT_TO_SCHEDULE}
 
     private ActionListener myController = null;
     private PropertyChangeSupport pcSupport = null;
@@ -63,17 +72,19 @@ public class AppointmentViewController extends ViewController{
      * @param owner JFrame the owning frame the view controller needs to reference 
      * if managing a customised JDialog view
      */
-    public AppointmentViewController(ActionListener controller, JFrame owner)throws StoreException{
+    public AppointmentViewController(ActionListener controller, JFrame desktopView)throws StoreException{
         setMyController(controller);
-        this.owningFrame = owner;
+        this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
         setEntityDescriptorFromView(getNewEntityDescriptor());
-        //getAppointmentsForSelectedDay();
+        //centre appointments view relative to desktop;
         this.view = new AppointmentsForDayView(this, getNewEntityDescriptor());
+        super.centreViewOnDesktop(desktopView, view);
         this.view.addInternalFrameClosingListener(); 
         this.view.initialiseView();
+        
     }
     @Override
     public void actionPerformed(ActionEvent e){
@@ -98,7 +109,137 @@ public class AppointmentViewController extends ViewController{
             case "EmptySlotScannerSettingsDialog" -> {doEmptySlotScannerSettingsDialogActions(e);}
         }
     }
-    
+    private void doAppointmentViewDialogActions(ActionEvent e){
+        Appointment result = null;
+        if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            processRequestToUpdateAppointmentSchedule(ViewMode.CREATE);
+        }
+        else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            processRequestToUpdateAppointmentSchedule(ViewMode.UPDATE);
+        }
+        else if (e.getActionCommand().equals(
+                AppointmentViewDialogActionEvent.APPOINTMENT_VIEW_CLOSE_REQUEST.toString())){
+            if (e.getSource() instanceof JFrame){
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
+            }
+        }
+    }
+    private void doAppointmentsForDayViewActions(ActionEvent e){
+        if (e.getActionCommand().equals(
+                AppointmentViewControllerActionEvent.
+                        APPOINTMENTS_VIEW_CLOSED.toString())){
+            /**
+             * APPOINTMENTS_VIEW_CLOSED
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+            this.myController.actionPerformed(actionEvent);   
+        }
+        
+        else if (e.getActionCommand().equals(   
+                AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
+            /**
+             * EMPTY_SLOT_SCANNER_DIALOG_REQUEST empty slot scanner requested by view
+             * -- construct a new dialog with a newly initialised EntityDescriptor, owning Frame
+             */
+            this.dialog = new EmptySlotScannerSettingsDialog(
+                    this,getNewEntityDescriptor(),this.owningFrame);
+            this.dialog.setLocationRelativeTo(view);
+            this.dialog.setVisible(true);
+            
+        }
+        else if (e.getActionCommand().equals(
+            /**
+             * APPOINTMENTS_REQUEST would be sent by view on a change of the selected day
+             */
+            AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            try{
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                serialiseAppointmentsToEDCollection(this.appointments);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            catch (StoreException ex){
+                //UnspecifiedError action
+            }
+        }
+        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
+            if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
+                try{
+                    Appointment appointment = new Appointment(
+                            getEntityDescriptorFromView().getRequest().
+                                    getAppointment().getData().getKey()).read();
+                    ArrayList<Patient> patients = new Patients().getPatients();
+                    initialiseNewEntityDescriptor();
+                    serialiseAppointmentToEDAppointment(appointment);
+                    serialisePatientsToEDCollection(patients);
+                    
+                    this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
+                            this.owningFrame, ViewController.ViewMode.UPDATE);
+                    this.dialog.setLocationRelativeTo(this.view);
+                    this.dialog.initialiseView();
+                    this.dialog.setVisible(true);
+                    
+                }
+                catch (StoreException ex){
+                    //UnspecifiedError action
+                } 
+            }
+        }
+        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
+            initialiseNewEntityDescriptor();
+            try{
+                ArrayList<Patient> patients = new Patients().getPatients();
+                serialisePatientsToEDCollection(patients);
+                this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
+                        this.owningFrame, ViewController.ViewMode.CREATE);
+                this.dialog.setLocationRelativeTo(this.view);
+                this.dialog.initialiseView();
+                this.dialog.setVisible(true);
+
+            }
+            catch (StoreException ex){
+                //UnspecifiedError action
+            }
+        }
+        
+        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
+            if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
+                Appointment appointment = new Appointment(
+                        getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
+                try{
+                    appointment.delete();
+                    LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+                    this.appointments = new Appointments().getAppointmentsFor(day);
+                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(
+                            this.appointments,day);
+                    serialiseAppointmentsToEDCollection(this.appointments);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                }
+                catch (StoreException ex){
+                    //UnspecifiedError action
+                }
+            }
+        }   
+    }
     private void doDesktopViewControllerAction(ActionEvent e){
         if (e.getActionCommand().equals(DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
             try{
@@ -140,141 +281,460 @@ public class AppointmentViewController extends ViewController{
             }
         }
     }
-    private void doAppointmentViewDialogActions(ActionEvent e){
-        if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
-                APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
-            Appointment appointment = makeAppointmentFromEDSelection();
-            try{
-                appointment = appointment.create();
-                initialiseNewEntityDescriptor();
-                serialiseAppointmentToEDAppointment(appointment);
-                pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-            }
-            catch (StoreException ex){
-                //UnspecifiedError action
-            }
-        }
-        else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
-                APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
-            Appointment appointment = makeAppointmentFromEDSelection();
-            try{
-                appointment = appointment.update();
-            }
-            catch (StoreException ex){
-                //UnspecifiedError action
-            }
-            initialiseNewEntityDescriptor();
-            serialiseAppointmentToEDAppointment(appointment);
-            pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupport.firePropertyChange(pcEvent);
-        }
-        else if (e.getActionCommand().equals(
-                AppointmentViewDialogActionEvent.APPOINTMENT_VIEW_CLOSE_REQUEST.toString())){
-            if (e.getSource() instanceof JFrame){
-                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
-            }
-        }
-    }
-    private void doAppointmentsForDayViewActions(ActionEvent e){
-        if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.
-                        APPOINTMENTS_VIEW_CLOSED.toString())){
-            /**
-             * APPOINTMENTS_VIEW_CLOSED
-             */
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
-            this.myController.actionPerformed(actionEvent);   
-        }
+    private Appointment doCreateNewAppointment(
+            EntityDescriptor.Appointment appointment)throws StoreException{
+        Appointment result = null;
         
-        else if (e.getActionCommand().equals(   
-                AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
-            /**
-             * EMPTY_SLOT_SCANNER_DIALOG_REQUEST empty slot scanner requested by view
-             * -- construct a new dialog with a newly initialised EntityDescriptor, owning Frame
-             */
-            this.dialog = new EmptySlotScannerSettingsDialog(
-                    this,getNewEntityDescriptor(),this.owningFrame);
-            this.dialog.setVisible(true);
-        }
-        else if (e.getActionCommand().equals(
-            /**
-             * APPOINTMENTS_REQUEST would be sent by view on a change of the selected day
-             */
-            AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString())){
-            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-            initialiseNewEntityDescriptor();
-            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-            try{
-                this.appointments =
-                    new Appointments().getAppointmentsFor(day);
-                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                serialiseAppointmentsToEDCollection(this.appointments);
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
+        return result;
+    }
+    private Appointment doUpdateAppointment(
+            EntityDescriptor.Appointment appointment)throws StoreException{
+        Appointment result = null;
+        
+        return result;
+    }
+    private String getNameOfSlotOwner(Appointment slot){
+        String result = null;
+        String title = null;
+        String forenames = null;
+        String surname = null;
+        
+        title = slot.getPatient().getName().getTitle();
+        forenames = slot.getPatient().getName().getForenames();
+        surname = slot.getPatient().getName().getSurname();
+        result = slot.getPatient().getName().getTitle();
+        if (title.strip().length()==0) title = "?";
+        if (forenames.strip().length() == 0) forenames = "<...>";
+        if (surname.strip().length() == 0) surname = "<...>";
+       
+        return title + " " + forenames + " " + surname;
+    }
+    private String getNameOfSlotOwner(EntityDescriptor.Appointment slot){
+        String result = null;
+        String title = null;
+        String forenames = null;
+        String surname = null;
+        
+        title = slot.getAppointee().getData().getTitle();
+        forenames = slot.getAppointee().getData().getForenames();
+        surname = slot.getAppointee().getData().getSurname();
+        result = slot.getAppointee().getData().getTitle();
+        if (title.strip().length()==0) title = "?";
+        if (forenames.strip().length() == 0) forenames = "<...>";
+        if (surname.strip().length() == 0) surname = "<...>";
+       
+        return title + " " + forenames + " " + surname;
+    }
+    private String appointmentCollisionChangingSchedule(
+            EntityDescriptor.Appointment rSlot, 
+            ArrayList<Appointment> appointments, ViewMode mode){
+        String result = null;
+        Appointment pSlot = null;
+        LocalDateTime pSlotStart = null;
+        LocalDateTime pSlotEnd = null;
+        LocalDateTime sSlotStart = null;
+        LocalDateTime sSlotEnd = null;
+        LocalDateTime rSlotStart = rSlot.getData().getStart();
+        LocalDateTime rSlotEnd = rSlot.getData().getStart().plusMinutes(rSlot.getData().getDuration().toMinutes());
+        Iterator<Appointment> it = appointments.iterator();
+        RequestedAppointmentState state = null;
+        while(it.hasNext()){
+            Appointment sSlot = it.next();
+            pSlotStart = pSlot.getStart();
+            pSlotEnd = pSlot.getStart().plusMinutes(pSlot.getDuration().toMinutes());
+            sSlotStart = sSlot.getStart();
+            sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
+            if (state == null){//first time round
+                if(!rSlotEnd.isAfter(sSlotStart)){//available slot prior to 1st slot in schedule
+                    result = null;
+                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                    break;
+                }
+                else if (!rSlotStart.isBefore(sSlotEnd)){
+                    state = RequestedAppointmentState.AFTER_PREVIOUS_SLOT;
+                    pSlot = sSlot;
+                }
+                else {//must mean rSlot overlaps sSlot
+                    switch (mode){
+                        case CREATE ->{
+                            if (rSlot.getData().getKey()!=sSlot.getKey()){
+                                 state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                 result = 
+                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                         + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                 break;
+                             }
+                            else{
+                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                 result = 
+                                         "The new appointment for " + getNameOfSlotOwner(rSlot) + " "
+                                         + " overwrites an existing appointment for the same patient.\n"
+                                         + "Update this appointment instead of creating a new appointment.";
+                                 break;
+                            }
+                        }
+                        case UPDATE ->{
+                            /**
+                             * rSlot overlaps the start time of a scheduled appointment
+                             */
+                            if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
+                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                    /**
+                                     * the overlapped appointment is for the same patient, so
+                                     * update the scheduled appointment
+                                     */
+                                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                    result = null;
+                                    break;
+                                }
+                                else {
+                                    /**
+                                     * the overlapped appointment is for another appointment
+                                     * so abort the update request
+                                     */
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    result = 
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                    break;
+                                }
+                            }
+                            else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
+                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                    /**
+                                     * rSlot 'inside' the scheduled appointment for the same patient
+                                     * so update the scheduled appointment 
+                                     */
+                                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                    result = null;
+                                    break;
+                                }
+                                else {
+                                    /**
+                                     * rSlot 'inside' another patient's scheduled appointment
+                                     * so abort the update request
+                                     */
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    result = 
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                    break;  
+                                }
+                            }
+                            else if(!rSlotStart.isBefore(sSlotStart)&& 
+                                    rSlotStart.isBefore(sSlotEnd)&&
+                                    rSlotEnd.isAfter(sSlotEnd)){
+                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                    /**
+                                     * rSlot starts inside a scheduled appointment for same patient
+                                     * and finishes beyond the end of the scheduled appointment;
+                                     * initialise state and save copy of the current scheduled appointment
+                                     */
+                                    state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
+                                    pSlot = sSlot;
+                                }
+                                else{
+                                    /**
+                                     * rSlot overlaps a scheduled appointment for another patient,
+                                     * so abort update request
+                                     */
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    result = 
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                    break;
+                                }
+                            }
+                            else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
+                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                    /**
+                                     * rSlot overlaps both ends of appointment scheduled for same patient
+                                     * so initialise state and save copy of the scheduled appointment
+                                     */
+                                    state = RequestedAppointmentState.OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT;
+                                    pSlot = sSlot;
+                                }
+                                else{
+                                    /**
+                                     * rSlot overlaps a scheduled appointment for another patient,
+                                     * so abort update request
+                                     */
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    result = 
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                    break;
+                                }  
+                            }
+                        }
+                    }
+                }  
             }
-            catch (StoreException ex){
-                //UnspecifiedError action
+            else{//not first time round 
+                switch (state){
+                    case AFTER_PREVIOUS_SLOT ->{
+                        if(!rSlotStart.isBefore(pSlotEnd)&&!rSlotEnd.isAfter(sSlotStart)){
+                            /**
+                             * requested appointment fits between previous slot and this one
+                             */
+                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                            result = null;
+                            break;
+                        }
+                        else if (!rSlotStart.isBefore(sSlotEnd)){
+                            /**
+                             * rSlot starts beyond scheduled appointment
+                             * so initialise state and save copy of scheduled appointment
+                             */
+                            state = RequestedAppointmentState.AFTER_PREVIOUS_SLOT;
+                            pSlot = sSlot;
+                        }
+                        /**
+                         * rSlot must overlap scheduled appointment
+                         */
+                        else {
+                            switch (mode){
+                                case CREATE ->{
+                                    if (rSlot.getData().getKey()!=sSlot.getKey()){
+                                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                        result = 
+                                                "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                                + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                        break;
+                                    }
+                                   else{
+                                       state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                        result = 
+                                                "The new appointment for " + getNameOfSlotOwner(rSlot) + " "
+                                                + " overwrites an existing appointment for the same patient.\n"
+                                                + "Update this appointment instead of creating a new appointment.";
+                                        break;
+                                   }
+                                }
+                                case UPDATE ->{
+                                    /**
+                                     * rSlot overlaps the start time of a scheduled appointment
+                                     */
+                                    if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
+                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                            /**
+                                             * the overlapped appointment is for the same patient, so
+                                             * update the scheduled appointment
+                                             */
+                                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                            result = null;
+                                            break;
+                                        }
+                                        else {
+                                            /**
+                                             * the overlapped appointment is for another appointment
+                                             * so abort the update request
+                                             */
+                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                            result = 
+                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                            break;
+                                        }
+                                    }
+                                    else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
+                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                            /**
+                                             * rSlot 'inside' the scheduled appointment for the same patient
+                                             * so update the scheduled appointment 
+                                             */
+                                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                            result = null;
+                                            break;
+                                        }
+                                        else {
+                                            /**
+                                             * rSlot 'inside' another patient's scheduled appointment
+                                             * so abort the update request
+                                             */
+                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                            result = 
+                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                            break;  
+                                        }
+                                    }
+                                    else if(!rSlotStart.isBefore(sSlotStart)&& 
+                                            rSlotStart.isBefore(sSlotEnd)&&
+                                            rSlotEnd.isAfter(sSlotEnd)){
+                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                            /**
+                                             * rSlot starts inside a scheduled appointment for same patient
+                                             * and finishes beyond the end of the scheduled appointment;
+                                             * initialise state and save copy of the current scheduled appointment
+                                             */
+                                            state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
+                                            pSlot = sSlot;
+                                        }
+                                        else{
+                                            /**
+                                             * rSlot overlaps a scheduled appointment for another patient,
+                                             * so abort update request
+                                             */
+                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                            result = 
+                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                            break;
+                                        }
+                                    }
+                                    else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
+                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                            /**
+                                             * rSlot overlaps both ends of appointment scheduled for same patient
+                                             * so initialise state and save copy of the scheduled appointment
+                                             */
+                                            state = RequestedAppointmentState.OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT;
+                                            pSlot = sSlot;
+                                        }
+                                        else{
+                                            /**
+                                             * rSlot overlaps a scheduled appointment for another patient,
+                                             * so abort update request
+                                             */
+                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                            result = 
+                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                            break;
+                                        }  
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    case OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT ->{
+                        
+                    }
+                    /**
+                     * the previous slot overlapped must be for the same patient,
+                     * and this must be an update request
+                     */
+                    case OVERLAPS_END_TIME_OF_PREVIOUS_SLOT -> {
+                        if (!rSlotEnd.isAfter(sSlotStart)){
+                            /**
+                             * rSlot ends before scheduled slot starts
+                             */
+                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                            result = null;
+                            break;
+                        }
+                        else if(rSlotEnd.isAfter(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
+                            if (rSlot.getData().getKey()!=sSlot.getKey()){
+                                /**
+                                 * rSlot overwrites scheduled appointment for another patient,
+                                 * so abort update  
+                                 */
+                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                result = 
+                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                        + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                break;
+                            }
+                            else{
+                                /**
+                                 * rSlot ends 'inside'  scheduled appointment for same patient,
+                                 * so update can proceed
+                                 */
+                                state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                result = null;
+                                break;   
+                            }
+                        }
+                        /**
+                         * requested slot ends beyond scheduled appointment
+                         */
+                        else if (rSlotEnd.isAfter(sSlotEnd)){
+                            if (rSlot.getData().getKey()!=sSlot.getKey()){ 
+                                /**
+                                 * rSlot overwrites scheduled slot for another patient,
+                                 * so abort update
+                                 */
+                                result = 
+                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                        + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
+                                break;
+                                
+                            }
+                            else {
+                                /**
+                                 * rSlot goes beyond the end of the scheduled appointment for same 
+                                 * patient, so in initialise state and save copy of 
+                                 * scheduled appointment
+                                 */
+                                state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
+                                pSlot = sSlot;
+                            }
+                        }   
+                    }
+                }
             }
         }
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
-            if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
-                try{
-                    Appointment appointment = new Appointment(
-                            getEntityDescriptorFromView().getRequest().
-                                    getAppointment().getData().getKey()).read();
-                    ArrayList<Patient> patients = new Patients().getPatients();
-                    initialiseNewEntityDescriptor();
-                    serialiseAppointmentToEDAppointment(appointment);
-                    serialisePatientsToEDCollection(patients);
                     
-                    this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
-                            this.owningFrame, ViewController.ViewMode.UPDATE);
-                    this.dialog.setVisible(true);
+        switch (state){
+            case ERROR_ADDING_APPOINTMENT_TO_SCHEDULE -> {
+                //do nothing
+            }
+            case APPOINTMENT_ADDED_TO_SCHEDULE -> {
+                //do nothing
+            }
+            case AFTER_PREVIOUS_SLOT -> {
+                if (!rSlotStart.isBefore(pSlotEnd)){
+                    result = null;
                 }
-                catch (StoreException ex){
-                    //UnspecifiedError action
-                } 
             }
         }
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
-            initialiseNewEntityDescriptor();
-            this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
-                    this.owningFrame, ViewController.ViewMode.CREATE);
-            this.dialog.setVisible(true);
-        }
-        
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
-            if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
-                Appointment appointment = new Appointment(
-                        getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
-                try{
-                    appointment.delete();
-                    LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-                    this.appointments = new Appointments().getAppointmentsFor(day);
-                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(
-                            this.appointments,day);
-                    serialiseAppointmentsToEDCollection(this.appointments);
-                    pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                }
-                catch (StoreException ex){
-                    //UnspecifiedError action
-                }
-            }
-        }   
+        return result;   
     }
+    private Appointment addRequestedAppointmentToAppointmentSchedule(ViewMode action)throws StoreException{
+        Appointment result = null;
+        EntityDescriptor.Appointment rSlot = 
+                getEntityDescriptorFromView().getRequest().getAppointment();
+        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+        try{
+            ArrayList<Appointment> appointments = new Appointments().getAppointmentsFor(day);
+            if (appointments.size()==0){
+                switch (action){
+                    case CREATE -> {
+                        result = doCreateNewAppointment(rSlot);
+                    }
+                    case UPDATE -> {
+                        result = doUpdateAppointment(rSlot);
+                    }
+                }
+            }
+            else{
+                switch (action){
+                    case CREATE -> {
+                        String error = appointmentCollisionChangingSchedule(rSlot, appointments, action);
+                        getNewEntityDescriptor().setError(error);
+                        if (error==null){
+                            //no collision results
+                            result = doCreateNewAppointment(rSlot);
+                        }
+                    }
+                    case UPDATE -> {
+                        String error = appointmentCollisionChangingSchedule(rSlot, appointments, action);
+                        getNewEntityDescriptor().setError(error);
+                        if (error==null){
+                            //no collision results
+                            result = doUpdateAppointment(rSlot);
+                        }
+                    }
+                }
+            }
+        }
+        catch (StoreException ex){
+            
+        }
+        return result;
+    }
+
     /**
      * 
      * @param appointments all recorded appointments from a selected date 
@@ -649,6 +1109,38 @@ public class AppointmentViewController extends ViewController{
     }
     private void setView(AppointmentsForDayView view ){
         this.view = view;
+    }
+    
+    private void processRequestToUpdateAppointmentSchedule(ViewMode mode){
+        Appointment result = null;
+        try{
+            result = addRequestedAppointmentToAppointmentSchedule(mode);
+            if (result!=null){
+                serialiseAppointmentToEDAppointment(result);
+                pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+                LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                serialiseAppointmentsToEDCollection(this.appointments);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            else{
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+        }
+        catch (StoreException ex){
+            //UnspecifiedError action
+        }
     }
     
 }

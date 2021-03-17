@@ -4,8 +4,14 @@
  * and open the template in the editor.
  */
 package clinicpms.controller;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.awt.Frame;
+import java.awt.Insets;
+import java.awt.Point;
+import javax.swing.JInternalFrame;
 import java.time.format.DateTimeFormatter;
+
 /**
  *
  * @author colin
@@ -35,11 +41,13 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_VIEW_UPDATE_REQUEST,
                                             }
     public enum AppointmentViewDialogPropertyEvent {
-                                            APPOINTMENT_RECEIVED
+                                            APPOINTMENT_RECEIVED,
+                                            APPOINTMENT_VIEW_ERROR
                                             }
     public enum AppointmentViewControllerPropertyEvent {
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
-                                            APPOINTMENT_SLOTS_FROM_DAY_RECEIVED 
+                                            APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
+                                            APPOINTMENT_FOR_DAY_ERROR
                                             }
     
     public enum DesktopViewControllerActionEvent {
@@ -108,4 +116,13 @@ public abstract class ViewController implements ActionListener{
     public DateTimeFormatter dmyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");
     public DateTimeFormatter recallFormat = DateTimeFormatter.ofPattern("MMMM/yyyy");
+    
+    protected void centreViewOnDesktop(Frame desktopView, JInternalFrame view){
+        Insets insets = desktopView.getInsets();
+        Dimension deskTopViewDimension = desktopView.getSize();
+        Dimension myViewDimension = view.getSize();
+        view.setLocation(new Point(
+                (int)(deskTopViewDimension.getWidth() - (myViewDimension.getWidth()))/2,
+                (int)((deskTopViewDimension.getHeight()-insets.top) - myViewDimension.getHeight())/2));
+    }
 }

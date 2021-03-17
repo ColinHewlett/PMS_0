@@ -23,6 +23,7 @@ public class EntityDescriptor {
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
     private EntityDescriptor.Patients patients = null;
+    private String error = null;
 
     protected EntityDescriptor() {
         appointment = new EntityDescriptor.Appointment();
@@ -32,6 +33,15 @@ public class EntityDescriptor {
         appointments = new EntityDescriptor.Appointments();     
         patients = new EntityDescriptor.Patients();  
         request = new EntityDescriptor.Request();
+        error = null;
+    }
+    
+    public String getError(){
+        return error;
+    }
+    
+    protected void setError(String message){
+        error = message;
     }
 
     public EntityDescriptor.Appointment getAppointment() {

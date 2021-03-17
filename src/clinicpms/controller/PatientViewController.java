@@ -237,7 +237,7 @@ public class PatientViewController extends ViewController {
         this.entityDescriptorFromView = e;
     }
     
-    public PatientViewController(DesktopViewController controller, JFrame owner)throws StoreException{
+    public PatientViewController(DesktopViewController controller, JFrame desktopview)throws StoreException{
         setMyController(controller);
         pcSupportForView = new PropertyChangeSupport(this);
         this.newEntityDescriptor = new EntityDescriptor();
@@ -246,6 +246,7 @@ public class PatientViewController extends ViewController {
         serialisePatientsToEDCollection(patients);
 
         view = new PatientView(this, getNewEntityDescriptor());
+        super.centreViewOnDesktop(desktopview, view);
         
         this.view.addInternalFrameClosingListener(); 
         pcSupportForView.addPropertyChangeListener(

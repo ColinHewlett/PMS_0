@@ -18,5 +18,6 @@ public interface IView {
      * between view and its controller
      * @return EntityDescriptor object contained in the PropertyChangeEvent received by the view
      */
-    public EntityDescriptor getEntityDescriptor();  
+    public EntityDescriptor getEntityDescriptor(); 
+    public void initialiseView();
 }

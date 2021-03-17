@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.time.Duration;
@@ -1276,6 +1277,7 @@ public class PatientView extends View
         txaPatientNotes.setColumns(20);
         txaPatientNotes.setLineWrap(true);
         txaPatientNotes.setRows(5);
+        txaPatientNotes.setFont(new Font("Tahoma",Font.PLAIN,11));
         scpPatientNotes.setViewportView(txaPatientNotes);
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);

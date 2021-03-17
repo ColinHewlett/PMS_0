@@ -143,11 +143,14 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTextArea" name="txtNotes">
+            <Component class="javax.swing.JTextArea" name="txaNotes">
               <Properties>
                 <Property name="columns" type="int" value="20"/>
                 <Property name="rows" type="int" value="5"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="txaNotes.setFont(new Font(&quot;Tahoma&quot;,Font.PLAIN,11));"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>
