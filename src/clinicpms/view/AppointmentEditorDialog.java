@@ -5,6 +5,7 @@
  */
 package clinicpms.view;
 
+import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.interfaces.IView;
@@ -16,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -78,8 +80,6 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         setMyController(myController);
         setViewMode(viewMode);
         initComponents();
-        this.spnStartTime.setModel(new SpinnerListModel(reverseTimes(this.times)));
-        this.spnStartTime.setValue(getDefaultTime());
         initialiseViewMode(getViewMode());
         
         /*
@@ -104,16 +104,29 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
     }
     
     public void initialiseView(){
+        LocalDate day = getEntityDescriptor().getRequest().getDay();
+        populateSelectStartTime(day);
         populatePatientSelector(this.cmbSelectPatient);
-        this.cmbSelectPatient.setSelectedIndex(-1);
         if (getViewMode().equals(ViewController.ViewMode.UPDATE)){
-            DateTimeFormatter hhmmFormat = DateTimeFormatter.ofPattern("HH:mm");
-            this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
+            this.cmbSelectStartTime.setSelectedItem(
+                    getEntityDescriptor().getAppointment().getData().getStart());
             this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
             this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
             this.txaNotes.setText(getEntityDescriptor().getAppointment().getData().getNotes());
             this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getAppointment().getAppointee());
         }
+        this.cmbSelectStartTime.setRenderer(new SelectStartTimeLocalDateTimeRenderer());
+    }
+    private void populateSelectStartTime(LocalDate day){
+        DefaultComboBoxModel<LocalDateTime> model = 
+                (DefaultComboBoxModel<LocalDateTime>)this.cmbSelectStartTime.getModel();
+        LocalDateTime value = day.atTime(ClinicPMS.FIRST_APPOINTMENT_SLOT);
+        do{
+            model.addElement(value);
+            value = value.plusMinutes(5);   
+        }while(!value.isAfter(day.atTime(ClinicPMS.LAST_APPOINTMENT_SLOT)));
+        this.cmbSelectStartTime.setModel(model);
+        this.cmbSelectStartTime.setSelectedIndex(-1);
     }
     private void setEntityDescriptor(EntityDescriptor value){
         this.entityDescriptor = value;
@@ -183,7 +196,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
      */
     private void initialiseViewFromED(){
         DateTimeFormatter hhmmFormat = DateTimeFormatter.ofPattern("HH:mm");
-        this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
+        //this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
         this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
         this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getData().getDuration().toMinutes()));
         this.txaNotes.setText(getEntityDescriptor().getAppointment().getData().getNotes());
@@ -209,59 +222,13 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
             model.addElement(patient);
         }
         selector.setModel(model);
+        selector.setSelectedIndex(-1);
     }
     private ActionListener getMyController(){
         return this.myController;
     }
     private void setMyController(ActionListener value){
         this.myController = value;
-    }
-    
-    /**
-     * If on entry the current time is earlier than the first 'time' in the list, 
-     * the first time ("08:00") is returned, if the current time is later than 
-     * all the times in the list the last time in the list ("18:55") is returned;
-     * otherwise the first instance of a time later than the current time is
-     * returned
-     * @return String value from a SpinnerListModel in which items are string
-     * representations of LocalTime objects. Note the SpinnerDateModel if used
-     * creates a list of times for each minute of the day, which is far too many. 
-     * Hence the approach taken using the SpinnerListModel, the items of which 
-     * are string representations of LocalTime objects incremented in 5 minute
-     * intervals
-     */
-    private String getDefaultTime(){
-        String result;
-        LocalTime now = LocalTime.now();
-        //check if current time is before the first appointment time
-        if (now.compareTo(LocalTime.parse("08:00")) == -1){
-            result = "08:00";
-        }
-        else{
-            SpinnerListModel model = (SpinnerListModel)this.spnStartTime.getModel();
-            model.setValue("08:00");
-            result = (String)model.getNextValue();
-            while(result != null) {
-                LocalTime t = LocalTime.parse(result);
-                if (now.compareTo(t) == -1){
-                    break;
-                }
-                result = (String)model.getNextValue();  
-            }
-        }
-        if (result==null){
-            result = "18:55";
-        }
-        return result;
-    }
-    private String[] reverseTimes(String[] t){
-        String[] timesReversed = new String[192];
-        int index2 = 0;
-        for (int index = times.length - 1; index > -1; index--){
-            timesReversed[index2] = times[index];
-            index2 = index2 + 1;
-        }
-        return timesReversed;
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -275,7 +242,6 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         pnlAppointmentDetails = new javax.swing.JPanel();
         lblDialogForAppointmentDefinitionTitle1 = new javax.swing.JLabel();
         lblDialogForAppointmentDefinitionTitle2 = new javax.swing.JLabel();
-        spnStartTime = new javax.swing.JSpinner();
         lblDialogForAppointmentDefinitionTitle4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txaNotes = new javax.swing.JTextArea();
@@ -286,6 +252,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         cmbSelectPatient = new javax.swing.JComboBox<EntityDescriptor.Patient>();
+        cmbSelectStartTime = new javax.swing.JComboBox<LocalDateTime>();
         jPanel2 = new javax.swing.JPanel();
         btnCreateUpdateAppointment = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -344,6 +311,8 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
 
         cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<EntityDescriptor.Patient>());
 
+        cmbSelectStartTime.setModel(new javax.swing.DefaultComboBoxModel<LocalDateTime>());
+
         javax.swing.GroupLayout pnlAppointmentDetailsLayout = new javax.swing.GroupLayout(pnlAppointmentDetails);
         pnlAppointmentDetails.setLayout(pnlAppointmentDetailsLayout);
         pnlAppointmentDetailsLayout.setHorizontalGroup(
@@ -357,16 +326,16 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppointmentDetailsLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(pnlAppointmentDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(pnlAppointmentDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnlAppointmentDetailsLayout.createSequentialGroup()
                                 .addComponent(lblDialogForAppointmentDefinitionTitle2, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(spnStartTime, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(cmbSelectStartTime, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(78, 78, 78))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppointmentDetailsLayout.createSequentialGroup()
                         .addComponent(lblDialogForAppointmentDefinitionTitle1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
                         .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6)))
                 .addContainerGap())
@@ -381,13 +350,13 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
                 .addGap(18, 18, 18)
                 .addGroup(pnlAppointmentDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDialogForAppointmentDefinitionTitle2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(spnStartTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbSelectStartTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(13, 13, 13)
                 .addComponent(lblDialogForAppointmentDefinitionTitle4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -492,6 +461,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnCreateUpdateAppointment;
     private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectPatient;
+    private javax.swing.JComboBox<LocalDateTime> cmbSelectStartTime;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
@@ -503,7 +473,6 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
     private javax.swing.JPanel pnlAppointmentDetails;
     private javax.swing.JSpinner spnDurationHours;
     private javax.swing.JSpinner spnDurationMinutes;
-    private javax.swing.JSpinner spnStartTime;
     private javax.swing.JTextArea txaNotes;
     // End of variables declaration//GEN-END:variables
 }

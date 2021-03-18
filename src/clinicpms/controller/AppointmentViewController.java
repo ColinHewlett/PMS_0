@@ -115,13 +115,13 @@ public class AppointmentViewController extends ViewController{
                 APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
-            processRequestToUpdateAppointmentSchedule(ViewMode.CREATE);
+            requestToChangeAppointmentSchedule(ViewMode.CREATE);
         }
         else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
                 APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
-            processRequestToUpdateAppointmentSchedule(ViewMode.UPDATE);
+            requestToChangeAppointmentSchedule(ViewMode.UPDATE);
         }
         else if (e.getActionCommand().equals(
                 AppointmentViewDialogActionEvent.APPOINTMENT_VIEW_CLOSE_REQUEST.toString())){
@@ -1111,16 +1111,15 @@ public class AppointmentViewController extends ViewController{
         this.view = view;
     }
     
-    private void processRequestToUpdateAppointmentSchedule(ViewMode mode){
+    private void requestToChangeAppointmentSchedule(ViewMode mode){
         Appointment result = null;
         try{
             result = addRequestedAppointmentToAppointmentSchedule(mode);
             if (result!=null){
                 serialiseAppointmentToEDAppointment(result);
-                pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
+                //close dialog
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
                 LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
                 this.appointments =
                     new Appointments().getAppointmentsFor(day);

@@ -41,7 +41,6 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
         setTitle("Empty slot criteria editor" );
         initComponents();
         this.cmbSelectSlotDuration.setRenderer(new SelectSlotDurationRenderer());
-        this.cmbSelectSlotDuration.setRenderer(new SelectSlotDurationRenderer());
         this.buttonGroup1.add(this.rdbSelectMonths);
         this.buttonGroup1.add(this.rdbSelectWeeks);
         this.rdbSelectWeeks.setSelected(true);

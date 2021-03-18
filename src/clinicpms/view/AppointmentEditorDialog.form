@@ -73,11 +73,11 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="lblDialogForAppointmentDefinitionTitle2" min="-2" pref="53" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="spnStartTime" min="-2" pref="69" max="-2" attributes="0"/>
+                                  <Component id="cmbSelectStartTime" max="32767" attributes="0"/>
                               </Group>
                               <Component id="jPanel3" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -85,7 +85,7 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="lblDialogForAppointmentDefinitionTitle1" min="-2" pref="39" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="21" max="32767" attributes="0"/>
                           <Component id="cmbSelectPatient" min="-2" pref="222" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                       </Group>
@@ -105,14 +105,14 @@
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lblDialogForAppointmentDefinitionTitle2" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="spnStartTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbSelectStartTime" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
                   <Component id="lblDialogForAppointmentDefinitionTitle4" min="-2" pref="20" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="136" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="134" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -128,8 +128,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Start time"/>
           </Properties>
-        </Component>
-        <Component class="javax.swing.JSpinner" name="spnStartTime">
         </Component>
         <Component class="javax.swing.JLabel" name="lblDialogForAppointmentDefinitionTitle4">
           <Properties>
@@ -240,6 +238,17 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;EntityDescriptor.Patient&gt;()"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;EntityDescriptor.Patient&gt;"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbSelectStartTime">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.DefaultComboBoxModel&lt;LocalDateTime&gt;()" type="code"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;LocalDateTime&gt;()"/>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;LocalDateTime&gt;"/>
           </AuxValues>
         </Component>
       </SubComponents>
