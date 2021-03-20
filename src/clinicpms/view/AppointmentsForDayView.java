@@ -75,7 +75,12 @@ public class AppointmentsForDayView extends View{
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
             //initialiseViewFromEDCollection();
-        }   
+            //APPOINTMENT_VIEW_ERROR
+        } 
+        else if (propertyName.equals(ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+            setEntityDescriptor((EntityDescriptor)e.getNewValue());
+            populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+        }
     }
     public void initialiseView(){
         //following action invokes call to controller via DateChange\Listener
@@ -84,6 +89,15 @@ public class AppointmentsForDayView extends View{
             day = day.plusDays(1);
         }
         dayDatePicker.setDate(day);
+        /**
+         * unsure why the following code is necessary to initialise tblAppointments
+         * on entry to the view
+         */
+        getEntityDescriptor().getRequest().setDay(AppointmentsForDayView.this.dayDatePicker.getDate());
+        ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
+                ActionEvent.ACTION_PERFORMED,
+                AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
+        AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
     }
     @Override
     public EntityDescriptor getEntityDescriptor(){
@@ -244,6 +258,7 @@ public class AppointmentsForDayView extends View{
         btnCreateAppointment = new javax.swing.JButton();
         btnUpdateAppointment = new javax.swing.JButton();
         btnCloseView = new javax.swing.JButton();
+        btnCancelSelectedAppointment = new javax.swing.JButton();
         pnlAppointmentScheduleForDay = new javax.swing.JPanel();
         scrAppointmentsForDayTable = new javax.swing.JScrollPane();
         tblAppointments = new javax.swing.JTable();
@@ -332,7 +347,7 @@ public class AppointmentsForDayView extends View{
         pnlControlsLayout.setHorizontalGroup(
             pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlControlsLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(28, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 410, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -368,18 +383,27 @@ public class AppointmentsForDayView extends View{
             }
         });
 
+        btnCancelSelectedAppointment.setText("Cancel selected appointment");
+        btnCancelSelectedAppointment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelSelectedAppointmentActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(27, 27, 27)
+                .addGap(10, 10, 10)
                 .addComponent(btnCreateAppointment, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 91, Short.MAX_VALUE)
+                .addGap(32, 32, 32)
                 .addComponent(btnUpdateAppointment)
-                .addGap(129, 129, 129)
+                .addGap(32, 32, 32)
+                .addComponent(btnCancelSelectedAppointment, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(32, 32, 32)
                 .addComponent(btnCloseView)
-                .addGap(53, 53, 53))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -388,7 +412,8 @@ public class AppointmentsForDayView extends View{
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCreateAppointment)
                     .addComponent(btnUpdateAppointment)
-                    .addComponent(btnCloseView))
+                    .addComponent(btnCloseView)
+                    .addComponent(btnCancelSelectedAppointment))
                 .addContainerGap())
         );
 
@@ -505,8 +530,26 @@ public class AppointmentsForDayView extends View{
         this.getMyController().actionPerformed(actionEvent);
     }//GEN-LAST:event_btnScanForEmptySlotsActionPerformed
 
+    private void btnCancelSelectedAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelSelectedAppointmentActionPerformed
+        int row = this.tblAppointments.getSelectedRow();
+        if (row == -1){
+            JOptionPane.showMessageDialog(this, "An appointment has not been selected for cancellation");
+        }
+        else if (getEntityDescriptor().getAppointments().getData().get(row).getData().IsEmptySlot()){
+            JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
+        }
+        else{
+            initialiseEDSelectionFromView(row);
+            ActionEvent actionEvent = new ActionEvent(this, 
+                    ActionEvent.ACTION_PERFORMED,
+                    AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
+    }//GEN-LAST:event_btnCancelSelectedAppointmentActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCancelSelectedAppointment;
     private javax.swing.JButton btnCloseView;
     private javax.swing.JButton btnCreateAppointment;
     private javax.swing.JButton btnNextPracticeDay;
@@ -567,5 +610,8 @@ public class AppointmentsForDayView extends View{
         TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
         columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+    }
+    public void repaintTable(){
+        this.tblAppointments.repaint();
     }
 }

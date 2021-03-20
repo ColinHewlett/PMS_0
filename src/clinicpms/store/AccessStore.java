@@ -23,10 +23,13 @@ import java.util.Iterator;
  */
 public class AccessStore extends Store {
     public enum AppointmentSQL   {
+                            CREATE_APPOINTMENT,
+                            DELETE_APPOINTMENT_WITH_KEY,
                             READ_APPOINTMENTS_FOR_DAY,
                             READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENTS_FOR_PATIENT,
                             READ_APPOINTMENT_WITH_KEY,
+                            READ_HIGHEST_KEY,
                             UPDATE_APPOINTMENT}
 
     public enum PatientSQL   {CREATE_PATIENT,
@@ -76,7 +79,13 @@ public class AccessStore extends Store {
         return result;
     }
     public Appointment create(Appointment a) throws StoreException{
-        return null;
+        ArrayList<Appointment> value = runSQL(AppointmentSQL.READ_HIGHEST_KEY, 
+                                              new Appointment(), 
+                                              new ArrayList<Appointment>());
+        a.setKey(value.get(0).getKey()+1);
+        value = runSQL(AppointmentSQL.CREATE_APPOINTMENT, a, new ArrayList<Appointment>());
+        value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
+        return read(value.get(0));
     }
     public Patient create(Patient p) throws StoreException{
         ArrayList<Patient> value = runSQL(PatientSQL.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
@@ -86,7 +95,14 @@ public class AccessStore extends Store {
         return value.get(0);
     }
     public void delete(Appointment a) throws StoreException{
-        
+        runSQL(AppointmentSQL.DELETE_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
+        ArrayList value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
+        if (value.size()!=0){
+            String message = 
+                    "Unsuccesful attempt to delete appointment record (key = "
+                    + String.valueOf(a.getKey()) + ")";
+            throw new StoreException(message, ExceptionType.KEY_FOUND_EXCEPTION);
+        }
     }
     public void delete(Patient p) throws StoreException{
         
@@ -152,7 +168,9 @@ public class AccessStore extends Store {
         return updatedPatient;
     }
     public Appointment update(Appointment a) throws StoreException{
-        return null;
+        runSQL(AppointmentSQL.UPDATE_APPOINTMENT, a, new ArrayList<Appointment>());
+        Appointment updatedAppointment = read(a);
+        return updatedAppointment;
     }
     private ArrayList<Patient> getPatientsFromRS(ResultSet rs) throws StoreException{
         ArrayList<Patient> result = new ArrayList<>();
@@ -413,6 +431,15 @@ public class AccessStore extends Store {
         String sql = null;
         sql = 
                 switch (q){
+                    case READ_HIGHEST_KEY ->
+                "SELECT MAX(key) as highest_key "
+                + "FROM Appointment;";
+                    case DELETE_APPOINTMENT_WITH_KEY ->
+                "DELETE FROM Appointment WHERE Key = ?;";
+                    case CREATE_APPOINTMENT ->
+                "INSERT INTO Appointment "
+                + "(PatientKey, Start, Duration, Notes,Key) "
+                + "VALUES (?,?,?,?,?);";
                     case READ_APPOINTMENT_WITH_KEY ->
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes "
                 + "FROM Appointment AS a "
@@ -435,9 +462,64 @@ public class AccessStore extends Store {
                 + "AND  DatePart(\"d\",a.start) = ? "
                 + "ORDER BY a.start ASC;";  
                         
-                    case UPDATE_APPOINTMENT -> "";
+                    case UPDATE_APPOINTMENT -> 
+                "UPDATE Appointment "
+                + "SET PatientKey = ?, "
+                + "Start = ?,"
+                + "Duration = ?,"
+                + "Notes = ?"
+                + "WHERE key = ? ;";
         };
         switch (q){
+            
+            case READ_HIGHEST_KEY -> {
+                Appointment appointment = (Appointment)entity;
+                try{
+                    Integer key = null;
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    ResultSet rs = preparedStatement.executeQuery();
+                    if (rs.next()){
+                        key = (int)rs.getLong("highest_key");
+                    }
+                    appointment.setKey(key);
+                    records.add(appointment);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during a READ_HIGHEST_KEY from Appointment table",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            case DELETE_APPOINTMENT_WITH_KEY -> {
+                Appointment appointment = (Appointment)entity;
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    preparedStatement.setInt(1, appointment.getKey());
+                    preparedStatement.executeUpdate();
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during a DELETE APPOINTMENT WITH KEY from Appointment table",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            case CREATE_APPOINTMENT -> {
+                Appointment appointment = (Appointment)entity;
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    preparedStatement.setInt(1, appointment.getPatient().getKey());
+                    preparedStatement.setTimestamp(2, Timestamp.valueOf(appointment.getStart()));
+                    preparedStatement.setLong(3, appointment.getDuration().toMinutes());
+                    preparedStatement.setString(4, appointment.getNotes());
+                    preparedStatement.setLong(5, appointment.getKey());
+                    preparedStatement.executeUpdate();
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during an CREATE_APPOINTMENT statement",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
             case READ_APPOINTMENT_WITH_KEY -> {
                 Appointment appointment = (Appointment)entity;
                 try{
@@ -494,6 +576,23 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                             + "StoreException message -> exception raised during a READ_APPOINTMENTS_FOR_DAY query",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            case UPDATE_APPOINTMENT -> {
+                Appointment appointment = (Appointment)entity;
+                try{
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    preparedStatement.setInt(1, appointment.getPatient().getKey());
+                    preparedStatement.setTimestamp(2, Timestamp.valueOf(appointment.getStart()));
+                    preparedStatement.setLong(3, appointment.getDuration().toMinutes());
+                    preparedStatement.setString(4, appointment.getNotes());
+                    preparedStatement.setLong(5, appointment.getKey());
+                    preparedStatement.executeUpdate();
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during an UPDATE_APPOINTMENT statement",
                     ExceptionType.SQL_EXCEPTION);
                 }
             }

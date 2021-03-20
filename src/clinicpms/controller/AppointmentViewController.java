@@ -30,10 +30,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -110,25 +112,63 @@ public class AppointmentViewController extends ViewController{
         }
     }
     private void doAppointmentViewDialogActions(ActionEvent e){
-        Appointment result = null;
-        if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
-                APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
-            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-            initialiseNewEntityDescriptor();
-            requestToChangeAppointmentSchedule(ViewMode.CREATE);
-        }
-        else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
-                APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
-            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-            initialiseNewEntityDescriptor();
-            requestToChangeAppointmentSchedule(ViewMode.UPDATE);
-        }
-        else if (e.getActionCommand().equals(
+        if (e.getActionCommand().equals(
                 AppointmentViewDialogActionEvent.APPOINTMENT_VIEW_CLOSE_REQUEST.toString())){
             if (e.getSource() instanceof JFrame){
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                 dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
             }
+        }
+        Appointment result = null;
+        LocalDate day = null;
+        try{
+            if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                    APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
+                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+                day = getEntityDescriptorFromView().getRequest().
+                        getAppointment().getData().getStart().toLocalDate();
+                initialiseNewEntityDescriptor();
+                result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
+            }
+            else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                    APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
+                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+                day = getEntityDescriptorFromView().getRequest().
+                        getAppointment().getData().getStart().toLocalDate();
+                initialiseNewEntityDescriptor();
+                result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
+            }
+            if (result!=null){
+                dialog.setModal(false);
+                serialiseAppointmentToEDAppointment(result);
+                //close dialog
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
+                
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                serialiseAppointmentsToEDCollection(this.appointments);
+                
+                pcSupport.removePropertyChangeListener(this.dialog);
+                pcSupport.addPropertyChangeListener(view);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+
+            }
+            else{
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
         }
     }
     private void doAppointmentsForDayViewActions(ActionEvent e){
@@ -175,7 +215,8 @@ public class AppointmentViewController extends ViewController{
                 pcSupport.firePropertyChange(pcEvent);
             }
             catch (StoreException ex){
-                //UnspecifiedError action
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
@@ -197,7 +238,8 @@ public class AppointmentViewController extends ViewController{
                     
                 }
                 catch (StoreException ex){
-                    //UnspecifiedError action
+                    String message = ex.getMessage();
+                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
                 } 
             }
         }
@@ -214,7 +256,8 @@ public class AppointmentViewController extends ViewController{
 
             }
             catch (StoreException ex){
-                //UnspecifiedError action
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
         }
         
@@ -224,10 +267,12 @@ public class AppointmentViewController extends ViewController{
                         getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
                 try{
                     appointment.delete();
-                    LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-                    this.appointments = new Appointments().getAppointmentsFor(day);
-                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(
-                            this.appointments,day);
+                    LocalDate day = getEntityDescriptorFromView().
+                            getRequest().getAppointment().getData().getStart().toLocalDate();
+                    initialiseNewEntityDescriptor();
+                    this.appointments =
+                        new Appointments().getAppointmentsFor(day);
+                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
                     serialiseAppointmentsToEDCollection(this.appointments);
                     pcEvent = new PropertyChangeEvent(this,
                         AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
@@ -235,7 +280,8 @@ public class AppointmentViewController extends ViewController{
                     pcSupport.firePropertyChange(pcEvent);
                 }
                 catch (StoreException ex){
-                    //UnspecifiedError action
+                    String message = ex.getMessage();
+                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
                 }
             }
         }   
@@ -281,18 +327,7 @@ public class AppointmentViewController extends ViewController{
             }
         }
     }
-    private Appointment doCreateNewAppointment(
-            EntityDescriptor.Appointment appointment)throws StoreException{
-        Appointment result = null;
-        
-        return result;
-    }
-    private Appointment doUpdateAppointment(
-            EntityDescriptor.Appointment appointment)throws StoreException{
-        Appointment result = null;
-        
-        return result;
-    }
+  
     private String getNameOfSlotOwner(Appointment slot){
         String result = null;
         String title = null;
@@ -326,7 +361,7 @@ public class AppointmentViewController extends ViewController{
         return title + " " + forenames + " " + surname;
     }
     private String appointmentCollisionChangingSchedule(
-            EntityDescriptor.Appointment rSlot, 
+            Appointment rSlot, 
             ArrayList<Appointment> appointments, ViewMode mode){
         String result = null;
         Appointment pSlot = null;
@@ -334,14 +369,12 @@ public class AppointmentViewController extends ViewController{
         LocalDateTime pSlotEnd = null;
         LocalDateTime sSlotStart = null;
         LocalDateTime sSlotEnd = null;
-        LocalDateTime rSlotStart = rSlot.getData().getStart();
-        LocalDateTime rSlotEnd = rSlot.getData().getStart().plusMinutes(rSlot.getData().getDuration().toMinutes());
+        LocalDateTime rSlotStart = rSlot.getStart();
+        LocalDateTime rSlotEnd = rSlot.getStart().plusMinutes(rSlot.getDuration().toMinutes());
         Iterator<Appointment> it = appointments.iterator();
         RequestedAppointmentState state = null;
         while(it.hasNext()){
             Appointment sSlot = it.next();
-            pSlotStart = pSlot.getStart();
-            pSlotEnd = pSlot.getStart().plusMinutes(pSlot.getDuration().toMinutes());
             sSlotStart = sSlot.getStart();
             sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
             if (state == null){//first time round
@@ -357,7 +390,7 @@ public class AppointmentViewController extends ViewController{
                 else {//must mean rSlot overlaps sSlot
                     switch (mode){
                         case CREATE ->{
-                            if (rSlot.getData().getKey()!=sSlot.getKey()){
+                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                  state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                  result = 
                                          "The new appointment for " + getNameOfSlotOwner(rSlot)
@@ -367,7 +400,7 @@ public class AppointmentViewController extends ViewController{
                             else{
                                 state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                  result = 
-                                         "The new appointment for " + getNameOfSlotOwner(rSlot) + " "
+                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
                                          + " overwrites an existing appointment for the same patient.\n"
                                          + "Update this appointment instead of creating a new appointment.";
                                  break;
@@ -378,7 +411,7 @@ public class AppointmentViewController extends ViewController{
                              * rSlot overlaps the start time of a scheduled appointment
                              */
                             if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                     /**
                                      * the overlapped appointment is for the same patient, so
                                      * update the scheduled appointment
@@ -400,7 +433,7 @@ public class AppointmentViewController extends ViewController{
                                 }
                             }
                             else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                     /**
                                      * rSlot 'inside' the scheduled appointment for the same patient
                                      * so update the scheduled appointment 
@@ -424,7 +457,7 @@ public class AppointmentViewController extends ViewController{
                             else if(!rSlotStart.isBefore(sSlotStart)&& 
                                     rSlotStart.isBefore(sSlotEnd)&&
                                     rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                     /**
                                      * rSlot starts inside a scheduled appointment for same patient
                                      * and finishes beyond the end of the scheduled appointment;
@@ -446,7 +479,7 @@ public class AppointmentViewController extends ViewController{
                                 }
                             }
                             else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
-                                if (rSlot.getData().getKey() == sSlot.getKey()){
+                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                     /**
                                      * rSlot overlaps both ends of appointment scheduled for same patient
                                      * so initialise state and save copy of the scheduled appointment
@@ -471,6 +504,10 @@ public class AppointmentViewController extends ViewController{
                 }  
             }
             else{//not first time round 
+                if (pSlot!=null){
+                    pSlotStart = pSlot.getStart();
+                    pSlotEnd = pSlot.getStart().plusMinutes(pSlot.getDuration().toMinutes());
+                }
                 switch (state){
                     case AFTER_PREVIOUS_SLOT ->{
                         if(!rSlotStart.isBefore(pSlotEnd)&&!rSlotEnd.isAfter(sSlotStart)){
@@ -495,7 +532,7 @@ public class AppointmentViewController extends ViewController{
                         else {
                             switch (mode){
                                 case CREATE ->{
-                                    if (rSlot.getData().getKey()!=sSlot.getKey()){
+                                    if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                         state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                         result = 
                                                 "The new appointment for " + getNameOfSlotOwner(rSlot)
@@ -516,7 +553,7 @@ public class AppointmentViewController extends ViewController{
                                      * rSlot overlaps the start time of a scheduled appointment
                                      */
                                     if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                             /**
                                              * the overlapped appointment is for the same patient, so
                                              * update the scheduled appointment
@@ -538,7 +575,7 @@ public class AppointmentViewController extends ViewController{
                                         }
                                     }
                                     else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                             /**
                                              * rSlot 'inside' the scheduled appointment for the same patient
                                              * so update the scheduled appointment 
@@ -562,7 +599,7 @@ public class AppointmentViewController extends ViewController{
                                     else if(!rSlotStart.isBefore(sSlotStart)&& 
                                             rSlotStart.isBefore(sSlotEnd)&&
                                             rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                             /**
                                              * rSlot starts inside a scheduled appointment for same patient
                                              * and finishes beyond the end of the scheduled appointment;
@@ -584,7 +621,7 @@ public class AppointmentViewController extends ViewController{
                                         }
                                     }
                                     else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
-                                        if (rSlot.getData().getKey() == sSlot.getKey()){
+                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                             /**
                                              * rSlot overlaps both ends of appointment scheduled for same patient
                                              * so initialise state and save copy of the scheduled appointment
@@ -625,7 +662,7 @@ public class AppointmentViewController extends ViewController{
                             break;
                         }
                         else if(rSlotEnd.isAfter(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                            if (rSlot.getData().getKey()!=sSlot.getKey()){
+                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
                                 /**
                                  * rSlot overwrites scheduled appointment for another patient,
                                  * so abort update  
@@ -650,7 +687,7 @@ public class AppointmentViewController extends ViewController{
                          * requested slot ends beyond scheduled appointment
                          */
                         else if (rSlotEnd.isAfter(sSlotEnd)){
-                            if (rSlot.getData().getKey()!=sSlot.getKey()){ 
+                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){ 
                                 /**
                                  * rSlot overwrites scheduled slot for another patient,
                                  * so abort update
@@ -691,46 +728,51 @@ public class AppointmentViewController extends ViewController{
         }
         return result;   
     }
-    private Appointment addRequestedAppointmentToAppointmentSchedule(ViewMode action)throws StoreException{
-        Appointment result = null;
-        EntityDescriptor.Appointment rSlot = 
-                getEntityDescriptorFromView().getRequest().getAppointment();
-        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        try{
-            ArrayList<Appointment> appointments = new Appointments().getAppointmentsFor(day);
-            if (appointments.size()==0){
-                switch (action){
-                    case CREATE -> {
-                        result = doCreateNewAppointment(rSlot);
-                    }
-                    case UPDATE -> {
-                        result = doUpdateAppointment(rSlot);
-                    }
-                }
+    private Patient deserialisePatientFromEDRequest(){
+        Patient patient = makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient());
+        if (getEntityDescriptorFromView().getRequest().getPatient().getData().getIsGuardianAPatient()){
+            if (getEntityDescriptorFromView().getRequest().getPatientGuardian()!=null){
+                patient.setGuardian(makePatientFrom(
+                        getEntityDescriptorFromView().getRequest().getPatientGuardian()));
             }
-            else{
-                switch (action){
-                    case CREATE -> {
-                        String error = appointmentCollisionChangingSchedule(rSlot, appointments, action);
-                        getNewEntityDescriptor().setError(error);
-                        if (error==null){
-                            //no collision results
-                            result = doCreateNewAppointment(rSlot);
-                        }
-                    }
-                    case UPDATE -> {
-                        String error = appointmentCollisionChangingSchedule(rSlot, appointments, action);
-                        getNewEntityDescriptor().setError(error);
-                        if (error==null){
-                            //no collision results
-                            result = doUpdateAppointment(rSlot);
-                        }
-                    }
+        }
+        return patient;
+    }
+    
+    private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
+        Appointment result = null;
+        Appointment rSlot = makeAppointmentFromEDRequest();
+        LocalDate day = rSlot.getStart().toLocalDate();
+        ArrayList<Appointment> appointments = new Appointments().getAppointmentsFor(day);
+        if (appointments.size()==0){
+            switch (mode){
+                case CREATE -> {
+                    result = rSlot.create();
+                }
+                case UPDATE -> {
+                    result = rSlot.update();
                 }
             }
         }
-        catch (StoreException ex){
-            
+        else{
+            switch (mode){
+                case CREATE -> {
+                    String error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
+                    getNewEntityDescriptor().setError(error);
+                    if (error==null){
+                        //no collision results
+                        result = rSlot.create();
+                    }
+                }
+                case UPDATE -> {
+                    String error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
+                    getNewEntityDescriptor().setError(error);
+                    if (error==null){
+                        //no collision results
+                        result = rSlot.update();
+                    }
+                }
+            }
         }
         return result;
     }
@@ -944,17 +986,17 @@ public class AppointmentViewController extends ViewController{
         }
         return p;
     }
-    private Appointment makeAppointmentFromEDSelection(){
+    private Appointment makeAppointmentFromEDRequest(){
         Appointment appointment;
         if (getEntityDescriptorFromView().getAppointment().getData().getKey()!=null){
             appointment = new Appointment(getEntityDescriptorFromView().getAppointment().getData().getKey());
         }
         else appointment = new Appointment();
         
-        appointment.setDuration(getEntityDescriptorFromView().getAppointment().getData().getDuration());
-        appointment.setStart(getEntityDescriptorFromView().getAppointment().getData().getStart());
-        appointment.setNotes(getEntityDescriptorFromView().getAppointment().getData().getNotes());
-        appointment.setPatient(makePatientFrom(getEntityDescriptorFromView().getPatient()));
+        appointment.setDuration(getEntityDescriptorFromView().getRequest().getAppointment().getData().getDuration());
+        appointment.setStart(getEntityDescriptorFromView().getRequest().getAppointment().getData().getStart());
+        appointment.setNotes(getEntityDescriptorFromView().getRequest().getAppointment().getData().getNotes());
+        appointment.setPatient(makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient()));
         return appointment;
     }
 
@@ -1111,35 +1153,32 @@ public class AppointmentViewController extends ViewController{
         this.view = view;
     }
     
-    private void requestToChangeAppointmentSchedule(ViewMode mode){
+    /*
+    private void requestToChangeAppointmentSchedulex(ViewMode mode) throws StoreException{
         Appointment result = null;
-        try{
-            result = addRequestedAppointmentToAppointmentSchedule(mode);
-            if (result!=null){
-                serialiseAppointmentToEDAppointment(result);
-                //close dialog
-                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
-                LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-                this.appointments =
-                    new Appointments().getAppointmentsFor(day);
-                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                serialiseAppointmentsToEDCollection(this.appointments);
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-            }
-            else{
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-            }
+        result = addRequestedAppointmentToAppointmentSchedule(mode);
+        if (result!=null){
+            serialiseAppointmentToEDAppointment(result);
+            //close dialog
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            this.appointments =
+                new Appointments().getAppointmentsFor(day);
+            this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+            serialiseAppointmentsToEDCollection(this.appointments);
+            pcEvent = new PropertyChangeEvent(this,
+                AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                getOldEntityDescriptor(),getNewEntityDescriptor());
+            pcSupport.firePropertyChange(pcEvent);
         }
-        catch (StoreException ex){
-            //UnspecifiedError action
+        else{
+            pcEvent = new PropertyChangeEvent(this,
+                AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                getOldEntityDescriptor(),getNewEntityDescriptor());
+            pcSupport.firePropertyChange(pcEvent);
         }
     }
+*/
     
 }

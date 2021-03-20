@@ -83,8 +83,11 @@ public class DesktopViewController extends ViewController{
             if (!this.appointmentViewControllers.remove(avc)){
                 String message = "Could not find AppointmentViewController in "
                                         + "DesktopViewController collection.";
+                displayErrorMessage(message,"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(message));
+                */
             }
             else{
                 if (this.isDesktopPendingClosure){
@@ -108,8 +111,11 @@ public class DesktopViewController extends ViewController{
             if (!this.patientViewControllers.remove(pvc)){
                 String message = "Could not find PatientViewController in "
                                         + "DesktopViewController collection.";
+                displayErrorMessage(message,"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(message));
+                */
             }
             else{
                 if (this.isDesktopPendingClosure){
@@ -180,12 +186,18 @@ public class DesktopViewController extends ViewController{
                 avc.getView().setSize(760,550);
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
             catch (PropertyVetoException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         }
         else if (e.getActionCommand().equals(
@@ -205,12 +217,18 @@ public class DesktopViewController extends ViewController{
                 pvc.getView().setSelected(true);
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
             catch (PropertyVetoException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         } 
         /**
@@ -237,8 +255,11 @@ public class DesktopViewController extends ViewController{
                 CSVMigrationManager.action(Store.MigrationMethod.CSV_APPOINTMENT_FILE_CONVERTER);
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         } 
         
@@ -261,8 +282,11 @@ public class DesktopViewController extends ViewController{
                 CSVMigrationManager.action(Store.MigrationMethod.CSV_PATIENT_FILE_CONVERTER);
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         }
         
@@ -286,8 +310,11 @@ public class DesktopViewController extends ViewController{
                 CSVMigrationManager.action(Store.MigrationMethod.CSV_MIGRATION_INTEGRITY_PROCESS);
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         }
         else if(e.getActionCommand().equals(
@@ -297,8 +324,11 @@ public class DesktopViewController extends ViewController{
                 store.tidyPatientImportedDate();
             }
             catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
                 JOptionPane.showMessageDialog(getView(),
                                           new ErrorMessagePanel(ex.getMessage()));
+                */
             }
         }
     }

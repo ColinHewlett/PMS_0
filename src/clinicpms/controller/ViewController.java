@@ -11,6 +11,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import javax.swing.JInternalFrame;
 import java.time.format.DateTimeFormatter;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -124,5 +125,9 @@ public abstract class ViewController implements ActionListener{
         view.setLocation(new Point(
                 (int)(deskTopViewDimension.getWidth() - (myViewDimension.getWidth()))/2,
                 (int)((deskTopViewDimension.getHeight()-insets.top) - myViewDimension.getHeight())/2));
+    }
+    
+    public static void displayErrorMessage(String message, String title, int messageType){
+        JOptionPane.showMessageDialog(null,new ErrorMessagePanel(message),title,messageType);
     }
 }

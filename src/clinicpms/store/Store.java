@@ -37,6 +37,7 @@ public abstract class Store implements IStore {
                                  NULL_KEY_EXPECTED_EXCEPTION,
                                  NULL_KEY_EXCEPTION,
                                  INVALID_KEY_VALUE_EXCEPTION,
+                                 KEY_FOUND_EXCEPTION,
                                  KEY_NOT_FOUND_EXCEPTION,
                                  SQL_EXCEPTION}
     private static Storage storage = null;
