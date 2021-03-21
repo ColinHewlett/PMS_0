@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
@@ -47,9 +48,8 @@ import javax.swing.event.InternalFrameEvent;
 
 public class AppointmentViewController extends ViewController{
 
-    private enum RequestedAppointmentState{ AFTER_PREVIOUS_SLOT,
-                                            OVERLAPS_END_TIME_OF_PREVIOUS_SLOT,
-                                            OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT,
+    private enum RequestedAppointmentState{ STARTS_AFTER_PREVIOUS_SLOT,
+                                            ENDS_AFTER_PREVIOUS_SLOT,
                                             APPOINTMENT_ADDED_TO_SCHEDULE,
                                             ERROR_ADDING_APPOINTMENT_TO_SCHEDULE}
 
@@ -327,6 +327,13 @@ public class AppointmentViewController extends ViewController{
             }
         }
     }
+    
+    private String getNameOfSlotOwnerPlusSlotStart(Appointment slot){
+        String result = getNameOfSlotOwner(slot);
+        LocalTime start = slot.getStart().toLocalTime();
+        result = result + " which starts at " + start.format(DateTimeFormatter.ofPattern("HH:mm"));
+        return result;
+    }
   
     private String getNameOfSlotOwner(Appointment slot){
         String result = null;
@@ -344,385 +351,115 @@ public class AppointmentViewController extends ViewController{
        
         return title + " " + forenames + " " + surname;
     }
-    private String getNameOfSlotOwner(EntityDescriptor.Appointment slot){
-        String result = null;
-        String title = null;
-        String forenames = null;
-        String surname = null;
-        
-        title = slot.getAppointee().getData().getTitle();
-        forenames = slot.getAppointee().getData().getForenames();
-        surname = slot.getAppointee().getData().getSurname();
-        result = slot.getAppointee().getData().getTitle();
-        if (title.strip().length()==0) title = "?";
-        if (forenames.strip().length() == 0) forenames = "<...>";
-        if (surname.strip().length() == 0) surname = "<...>";
-       
-        return title + " " + forenames + " " + surname;
-    }
+    
+    /**
+     * method identifies if requested slot can be added to schedule or not
+     * @param rSlot Appointment, the requested appointment
+     * @param appointments ArrayList of scheduled appointments for the day in question
+     * @param mode ViewMode, determines if request is CREATE a new appointment or UPDATE a scheduled appointment
+     * @return String, contains error message if a collision occurs, else null
+     */
     private String appointmentCollisionChangingSchedule(
             Appointment rSlot, 
             ArrayList<Appointment> appointments, ViewMode mode){
         String result = null;
-        Appointment pSlot = null;
-        LocalDateTime pSlotStart = null;
-        LocalDateTime pSlotEnd = null;
-        LocalDateTime sSlotStart = null;
         LocalDateTime sSlotEnd = null;
-        LocalDateTime rSlotStart = rSlot.getStart();
         LocalDateTime rSlotEnd = rSlot.getStart().plusMinutes(rSlot.getDuration().toMinutes());
         Iterator<Appointment> it = appointments.iterator();
-        RequestedAppointmentState state = null;
+        RequestedAppointmentState state = RequestedAppointmentState.STARTS_AFTER_PREVIOUS_SLOT;
         while(it.hasNext()){
             Appointment sSlot = it.next();
-            sSlotStart = sSlot.getStart();
             sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
-            if (state == null){//first time round
-                if(!rSlotEnd.isAfter(sSlotStart)){//available slot prior to 1st slot in schedule
-                    result = null;
-                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                    break;
-                }
-                else if (!rSlotStart.isBefore(sSlotEnd)){
-                    state = RequestedAppointmentState.AFTER_PREVIOUS_SLOT;
-                    pSlot = sSlot;
-                }
-                else {//must mean rSlot overlaps sSlot
-                    switch (mode){
-                        case CREATE ->{
-                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                 state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                 result = 
-                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                         + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                 break;
-                             }
-                            else{
-                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                 result = 
-                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                         + " overwrites an existing appointment for the same patient.\n"
-                                         + "Update this appointment instead of creating a new appointment.";
-                                 break;
-                            }
-                        }
-                        case UPDATE ->{
-                            /**
-                             * rSlot overlaps the start time of a scheduled appointment
-                             */
-                            if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                    /**
-                                     * the overlapped appointment is for the same patient, so
-                                     * update the scheduled appointment
-                                     */
-                                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                    result = null;
-                                    break;
-                                }
-                                else {
-                                    /**
-                                     * the overlapped appointment is for another appointment
-                                     * so abort the update request
-                                     */
-                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                    result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                    break;
-                                }
-                            }
-                            else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                    /**
-                                     * rSlot 'inside' the scheduled appointment for the same patient
-                                     * so update the scheduled appointment 
-                                     */
-                                    state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                    result = null;
-                                    break;
-                                }
-                                else {
-                                    /**
-                                     * rSlot 'inside' another patient's scheduled appointment
-                                     * so abort the update request
-                                     */
-                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                    result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                    break;  
-                                }
-                            }
-                            else if(!rSlotStart.isBefore(sSlotStart)&& 
-                                    rSlotStart.isBefore(sSlotEnd)&&
-                                    rSlotEnd.isAfter(sSlotEnd)){
-                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                    /**
-                                     * rSlot starts inside a scheduled appointment for same patient
-                                     * and finishes beyond the end of the scheduled appointment;
-                                     * initialise state and save copy of the current scheduled appointment
-                                     */
-                                    state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
-                                    pSlot = sSlot;
-                                }
-                                else{
-                                    /**
-                                     * rSlot overlaps a scheduled appointment for another patient,
-                                     * so abort update request
-                                     */
-                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                    result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                    break;
-                                }
-                            }
-                            else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
-                                if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                    /**
-                                     * rSlot overlaps both ends of appointment scheduled for same patient
-                                     * so initialise state and save copy of the scheduled appointment
-                                     */
-                                    state = RequestedAppointmentState.OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT;
-                                    pSlot = sSlot;
-                                }
-                                else{
-                                    /**
-                                     * rSlot overlaps a scheduled appointment for another patient,
-                                     * so abort update request
-                                     */
-                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                    result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                    break;
-                                }  
-                            }
-                        }
-                    }
-                }  
-            }
-            else{//not first time round 
-                if (pSlot!=null){
-                    pSlotStart = pSlot.getStart();
-                    pSlotEnd = pSlot.getStart().plusMinutes(pSlot.getDuration().toMinutes());
-                }
-                switch (state){
-                    case AFTER_PREVIOUS_SLOT ->{
-                        if(!rSlotStart.isBefore(pSlotEnd)&&!rSlotEnd.isAfter(sSlotStart)){
-                            /**
-                             * requested appointment fits between previous slot and this one
-                             */
-                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                            result = null;
-                            break;
-                        }
-                        else if (!rSlotStart.isBefore(sSlotEnd)){
-                            /**
-                             * rSlot starts beyond scheduled appointment
-                             * so initialise state and save copy of scheduled appointment
-                             */
-                            state = RequestedAppointmentState.AFTER_PREVIOUS_SLOT;
-                            pSlot = sSlot;
-                        }
+            switch (state){
+                case STARTS_AFTER_PREVIOUS_SLOT ->{
+                    if(!rSlotEnd.isAfter(sSlot.getStart())){
                         /**
-                         * rSlot must overlap scheduled appointment
+                         * requested slot is prior to scheduled slot so can add to schedule
                          */
-                        else {
-                            switch (mode){
-                                case CREATE ->{
-                                    if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                        result = 
-                                                "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                                + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                        break;
-                                    }
-                                   else{
-                                       state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                        result = 
-                                                "The new appointment for " + getNameOfSlotOwner(rSlot) + " "
-                                                + " overwrites an existing appointment for the same patient.\n"
-                                                + "Update this appointment instead of creating a new appointment.";
-                                        break;
-                                   }
-                                }
-                                case UPDATE ->{
+                        result = null;
+                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                        break;
+                    }
+                    else if (!rSlot.getStart().isBefore(sSlotEnd)){
+                        /**
+                         * --requested slot starts after end of scheduled slot
+                         * --do nothing, state remains the same
+                         */
+                    }
+                    else {//must mean rSlot overlaps sSlot
+                        switch (mode){
+                            case CREATE ->{
+                                /**
+                                 * --rSlot overlaps scheduled appointment so cannot be created 
+                                 * --abort attempt to create a new appointment and post error
+                                 */
+                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                result = 
+                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                        + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
+                                break;
+                            }
+                            case UPDATE ->{
+                                /**
+                                 * requested slot starts before schedule lot ends
+                                 */
+                                if (!rSlot.getKey().equals(sSlot.getKey())){
                                     /**
-                                     * rSlot overlaps the start time of a scheduled appointment
+                                     * --requested slot and scheduled slot are different appointment records
+                                     * --abort attempt to update requested slot and register error
                                      */
-                                    if (rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                            /**
-                                             * the overlapped appointment is for the same patient, so
-                                             * update the scheduled appointment
-                                             */
-                                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                            result = null;
-                                            break;
-                                        }
-                                        else {
-                                            /**
-                                             * the overlapped appointment is for another appointment
-                                             * so abort the update request
-                                             */
-                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                            result = 
-                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                            break;
-                                        }
-                                    }
-                                    else if (!rSlotStart.isBefore(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                            /**
-                                             * rSlot 'inside' the scheduled appointment for the same patient
-                                             * so update the scheduled appointment 
-                                             */
-                                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                            result = null;
-                                            break;
-                                        }
-                                        else {
-                                            /**
-                                             * rSlot 'inside' another patient's scheduled appointment
-                                             * so abort the update request
-                                             */
-                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                            result = 
-                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                            break;  
-                                        }
-                                    }
-                                    else if(!rSlotStart.isBefore(sSlotStart)&& 
-                                            rSlotStart.isBefore(sSlotEnd)&&
-                                            rSlotEnd.isAfter(sSlotEnd)){
-                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                            /**
-                                             * rSlot starts inside a scheduled appointment for same patient
-                                             * and finishes beyond the end of the scheduled appointment;
-                                             * initialise state and save copy of the current scheduled appointment
-                                             */
-                                            state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
-                                            pSlot = sSlot;
-                                        }
-                                        else{
-                                            /**
-                                             * rSlot overlaps a scheduled appointment for another patient,
-                                             * so abort update request
-                                             */
-                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                            result = 
-                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                            break;
-                                        }
-                                    }
-                                    else if(rSlotStart.isBefore(sSlotStart)&& rSlotEnd.isAfter(sSlotEnd) ){
-                                        if (rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                            /**
-                                             * rSlot overlaps both ends of appointment scheduled for same patient
-                                             * so initialise state and save copy of the scheduled appointment
-                                             */
-                                            state = RequestedAppointmentState.OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT;
-                                            pSlot = sSlot;
-                                        }
-                                        else{
-                                            /**
-                                             * rSlot overlaps a scheduled appointment for another patient,
-                                             * so abort update request
-                                             */
-                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                            result = 
-                                                    "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                                    + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                            break;
-                                        }  
-                                    }
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    result = 
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
+                                    break;
+                                }
+                                else if (rSlotEnd.isAfter(sSlotEnd)){
+                                    /**
+                                     * --requested slot is an updated version of scheduled slot 
+                                     * --starts before the end of the scheduled slot
+                                     * --and ends after end scheduled slot
+                                     * --change state accordingly
+                                     */
+                                    state = RequestedAppointmentState.ENDS_AFTER_PREVIOUS_SLOT;
+                                }
+                                else{
+                                    /**
+                                     * --requested slot is an updated version of scheduled slot
+                                     * --and starts and ends before or by the end of the scheduled slot
+                                     * --permit update
+                                     */
+                                    result = null;
+                                    break;
                                 }
                             }
                         }
                     }
-                    case OVERLAPS_BOTH_TIMES_OF_PREVIOUS_SLOT ->{
-                        
-                    }
+                }
+                case ENDS_AFTER_PREVIOUS_SLOT ->{
                     /**
-                     * the previous slot overlapped must be for the same patient,
-                     * and this must be an update request
+                     * --requested slot is an updated version of the previous slot to scheduled appointment
                      */
-                    case OVERLAPS_END_TIME_OF_PREVIOUS_SLOT -> {
-                        if (!rSlotEnd.isAfter(sSlotStart)){
-                            /**
-                             * rSlot ends before scheduled slot starts
-                             */
-                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                            result = null;
-                            break;
-                        }
-                        else if(rSlotEnd.isAfter(sSlotStart)&&!rSlotEnd.isAfter(sSlotEnd)){
-                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){
-                                /**
-                                 * rSlot overwrites scheduled appointment for another patient,
-                                 * so abort update  
-                                 */
-                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                result = 
-                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                        + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                break;
-                            }
-                            else{
-                                /**
-                                 * rSlot ends 'inside'  scheduled appointment for same patient,
-                                 * so update can proceed
-                                 */
-                                state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                result = null;
-                                break;   
-                            }
-                        }
+                   if (!rSlotEnd.isAfter(sSlot.getStart())){
+                       /**
+                        * --end of requested slot is before the start of the scheduled slot
+                        * --means requested slot update is allowed since it doesn't overlap next scheduled slot
+                        */
+                       result = null;
+                       state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                       break;
+                   }
+                   else{
                         /**
-                         * requested slot ends beyond scheduled appointment
+                         * --requested slot ends after the start of the scheduled slot 
+                         * --but requested slot cannot be an updated version of 2 separate appointment slots
+                         * --abort update process
                          */
-                        else if (rSlotEnd.isAfter(sSlotEnd)){
-                            if (!rSlot.getPatient().getKey().equals(sSlot.getPatient().getKey())){ 
-                                /**
-                                 * rSlot overwrites scheduled slot for another patient,
-                                 * so abort update
-                                 */
-                                result = 
-                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                        + "overwrites existing appointment for " + getNameOfSlotOwner(sSlot);
-                                break;
-                                
-                            }
-                            else {
-                                /**
-                                 * rSlot goes beyond the end of the scheduled appointment for same 
-                                 * patient, so in initialise state and save copy of 
-                                 * scheduled appointment
-                                 */
-                                state = RequestedAppointmentState.OVERLAPS_END_TIME_OF_PREVIOUS_SLOT;
-                                pSlot = sSlot;
-                            }
-                        }   
-                    }
-                }
-            }
-        }
-                    
-        switch (state){
-            case ERROR_ADDING_APPOINTMENT_TO_SCHEDULE -> {
-                //do nothing
-            }
-            case APPOINTMENT_ADDED_TO_SCHEDULE -> {
-                //do nothing
-            }
-            case AFTER_PREVIOUS_SLOT -> {
-                if (!rSlotStart.isBefore(pSlotEnd)){
-                    result = null;
+                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                        result = 
+                                "Attempt to overwrite two separate appointments disallowed";
+                        break;
+                   }
                 }
             }
         }

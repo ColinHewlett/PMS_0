@@ -109,7 +109,6 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
         }
         else this.cmbSelectStartTime.setSelectedIndex(0);
         //else this.cmbSelectStartTime.setSelectedIndex(0);
-        UIManager.put("ComboBox.background", new ColorUIResource(Color.magenta));
         this.setTitle("Appointment editor for " + day.format(appointmentScheduleFormat));
     }
     private void populateSelectStartTime(LocalDate day){

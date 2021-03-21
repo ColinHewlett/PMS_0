@@ -366,9 +366,10 @@ public class DesktopViewController extends ViewController{
                     break;
                 }
             }
-            
+            /*
             javax.swing.UIManager.getDefaults().put("TableHeader.cellBorder",new LineBorder(Color.RED,2));
             border = javax.swing.UIManager.getBorder("TableHeader.cellBorder");
+            */
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(DesktopView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {

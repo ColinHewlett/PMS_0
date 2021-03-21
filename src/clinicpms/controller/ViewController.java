@@ -117,6 +117,7 @@ public abstract class ViewController implements ActionListener{
     public DateTimeFormatter dmyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");
     public DateTimeFormatter recallFormat = DateTimeFormatter.ofPattern("MMMM/yyyy");
+    public DateTimeFormatter startTime24Hour = DateTimeFormatter.ofPattern("HH:mm");
     
     protected void centreViewOnDesktop(Frame desktopView, JInternalFrame view){
         Insets insets = desktopView.getInsets();
