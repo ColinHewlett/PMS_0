@@ -82,6 +82,7 @@ public class AccessStore extends Store {
     public Appointment create(Appointment a) throws StoreException{
         ArrayList<Appointment> value = null;
         Appointment appointment = null;
+        Patient patient = null;
         message = "";
         try{//turn off jdbc driver's auto commit after each SQL statement
             getConnection().setAutoCommit(false);
@@ -99,6 +100,9 @@ public class AccessStore extends Store {
                 }
                 else {
                     appointment = value.get(0);
+                    patient = new Patient(appointment.getPatient().getKey());
+                    patient = create(patient);
+                    appointment.setPatient(patient);
                     getConnection().commit();
                 }
             }
