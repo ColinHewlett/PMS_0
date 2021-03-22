@@ -78,21 +78,137 @@ public class AccessStore extends Store {
         
         return result;
     }
+    @Override
     public Appointment create(Appointment a) throws StoreException{
-        ArrayList<Appointment> value = runSQL(AppointmentSQL.READ_HIGHEST_KEY, 
-                                              new Appointment(), 
-                                              new ArrayList<Appointment>());
-        a.setKey(value.get(0).getKey()+1);
-        value = runSQL(AppointmentSQL.CREATE_APPOINTMENT, a, new ArrayList<Appointment>());
-        value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
-        return read(value.get(0));
+        ArrayList<Appointment> value = null;
+        Appointment appointment = null;
+        Patient patient = null;
+        message = "";
+        try{//turn off jdbc driver's auto commit after each SQL statement
+            getConnection().setAutoCommit(false);
+            value = runSQL(AppointmentSQL.READ_HIGHEST_KEY, 
+                    new Appointment(), new ArrayList<Appointment>());
+            a.setKey(value.get(0).getKey()+1);
+            runSQL(AppointmentSQL.CREATE_APPOINTMENT, a, new ArrayList<Appointment>());
+            value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
+            try{
+                if (value.isEmpty()){
+                    message = "StoreException raised in method AccessStore::create(Appointment a)\n"
+                                    + "Reason -> newly created appointment record could not be found";
+                    getConnection().rollback();
+                    throw new StoreException(message,ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+                else {
+                    appointment = value.get(0);
+                    patient = new Patient(appointment.getPatient().getKey());
+                    patient = create(patient);
+                    appointment.setPatient(patient);
+                    getConnection().commit();
+                }
+            }
+            catch (SQLException ex){
+                message = message + "SQLException message -> " + ex.getMessage() +"\n";
+                try{
+                    connection.setAutoCommit(true);
+                }
+                catch(SQLException exe){
+                    message = message + "SQLException message -> " + ex.getMessage() +"\n"; 
+                }
+                finally{
+                    throw new StoreException(
+                        message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                                + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                        ExceptionType.SQL_EXCEPTION);
+                }
+            }
+        }
+        catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                getConnection().setAutoCommit(false);
+                return appointment;
+            }
+            catch (SQLException ex){
+                 message = "SQLException message -> " + ex.getMessage() +"\n";
+                 throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+            }
+        }
     }
+    @Override
+    /**
+     * --adding transaction statements explicitly to SQL used requires catching the SQLException potentially thrown
+     * --note: the jdbc driver uses transactions anyway, and auto commits after every SQL statement it executes
+     * --strategy of Store modules is that generated SQLExceptions are wrapped as StoreExceptions
+     * --the explicit transaction potentially generates additional SQLExceptions in the current method
+     * --so nested try-catch blocks are used to wrap the additional exceptions as StoreExceptions if generated
+     */
     public Patient create(Patient p) throws StoreException{
-        ArrayList<Patient> value = runSQL(PatientSQL.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
-        p.setKey(value.get(0).getKey()+1);
-        value = runSQL(PatientSQL.CREATE_PATIENT, p, new ArrayList<Patient>());
-        value = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, p, new ArrayList<Patient>());
-        return value.get(0);
+        ArrayList<Patient> value = null;
+        Patient patient = null;
+        message = "";
+        try{//turn off jdbc driver's auto commit after each SQL statement
+            getConnection().setAutoCommit(false); 
+            value = runSQL(PatientSQL.READ_HIGHEST_KEY,new Patient(), new ArrayList<Patient>());
+            p.setKey(value.get(0).getKey()+1);
+            runSQL(PatientSQL.CREATE_PATIENT, p, new ArrayList<>());
+            value = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, p, new ArrayList<Patient>());
+            try{
+                if (value.isEmpty()){
+                    message = "StoreException raised in method AccessStore::create(Patient p)\n"
+                                    + "Reason -> newly created patient record could not be found";
+                    getConnection().rollback();
+                    throw new StoreException(message,ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+                else {
+                    patient = value.get(0);
+                    getConnection().commit();
+                }
+            }
+            catch (SQLException ex){
+                message = message + "SQLException message -> " + ex.getMessage() +"\n";
+                try{
+                    connection.setAutoCommit(true);
+                }
+                catch(SQLException exe){
+                    message = message + "SQLException message -> " + ex.getMessage() +"\n"; 
+                }
+                finally{
+                    throw new StoreException(
+                        message + "StoreException raised in method AccessStore::create(Patient p)\n"
+                                + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                        ExceptionType.SQL_EXCEPTION);
+                }
+            } 
+        }
+        catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Patient p)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                getConnection().setAutoCommit(false);
+                return patient;
+            }
+            catch (SQLException ex){
+                 message = "SQLException message -> " + ex.getMessage() +"\n";
+                 throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Patient p)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+            }
+        }
     }
     public void delete(Appointment a) throws StoreException{
         runSQL(AppointmentSQL.DELETE_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());

@@ -725,7 +725,7 @@ public class AppointmentViewController extends ViewController{
     }
     private Appointment makeAppointmentFromEDRequest(){
         Appointment appointment;
-        if (getEntityDescriptorFromView().getAppointment().getData().getKey()!=null){
+        if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
             appointment = new Appointment(getEntityDescriptorFromView().getAppointment().getData().getKey());
         }
         else appointment = new Appointment();
