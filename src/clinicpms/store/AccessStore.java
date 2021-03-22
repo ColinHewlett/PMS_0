@@ -78,14 +78,66 @@ public class AccessStore extends Store {
         
         return result;
     }
+    @Override
     public Appointment create(Appointment a) throws StoreException{
-        ArrayList<Appointment> value = runSQL(AppointmentSQL.READ_HIGHEST_KEY, 
-                                              new Appointment(), 
-                                              new ArrayList<Appointment>());
-        a.setKey(value.get(0).getKey()+1);
-        value = runSQL(AppointmentSQL.CREATE_APPOINTMENT, a, new ArrayList<Appointment>());
-        value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
-        return read(value.get(0));
+        ArrayList<Appointment> value = null;
+        Appointment appointment = null;
+        message = "";
+        try{//turn off jdbc driver's auto commit after each SQL statement
+            getConnection().setAutoCommit(false);
+            value = runSQL(AppointmentSQL.READ_HIGHEST_KEY, 
+                    new Appointment(), new ArrayList<Appointment>());
+            a.setKey(value.get(0).getKey()+1);
+            runSQL(AppointmentSQL.CREATE_APPOINTMENT, a, new ArrayList<Appointment>());
+            value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a, new ArrayList<Appointment>());
+            try{
+                if (value.isEmpty()){
+                    message = "StoreException raised in method AccessStore::create(Appointment a)\n"
+                                    + "Reason -> newly created appointment record could not be found";
+                    getConnection().rollback();
+                    throw new StoreException(message,ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+                else {
+                    appointment = value.get(0);
+                    getConnection().commit();
+                }
+            }
+            catch (SQLException ex){
+                message = message + "SQLException message -> " + ex.getMessage() +"\n";
+                try{
+                    connection.setAutoCommit(true);
+                }
+                catch(SQLException exe){
+                    message = message + "SQLException message -> " + ex.getMessage() +"\n"; 
+                }
+                finally{
+                    throw new StoreException(
+                        message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                                + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                        ExceptionType.SQL_EXCEPTION);
+                }
+            }
+        }
+        catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                getConnection().setAutoCommit(false);
+                return appointment;
+            }
+            catch (SQLException ex){
+                 message = "SQLException message -> " + ex.getMessage() +"\n";
+                 throw new StoreException(
+                    message + "StoreException raised in method AccessStore::create(Appointment a)\n"
+                            + "Reason -> unexpected effect getConnection().setAutoCommit(false) executed",
+                    ExceptionType.SQL_EXCEPTION);
+            }
+        }
     }
     @Override
     /**
