@@ -147,7 +147,7 @@ public class DesktopViewController extends ViewController{
             if (!appointmentViewControllers.isEmpty()||!patientViewControllers.isEmpty()){
                 message = "At least one patient or appointment view is active. Close application anyway?";
             }
-            else {message = "Close application?";}
+            else {message = "Close The Clinic PMS?";}
             int close = JOptionPane.showOptionDialog(getView(),
                             message,null,
                             JOptionPane.YES_NO_OPTION,
@@ -215,6 +215,7 @@ public class DesktopViewController extends ViewController{
                 pvc.getView().setIconifiable(true);
                 pvc.getView().setResizable(false);
                 pvc.getView().setSelected(true);
+                pvc.getView().setSize(525,585);
             }
             catch (StoreException ex){
                 displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);

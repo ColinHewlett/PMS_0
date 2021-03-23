@@ -29,6 +29,7 @@ public class AppointmentsTablePatientRenderer  extends JLabel implements TableCe
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
         boolean hasFocus, int row, int column)
     {
+        
         EntityDescriptor.Patient patient = (EntityDescriptor.Patient)value;
         if (patient == null) {
             super.setText("NOT BOOKED");
@@ -40,6 +41,7 @@ public class AppointmentsTablePatientRenderer  extends JLabel implements TableCe
             super.setText(patient.toString());
             super.setHorizontalAlignment(JLabel.LEFT);
         }
+        
         if (isSelected) {
             setBackground(table.getSelectionBackground());
             setForeground(table.getSelectionForeground());

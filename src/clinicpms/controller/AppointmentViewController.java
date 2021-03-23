@@ -543,10 +543,20 @@ public class AppointmentViewController extends ViewController{
         //appointmentsForSingleDay.clear();
         
         /**
-         * -- current day initialised to start day of search
-         * -- for each day group of appts
-         * ----while current day before date of day group of appts and practice day 
-         * ------ create another day group containing single all day slot and add these to search result
+         * -- current search date initialised to start day of search
+         * -- for each collection of appointments for a given day (appointmentsForSingleDay)
+         * ----- if current search date is prior to this appointmentsForSingleDay and search date is a practice day
+         * ------- create an empty slot for this day and add to collection of empty slots (search result)
+         * ------- increment current search date
+         * ----- else 
+         * ------- get slots for this day (empty and non empty) 
+         * ------- iterate through these 
+         * ---------- for empty slots that >= specified duration and add to result of scan
+         * ------- increment current search date
+         * -- 
+         * ------ and current day is a practice day 
+         * ------ create a new appointmentsForSingleDay with single empty slot for whole day and add to result (collection of empty slots)
+         * ------ increment current day
          * ----process this day group of appts (adding any unbooked slots) adding to search result if duration permits
          */
         currentDate = searchStartDay;
@@ -578,9 +588,12 @@ public class AppointmentViewController extends ViewController{
             currentDate = currentDate.plusDays(1);
         } 
         /**
-         * check and process days which have no appointments on, as follows
-         * -- consecutive appointment-less days are merged into a single slot 
-         * -- the single slot duration represents in hours the number of consecutive days
+         * if scan duration == all day (8 hours)
+         * 
+         * else
+         * -- check and process days which have no appointments on, as follows
+         *   -- consecutive appointment-less days are merged into a single slot 
+         *   -- the single slot duration represents in hours the number of consecutive days
          */
         
         boolean multiDayIntervalHasStarted = false;
