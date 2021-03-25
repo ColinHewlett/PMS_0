@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -599,31 +600,138 @@ public class AppointmentViewController extends ViewController{
         boolean multiDayIntervalHasStarted = false;
         Appointment multiDayIntervalWithNoAppointments = null;
         ArrayList<Appointment> finalisedResult = new ArrayList<>();
+        LocalDate thisDate = result.get(0).getStart().toLocalDate();
         it = result.iterator();
-        while(it.hasNext()){
-            Appointment appointment = it.next();
-
-            if (appointment.getDuration().toHours() == 8){
-                if (!multiDayIntervalHasStarted) {
+        int count = 0;
+        if (duration.toHours()==8){//empty slot scan duration is all day
+            while (it.hasNext()){
+                count = count + 1;
+                if (count == 23){
+                    count = 19;                    
+                }
+                Appointment appointment = it.next();
+                if (finalisedResult.isEmpty()&&multiDayIntervalWithNoAppointments==null){//start of procedure on entry
                     multiDayIntervalHasStarted = true;
                     multiDayIntervalWithNoAppointments = new Appointment();
                     multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                    multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(8));
+                    multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
                     multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                 }
                 else{
-                    duration = multiDayIntervalWithNoAppointments.getDuration();
-                    multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
-                } 
+                    long intervalHours = multiDayIntervalWithNoAppointments.getDuration().toHours();
+                    long intervalDays = intervalHours/8;
+                    LocalDate intervalEndDate = getPracticeDayOnWhichSlotEnds(multiDayIntervalWithNoAppointments);
+
+                    LocalDate appointmentDate = appointment.getStart().toLocalDate();
+                    if (areTheseSlotsOnConsecutivePracticeDays(multiDayIntervalWithNoAppointments,appointment)){
+                        //while (!intervalEndDate.isEqual(appointmentDate)){
+                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                            //intervalEndDate = intervalEndDate.plusDays(1);
+                        //}
+                    }
+                    else{
+                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                        finalisedResult.add(multiDayIntervalWithNoAppointments);
+                        multiDayIntervalWithNoAppointments = new Appointment();
+                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
+                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                    }
+                }
             }
-            else if (multiDayIntervalHasStarted){
-                finalisedResult.add(multiDayIntervalWithNoAppointments);
-                multiDayIntervalHasStarted = false;
-                finalisedResult.add(appointment);
-            }
-            else finalisedResult.add(appointment);  
+            finalisedResult.add(multiDayIntervalWithNoAppointments);
         }
+        else{// this is not a scan of all day slots
+            while(it.hasNext()){
+                Appointment appointment = it.next();
+                if (appointment.getStart().toLocalDate().isAfter(LocalDate.of(2021,6, 28))){
+                    LocalDate test = appointment.getStart().toLocalDate();
+                }
+                if (appointment.getDuration().toHours() == 8){
+                    /**
+                     * -- 10/6 continues unabated set to all day empty slots til 29/6
+                     * -- then next entry is 6/7 
+                     * -- in between 1/7 and 2/7 exist which escape current min duration (7 hours)
+                     * -- Solution -> detect if next appointment falls on a consecutive practice day
+                     * ---- yes: increment duration of currently processed slot
+                     * ---- no: complete process of currently slot 
+                     */
+                    //WHAT HAPPENS WHEN APPOINTMENT CHANGES MULTIDAYINTERVALHASSTARTED SLOT
+                    if (!multiDayIntervalHasStarted) {
+                        multiDayIntervalHasStarted = true;
+                        multiDayIntervalWithNoAppointments = new Appointment();
+                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(8));
+                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                    }
+                    else{
+                        duration = multiDayIntervalWithNoAppointments.getDuration();
+                        multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
+                    } 
+                }
+                else if (multiDayIntervalHasStarted){
+                    finalisedResult.add(multiDayIntervalWithNoAppointments);
+                    multiDayIntervalHasStarted = false;
+                    finalisedResult.add(appointment);
+                }
+                else finalisedResult.add(appointment);  
+            } 
+        }
+        
         return finalisedResult;
+    }
+    private LocalDate getPracticeDayOnWhichSlotEnds(Appointment slot){
+        
+        long intervalHours = slot.getDuration().toHours();
+        long intervalDays = intervalHours/8;
+        int dayCount = 0;
+        LocalDate currentDate = slot.getStart().toLocalDate();
+        for (int index = 0; index < intervalDays ; index ++){
+            do{
+                currentDate = currentDate.plusDays(1);
+            }
+            while(!isValidDay(currentDate));
+        }
+        return currentDate;
+    }
+    private boolean isValidDay(LocalDate day){
+        return(day.getDayOfWeek().equals(DayOfWeek.TUESDAY) 
+                            || day.getDayOfWeek().equals(DayOfWeek.THURSDAY)
+                            || day.getDayOfWeek().equals(DayOfWeek.FRIDAY));
+    }
+    private boolean areTheseSlotsOnConsecutivePracticeDays(Appointment slot1, Appointment slot2){
+        boolean result = false;
+        LocalDate d1 = getPracticeDayOnWhichSlotEnds(slot1);
+        LocalDate d2 = slot2.getStart().toLocalDate();
+        LocalDate nextPracticeDay = d1;
+        do{
+            nextPracticeDay = nextPracticeDay.plusDays(1);
+            
+        }while (nextPracticeDay.getDayOfWeek()==DayOfWeek.SATURDAY||
+                nextPracticeDay.getDayOfWeek()==DayOfWeek.SUNDAY||
+                nextPracticeDay.getDayOfWeek()==DayOfWeek.MONDAY||
+                nextPracticeDay.getDayOfWeek()==DayOfWeek.WEDNESDAY);
+        if (nextPracticeDay.isEqual(d2)){
+            result = true;
+        }
+        return result;
+    }
+    private boolean areTheseDatesConsecutivePracticeDays(LocalDate d1, LocalDate d2){
+        boolean result = false;
+        LocalDate nextDay = d1;
+        do{
+            nextDay = nextDay.plusDays(1);
+            
+        }while (nextDay.getDayOfWeek()==DayOfWeek.SATURDAY||
+                nextDay.getDayOfWeek()==DayOfWeek.SUNDAY||
+                nextDay.getDayOfWeek()==DayOfWeek.MONDAY||
+                nextDay.getDayOfWeek()==DayOfWeek.WEDNESDAY);
+        if (nextDay.isEqual(d2)){
+            result = true;
+        }
+        return result;
     }
     private ArrayList<Appointment> getAppointmentsForSelectedDayIncludingEmptySlots(
             ArrayList<Appointment> appointments, LocalDate day) {
