@@ -540,6 +540,7 @@ public class AppointmentViewController extends ViewController{
                 appointmentsForSingleDay.add(appointment);
             }
         }
+        appointmentsGroupedByDay.add(appointmentsForSingleDay);
         Iterator<ArrayList<Appointment>> it1 = appointmentsGroupedByDay.iterator();
         //appointmentsForSingleDay.clear();
         
@@ -603,6 +604,7 @@ public class AppointmentViewController extends ViewController{
         LocalDate thisDate = result.get(0).getStart().toLocalDate();
         it = result.iterator();
         int count = 0;
+        
         if (duration.toHours()==8){//empty slot scan duration is all day
             while (it.hasNext()){
                 count = count + 1;
@@ -618,10 +620,6 @@ public class AppointmentViewController extends ViewController{
                     multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                 }
                 else{
-                    long intervalHours = multiDayIntervalWithNoAppointments.getDuration().toHours();
-                    long intervalDays = intervalHours/8;
-                    LocalDate intervalEndDate = getPracticeDayOnWhichSlotEnds(multiDayIntervalWithNoAppointments);
-
                     LocalDate appointmentDate = appointment.getStart().toLocalDate();
                     if (areTheseSlotsOnConsecutivePracticeDays(multiDayIntervalWithNoAppointments,appointment)){
                         //while (!intervalEndDate.isEqual(appointmentDate)){
@@ -641,43 +639,54 @@ public class AppointmentViewController extends ViewController{
                     }
                 }
             }
+            Duration d = multiDayIntervalWithNoAppointments.getDuration();
+            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
             finalisedResult.add(multiDayIntervalWithNoAppointments);
         }
         else{// this is not a scan of all day slots
             while(it.hasNext()){
                 Appointment appointment = it.next();
-                if (appointment.getStart().toLocalDate().isAfter(LocalDate.of(2021,6, 28))){
+                if (appointment.getStart().toLocalDate().isEqual(LocalDate.of(2021,7, 16))){
                     LocalDate test = appointment.getStart().toLocalDate();
                 }
                 if (appointment.getDuration().toHours() == 8){
-                    /**
-                     * -- 10/6 continues unabated set to all day empty slots til 29/6
-                     * -- then next entry is 6/7 
-                     * -- in between 1/7 and 2/7 exist which escape current min duration (7 hours)
-                     * -- Solution -> detect if next appointment falls on a consecutive practice day
-                     * ---- yes: increment duration of currently processed slot
-                     * ---- no: complete process of currently slot 
-                     */
                     //WHAT HAPPENS WHEN APPOINTMENT CHANGES MULTIDAYINTERVALHASSTARTED SLOT
                     if (!multiDayIntervalHasStarted) {
                         multiDayIntervalHasStarted = true;
                         multiDayIntervalWithNoAppointments = new Appointment();
                         multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(8));
+                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
                         multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                     }
-                    else{
+                    else if (areTheseSlotsOnConsecutivePracticeDays(
+                            multiDayIntervalWithNoAppointments,appointment)){
                         duration = multiDayIntervalWithNoAppointments.getDuration();
                         multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
-                    } 
+                    }
+                    else{
+                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                        finalisedResult.add(multiDayIntervalWithNoAppointments);
+                        multiDayIntervalWithNoAppointments = new Appointment();
+                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
+                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                    }
                 }
                 else if (multiDayIntervalHasStarted){
+                    Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                    multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
                     finalisedResult.add(multiDayIntervalWithNoAppointments);
                     multiDayIntervalHasStarted = false;
                     finalisedResult.add(appointment);
                 }
                 else finalisedResult.add(appointment);  
             } 
+            if (multiDayIntervalHasStarted){
+                Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                finalisedResult.add(multiDayIntervalWithNoAppointments);
+            }
         }
         
         return finalisedResult;
