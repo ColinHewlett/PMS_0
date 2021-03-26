@@ -177,12 +177,14 @@ public class AppointmentsForDayView extends View{
         columnModel.getColumn(2).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         columnModel.getColumn(3).setPreferredWidth(105);
         columnModel.getColumn(3).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        columnModel.getColumn(4).setPreferredWidth(300);
+        columnModel.getColumn(4).setMinWidth(300);
         columnModel.getColumn(4).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         JTableHeader tableHeader = this.tblAppointments.getTableHeader();
         tableHeader.setBackground(new Color(220,220,220));
         tableHeader.setOpaque(true);
         this.tblAppointments.setRowSelectionAllowed(true);
+        
+        this.tblAppointments.repaint();
         //this.tblAppointments.setRowSelectionInterval(0, 4);
         /*
         DefaultTableCellRenderer renderer = 
