@@ -116,7 +116,7 @@ public class PatientView extends View{
         this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
         populatePatientSelector(this.cmbSelectPatient); 
         populatePatientSelector(this.cmbSelectGuardian);
-        this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed(e));
+        this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
         DatePickerSettings settings = new DatePickerSettings();
         dobDatePicker.addDateChangeListener((new PatientView.DOBDatePickerDateChangeListener()));
         recallDatePicker.addDateChangeListener(new PatientView.RecallDatePickerDateChangeListener());
@@ -1531,6 +1531,17 @@ public class PatientView extends View{
                 PatientView.this.cmbIsGuardianAPatient.setEnabled(false);
                 PatientView.this.cmbSelectGuardian.setEnabled(false);
             }         
+        }
+    }
+    
+    private void cmbSelectPatientActionPerformed(){
+        if (this.cmbSelectPatient.getSelectedItem()!=null){
+            EntityDescriptor.Patient patient = (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();
+            getEntityDescriptor().getRequest().setPatient(patient);
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
         }
     }
 
