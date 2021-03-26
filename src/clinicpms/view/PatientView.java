@@ -61,8 +61,12 @@ import javax.swing.JTextField;
  * received EntityDescriptor.Collection.Patients
  * @author colin
  */
-public class PatientView extends View
-                                    {
+
+/**
+ *
+ * @author colin
+ */
+public class PatientView extends View{
     private enum BorderTitles { Appointment_history,
                                 Contact_details,
                                 Guardian_details,
@@ -101,6 +105,10 @@ public class PatientView extends View
      * @param myController ActionListener
      * @param ed EntityDescriptor
      */
+
+    /**
+     * Creates new form NewJInternalFrame
+     */
     public PatientView(ActionListener myController, EntityDescriptor ed) {
         setMyController(myController);
         setEntityDescriptor(ed);
@@ -108,10 +116,10 @@ public class PatientView extends View
         this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
         populatePatientSelector(this.cmbSelectPatient); 
         populatePatientSelector(this.cmbSelectGuardian);
-        this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
+        this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed(e));
         DatePickerSettings settings = new DatePickerSettings();
-        dobDatePicker.addDateChangeListener((new DOBDatePickerDateChangeListener()));
-        recallDatePicker.addDateChangeListener(new RecallDatePickerDateChangeListener());
+        dobDatePicker.addDateChangeListener((new PatientView.DOBDatePickerDateChangeListener()));
+        recallDatePicker.addDateChangeListener(new PatientView.RecallDatePickerDateChangeListener());
     }
     
     public void initialiseView(){
@@ -161,10 +169,10 @@ public class PatientView extends View
         selector.setSelectedIndex(-1);
     }
     
-    private ViewMode getViewMode(){
+    private PatientView.ViewMode getViewMode(){
         return viewMode;
     }
-    private void setViewMode(ViewMode value){
+    private void setViewMode(PatientView.ViewMode value){
         viewMode = value;
         this.btnCreateUpdatePatient.setText(value.toString().replace('_',' '));
     }
@@ -196,7 +204,7 @@ public class PatientView extends View
                 PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
-            setViewMode(ViewMode.Update_patient_details);
+            setViewMode(PatientView.ViewMode.Update_patient_details);
             initialisePatientViewComponentFromED(); 
             String frameTitle = getEntityDescriptor().getPatient().toString();
             this.setTitle(frameTitle);
@@ -205,7 +213,7 @@ public class PatientView extends View
                 PatientViewControllerPropertyEvent.NULL_PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
-            setViewMode(ViewMode.Create_new_patient);
+            setViewMode(PatientView.ViewMode.Create_new_patient);
             initialisePatientViewComponentFromED();
             this.setTitle("Patient view");
             
@@ -406,9 +414,9 @@ public class PatientView extends View
         EntityDescriptor ed = getEntityDescriptor();
         
         this.cmbIsGuardianAPatient.setEnabled(true);
-        boolean test = this.cmbIsGuardianAPatient.getSelectedItem().equals(YesNoItem.Yes);
-        if (this.cmbIsGuardianAPatient.getSelectedItem().equals(YesNoItem.Yes)){
-            this.cmbIsGuardianAPatient.setSelectedItem(YesNoItem.Yes);
+        boolean test = this.cmbIsGuardianAPatient.getSelectedItem().equals(PatientView.YesNoItem.Yes);
+        if (this.cmbIsGuardianAPatient.getSelectedItem().equals(PatientView.YesNoItem.Yes)){
+            this.cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.Yes);
             this.cmbSelectGuardian.setEnabled(true);
             if (this.cmbSelectGuardian.getSelectedIndex()==-1){
                 if (getEntityDescriptor().getPatientGuardian()!=null){
@@ -417,7 +425,7 @@ public class PatientView extends View
             }
         }
         else{//under 18 patient does not have a guardian who is also a patient
-            this.cmbIsGuardianAPatient.setSelectedItem(YesNoItem.No);
+            this.cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.No);
             this.cmbSelectGuardian.setEnabled(false);
         }
     }
@@ -491,7 +499,7 @@ public class PatientView extends View
      * The method initialises the patient view's appointment history view 
      * component from the EntityDescriptor.Patient object
      */
-    private void initialisePatientAppointmentHistoryViewFromED(Category category){
+    private void initialisePatientAppointmentHistoryViewFromED(PatientView.Category category){
         ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
         String headerTitle = switch (category){
             case DENTAL-> {appointments = 
@@ -509,7 +517,7 @@ public class PatientView extends View
         return Period.between(dob, LocalDate.now()).getYears();
     }
     private void clearViewForCreateNewPatient(){
-        setViewMode(ViewMode.Create_new_patient);
+        setViewMode(PatientView.ViewMode.Create_new_patient);
         this.cmbSelectPatient.setSelectedIndex(-1);
         populateAppointmentsHistoryTable(new ArrayList<EntityDescriptor.Appointment>(), "" );
         this.setTitle(null);
@@ -563,7 +571,7 @@ public class PatientView extends View
         if(getEntityDescriptor().getPatientGuardian()!=null)
                 this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
         else this.cmbSelectGuardian.setSelectedIndex(-1);
-        initialisePatientAppointmentHistoryViewFromED(Category.DENTAL);
+        initialisePatientAppointmentHistoryViewFromED(PatientView.Category.DENTAL);
     }
     private void initialiseEntityFromView(){
         getEntityDescriptor().getRequest().getPatient().getData().setCounty((getCounty()));
@@ -609,17 +617,17 @@ public class PatientView extends View
     
     private String getPatientTitle(){
         String value = "";
-        if(TitleItem.Dr.ordinal()==this.cmbTitle.getSelectedIndex()){
-            value = TitleItem.Dr.toString();
+        if(PatientView.TitleItem.Dr.ordinal()==this.cmbTitle.getSelectedIndex()){
+            value = PatientView.TitleItem.Dr.toString();
         }
-        else if(TitleItem.Mr.ordinal()==this.cmbTitle.getSelectedIndex()){
-            value = TitleItem.Mr.toString();
+        else if(PatientView.TitleItem.Mr.ordinal()==this.cmbTitle.getSelectedIndex()){
+            value = PatientView.TitleItem.Mr.toString();
         }
-        else if(TitleItem.Mrs.ordinal()==this.cmbTitle.getSelectedIndex()){
-            value = TitleItem.Mrs.toString();
+        else if(PatientView.TitleItem.Mrs.ordinal()==this.cmbTitle.getSelectedIndex()){
+            value = PatientView.TitleItem.Mrs.toString();
         }
-        else if(TitleItem.Ms.ordinal()==this.cmbTitle.getSelectedIndex()){
-            value = TitleItem.Ms.toString();
+        else if(PatientView.TitleItem.Ms.ordinal()==this.cmbTitle.getSelectedIndex()){
+            value = PatientView.TitleItem.Ms.toString();
         }
  
         return value;
@@ -630,7 +638,7 @@ public class PatientView extends View
         }
         else{
             Integer index = null;
-            for(TitleItem ti: TitleItem.values()){
+            for(PatientView.TitleItem ti: PatientView.TitleItem.values()){
                 if (ti.toString().equals(title)){
                     index = ti.ordinal();
                     break;
@@ -703,7 +711,7 @@ public class PatientView extends View
         if (gender == null) cmbGender.setSelectedIndex(-1);
         else{
             Integer index = null;
-            for (GenderItem gi: GenderItem.values()){
+            for (PatientView.GenderItem gi: PatientView.GenderItem.values()){
                 if (gi.toString().equals(gender)){
                     index = gi.ordinal();
                     break;
@@ -742,20 +750,20 @@ public class PatientView extends View
     }
     private boolean getIsGuardianAPatient(){
         boolean value = false;
-        if(YesNoItem.Yes.ordinal()==this.cmbIsGuardianAPatient.getSelectedIndex()){
+        if(PatientView.YesNoItem.Yes.ordinal()==this.cmbIsGuardianAPatient.getSelectedIndex()){
             value = true;
         }
-        else if(YesNoItem.No.ordinal()==this.cmbIsGuardianAPatient.getSelectedIndex()){
+        else if(PatientView.YesNoItem.No.ordinal()==this.cmbIsGuardianAPatient.getSelectedIndex()){
             value = false;
         }
         return value;
     }
     private void setIsGuardianAPatient(boolean isGuardianAPatient){
         if (isGuardianAPatient){
-            cmbIsGuardianAPatient.setSelectedItem(YesNoItem.Yes);
+            cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.Yes);
         }
         else{
-            cmbIsGuardianAPatient.setSelectedItem(YesNoItem.No);
+            cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.No);
         }
     }
     private EntityDescriptor.Patient getGuardian(){
@@ -806,7 +814,7 @@ public class PatientView extends View
         if (value == null) txtPhone2.setText("");
         else txtPhone2.setText(value);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -816,9 +824,9 @@ public class PatientView extends View
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel8 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        cmbSelectPatient = new javax.swing.JComboBox<EntityDescriptor.Patient>();
+        btnClearPatientSelection = new javax.swing.JButton();
         pnlContactDetails = new javax.swing.JPanel();
         lblSurname = new javax.swing.JLabel();
         txtSurname = new javax.swing.JTextField();
@@ -849,12 +857,6 @@ public class PatientView extends View
         dobDatePicker.setSettings(settings);
         ;
         lblAge = new javax.swing.JLabel();
-        pnlAppointmentHistory = new javax.swing.JPanel();
-        scrAppointmentHistory = new javax.swing.JScrollPane();
-        tblAppointmentHistory = new javax.swing.JTable();
-        jPanel3 = new javax.swing.JPanel();
-        cmbSelectPatient = new javax.swing.JComboBox<EntityDescriptor.Patient>();
-        btnClearPatientSelection = new javax.swing.JButton();
         pnlGuardianDetails = new javax.swing.JPanel();
         cmbSelectGuardian = new javax.swing.JComboBox<EntityDescriptor.Patient>();
         lblGuardianPatientName = new javax.swing.JLabel();
@@ -878,37 +880,50 @@ public class PatientView extends View
         jPanel6 = new javax.swing.JPanel();
         scpPatientNotes = new javax.swing.JScrollPane();
         txaPatientNotes = new javax.swing.JTextArea();
+        pnlAppointmentHistory = new javax.swing.JPanel();
+        scrAppointmentHistory = new javax.swing.JScrollPane();
+        tblAppointmentHistory = new javax.swing.JTable();
         jPanel5 = new javax.swing.JPanel();
         btnCreateUpdatePatient = new javax.swing.JButton();
         btnCloseView = new javax.swing.JButton();
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        jLabel1.setText("jLabel1");
+        cmbSelectPatient.setEditable(false);
+        cmbSelectPatient.setModel(new DefaultComboBoxModel<EntityDescriptor.Patient>());
+        cmbSelectPatient.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSelectPatientActionPerformed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 15, Short.MAX_VALUE)
-        );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 101, Short.MAX_VALUE)
-        );
+        btnClearPatientSelection.setText("Clear patient selection");
+        btnClearPatientSelection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearPatientSelectionActionPerformed(evt);
+            }
+        });
 
-        setTitle("Patient view");
-        setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Patient guardian details"));
-        setOpaque(true);
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(86, 86, 86)
+                .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnClearPatientSelection, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(55, 55, 55))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnClearPatientSelection)
+                    .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
 
         pnlContactDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Contact Details", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
         pnlContactDetails.setMaximumSize(new java.awt.Dimension(275, 307));
@@ -1082,66 +1097,6 @@ public class PatientView extends View
                 .addContainerGap())
         );
 
-        pnlAppointmentHistory.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Appointment history (latest apppointment top of list)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
-
-        scrAppointmentHistory.setRowHeaderView(null);
-        scrAppointmentHistory.setViewportView(tblAppointmentHistory);
-
-        javax.swing.GroupLayout pnlAppointmentHistoryLayout = new javax.swing.GroupLayout(pnlAppointmentHistory);
-        pnlAppointmentHistory.setLayout(pnlAppointmentHistoryLayout);
-        pnlAppointmentHistoryLayout.setHorizontalGroup(
-            pnlAppointmentHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlAppointmentHistoryLayout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addComponent(scrAppointmentHistory)
-                .addContainerGap())
-        );
-        pnlAppointmentHistoryLayout.setVerticalGroup(
-            pnlAppointmentHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppointmentHistoryLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(scrAppointmentHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
-
-        cmbSelectPatient.setEditable(false);
-        cmbSelectPatient.setModel(new DefaultComboBoxModel<EntityDescriptor.Patient>());
-        cmbSelectPatient.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbSelectPatientActionPerformed(evt);
-            }
-        });
-
-        btnClearPatientSelection.setText("Clear patient selection");
-        btnClearPatientSelection.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearPatientSelectionActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(86, 86, 86)
-                .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnClearPatientSelection, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(55, 55, 55))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnClearPatientSelection)
-                    .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
         pnlGuardianDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Guardian details (patient < 18)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         cmbSelectGuardian.setEditable(false);
@@ -1264,8 +1219,8 @@ public class PatientView extends View
         javax.swing.GroupLayout pnlRecallDetailsLayout = new javax.swing.GroupLayout(pnlRecallDetails);
         pnlRecallDetails.setLayout(pnlRecallDetailsLayout);
         pnlRecallDetailsLayout.setHorizontalGroup(
-            pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnlRecallDetailsLayout.createSequentialGroup()
+            pnlRecallDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlRecallDetailsLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20)
@@ -1305,6 +1260,28 @@ public class PatientView extends View
                 .addGap(10, 10, 10)
                 .addComponent(scpPatientNotes, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
                 .addGap(10, 10, 10))
+        );
+
+        pnlAppointmentHistory.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Appointment history (latest apppointment top of list)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        scrAppointmentHistory.setRowHeaderView(null);
+        scrAppointmentHistory.setViewportView(tblAppointmentHistory);
+
+        javax.swing.GroupLayout pnlAppointmentHistoryLayout = new javax.swing.GroupLayout(pnlAppointmentHistory);
+        pnlAppointmentHistory.setLayout(pnlAppointmentHistoryLayout);
+        pnlAppointmentHistoryLayout.setHorizontalGroup(
+            pnlAppointmentHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlAppointmentHistoryLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(scrAppointmentHistory)
+                .addContainerGap())
+        );
+        pnlAppointmentHistoryLayout.setVerticalGroup(
+            pnlAppointmentHistoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppointmentHistoryLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(scrAppointmentHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         btnCreateUpdatePatient.setText("Update patient ");
@@ -1385,60 +1362,34 @@ public class PatientView extends View
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnCreateUpdatePatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdatePatientActionPerformed
-        // TODO add your handling code here:
-        initialiseEntityFromView();
-        switch (getViewMode()){
-            case Create_new_patient ->{
-                ActionEvent actionEvent = new ActionEvent(
-                this,ActionEvent.ACTION_PERFORMED,
-                PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
-                this.getMyController().actionPerformed(actionEvent);
-            }
-            case Update_patient_details ->{
-                ActionEvent actionEvent = new ActionEvent(
-                this,ActionEvent.ACTION_PERFORMED,
-                PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
-                this.getMyController().actionPerformed(actionEvent);
-            }
-        }
-    }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
-
-    private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
-        String[] options = {"Yes", "No"};
-        int close = JOptionPane.showOptionDialog(this,
-                        "Any changes to patient record will be lost. Cancel anyway?",null,
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        options,
-                        null);
-        if (close == JOptionPane.YES_OPTION){
-            try{
-                /**
-                 * setClosed will fire INTERNAL_FRAME_CLOSED event for the 
-                 * listener to send ActionEvent to the view controller
-                 */
-                this.setClosed(true);
-            }
-            catch (PropertyVetoException e){
-                //UnspecifiedError action
-            }
-        }
-        
-    }//GEN-LAST:event_btnCloseViewActionPerformed
-
     private void cmbSelectPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSelectPatientActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbSelectPatientActionPerformed
+
+    private void btnClearPatientSelectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearPatientSelectionActionPerformed
+        initialiseView();
+
+    }//GEN-LAST:event_btnClearPatientSelectionActionPerformed
+
+    private void txtForenamesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtForenamesActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtForenamesActionPerformed
+
+    private void cmbTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTitleActionPerformed
+        if (this.cmbTitle.getSelectedItem() != null){
+            if (this.cmbTitle.getSelectedItem().equals(TitleItem.Untitled)){
+                this.cmbTitle.setSelectedIndex(-1);
+            }
+        }
+    }//GEN-LAST:event_cmbTitleActionPerformed
 
     private void txtAddressLine1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAddressLine1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtAddressLine1ActionPerformed
 
-    private void txtForenamesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtForenamesActionPerformed
+    private void cmbSelectGuardianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSelectGuardianActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtForenamesActionPerformed
+    }//GEN-LAST:event_cmbSelectGuardianActionPerformed
 
     private void cmbIsGuardianAPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbIsGuardianAPatientActionPerformed
         if (this.cmbIsGuardianAPatient.getSelectedItem()!=null){
@@ -1449,33 +1400,48 @@ public class PatientView extends View
         }
     }//GEN-LAST:event_cmbIsGuardianAPatientActionPerformed
 
-    private void cmbTitleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTitleActionPerformed
-        if (this.cmbTitle.getSelectedItem() != null){
-            if (this.cmbTitle.getSelectedItem().equals(TitleItem.Untitled)){
-                this.cmbTitle.setSelectedIndex(-1);
+    private void btnCreateUpdatePatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdatePatientActionPerformed
+        // TODO add your handling code here:
+        initialiseEntityFromView();
+        switch (getViewMode()){
+            case Create_new_patient ->{
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
+                this.getMyController().actionPerformed(actionEvent);
+            }
+            case Update_patient_details ->{
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
+                this.getMyController().actionPerformed(actionEvent);
             }
         }
-    }//GEN-LAST:event_cmbTitleActionPerformed
+    }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
 
-    private void cmbSelectGuardianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSelectGuardianActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmbSelectGuardianActionPerformed
-
-    private void btnClearPatientSelectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearPatientSelectionActionPerformed
-       initialiseView();
-       
-    }//GEN-LAST:event_btnClearPatientSelectionActionPerformed
-
-    private void cmbSelectPatientActionPerformed(){
-        if (this.cmbSelectPatient.getSelectedItem()!=null){
-            EntityDescriptor.Patient patient = (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();
-            getEntityDescriptor().getRequest().setPatient(patient);
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
-            this.getMyController().actionPerformed(actionEvent);
+    private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
+        String[] options = {"Yes", "No"};
+        int close = JOptionPane.showOptionDialog(this,
+            "Any changes to patient record will be lost. Cancel anyway?",null,
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            options,
+            null);
+        if (close == JOptionPane.YES_OPTION){
+            try{
+                /**
+                * setClosed will fire INTERNAL_FRAME_CLOSED event for the
+                * listener to send ActionEvent to the view controller
+                */
+                this.setClosed(true);
+            }
+            catch (PropertyVetoException e){
+                //UnspecifiedError action
+            }
         }
-    }
+
+    }//GEN-LAST:event_btnCloseViewActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1488,15 +1454,12 @@ public class PatientView extends View
     private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectPatient;
     private javax.swing.JComboBox<TitleItem> cmbTitle;
     private com.github.lgooddatepicker.components.DatePicker dobDatePicker;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel8;
     private javax.swing.JLabel jblCounty;
     private javax.swing.JLabel jblForenames;
     private javax.swing.JLabel jblPhone2;
