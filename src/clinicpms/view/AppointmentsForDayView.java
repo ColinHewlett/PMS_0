@@ -582,25 +582,6 @@ public class AppointmentsForDayView extends View{
             AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
         }
     }
-    /*
-    private void doSearchEmptySlot(){
-        LocalDate searchStartDate = dayDatePicker.getDate();
-        Duration searchDuration = (Duration)cmbSelectSlotDuration.getSelectedItem();
-        if (!searchDuration.isZero()){
-            if(this.rdbSelectWeeks.isSelected()){
-                searchStartDate = searchStartDate.plusWeeks((Integer)this.spnSlotSearchOffset.getValue());
-            }
-            else searchStartDate = searchStartDate.plusMonths((Integer)this.spnSlotSearchOffset.getValue());
-            
-            getEntityDescriptor().getRequest().setDay(searchStartDate);
-            getEntityDescriptor().getRequest().setDuration(searchDuration);
-            ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
-                ActionEvent.ACTION_PERFORMED,
-                AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString());
-            AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
-        }  
-    }
-    */
     private void populateEmptySlotAvailabilityTable(EntityDescriptor.Appointments a){
         EmptySlotAvailability2ColumnTableModel.emptySlots = a.getData();
         this.tblEmptySlotAvailability.setModel(new EmptySlotAvailability2ColumnTableModel());

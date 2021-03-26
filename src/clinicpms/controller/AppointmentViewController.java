@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package clinicpms.controller;
+
 import clinicpms.constants.ClinicPMS;
 import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
@@ -45,8 +46,6 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author colin
  */
-
-
 public class AppointmentViewController extends ViewController{
 
     private enum RequestedAppointmentState{ STARTS_AFTER_PREVIOUS_SLOT,
@@ -1018,34 +1017,5 @@ public class AppointmentViewController extends ViewController{
     }
     private void setView(AppointmentsForDayView view ){
         this.view = view;
-    }
-    
-    /*
-    private void requestToChangeAppointmentSchedulex(ViewMode mode) throws StoreException{
-        Appointment result = null;
-        result = addRequestedAppointmentToAppointmentSchedule(mode);
-        if (result!=null){
-            serialiseAppointmentToEDAppointment(result);
-            //close dialog
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
-            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-            this.appointments =
-                new Appointments().getAppointmentsFor(day);
-            this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-            serialiseAppointmentsToEDCollection(this.appointments);
-            pcEvent = new PropertyChangeEvent(this,
-                AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupport.firePropertyChange(pcEvent);
-        }
-        else{
-            pcEvent = new PropertyChangeEvent(this,
-                AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
-                getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupport.firePropertyChange(pcEvent);
-        }
-    }
-*/
-    
+    }  
 }
