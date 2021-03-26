@@ -51,6 +51,15 @@
   </Layout>
   <SubComponents>
     <Container class="javax.swing.JDesktopPane" name="deskTop">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="66" green="0" red="33" type="rgb"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JDesktopPane(){&#xa;    //@Override&#xa;    public void paintComponent(Graphics g){&#xa;        //super.paintComponent(grphcs);&#xa;        g.drawImage(img, 0,0,getWidth(), getHeight(),this);&#xa;    }&#xa;&#xa;}"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="ImageIcon icon = new ImageIcon(this.getClass().getResource(&quot;/images/img4.jpg&quot;));&#xa;Image img = icon.getImage();"/>
+      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">

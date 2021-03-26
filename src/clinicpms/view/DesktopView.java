@@ -8,9 +8,15 @@ package clinicpms.view;
 import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.controller.DesktopViewController;
 import java.awt.event.ActionEvent;
+import java.awt.Image;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
+import java.io.File;
 import javax.swing.event.InternalFrameAdapter;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
@@ -29,7 +35,8 @@ public class DesktopView extends javax.swing.JFrame{
     private JMenuItem mniAppointmentView = null;
     private JMenuItem mniExitView = null;
     private WindowAdapter windowAdapter = null;  
-    private InternalFrameAdapter internalFrameAdapter = null;
+    private Image img = null;
+    
 
     private void initFrameClosure() {
         this.windowAdapter = new WindowAdapter() {
@@ -61,6 +68,13 @@ public class DesktopView extends javax.swing.JFrame{
      */
     public DesktopView(DesktopViewController controller) { 
         this.controller = controller;
+        /**
+         * initialise desk top background with an image
+         */
+       // File file = new File("c:/Windows/Web/Wallpaper/Windows 10/img4.jpg");
+        //ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/img4.jpg"));
+        //Image img = icon.getImage();
+        
         initComponents();
         /**
          * initialise frame closure actions
@@ -146,13 +160,24 @@ public class DesktopView extends javax.swing.JFrame{
     private void initComponents() {
 
         jMenuItem1 = new javax.swing.JMenuItem();
-        deskTop = new javax.swing.JDesktopPane();
+        ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/img4.jpg"));
+        Image img = icon.getImage();
+        deskTop = new javax.swing.JDesktopPane(){
+            //@Override
+            public void paintComponent(Graphics g){
+                //super.paintComponent(grphcs);
+                g.drawImage(img, 0,0,getWidth(), getHeight(),this);
+            }
+
+        };
         mnbDesktop = new javax.swing.JMenuBar();
         mnuView = new javax.swing.JMenu();
 
         jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        deskTop.setBackground(new java.awt.Color(51, 0, 102));
 
         javax.swing.GroupLayout deskTopLayout = new javax.swing.GroupLayout(deskTop);
         deskTop.setLayout(deskTopLayout);

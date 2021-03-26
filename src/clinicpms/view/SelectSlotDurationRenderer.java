@@ -23,7 +23,7 @@ public class SelectSlotDurationRenderer extends JLabel implements ListCellRender
                                                    boolean isSelected,
                                                    boolean cellHasFocus) {
         
-        if ((value).isZero())super.setText("empty slot scan disabled");
+        if ((value).isZero())super.setText("duration undefined");
         else super.setText(renderDuration((Duration)value));
         return this; 
     }
