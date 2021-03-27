@@ -54,8 +54,8 @@ public abstract class ViewController implements ActionListener{
     public enum DesktopViewControllerActionEvent {
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
                                             VIEW_CLOSED_NOTIFICATION,//raised by internal frame views
-                                            DESKTOP_VIEW_APPOINTMENTS_REQUEST,
-                                            DESKTOP_VIEW_PATIENTS_REQUEST,
+                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST,
+                                            PATIENT_VIEW_CONTROLLER_REQUEST,
                                             MIGRATE_APPOINTMENT_DBF_TO_CSV,
                                             MIGRATE_PATIENT_DBF_TO_CSV,
                                             MIGRATE_INTEGRITY_CHECK,
@@ -103,7 +103,8 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_VIEW_CREATE_REQUEST,
                                             PATIENT_VIEW_UPDATE_REQUEST,
                                             PATIENT_GUARDIAN_REQUEST,
-                                            PATIENT_GUARDIANS_REQUEST
+                                            PATIENT_GUARDIANS_REQUEST,
+                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST
                                             }
     public static enum PatientViewControllerPropertyEvent {
                                             NULL_PATIENT_RECEIVED,
@@ -131,4 +132,6 @@ public abstract class ViewController implements ActionListener{
     public static void displayErrorMessage(String message, String title, int messageType){
         JOptionPane.showMessageDialog(null,new ErrorMessagePanel(message),title,messageType);
     }
+    
+    public abstract EntityDescriptor getEntityDescriptorFromView();
 }

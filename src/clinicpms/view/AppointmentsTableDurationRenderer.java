@@ -39,6 +39,7 @@ public class AppointmentsTableDurationRenderer extends JLabel implements TableCe
             setBackground(table.getBackground());
             setForeground(table.getForeground());
         }
+        
         setOpaque(true);
         return this;
     }

@@ -6,20 +6,18 @@
 package clinicpms.view;
 
 import java.awt.Component;
-import java.awt.Font;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
+import java.time.Duration;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
+
 /**
  *
  * @author colin
  */
-public class AppointmentsTableLocalDateTimeRenderer extends JLabel implements TableCellRenderer{
-    private DateTimeFormatter ddMMyyhhmm12Format = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm ");
+public class AppointmentsHistoryTableStringRenderer extends JLabel implements TableCellRenderer{
     
-    public AppointmentsTableLocalDateTimeRenderer()
+    public AppointmentsHistoryTableStringRenderer()
     {
         //Font f = super.getFont();
         // bold
@@ -28,11 +26,9 @@ public class AppointmentsTableLocalDateTimeRenderer extends JLabel implements Ta
     
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-        boolean hasFocus, int row, int column)
-    {
-        if (value != null){
-            LocalDateTime startTime = (LocalDateTime)value;
-            super.setText(startTime.format(ddMMyyhhmm12Format));
+        boolean hasFocus, int row, int column){
+        if (value!=null){
+            super.setText((String)value);
         }
         else super.setText("");
         
@@ -47,4 +43,5 @@ public class AppointmentsTableLocalDateTimeRenderer extends JLabel implements Ta
         setOpaque(true);
         return this;
     }
+    
 }

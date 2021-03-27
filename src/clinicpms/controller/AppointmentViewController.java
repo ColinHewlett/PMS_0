@@ -35,12 +35,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
+import java.util.Optional;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -74,18 +76,36 @@ public class AppointmentViewController extends ViewController{
      * @param owner JFrame the owning frame the view controller needs to reference 
      * if managing a customised JDialog view
      */
-    public AppointmentViewController(ActionListener controller, JFrame desktopView)throws StoreException{
+    public AppointmentViewController(ActionListener controller, JFrame desktopView, Optional<EntityDescriptor> ed)throws StoreException{
         setMyController(controller);
         this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
-        setNewEntityDescriptor(new EntityDescriptor());
-        getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
-        setEntityDescriptorFromView(getNewEntityDescriptor());
+        //setNewEntityDescriptor(new EntityDescriptor());
+        //getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
+        EntityDescriptor e = ed.orElse(new EntityDescriptor());
+        setNewEntityDescriptor(e);
         //centre appointments view relative to desktop;
         this.view = new AppointmentsForDayView(this, getNewEntityDescriptor());
         super.centreViewOnDesktop(desktopView, view);
         this.view.addInternalFrameClosingListener(); 
         this.view.initialiseView();
+        this.day = getNewEntityDescriptor().getRequest().getDay();
+        /**
+         * following code done in ignorance
+         * but suspicion that threads had something to do with issue
+         * Issue -> first try to initialise JInternalframe title never worked
+         */
+        /*
+        SwingUtilities.invokeLater(new Runnable() 
+        {
+          public void run()
+          {
+            AppointmentViewController.this.view.setTitle(
+                    AppointmentViewController.this.day.format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+          }
+        });
+        */
+        
         
     }
     @Override
@@ -878,7 +898,7 @@ public class AppointmentViewController extends ViewController{
     private void setOldEntityDescriptor(EntityDescriptor e){
         this.oldEntityDescriptor = e;
     }
-    private EntityDescriptor getEntityDescriptorFromView(){
+    public EntityDescriptor getEntityDescriptorFromView(){
         return this.entityDescriptorFromView;
     }
     private void setEntityDescriptorFromView(EntityDescriptor e){

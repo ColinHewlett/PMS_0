@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package clinicpms.view;
+import clinicpms.controller.AppointmentViewController;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.controller.ViewController.AppointmentViewControllerActionEvent;
@@ -41,6 +42,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 
 
 
@@ -70,6 +72,10 @@ public class AppointmentsForDayView extends View{
         if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromEDCollection();
+            /*
+            
+            */
+            
         }
         else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
@@ -84,7 +90,7 @@ public class AppointmentsForDayView extends View{
     }
     public void initialiseView(){
         //following action invokes call to controller via DateChange\Listener
-        LocalDate day = LocalDate.now(); 
+        LocalDate day = getEntityDescriptor().getRequest().getDay(); 
         while (!new AppointmentDateVetoPolicy().isDateAllowed(day)){
             day = day.plusDays(1);
         }
@@ -92,12 +98,13 @@ public class AppointmentsForDayView extends View{
         /**
          * unsure why the following code is necessary to initialise tblAppointments
          * on entry to the view
-         */
+         
         getEntityDescriptor().getRequest().setDay(AppointmentsForDayView.this.dayDatePicker.getDate());
         ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
                 ActionEvent.ACTION_PERFORMED,
                 AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
-        AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
+        AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);  
+        */ 
     }
     @Override
     public EntityDescriptor getEntityDescriptor(){
@@ -349,7 +356,7 @@ public class AppointmentsForDayView extends View{
         pnlControlsLayout.setHorizontalGroup(
             pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlControlsLayout.createSequentialGroup()
-                .addContainerGap(28, Short.MAX_VALUE)
+                .addContainerGap(30, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 410, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -432,8 +439,8 @@ public class AppointmentsForDayView extends View{
             pnlAppointmentScheduleForDayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlAppointmentScheduleForDayLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(scrAppointmentsForDayTable)
-                .addContainerGap())
+                .addComponent(scrAppointmentsForDayTable, javax.swing.GroupLayout.PREFERRED_SIZE, 690, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlAppointmentScheduleForDayLayout.setVerticalGroup(
             pnlAppointmentScheduleForDayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -580,6 +587,14 @@ public class AppointmentsForDayView extends View{
                     ActionEvent.ACTION_PERFORMED,
                     AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
             AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
+            SwingUtilities.invokeLater(new Runnable() 
+            {
+              public void run()
+              {
+                AppointmentsForDayView.this.setTitle(
+                        AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+              }
+            });
         }
     }
     private void populateEmptySlotAvailabilityTable(EntityDescriptor.Appointments a){

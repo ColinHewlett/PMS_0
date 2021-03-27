@@ -244,7 +244,7 @@ public class DesktopView extends javax.swing.JFrame{
     private void mniAppointmentViewActionPerformed() {                                        
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.DESKTOP_VIEW_APPOINTMENTS_REQUEST.toString());
+                DesktopViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
         String s;
         s = actionEvent.getSource().getClass().getSimpleName();
         this.getController().actionPerformed(actionEvent);
@@ -253,7 +253,7 @@ public class DesktopView extends javax.swing.JFrame{
     private void mniPatientViewActionPerformed() {                                                      
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.DESKTOP_VIEW_PATIENTS_REQUEST.toString());
+                DesktopViewControllerActionEvent.PATIENT_VIEW_CONTROLLER_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
 

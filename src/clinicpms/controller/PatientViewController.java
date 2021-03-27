@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -230,7 +231,7 @@ public class PatientViewController extends ViewController {
     private void setNewEntityDescriptor(EntityDescriptor e){
         this.newEntityDescriptor = e;
     }
-    private EntityDescriptor getEntityDescriptorFromView(){
+    public EntityDescriptor getEntityDescriptorFromView(){
         return this.entityDescriptorFromView;
     }
     private void setEntityDescriptorFromView(EntityDescriptor e){
@@ -267,6 +268,14 @@ public class PatientViewController extends ViewController {
         Patient patient = null;
         setEntityDescriptorFromView(view.getEntityDescriptor());
         if (e.getActionCommand().equals(
+                    PatientViewControllerActionEvent.
+                            APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                getMyController().actionPerformed(actionEvent);
+        }
+        else if (e.getActionCommand().equals(
                     PatientViewControllerActionEvent.
                             PATIENT_VIEW_CLOSED.toString())){
                 ActionEvent actionEvent = new ActionEvent(
