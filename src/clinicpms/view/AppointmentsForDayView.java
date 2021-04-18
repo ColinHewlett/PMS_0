@@ -21,6 +21,7 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.JOptionPane;
@@ -80,6 +81,7 @@ public class AppointmentsForDayView extends View{
         else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+            refreshAppointmentTableWithCurrentlySelectedDate();
             //initialiseViewFromEDCollection();
             //APPOINTMENT_VIEW_ERROR
         } 
@@ -156,6 +158,20 @@ public class AppointmentsForDayView extends View{
             }
         });
     }
+    private void refreshAppointmentTableWithCurrentlySelectedDate(){
+        ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
+                ActionEvent.ACTION_PERFORMED,
+                AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
+        AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
+        SwingUtilities.invokeLater(new Runnable() 
+        {
+          public void run()
+          {
+            AppointmentsForDayView.this.setTitle(
+                    AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+          }
+        });
+    }
     private void doEmptySlotAvailabilityTableRowSelection(int row){
         String appointmentDate = (String)this.tblEmptySlotAvailability.getModel().getValueAt(row, 0);
         LocalDate start = LocalDateTime.parse(appointmentDate, emptySlotStartFormat).toLocalDate();
@@ -191,7 +207,7 @@ public class AppointmentsForDayView extends View{
         tableHeader.setOpaque(true);
         this.tblAppointments.setRowSelectionAllowed(true);
         
-        this.tblAppointments.repaint();
+        //this.tblAppointments.repaint();
         //this.tblAppointments.setRowSelectionInterval(0, 4);
         /*
         DefaultTableCellRenderer renderer = 
@@ -597,7 +613,37 @@ public class AppointmentsForDayView extends View{
             });
         }
     }
+    
     private void populateEmptySlotAvailabilityTable(EntityDescriptor.Appointments a){
+        EmptySlotAvailability2ColumnTableModel model;
+        if (this.tblEmptySlotAvailability!=null){
+            jScrollPane1.remove(this.tblEmptySlotAvailability);   
+        }
+        this.tblEmptySlotAvailability = new JTable(new EmptySlotAvailability2ColumnTableModel());
+        jScrollPane1.setViewportView(this.tblEmptySlotAvailability);
+        setEmptySlotAvailabilityTableListener();
+        model = (EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel();
+        model.removeAllElements();
+//model.fireTableDataChanged();
+        Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        while (it.hasNext()){
+            ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).addElement(it.next());
+        }
+        //model.fireTableDataChanged();
+        JTableHeader tableHeader = this.tblEmptySlotAvailability.getTableHeader();
+        tableHeader.setBackground(new Color(220,220,220));
+        //tableHeader.setBackground(new Color(0,0,0));
+        tableHeader.setOpaque(true);
+        
+        TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
+        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+        //this.tblEmptySlotAvailability.repaint();
+    }
+    private void populateEmptySlotAvailabilityTablex(EntityDescriptor.Appointments a){
+        
+        EmptySlotAvailability2ColumnTableModel.emptySlots = a.getData();
+        //this.tblEmptySlotAvailability = new JTable(new EmptySlotAvailability2ColumnTableModel() );
         EmptySlotAvailability2ColumnTableModel.emptySlots = a.getData();
         this.tblEmptySlotAvailability.setModel(new EmptySlotAvailability2ColumnTableModel());
         
@@ -608,8 +654,14 @@ public class AppointmentsForDayView extends View{
         TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
         columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+/*
+        if (a.getData().isEmpty()){
+            EmptySlotAvailability2ColumnTableModel model = (EmptySlotAvailability2ColumnTableModel)tblEmptySlotAvailability.getModel(); 
+            int count = model.getRowCount();
+            ((DefaultTableModel)tblEmptySlotAvailability.getModel()).setRowCount(0);
+        }
+*/
+        //this.tblEmptySlotAvailability.repaint();
     }
-    public void repaintTable(){
-        this.tblAppointments.repaint();
-    }
+
 }

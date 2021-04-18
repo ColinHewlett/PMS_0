@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * A custom model for display of empty slot availability is required to handle the 
@@ -21,13 +22,14 @@ import javax.swing.table.DefaultTableModel;
  * for custom renderers.
  * @author colin
  */
-public class EmptySlotAvailability2ColumnTableModel extends DefaultTableModel{
-    public static ArrayList<EntityDescriptor.Appointment> emptySlots = null;
+public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
+    public static ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
     private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private enum COLUMN{EmptySlot, Duration};
     private final Class[] columnClass = new Class[] { 
         String.class,
         String.class};
+    
     
     public ArrayList<EntityDescriptor.Appointment> getEmptySlots(){
         return this.emptySlots;
@@ -39,6 +41,7 @@ public class EmptySlotAvailability2ColumnTableModel extends DefaultTableModel{
     
     public void removeAllElements(){
         emptySlots.clear();
+        this.fireTableDataChanged();
     }
 
     @Override
@@ -72,12 +75,19 @@ public class EmptySlotAvailability2ColumnTableModel extends DefaultTableModel{
         Object result = null;
         EntityDescriptor.Appointment slot = getEmptySlots().get(row);
         switch (columnIndex){
-            case 0 -> result = slot.getData().getStart().format(emptySlotFormat);
+            case 0 -> result = slot.getData().getStart().format(emptySlotFormat);     
             case 1 -> result = convertSlotDurationToString(
                     slot.getData().getDuration(), slot.getData().getStart().toLocalDate());    
         }
         return (String)result;
     }
+    
+    /*
+    @Override
+    public void setValueAt(Object value, int row, int columnIndex){
+        
+    }
+    */
     
     private String convertSlotDurationToString(Duration duration, LocalDate start){
         String result = null;

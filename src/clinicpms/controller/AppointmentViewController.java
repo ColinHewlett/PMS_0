@@ -159,8 +159,9 @@ public class AppointmentViewController extends ViewController{
                 result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
             }
             if (result!=null){
+           
                 dialog.setModal(false);
-                serialiseAppointmentToEDAppointment(result);
+                //serialiseAppointmentToEDAppointment(result);
                 //close dialog
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                 dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
@@ -175,6 +176,16 @@ public class AppointmentViewController extends ViewController{
                 pcEvent = new PropertyChangeEvent(this,
                     AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                     getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+
+                //either an update appt or create appt event has occurred
+                //so clear empty slot list!!!
+                pcSupport.removePropertyChangeListener(this.dialog);
+                pcSupport.addPropertyChangeListener(view);
+                initialiseNewEntityDescriptor();
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                    null,getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
 
             }
@@ -331,16 +342,22 @@ public class AppointmentViewController extends ViewController{
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
             Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
             try{
+                
                 this.appointments =
                     new Appointments().getAppointmentsFrom(day);
-                ArrayList<Appointment> availableSlotsOfDuration = 
-                        getAvailableSlotsOfDuration(
-                                this.appointments,duration,day);
-                serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
+                if (this.appointments.isEmpty()){
+                    JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
+                }
+                else{
+                    ArrayList<Appointment> availableSlotsOfDuration =  
+                            getAvailableSlotsOfDuration(
+                                    this.appointments,duration,day);
+                    serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                }
             }
             catch (StoreException ex){
                 //UnspecifiedError action
@@ -1035,7 +1052,5 @@ public class AppointmentViewController extends ViewController{
     public JInternalFrame getView( ){
         return view;
     }
-    private void setView(AppointmentsForDayView view ){
-        this.view = view;
-    }  
+  
 }

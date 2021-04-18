@@ -27,10 +27,10 @@ import javax.swing.JSeparator;
 public class DesktopView extends javax.swing.JFrame{
     
     private DesktopViewController controller = null;
-    private JMenuItem mniMigrationPatientDataCleanedInAccess = null;
-    private JMenuItem mniMigrationKeyIntegrityCheck = null;
-    private JMenuItem mniMigratePatientDBFToCSV = null;
-    private JMenuItem mniMigrateAppointmentDBFToCSV = null;
+    //private JMenuItem mniMigrationPatientDataCleanedInAccess = null;
+    //private JMenuItem mniMigrationKeyIntegrityCheck = null;
+    //private JMenuItem mniMigratePatientDBFToCSV = null;
+   // private JMenuItem mniMigrateAppointmentDBFToCSV = null;
     private JMenuItem mniPatientView = null;
     private JMenuItem mniAppointmentView = null;
     private JMenuItem mniExitView = null;
@@ -83,27 +83,23 @@ public class DesktopView extends javax.swing.JFrame{
         /**
          * MENU initialisation
          */
-        mniMigrationPatientDataCleanedInAccess = new JMenuItem("Migrated Patients Access Preprocessed");
-        mniMigrateAppointmentDBFToCSV = new JMenuItem("DBF appointments to CSV");
-        mniMigratePatientDBFToCSV = new JMenuItem("DBF patients to CSV");
-        mniMigrationKeyIntegrityCheck = new JMenuItem("Key integrity check");
+        //mniMigrationPatientDataCleanedInAccess = new JMenuItem("Migrated Patients Access Preprocessed");
+        //mniMigrateAppointmentDBFToCSV = new JMenuItem("DBF appointments to CSV");
+        //mniMigratePatientDBFToCSV = new JMenuItem("DBF patients to CSV");
+        //mniMigrationKeyIntegrityCheck = new JMenuItem("Key integrity check");
         mniPatientView = new JMenuItem("Patient");
         mniAppointmentView = new JMenuItem("Appointments");
         mniExitView = new JMenuItem("Exit The Clinic PMS");
         this.mnuView.add(mniPatientView);
         this.mnuView.add(mniAppointmentView);
         this.mnuView.add(new JSeparator());
-        this.mnuView.add(mniMigrateAppointmentDBFToCSV);
-        this.mnuView.add(mniMigratePatientDBFToCSV);
-        this.mnuView.add(mniMigrationKeyIntegrityCheck);
-        this.mnuView.add(mniMigrationPatientDataCleanedInAccess);
+        //this.mnuView.add(mniMigrateAppointmentDBFToCSV);
+        //this.mnuView.add(mniMigratePatientDBFToCSV);
+        //this.mnuView.add(mniMigrationKeyIntegrityCheck);
+        //this.mnuView.add(mniMigrationPatientDataCleanedInAccess);
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
 
-        mniMigrationPatientDataCleanedInAccess.addActionListener((ActionEvent e) -> mniMigrationPatientDataCleanedInAccessActionPerformed());
-        mniMigrationKeyIntegrityCheck.addActionListener((ActionEvent e) -> mniMigrationKeyIntegrityCheckActionPerformed());
-        mniMigrateAppointmentDBFToCSV.addActionListener((ActionEvent e) -> mniMigrateAppointmentDBFToCSVActionPerformed());
-        mniMigratePatientDBFToCSV.addActionListener((ActionEvent e) -> mniMigratePatientDBFToCSVActionPerformed());
         mniPatientView.addActionListener((ActionEvent e) -> mniPatientViewActionPerformed());
         mniAppointmentView.addActionListener((ActionEvent e) -> mniAppointmentViewActionPerformed());
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
@@ -216,30 +212,6 @@ public class DesktopView extends javax.swing.JFrame{
     private javax.swing.JMenu mnuView;
     // End of variables declaration//GEN-END:variables
     
-    private void mniMigrateAppointmentDBFToCSVActionPerformed(){
-        ActionEvent actionEvent = new ActionEvent(this, 
-                ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.MIGRATE_APPOINTMENT_DBF_TO_CSV.toString());
-        this.getController().actionPerformed(actionEvent);
-    }
-    private void mniMigratePatientDBFToCSVActionPerformed(){
-        ActionEvent actionEvent = new ActionEvent(this, 
-                ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.MIGRATE_PATIENT_DBF_TO_CSV.toString());
-        this.getController().actionPerformed(actionEvent);
-    }   
-    private void mniMigrationKeyIntegrityCheckActionPerformed(){
-        ActionEvent actionEvent = new ActionEvent(this, 
-                ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.MIGRATE_INTEGRITY_CHECK.toString());
-        this.getController().actionPerformed(actionEvent);
-    }
-    private void mniMigrationPatientDataCleanedInAccessActionPerformed(){
-        ActionEvent actionEvent = new ActionEvent(this, 
-                ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.MIGRATE_PATIENT_DATE_CLEANED_IN_ACCESS.toString());
-        this.getController().actionPerformed(actionEvent);
-    }
    
     private void mniAppointmentViewActionPerformed() {                                        
         ActionEvent actionEvent = new ActionEvent(this, 

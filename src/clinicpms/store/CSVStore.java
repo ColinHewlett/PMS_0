@@ -43,7 +43,8 @@ public class CSVStore extends Store {
     public static final String PATIENTS_FILE = "patient.csv";
     public static final String NON_EXISTING_PATIENT_FILE = "nonExistingPatient.csv";
     public static final String ORPHANED_APPOINTMENTS_FILE = "orphanedAppointments.csv";
-    public static final String DBF_APPOINTMENTS_FILE = "dbfAppointmentCSV.csv";
+    //public static final String DBF_APPOINTMENTS_FILE = "dbfAppointmentCSV.csv";
+    public static final String DBF_APPOINTMENTS_FILE = "$1Appointment.csv";
     public static final String DBF_PATIENTS_FILE = "dbfPatientCSV.csv";
     private static CSVReader csvDbfAppointmentReader = null;
     private static CSVReader csvDbfPatientReader = null;
@@ -673,7 +674,11 @@ public class CSVStore extends Store {
     }
     
     
- 
+    /**
+     * 
+     * @param appointments
+     * @throws StoreException 
+     */
     public static void convertAppointmentsToCSV(ArrayList<Appointment> appointments)throws StoreException{
         int index = 0;
         String key;
@@ -708,6 +713,16 @@ public class CSVStore extends Store {
         
     }
     
+    /**
+     * -- render dbf date format -> dd/mm/yyyy
+     * -- make appointment records from dbf rows and collect in static global ArrayList<Appointment>
+     * ----> key, start (LocalDateTime), duration (minutes), notes
+     * Uses following methods
+     * -- makeAppointmentsFromDBFRow
+     * 
+     * @param dbfAppointments
+     * @throws StoreException 
+     */
     public static void convertToAppointmentsFromDBFFile(List<String[]> dbfAppointments)throws StoreException{
         String date = null;
         String year;
@@ -742,6 +757,16 @@ public class CSVStore extends Store {
         }   
     }
     
+    /**
+     * for each csv row received
+     * --> make an Appointment record and collect in global ArrayList<Appointment>
+     * Uses following methods
+     * -- getAppointmentFrom
+     * @param row
+     * @param date
+     * @param rowIndex
+     * @throws StoreException 
+     */
     private static void makeAppointmentsFromDBFRow(String[] row, String date, int rowIndex) throws StoreException{
         Patient patient = null;
         LocalDateTime start = null;
@@ -809,6 +834,19 @@ public class CSVStore extends Store {
         }
     }
     
+    /**
+     * converts row received (String[]) to an Appointment
+     * -- from string to Appointment data types
+     * -- some processing of notes field
+     * Uses following methods
+     * -- getAppointmentStartTime
+     * @param row
+     * @param date
+     * @param startSlot
+     * @param endSlot
+     * @param patientKey
+     * @return 
+     */
     private static Appointment getAppointmentFrom(String[] row, 
                                                   String date, 
                                                   int startSlot, 

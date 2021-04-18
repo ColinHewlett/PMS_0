@@ -55,11 +55,7 @@ public abstract class ViewController implements ActionListener{
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
                                             VIEW_CLOSED_NOTIFICATION,//raised by internal frame views
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
-                                            PATIENT_VIEW_CONTROLLER_REQUEST,
-                                            MIGRATE_APPOINTMENT_DBF_TO_CSV,
-                                            MIGRATE_PATIENT_DBF_TO_CSV,
-                                            MIGRATE_INTEGRITY_CHECK,
-                                            MIGRATE_PATIENT_DATE_CLEANED_IN_ACCESS
+                                            PATIENT_VIEW_CONTROLLER_REQUEST
     }
     
     public enum DesktopViewControllerPropertyEvent{

@@ -44,6 +44,17 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
         this.buttonGroup1.add(this.rdbSelectMonths);
         this.buttonGroup1.add(this.rdbSelectWeeks);
         this.rdbSelectWeeks.setSelected(true);
+        
+        if (this.cmbSelectSlotDuration.getSelectedIndex()==0){
+            this.rdbSelectMonths.setEnabled(false);
+            this.rdbSelectWeeks.setEnabled(false);
+            this.spnSlotSearchOffset.setEnabled(false);
+        }
+        else{
+            this.rdbSelectMonths.setEnabled(true);
+            this.rdbSelectWeeks.setEnabled(true);
+            this.spnSlotSearchOffset.setEnabled(true); 
+        }
         initialiseDialogClosing();
         setEntityDescriptor(ed);
         setMyController(myController);
@@ -166,6 +177,7 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
             Duration.ofMinutes(360),
             Duration.ofMinutes(420),
             Duration.ofMinutes(480)}));
+cmbSelectSlotDuration.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     public void actionPerformed(java.awt.event.ActionEvent evt) {
         cmbSelectSlotDurationActionPerformed(evt);
@@ -185,11 +197,11 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
         .addGroup(jPanel4Layout.createSequentialGroup()
             .addGap(51, 51, 51)
             .addComponent(spnSlotSearchOffset, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(rdbSelectWeeks)
             .addGap(12, 12, 12)
             .addComponent(rdbSelectMonths)
-            .addContainerGap())
+            .addGap(7, 7, 7))
     );
     jPanel4Layout.setVerticalGroup(
         jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -223,20 +235,19 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     jPanel3Layout.setHorizontalGroup(
         jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel3Layout.createSequentialGroup()
+            .addGap(20, 20, 20)
+            .addComponent(btnSave)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(25, 25, 25))
+        .addGroup(jPanel3Layout.createSequentialGroup()
+            .addContainerGap()
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createSequentialGroup()
-                    .addContainerGap()
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGap(12, 12, 12)
-                    .addComponent(cmbSelectSlotDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(12, 12, 12))
-                .addGroup(jPanel3Layout.createSequentialGroup()
-                    .addGap(20, 20, 20)
-                    .addComponent(btnSave)
-                    .addGap(23, 23, 23)
-                    .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(cmbSelectSlotDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addContainerGap())
     );
     jPanel3Layout.setVerticalGroup(
@@ -276,7 +287,16 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cmbSelectSlotDurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSelectSlotDurationActionPerformed
-        // TODO add your handling code here:
+        if (this.cmbSelectSlotDuration.getSelectedIndex()==0){
+            this.rdbSelectMonths.setEnabled(false);
+            this.rdbSelectWeeks.setEnabled(false);
+            this.spnSlotSearchOffset.setEnabled(false);
+        }
+        else{
+            this.rdbSelectMonths.setEnabled(true);
+            this.rdbSelectWeeks.setEnabled(true);
+            this.spnSlotSearchOffset.setEnabled(true); 
+        }
     }//GEN-LAST:event_cmbSelectSlotDurationActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
