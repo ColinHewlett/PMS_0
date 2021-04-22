@@ -48,7 +48,7 @@ public class DesktopViewController extends ViewController{
         //setAppointmentsViewController(new AppointmentViewController(this));
         //setPatientViewController(new PatientViewController(this));
         view = new DesktopView(this);
-        view.setSize(850, 650);
+        view.setSize(1020, 650);
         view.setVisible(true);
         setView(view);
         //view.setContentPane(view);

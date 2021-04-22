@@ -156,7 +156,7 @@ public class DesktopView extends javax.swing.JFrame{
     private void initComponents() {
 
         jMenuItem1 = new javax.swing.JMenuItem();
-        ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/img4.jpg"));
+        ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/clinic_desktop.jpg"));
         Image img = icon.getImage();
         deskTop = new javax.swing.JDesktopPane(){
             //@Override

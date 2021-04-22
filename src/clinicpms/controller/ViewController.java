@@ -46,6 +46,7 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_VIEW_ERROR
                                             }
     public enum AppointmentViewControllerPropertyEvent {
+                                            APPOINTMENT_CANCEL_COMPLETE,
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
                                             APPOINTMENT_FOR_DAY_ERROR
@@ -55,8 +56,9 @@ public abstract class ViewController implements ActionListener{
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
                                             VIEW_CLOSED_NOTIFICATION,//raised by internal frame views
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
-                                            PATIENT_VIEW_CONTROLLER_REQUEST
-    }
+                                            PATIENT_VIEW_CONTROLLER_REQUEST,
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST
+                                            }
     
     public enum DesktopViewControllerPropertyEvent{
                                             
@@ -91,6 +93,11 @@ public abstract class ViewController implements ActionListener{
                               DENTAL_APPOINTMENT_HISTORY,
                               HYGIENE_APPOINTMENT_HISTORY}
     
+    public static enum PatientAppointmentContactListViewControllerActionEvent {
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_CLOSED,
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST
+                                            }
+    
     public static enum PatientViewControllerActionEvent {
                                             NULL_PATIENT_REQUEST,
                                             PATIENT_REQUEST,
@@ -115,6 +122,7 @@ public abstract class ViewController implements ActionListener{
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");
     public DateTimeFormatter recallFormat = DateTimeFormatter.ofPattern("MMMM/yyyy");
     public DateTimeFormatter startTime24Hour = DateTimeFormatter.ofPattern("HH:mm");
+    public DateTimeFormatter format24Hour = DateTimeFormatter.ofPattern("HH:mm");
     
     protected void centreViewOnDesktop(Frame desktopView, JInternalFrame view){
         Insets insets = desktopView.getInsets();

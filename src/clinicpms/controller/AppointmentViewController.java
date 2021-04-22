@@ -15,6 +15,8 @@ import clinicpms.view.AppointmentsForDayView;
 import clinicpms.view.AppointmentViewDialog;
 import clinicpms.view.AppointmentEditorDialog;
 import clinicpms.view.EmptySlotScannerSettingsDialog;
+import clinicpms.view.PatientAppointmentContactView;
+import clinicpms.view.DesktopView;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +71,8 @@ public class AppointmentViewController extends ViewController{
     //private AppointmentEditorDialog dialog = null;
     private AppointmentViewDialog dialog = null;
     private InternalFrameAdapter internalFrameAdapter = null;
+    private PatientAppointmentContactView pacView = null;
+    private DesktopView desktopView = null;
     
     /**
      * 
@@ -76,8 +80,9 @@ public class AppointmentViewController extends ViewController{
      * @param owner JFrame the owning frame the view controller needs to reference 
      * if managing a customised JDialog view
      */
-    public AppointmentViewController(ActionListener controller, JFrame desktopView, Optional<EntityDescriptor> ed)throws StoreException{
+    public AppointmentViewController(ActionListener controller, DesktopView desktopView, Optional<EntityDescriptor> ed)throws StoreException{
         setMyController(controller);
+        this.desktopView = desktopView;
         this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
         //setNewEntityDescriptor(new EntityDescriptor());
@@ -213,6 +218,29 @@ public class AppointmentViewController extends ViewController{
                     this,ActionEvent.ACTION_PERFORMED,
                     DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
             this.myController.actionPerformed(actionEvent);   
+        }
+        
+        else if (e.getActionCommand().equals(   
+            ViewController.PatientAppointmentContactListViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_CLOSED.toString())){
+
+        }
+        
+        else if (e.getActionCommand().equals(   
+            ViewController.PatientAppointmentContactListViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            try{
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                serialiseAppointmentsToEDCollection(this.appointments);
+                this.pacView = new PatientAppointmentContactView(this, this.getNewEntityDescriptor()); 
+                this.desktopView.add(pacView);
+                this.pacView.initialiseView();
+            }
+            catch (StoreException ex){
+                
+            }
         }
         
         else if (e.getActionCommand().equals(   
