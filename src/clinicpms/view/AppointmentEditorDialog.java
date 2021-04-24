@@ -8,12 +8,15 @@ package clinicpms.view;
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import clinicpms.view.DesktopView;
 import clinicpms.view.interfaces.IView;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.WindowEvent;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.format.DateTimeFormatter;
@@ -25,11 +28,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 /**
@@ -54,7 +59,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
      */ 
     public AppointmentEditorDialog(ActionListener myController,
             EntityDescriptor entityDescriptor, 
-            JFrame owner,
+            Window owner,
             ViewController.ViewMode viewMode) {
         super(owner, true);
         initialiseDialogClosing();
@@ -86,6 +91,7 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
                                                JOptionPane.ERROR_MESSAGE);
         }
     }
+    
     @Override
     public EntityDescriptor getEntityDescriptor(){
         return this.entityDescriptor;

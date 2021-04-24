@@ -98,6 +98,7 @@ public class AppointmentsForDayView extends View{
             day = day.plusDays(1);
         }
         dayDatePicker.setDate(day);
+        refreshAppointmentTableWithCurrentlySelectedDate();
         /**
          * unsure why the following code is necessary to initialise tblAppointments
          * on entry to the view

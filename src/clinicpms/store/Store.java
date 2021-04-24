@@ -32,14 +32,15 @@ public abstract class Store implements IStore {
                         POSTGRES,
                         SQL_EXPRESS}
     
-    public enum ExceptionType {  IO_EXCEPTION,
+    public static enum ExceptionType {  IO_EXCEPTION,
                                  CSV_EXCEPTION,
                                  NULL_KEY_EXPECTED_EXCEPTION,
                                  NULL_KEY_EXCEPTION,
                                  INVALID_KEY_VALUE_EXCEPTION,
                                  KEY_FOUND_EXCEPTION,
                                  KEY_NOT_FOUND_EXCEPTION,
-                                 SQL_EXCEPTION}
+                                 SQL_EXCEPTION,
+                                 UNDEFINED_DATABASE}
     private static Storage storage = null;
     
     public static IStore factory()throws StoreException{

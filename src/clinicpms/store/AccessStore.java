@@ -8,6 +8,10 @@ package clinicpms.store;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -50,10 +54,10 @@ public class AccessStore extends Store {
         this.connection = con;
     }
     private Connection getConnection()throws StoreException{
-        Connection result = null;
+        String url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
         if (connection == null){
             try{
-                connection = DriverManager.getConnection(databaseURL);
+                connection = DriverManager.getConnection(url);
             }
             catch (SQLException ex){
                 message = ex.getMessage();
@@ -63,6 +67,29 @@ public class AccessStore extends Store {
             }
         }
         return connection;
+    }
+    
+    public String getDatabaseURL()throws StoreException{
+        String result = null;
+        BufferedReader br = null;
+        try {
+            File file = new File ("database\\databasePath.txt");
+            if (file.exists()){
+                FileReader fr = new FileReader(file);
+                br = new BufferedReader(fr);
+                result = br.readLine();
+                return result;
+            }
+            else{
+                throw new StoreException(
+                        "Missing 'databasePath.txt' file", ExceptionType.UNDEFINED_DATABASE);
+            }
+        }
+        catch(IOException ex){
+            message = "IOException -> " + ex.getMessage() + "\n";
+            throw new StoreException(
+                    "StoreException -> raised in AccessStore::getDatabaseURL() when trying to read the 'database.txt' file",ExceptionType.IO_EXCEPTION );
+        }
     }
     
     public AccessStore()throws StoreException{

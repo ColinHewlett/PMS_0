@@ -10,6 +10,7 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
+import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.AppointmentsForDayView;
 import clinicpms.view.AppointmentViewDialog;
@@ -23,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.WindowEvent;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
@@ -275,7 +277,10 @@ public class AppointmentViewController extends ViewController{
             }
             catch (StoreException ex){
                 String message = ex.getMessage();
-                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+                if (ex.getErrorType().equals(Store.ExceptionType.UNDEFINED_DATABASE))
+                    JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), message);
+                else 
+                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
@@ -290,7 +295,7 @@ public class AppointmentViewController extends ViewController{
                     serialisePatientsToEDCollection(patients);
                     
                     this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
-                            this.owningFrame, ViewController.ViewMode.UPDATE);
+                            this.desktopView, ViewController.ViewMode.UPDATE);
                     this.dialog.setLocationRelativeTo(this.view);
                     this.dialog.initialiseView();
                     this.dialog.setVisible(true);
@@ -307,8 +312,9 @@ public class AppointmentViewController extends ViewController{
             try{
                 ArrayList<Patient> patients = new Patients().getPatients();
                 serialisePatientsToEDCollection(patients);
+                Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
                 this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
-                        this.owningFrame, ViewController.ViewMode.CREATE);
+                        window, ViewController.ViewMode.CREATE);
                 this.dialog.setLocationRelativeTo(this.view);
                 this.dialog.initialiseView();
                 this.dialog.setVisible(true);

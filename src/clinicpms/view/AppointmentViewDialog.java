@@ -6,8 +6,12 @@
 package clinicpms.view;
 
 import clinicpms.view.interfaces.IView;
+import java.awt.Container;
+import java.awt.Dialog.ModalityType;
 import java.awt.Frame;
+import java.awt.Window;
 import java.beans.PropertyChangeListener;
+
 
 /**
  *
@@ -16,8 +20,9 @@ import java.beans.PropertyChangeListener;
 public abstract class AppointmentViewDialog extends javax.swing.JDialog
                                            implements IView, PropertyChangeListener{
     
-    public AppointmentViewDialog(Frame parent, boolean isModal){
-        super(parent, isModal);
+    public AppointmentViewDialog(Window parent, boolean isModal){
+        super(parent, ModalityType.APPLICATION_MODAL);
     }
+
     
 }
