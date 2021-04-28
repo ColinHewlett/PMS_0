@@ -10,6 +10,8 @@ import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,8 +21,7 @@ import java.util.ArrayList;
  *
  * @author colin
  */
-public class PostgreSQLStore extends Store {
-    
+public class DbLocationStore extends Store{
     public enum AppointmentSQL   {
                             CREATE_APPOINTMENT,
                             DELETE_APPOINTMENT_WITH_KEY,
@@ -37,7 +38,7 @@ public class PostgreSQLStore extends Store {
                                 READ_PATIENT_WITH_KEY,
                                 UPDATE_PATIENT}
 
-    private static PostgreSQLStore instance;
+    private static DbLocationStore instance;
     private Connection connection = null;
     private String message = null;
     
@@ -48,20 +49,22 @@ public class PostgreSQLStore extends Store {
         this.connection = con;
     }
     private Connection getConnection()throws StoreException{
-        Connection result = null;
+        String url = "jdbc:ucanaccess://" + "c://ProgramData//DbLocation.accdb" + ";showSchema=true";
         if (connection == null){
             try{
-                connection = DriverManager.getConnection(databaseURL);
+                connection = DriverManager.getConnection(url);
             }
             catch (SQLException ex){
                 message = ex.getMessage();
                 throw new StoreException("SQLException message -> " + message +"\n"
-                        + "StoreException message -> raised trying to connect to the PostgreSQL database",
-                ExceptionType.SQL_EXCEPTION);
+                        + "StoreException message -> raised trying to connect to the DbLocationStore database",
+                Store.ExceptionType.SQL_EXCEPTION);
             }
         }
         return connection;
     }
+    
+    
     
     public void closeConnection()throws StoreException{
         try{
@@ -72,17 +75,17 @@ public class PostgreSQLStore extends Store {
         catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             message = message + "StoreException -> raised in ProgreSQLStore::closeConnection()";
-            throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
+            throw new StoreException(message, Store.ExceptionType.SQL_EXCEPTION);
         }
     }
     
-    public PostgreSQLStore()throws StoreException{
+    public DbLocationStore()throws StoreException{
         connection = getConnection();
     }
     
-    public static PostgreSQLStore getInstance()throws StoreException{
-        PostgreSQLStore result = null;
-        if (instance == null) result = new PostgreSQLStore();
+    public static DbLocationStore getInstance()throws StoreException{
+        DbLocationStore result = null;
+        if (instance == null) result = new DbLocationStore();
         else result = instance;
         return result;
     }
@@ -121,5 +124,38 @@ public class PostgreSQLStore extends Store {
     }
     public Appointment update(Appointment a) throws StoreException{
         return null;
+    }
+    
+    public String read()throws StoreException{
+        String result = null;
+        String sql = "Select Location from LOCATION WHERE id = 1;";
+        try{
+            PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()){
+                result = rs.getString("location");
+            }
+            return result;
+        }
+        catch (SQLException ex){
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised during DbLocationStore::read() query",
+            ExceptionType.SQL_EXCEPTION);
+        }
+    }
+    
+    public String update(String updatedLocation)throws StoreException{
+        String sql = "UPDATE LOCATION SET Location = ? WHERE ID = 1;";
+        try{
+            PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+            preparedStatement.setString(1, updatedLocation);
+            preparedStatement.executeUpdate();
+            return read();
+        }
+        catch (SQLException ex){
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised during DbLocationStore::update statement",
+            ExceptionType.SQL_EXCEPTION);
+        }
     }
 }

@@ -27,12 +27,9 @@ import javax.swing.JSeparator;
 public class DesktopView extends javax.swing.JFrame{
     
     private DesktopViewController controller = null;
-    //private JMenuItem mniMigrationPatientDataCleanedInAccess = null;
-    //private JMenuItem mniMigrationKeyIntegrityCheck = null;
-    //private JMenuItem mniMigratePatientDBFToCSV = null;
-   // private JMenuItem mniMigrateAppointmentDBFToCSV = null;
     private JMenuItem mniPatientView = null;
     private JMenuItem mniAppointmentView = null;
+    private JMenuItem mniDatabaseLocator = null;
     private JMenuItem mniExitView = null;
     private WindowAdapter windowAdapter = null;  
     private Image img = null;
@@ -67,14 +64,7 @@ public class DesktopView extends javax.swing.JFrame{
      * @param controller 
      */
     public DesktopView(DesktopViewController controller) { 
-        this.controller = controller;
-        /**
-         * initialise desk top background with an image
-         */
-       // File file = new File("c:/Windows/Web/Wallpaper/Windows 10/img4.jpg");
-        //ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/img4.jpg"));
-        //Image img = icon.getImage();
-        
+        this.controller = controller;       
         initComponents();
         /**
          * initialise frame closure actions
@@ -83,47 +73,21 @@ public class DesktopView extends javax.swing.JFrame{
         /**
          * MENU initialisation
          */
-        //mniMigrationPatientDataCleanedInAccess = new JMenuItem("Migrated Patients Access Preprocessed");
-        //mniMigrateAppointmentDBFToCSV = new JMenuItem("DBF appointments to CSV");
-        //mniMigratePatientDBFToCSV = new JMenuItem("DBF patients to CSV");
-        //mniMigrationKeyIntegrityCheck = new JMenuItem("Key integrity check");
         mniPatientView = new JMenuItem("Patient");
         mniAppointmentView = new JMenuItem("Appointments");
+        mniDatabaseLocator = new JMenuItem("Database locator");
         mniExitView = new JMenuItem("Exit The Clinic PMS");
         this.mnuView.add(mniPatientView);
         this.mnuView.add(mniAppointmentView);
         this.mnuView.add(new JSeparator());
-        //this.mnuView.add(mniMigrateAppointmentDBFToCSV);
-        //this.mnuView.add(mniMigratePatientDBFToCSV);
-        //this.mnuView.add(mniMigrationKeyIntegrityCheck);
-        //this.mnuView.add(mniMigrationPatientDataCleanedInAccess);
+        this.mnuView.add(mniDatabaseLocator);
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
 
         mniPatientView.addActionListener((ActionEvent e) -> mniPatientViewActionPerformed());
         mniAppointmentView.addActionListener((ActionEvent e) -> mniAppointmentViewActionPerformed());
+        mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
-        /*
-        mniPatientView.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                mniPatientViewActionPerformed(e);
-            }
-        });
-        */
-        /*
-        mniExitView.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                mniExitActionPerformed(e);
-            }
-        });
-        */
-        /*
-        mniAppointmentView.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                mniAppointmentViewActionPerformed();
-            }
-        });
-        */
         setContentPaneForInternalFrame();
     }
     /*
@@ -226,6 +190,13 @@ public class DesktopView extends javax.swing.JFrame{
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewControllerActionEvent.PATIENT_VIEW_CONTROLLER_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniDatabaseLocatorActionPerformed() {                                                      
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
 

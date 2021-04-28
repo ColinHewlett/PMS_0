@@ -53,12 +53,18 @@ public abstract class ViewController implements ActionListener{
                                             }
     
     public enum DesktopViewControllerActionEvent {
-                                            VIEW_CLOSE_REQUEST,//raised by Desktop view
-                                            VIEW_CLOSED_NOTIFICATION,//raised by internal frame views
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
-                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            DATABASE_LOCATOR_REQUEST,
+                                            VIEW_CLOSE_REQUEST,//raised by Desktop view
+                                            VIEW_CLOSED_NOTIFICATION//raised by internal frame views
                                             }
+    
+    public enum DatabaseLocatorViewControllerActionEvent{DATABASE_LOCATION_REQUEST,
+                                                         DATABASE_LOCATOR_VIEW_CLOSED}
+    
+    public enum DatabaseLocatorViewPropertyEvent{DATABASE_LOCATION_RECEIVED}
     
     public enum DesktopViewControllerPropertyEvent{
                                             
@@ -68,7 +74,17 @@ public abstract class ViewController implements ActionListener{
                                                           EMPTY_SLOT_SCANNER_SETTINGS_REQUEST}
     
     public enum EmptySlotSearchCriteriaDialogPropertyEvent {EMPTY_SLOT_SCANNER_SETTINGS_RECEIVED}
+    
+    public enum MigrationViewRequest{  MIGRATE_APPOINTMENTS_TO_DATABASE,
+                                        MIGRATE_PATIENTS_TO_DATABASE,
+                                        REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
+                                        TIDY_PATIENT_DATA_IN_DATABASE}
+    
+    public enum MigrationViewPropertyChangeEvents{MIGRATION_ACTION_COMPLETE}
 
+    public enum MigratorViewControllerActionEvent{  APPOINTMENT_MIGRATOR_REQUEST, 
+                                                    PATIENT_MIGRATOR_REQUEST};
+    public enum MigratorViewControllerPropertyChangeEventEvent{APPOINTMENT_MIGRATOR_RECEIVED, PATIENT_MIGRATOR_RECEIVED};
     public enum PatientField {
                               KEY,
                               TITLE,

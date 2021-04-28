@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 public interface IStore {
 
+    public void closeConnection()throws StoreException;
     public Appointment create(Appointment a) throws StoreException;
     public Patient create(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;

@@ -899,6 +899,10 @@ public class CSVStore extends Store {
         
     }
     
+    public void closeConnection()throws StoreException{
+        
+    }
+    
     /**
      * Creates a unique key for the received Patient object and adds the 
      * serialised Patient record to the patients csv file

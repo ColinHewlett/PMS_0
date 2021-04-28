@@ -5,6 +5,7 @@
  */
 package clinicpms.store;
 
+import clinicpms.store.DbLocationStore;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
@@ -45,9 +46,11 @@ public class AccessStore extends Store {
     private static AccessStore instance;
     private Connection connection = null;
     private String message = null;
-    
+    private static String databaseURL = null;
+    /*
     String databaseURL = "jdbc:ucanaccess://c://users//colin//OneDrive//documents"
             + "//Databases//Access//ClinicPMS.accdb;showSchema=true";
+    */
     
     DateTimeFormatter ymdFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private void setConnection(Connection con){
@@ -69,11 +72,34 @@ public class AccessStore extends Store {
         return connection;
     }
     
+    public void closeConnection()throws StoreException{
+        try{
+            if (connection!=null){
+                connection.close();
+            }
+        }
+        catch (SQLException ex){
+            message = "SQLException -> " + ex.getMessage() + "\n";
+            message = message + "StoreException -> raised in AccessStore::closeConnection()";
+            throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
+        }
+    }
+    
+    public static void setDatabaseURL(String url){
+        databaseURL = url;
+    }
+    
+    public static String getDatabaseURL()throws StoreException{
+        return DbLocationStore.getInstance().read();
+        //return databaseURL;
+    }
+    
+    /*
     public String getDatabaseURL()throws StoreException{
         String result = null;
         BufferedReader br = null;
         try {
-            File file = new File ("database\\databasePath.txt");
+            File file = new File ("c://ProgramData//DbLocation.accb");
             if (file.exists()){
                 FileReader fr = new FileReader(file);
                 br = new BufferedReader(fr);
@@ -91,7 +117,7 @@ public class AccessStore extends Store {
                     "StoreException -> raised in AccessStore::getDatabaseURL() when trying to read the 'database.txt' file",ExceptionType.IO_EXCEPTION );
         }
     }
-    
+    */
     public AccessStore()throws StoreException{
         connection = getConnection();
     }
@@ -250,6 +276,9 @@ public class AccessStore extends Store {
     public void delete(Patient p) throws StoreException{
         
     }
+    
+    
+    
     public Appointment read(Appointment a) throws StoreException{
         ArrayList<Patient> patients = null;
         ArrayList<Appointment> appointments = 

@@ -5,12 +5,6 @@
  */
 package clinicpms.controller;
 
-
-
-
-
-
-
 import clinicpms.store.Store;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
@@ -32,6 +26,7 @@ public class DesktopViewController extends ViewController{
     private DesktopView view = null;
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
+    private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
     //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;
      
     enum ViewControllers {
@@ -55,6 +50,7 @@ public class DesktopViewController extends ViewController{
         
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
+        databaseLocatorViewControllers = new ArrayList<>();
     }
     
     @Override
@@ -65,6 +61,7 @@ public class DesktopViewController extends ViewController{
             case "DesktopView" -> doDesktopViewAction(e);
             case "AppointmentViewController" -> doAppointmentViewControllerAction(e);
             case "PatientViewController" -> doPatientViewControllerAction(e);
+            case "DatabaseLocatorViewController" -> doDatabaseLocatorViewControllerAction(e);
         }
     }
     
@@ -132,6 +129,18 @@ public class DesktopViewController extends ViewController{
             
         }
     }
+    
+    private void doDatabaseLocatorViewControllerAction(ActionEvent e){
+        if (e.getActionCommand().equals(
+            ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            if (databaseLocatorViewControllers.size()!=1){
+                String message = "Unexpected error: more or less than a single database locator view controller located";
+                displayErrorMessage(message,"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            }
+            this.databaseLocatorViewControllers.remove(0);
+            
+        }
+    }
     /**
      * 
      * @param e source of event is DesktopView object
@@ -167,31 +176,6 @@ public class DesktopViewController extends ViewController{
             ViewController.DesktopViewControllerActionEvent.
                     APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
             createNewAppointmentViewController(Optional.ofNullable(null));
-            /*
-            try{
-                appointmentViewControllers.add(
-                                            new AppointmentViewController(this, getView()));
-                AppointmentViewController avc = 
-                        appointmentViewControllers.get(appointmentViewControllers.size()-1);
-                
-                this.getView().getDeskTop().add(avc.getView());
-                avc.getView().setVisible(true);
-                avc.getView().setTitle("Appointments");
-                avc.getView().setClosable(false);
-                avc.getView().setMaximizable(false);
-                avc.getView().setIconifiable(true);
-                avc.getView().setResizable(false);
-                avc.getView().setSelected(true);
-                avc.getView().setSize(760,550);
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-            }
-            catch (PropertyVetoException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-            }
-            */
         }
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
@@ -225,6 +209,37 @@ public class DesktopViewController extends ViewController{
                 */
             }
         } 
+        else if (e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString())){
+            if (!databaseLocatorViewControllers.isEmpty()){
+                JOptionPane.showInternalMessageDialog(view.getContentPane(), "Only one Database Locator can be active");
+            }
+            else{
+                try{
+                    databaseLocatorViewControllers.add(
+                                            new DatabaseLocatorViewController(this, getView()));
+                    DatabaseLocatorViewController dvc = databaseLocatorViewControllers.get(0);
+
+                    this.getView().getDeskTop().add(dvc.getView());
+                    dvc.getView().setVisible(true);
+                    dvc.getView().setClosable(false);
+                    dvc.getView().setMaximizable(false);
+                    dvc.getView().setIconifiable(true);
+                    dvc.getView().setResizable(false);
+                    dvc.getView().setSelected(true);
+                    dvc.getView().setSize(600,250);
+                }
+
+                catch (PropertyVetoException ex){
+                    displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    /*
+                    JOptionPane.showMessageDialog(getView(),
+                                              new ErrorMessagePanel(ex.getMessage()));
+                    */
+                }
+            }
+
+        }
         /**
          * user has attempted to close the desktop view
          */

@@ -56,14 +56,14 @@ public abstract class Store implements IStore {
     
     public static Storage getStorageType(){
         return storage;
-    }
+    } 
+    
     public static void setStorageType(Storage type){
         storage = type;
     }
 
-
-    
-    
-    
+    public static DbLocationStore getDbLocationStore()throws StoreException{
+        return DbLocationStore.getInstance();
+    }   
 }
 

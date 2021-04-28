@@ -426,6 +426,7 @@ public class EntityDescriptor {
         private EntityDescriptor.Patient guardian = null;
         private LocalDate day = null;
         private Duration duration = null;
+        private String databaseLocation = null;
 
         protected Request() {
             appointment = new EntityDescriptor.Appointment();
@@ -437,6 +438,14 @@ public class EntityDescriptor {
         
         public EntityDescriptor.Patient getPatient() {
             return patient;
+        }
+        
+        public void setDatabaseLocation(String value){
+            databaseLocation = value;
+        }
+        
+        public String getDatabaseLocation(){
+            return databaseLocation;
         }
         
         public void setPatient(EntityDescriptor.Patient value){

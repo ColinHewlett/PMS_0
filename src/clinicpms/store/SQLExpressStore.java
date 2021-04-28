@@ -8,6 +8,7 @@ package clinicpms.store;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -22,6 +23,10 @@ public class SQLExpressStore extends Store {
         if (instance == null) result = new SQLExpressStore();
         else result = instance;
         return result;
+    }
+    
+    public void closeConnection()throws StoreException{
+        
     }
     public Appointment create(Appointment a) throws StoreException{
         return null;
