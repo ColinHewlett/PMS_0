@@ -290,6 +290,7 @@ public class CSVStore extends Store {
     }
     
     public static void convertToPatientsFromDBFFile(List<String[]> dbfPatients){
+        String $value = null;
         int message = 0;
         int count = 0;
         int size = dbfPatients.size();
@@ -305,74 +306,76 @@ public class CSVStore extends Store {
             Patient patient = new Patient();
             for (PatientField pf: PatientField.values()){
                 switch (pf){
-                    case KEY -> patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));
-                    case TITLE ->   {
+                    case KEY:
+                        patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));
+                        break;
+                    case TITLE:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getName().setTitle(dbfPatientRow[pf.ordinal()]);   
                         }
                         else patient.getName().setTitle("");
-                    }
-                    case FORENAMES ->   {
+                        break;
+                    case FORENAMES:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getName().setForenames(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.getName().setForenames("");
-                    }
-                    case SURNAME -> { 
+                        break;
+                    case SURNAME: 
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getName().setSurname(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.getName().setSurname("");
-                    }
-                    case LINE1 ->   {
+                        break;
+                    case LINE1:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getAddress().setLine1(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.getAddress().setLine1("");
-                    }
-                    case LINE2 ->   {
+                        break;
+                    case LINE2:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getAddress().setLine2(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.getAddress().setLine2("");
-                    }
-                    case TOWN ->    {
+                        break;
+                    case TOWN:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.getAddress().setTown(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.getAddress().setTown("");
-                    }
-                    case COUNTY ->  {
+                        break;
+                    case COUNTY:
                         patient.getAddress().setCounty(dbfPatientRow[pf.ordinal()]);
-                    }
-                    case POSTCODE -> {
+                        break;
+                    case POSTCODE:
                         patient.getAddress().setPostcode(dbfPatientRow[pf.ordinal()]);
-                    }
-                    case PHONE1 -> {
+                        break;
+                    case PHONE1:
                         patient.setPhone1(dbfPatientRow[pf.ordinal()]);
-                    }
-                    case PHONE2 -> {
+                        break;
+                    case PHONE2:
                         patient.setPhone2(dbfPatientRow[pf.ordinal()]);
-                    }
-                    case GENDER ->  {
+                        break;
+                    case GENDER:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.setGender(dbfPatientRow[pf.ordinal()]);
                         }
                         else patient.setGender("");
-                    }
-                    case DOB ->     {
+                        break;
+                    case DOB:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.setDOB(LocalDate.parse(dbfPatientRow[pf.ordinal()],ddMMyyyyFormat));
                         }
                         else patient.setDOB(null);
-                    }
-                    case IS_GUARDIAN_A_PATIENT ->   {
+                        break;
+                    case IS_GUARDIAN_A_PATIENT:
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             patient.setIsGuardianAPatient(Boolean.valueOf(dbfPatientRow[pf.ordinal()]));
                         }
                         else patient.setIsGuardianAPatient(Boolean.valueOf(false));
-                    }
-                    case DENTAL_RECALL_FREQUENCY ->     {
+                        break;
+                    case DENTAL_RECALL_FREQUENCY:
                         boolean isDigit = true;
                         Integer value = 0;
                         String s = dbfPatientRow[pf.ordinal()];
@@ -392,34 +395,59 @@ public class CSVStore extends Store {
                         }
                         else value = 0;
                         patient.getRecall().setDentalFrequency(value);
-                    }                    
-                    case DENTAL_RECALL_DATE -> { 
+                        break;                   
+                    case DENTAL_RECALL_DATE: 
                         boolean isInvalidMonth = false;
-                        String value = "";
+                        $value = "";
                         String[] values;
                         int mm = 0;
                         int yyyy = 0;
                         LocalDate recallDate = null;
-                        value = dbfPatientRow[pf.ordinal()];
-                        if (!value.isEmpty()){
-                            value = value.strip();
-                            values = value.split("-");
+                        $value = dbfPatientRow[pf.ordinal()];
+                        if (!$value.isEmpty()){
+                            $value = $value.strip();
+                            values = $value.split("-");
                             if (values.length > 0){
                                 switch (values[0]){
-                                    case "Jan" -> mm = 1;
-                                    case "Feb" -> mm = 2;
-                                    case "Mar" -> mm = 3;
-                                    case "Apr" -> mm = 4;
-                                    case "May" -> mm = 5;
-                                    case "Jun" -> mm = 6;
-                                    case "Jul" -> mm = 7;
-                                    case "Aug" -> mm = 8;
-                                    case "Sep" -> mm = 9;
-                                    case "Oct" -> mm = 10;
-                                    case "Nov" -> mm = 11;
-                                    case "Dec" -> mm = 12;
-                                    default -> isInvalidMonth = true;
-                                }
+                                    case "Jan":
+                                        mm = 1;
+                                        break;
+                                    case "Feb":
+                                        mm = 2;
+                                        break;
+                                    case "Mar":
+                                        mm = 3;
+                                        break;
+                                    case "Apr":
+                                        mm = 4;
+                                        break;
+                                    case "May":
+                                        mm = 5;
+                                        break;
+                                    case "Jun":
+                                        mm = 6;
+                                        break;
+                                    case "Jul":
+                                        mm = 7;
+                                        break;
+                                    case "Aug":
+                                        mm = 8;
+                                        break;
+                                    case "Sep":
+                                        mm = 9;
+                                        break;
+                                    case "Oct":
+                                        mm = 10;
+                                        break;
+                                    case "Nov":
+                                        mm = 11;
+                                        break;
+                                    case "Dec":
+                                        mm = 12;
+                                        break;
+                                    default:
+                                        isInvalidMonth = true;
+                                        break;
                             }
                             if (!isInvalidMonth){
                                 if (values[1].substring(0,1).equals("9")){
@@ -434,30 +462,13 @@ public class CSVStore extends Store {
                             }
                             else patient.getRecall().setDentalDate(null);
                         }
+                        break;
                     }
-                    case NOTES ->   {   
+                    case NOTES:   
                         String notes = "";
                         if (!dbfPatientRow[pf.ordinal()].isEmpty()){
                             notes = notes + dbfPatientRow[pf.ordinal()];
                         }
-    /**
-     * Following code necessary because of occurrence of "\" characters (escape character)
-     * could escape an end of field comma, which would reduce field count by one.
-     * This then caused an array index bound exception to occur because logic relied
-     * on a fixed number of fields per row
-     */
-                        /*
-                        if (count == 4000){
-                            message = pf.ordinal()+2;
-                            count = dbfPatientRow.length;
-                            if (dbfPatientRow[pf.ordinal()+2].isEmpty()){  
-                                message = pf.ordinal()+2;
-                            } 
-                            if (!dbfPatientRow[pf.ordinal()+2].isEmpty()){  
-                                message = count;
-                            }
-                        }
-                        */
                         if (!dbfPatientRow[pf.ordinal()+1].isEmpty()){
                             if (!notes.isEmpty()){
                                 notes = notes + "\n";
@@ -471,12 +482,14 @@ public class CSVStore extends Store {
                             notes = notes + dbfPatientRow[pf.ordinal()+2]; 
                         }
                         patient.setNotes(notes);
-                    }
-                    case GUARDIAN -> patient.setGuardian(null); 
-                }
+                        break;
+                    case GUARDIAN:
+                        patient.setGuardian(null); 
+                        break;
+                }  
             }
-            patients.add(patient);           
-        }   
+            patients.add(patient);
+        }       
     }
     
     private static void convertPatientsToCSV(ArrayList<Patient> patients)throws StoreException{
@@ -506,103 +519,105 @@ public class CSVStore extends Store {
             Patient patient = patientInterator.next();
             for(PatientField pf: PatientField.values()){
                 switch (pf){
-                    case KEY -> key = String.valueOf(patient.getKey());
-                    case TITLE ->   {   
+                    case KEY: 
+                        key = String.valueOf(patient.getKey());
+                        break;
+                    case TITLE:   
                         if(!patient.getName().getTitle().isEmpty()){
                            title = patient.getName().getTitle(); 
                         }
                         else title = "";
-                    }
-                    case FORENAMES ->   {   
+                        break;
+                    case FORENAMES:
                         if(!patient.getName().getForenames().isEmpty()){
                            forenames = patient.getName().getForenames(); 
                         }
                         else forenames = "";
-                    }
-                    case SURNAME ->   {   
+                        break;
+                    case SURNAME:  
                         if(!patient.getName().getSurname().isEmpty()){
                            surname = patient.getName().getSurname(); 
                         }
                         else surname = "";
-                    }
-                    case LINE1 ->   {   
+                        break;
+                    case LINE1:   
                         if(!patient.getAddress().getLine1().isEmpty()){
                            line1 = patient.getAddress().getLine1(); 
                         }
                         else line1 = "";
-                    }
-                    case LINE2 ->   {   
+                        break;
+                    case LINE2:   
                         if(!patient.getAddress().getLine2().isEmpty()){
                            line2 = patient.getAddress().getLine2(); 
                         }
                         else line2 = "";
-                    }
-                    case TOWN ->   {   
+                        break;
+                    case TOWN:  
                         if(!patient.getAddress().getTown().isEmpty()){
                            town = patient.getAddress().getTown(); 
                         }
                         else town = "";
-                    }
-                    case COUNTY ->   {   
+                        break;
+                    case COUNTY:   
                         if(!patient.getAddress().getCounty().isEmpty()){
                            county = patient.getAddress().getCounty(); 
                         }
                         else county = "";
-                    }
-                    case POSTCODE ->   {   
+                        break;
+                    case POSTCODE:   
                         if(!patient.getAddress().getPostcode().isEmpty()){
                            postcode = patient.getAddress().getPostcode(); 
                         }
                         else postcode = "";
-                    }
-                    case PHONE1 ->   {   
+                        break;
+                    case PHONE1:   
                         if(!patient.getPhone1().isEmpty()){
                            phone1 = patient.getPhone1(); 
                         }
                         else phone1 = "";
-                    }
-                    case PHONE2 ->   {   
+                        break;
+                    case PHONE2:   
                         if(!patient.getPhone2().isEmpty()){
                            phone2 = patient.getPhone2(); 
                         }
                         else phone2 = "";
-                    }
-                    case GENDER ->   {   
+                        break;
+                    case GENDER:   
                         if(!patient.getGender().isEmpty()){
                            gender = patient.getGender(); 
                         }
                         else gender = "";
-                    }
-                    case DOB ->   {   
+                        break;
+                    case DOB:  
                         if(patient.getDOB()!=null){
                            dob = patient.getDOB().format(ddMMyyyyFormat); 
                         }
                         else dob = "";
-                    }
-                    case IS_GUARDIAN_A_PATIENT ->   {
+                        break;
+                    case IS_GUARDIAN_A_PATIENT:
                         isGuardianAPatient = String.valueOf(patient.getIsGuardianAPatient()); 
-                    }
-                    case DENTAL_RECALL_FREQUENCY ->    {
+                        break;
+                    case DENTAL_RECALL_FREQUENCY:
                         recallFrequency = String.valueOf(patient.getRecall().getDentalFrequency());
-                    }
-                    case DENTAL_RECALL_DATE ->  {
+                        break;
+                    case DENTAL_RECALL_DATE:
                         if (patient.getRecall().getDentalDate()!=null){
                             recallDate = patient.getRecall().getDentalDate().format(ddMMyyyyFormat);  
                         }
                         else recallDate = "";
-                    }
-                    case NOTES -> {
+                        break;
+                    case NOTES:
                         if(patient.getNotes() != null){
                             notes = patient.getNotes();
                         }
                         else notes = "";
-                    }
-                    case GUARDIAN ->    {
+                        break;
+                    case GUARDIAN:
                         if (patient.getGuardian() != null){
                             guardian = String.valueOf(patient.getGuardian());
                         }
                         else guardian = "";
-                    }  
+                        break;  
                 }
             }
             csvPatientRow = new String[] {
@@ -732,11 +747,19 @@ public class CSVStore extends Store {
         while(dbfAppointmentsIt.hasNext()){
             String[] dbfAppointmentRow = dbfAppointmentsIt.next();
             date = dbfAppointmentRow[DenAppField.DATE.ordinal()];
-            date = switch (date.length()){
-                case 3 -> "000" + date;
-                case 4 -> "00" + date;
-                case 5 -> "0" + date;
-                default -> date;
+            switch (date.length()){
+                case 3:
+                    date = "000" + date;
+                    break;
+                case 4:
+                    date = "00" + date;
+                    break;
+                case 5:
+                    date = "0" + date;
+                    break;
+                default:
+                    date = date;
+                    break;
             };
             if (date.substring(0,1).equals("9")){
                 year = "19" + date.substring(0,2);
@@ -984,18 +1007,23 @@ public class CSVStore extends Store {
         String[] sA = new String[AppointmentField.values().length];
         for (AppointmentField af: AppointmentField.values()){
             switch(af){
-                case KEY -> 
+                case KEY: 
                     sA[AppointmentField.KEY.ordinal()] = a.getKey().toString();
-                case PATIENT -> 
+                    break;
+                case PATIENT:
                     sA[AppointmentField.PATIENT.ordinal()] = a.getKey().toString();
-                case START ->
+                    break;
+                case START:
                     sA[AppointmentField.START.ordinal()] = 
                             a.getStart().format(formatter);
-                case DURATION ->
+                    break;
+                case DURATION:
                     sA[AppointmentField.DURATION.ordinal()] = 
                             Long.toString(a.getDuration().toMinutes());
-                case NOTES ->
-                    sA[AppointmentField.NOTES.ordinal()] = a.getNotes();       
+                    break;
+                case NOTES:
+                    sA[AppointmentField.NOTES.ordinal()] = a.getNotes(); 
+                    break;     
             }
         }
         return sA;
@@ -1008,38 +1036,70 @@ public class CSVStore extends Store {
         
         for (PatientField pf: PatientField.values()){
             switch(pf){
-                case KEY -> sP[PatientField.KEY.ordinal()] = 
+                case KEY:
+                    sP[PatientField.KEY.ordinal()] = 
                         p.getKey().toString();
-                case TITLE -> sP[PatientField.TITLE.ordinal()] = 
+                    break;
+                case TITLE:
+                    sP[PatientField.TITLE.ordinal()] = 
                         p.getName().getTitle();
-                case FORENAMES -> sP[PatientField.FORENAMES.ordinal()] = 
+                    break;
+                case FORENAMES:
+                    sP[PatientField.FORENAMES.ordinal()] = 
                         p.getName().getForenames();
-                case SURNAME -> sP[PatientField.SURNAME.ordinal()] = 
+                    break;
+                case SURNAME:
+                    sP[PatientField.SURNAME.ordinal()] = 
                         p.getName().getSurname();
-                case LINE1 -> sP[PatientField.LINE1.ordinal()] = 
+                    break;
+                case LINE1:
+                    sP[PatientField.LINE1.ordinal()] = 
                         p.getAddress().getLine1();
-                case LINE2 -> sP[PatientField.LINE2.ordinal()] = 
+                    break;
+                case LINE2:
+                    sP[PatientField.LINE2.ordinal()] = 
                         p.getAddress().getLine2();
-                case TOWN -> sP[PatientField.TOWN.ordinal()] = 
+                    break;
+                case TOWN:
+                    sP[PatientField.TOWN.ordinal()] = 
                         p.getAddress().getTown();
-                case COUNTY -> sP[PatientField.COUNTY.ordinal()] = 
+                    break;
+                case COUNTY:
+                    sP[PatientField.COUNTY.ordinal()] = 
                         p.getAddress().getCounty();
-                case POSTCODE -> sP[PatientField.POSTCODE.ordinal()] = 
+                    break;
+                case POSTCODE:
+                    sP[PatientField.POSTCODE.ordinal()] = 
                         p.getAddress().getPostcode();
-                case DENTAL_RECALL_DATE -> sP[PatientField.DENTAL_RECALL_DATE.ordinal()] = 
+                    break;
+                case DENTAL_RECALL_DATE:
+                    sP[PatientField.DENTAL_RECALL_DATE.ordinal()] = 
                         p.getRecall().getDentalDate().format(recallFormat);
-                case DENTAL_RECALL_FREQUENCY -> sP[PatientField.DENTAL_RECALL_FREQUENCY.ordinal()] = 
+                    break;
+                case DENTAL_RECALL_FREQUENCY:
+                    sP[PatientField.DENTAL_RECALL_FREQUENCY.ordinal()] = 
                         p.getRecall().getDentalFrequency().toString();
-                case DOB -> sP[PatientField.DOB.ordinal()] = 
+                    break;
+                case DOB:
+                    sP[PatientField.DOB.ordinal()] = 
                         p.getDOB().format(dobFormat);
-                case GENDER -> sP[PatientField.GENDER.ordinal()] = 
+                    break;
+                case GENDER:
+                    sP[PatientField.GENDER.ordinal()] = 
                         p.getGender();
-                case IS_GUARDIAN_A_PATIENT -> sP[PatientField.IS_GUARDIAN_A_PATIENT.ordinal()] = 
+                    break;
+                case IS_GUARDIAN_A_PATIENT:
+                    sP[PatientField.IS_GUARDIAN_A_PATIENT.ordinal()] = 
                         Boolean.toString(p.getIsGuardianAPatient());
-                case GUARDIAN -> sP[PatientField.GUARDIAN.ordinal()] = 
+                    break;
+                case GUARDIAN:
+                    sP[PatientField.GUARDIAN.ordinal()] = 
                         String.valueOf(p.getGuardian());
-                case NOTES -> sP[PatientField.NOTES.ordinal()] = 
+                    break;
+                case NOTES:
+                    sP[PatientField.NOTES.ordinal()] = 
                         p.getGuardian().toString();
+                    break;
             }
         }
         return sP;
@@ -1259,8 +1319,10 @@ public class CSVStore extends Store {
             }
             else{
                 switch (af){
-                    case KEY -> a.setKey(Integer.parseInt(
+                    case KEY:
+                        a.setKey(Integer.parseInt(
                                         appointmentRecord[AppointmentField.KEY.ordinal()]));
+                        break;
                     /**
                      * assumes data in original dbf file has been converted appropriately
                      * to be consistent with two fields in the converted csv result
@@ -1268,12 +1330,18 @@ public class CSVStore extends Store {
                      * converted to 2 fields -> correctly formatted (dd/mm/yyyy hh:mm) date and 
                      * number of minutes for the duration
                      */
-                    case START -> a.setStart(LocalDateTime.parse(
+                    case START:
+                        a.setStart(LocalDateTime.parse(
                             appointmentRecord[AppointmentField.START.ordinal()],startFormat));
-                    case DURATION -> a.setDuration(Duration.ofMinutes(Long.parseLong(
+                        break;
+                    case DURATION:
+                        a.setDuration(Duration.ofMinutes(Long.parseLong(
                                 appointmentRecord[AppointmentField.DURATION.ordinal()])));
-                    case NOTES -> a.setNotes(
+                        break;
+                    case NOTES:
+                        a.setNotes(
                             appointmentRecord[AppointmentField.NOTES.ordinal()]);
+                        break;
                 }
             }
         }
@@ -1338,17 +1406,19 @@ public class CSVStore extends Store {
             
             if (a.getPatient().getKey().equals(p.getKey())){
                 switch (a.getCategory()){
-                    case DENTAL -> {
+                    case DENTAL:
                         if (t.equals(Appointment.Category.DENTAL)){
                             patientAppointments.add(a);
                         }
-                    }
-                    case HYGIENE -> {
+                        break;
+                    case HYGIENE:
                         if (t.equals(Appointment.Category.HYGIENE)){
                             patientAppointments.add(a);
                         }
-                    }
-                    case ALL -> patientAppointments.add(a);
+                        break;
+                    case ALL:
+                        patientAppointments.add(a);
+                        break;
                 }
             }
         }
@@ -1372,8 +1442,10 @@ public class CSVStore extends Store {
             }
             else{
                 switch (af){
-                    case KEY -> a.setKey(Integer.parseInt(
+                    case KEY:
+                        a.setKey(Integer.parseInt(
                                         appointmentRecord[AppointmentField.KEY.ordinal()]));
+                        break;
                     /**
                      * assumes data in original dbf file has been converted appropriately
                      * to be consistent with two fields in the converted csv result
@@ -1381,12 +1453,18 @@ public class CSVStore extends Store {
                      * converted to 2 fields -> correctly formatted (dd/mm/yyyy hh:mm) date and 
                      * number of minutes for the duration
                      */
-                    case START -> a.setStart(LocalDateTime.parse(
+                    case START:
+                        a.setStart(LocalDateTime.parse(
                             appointmentRecord[AppointmentField.START.ordinal()],ddMMyyyy24Format));
-                    case DURATION -> a.setDuration(Duration.ofMinutes(Long.parseLong(
+                        break;
+                    case DURATION:
+                        a.setDuration(Duration.ofMinutes(Long.parseLong(
                                 appointmentRecord[AppointmentField.DURATION.ordinal()])));
-                    case NOTES -> a.setNotes(
+                        break;
+                    case NOTES:
+                        a.setNotes(
                             appointmentRecord[AppointmentField.NOTES.ordinal()]);
+                        break;
                 }
             }
         }
@@ -1412,25 +1490,43 @@ public class CSVStore extends Store {
         Patient p = new Patient();
         for (PatientField pf: PatientField.values()){
             switch (pf){
-                case KEY -> p.setKey(Integer.parseInt(
+                case KEY:
+                    p.setKey(Integer.parseInt(
                                     patientRecord[PatientField.KEY.ordinal()]));
-                case TITLE -> p.getName().setTitle(
+                    break;
+                case TITLE:
+                    p.getName().setTitle(
                                     patientRecord[PatientField.TITLE.ordinal()]);
-                case FORENAMES -> p.getName().setForenames(
+                    break;
+                case FORENAMES:
+                    p.getName().setForenames(
                             patientRecord[PatientField.FORENAMES.ordinal()]);
-                case SURNAME -> p.getName().setSurname(
+                    break;
+                case SURNAME:
+                    p.getName().setSurname(
                             patientRecord[PatientField.SURNAME.ordinal()]);
-                case LINE1 -> p.getAddress().setLine1(
+                    break;
+                case LINE1:
+                    p.getAddress().setLine1(
                             patientRecord[PatientField.LINE1.ordinal()]);
-                case LINE2 -> p.getAddress().setLine2(
+                    break;
+                case LINE2:
+                    p.getAddress().setLine2(
                             patientRecord[PatientField.LINE2.ordinal()]);
-                case TOWN -> p.getAddress().setTown(
+                    break;
+                case TOWN:
+                    p.getAddress().setTown(
                             patientRecord[PatientField.TOWN.ordinal()]);
-                case COUNTY -> p.getAddress().setCounty(
+                    break;
+                case COUNTY:
+                    p.getAddress().setCounty(
                             patientRecord[PatientField.COUNTY.ordinal()]);
-                case POSTCODE -> p.getAddress().setPostcode(
+                    break;
+                case POSTCODE:
+                    p.getAddress().setPostcode(
                             patientRecord[PatientField.POSTCODE.ordinal()]);
-                case DENTAL_RECALL_DATE -> {
+                    break;
+                case DENTAL_RECALL_DATE:
                     String value = patientRecord[PatientField.DENTAL_RECALL_DATE.ordinal()];
                     int mm = 0;
                     int yyyy = 0;
@@ -1439,19 +1535,45 @@ public class CSVStore extends Store {
                         String values[] = value.split("-");
                         if (values.length > 0){
                             switch (values[0]){
-                                case "Jan" -> mm = 1;
-                                case "Feb" -> mm = 2;
-                                case "Mar" -> mm = 3;
-                                case "Apr" -> mm = 4;
-                                case "May" -> mm = 5;
-                                case "Jun" -> mm = 6;
-                                case "Jul" -> mm = 7;
-                                case "Aug" -> mm = 8;
-                                case "Sep" -> mm = 9;
-                                case "Oct" -> mm = 10;
-                                case "Nov" -> mm = 11;
-                                case "Dec" -> mm = 12;
-                                default -> isInvalidMonth = true;
+                                case "Jan":
+                                    mm = 1;
+                                    break;
+                                case "Feb":
+                                    mm = 2;
+                                    break;
+                                case "Mar":
+                                    mm = 3;
+                                    break;
+                                case "Apr":
+                                    mm = 4;
+                                    break;
+                                case "May":
+                                    mm = 5;
+                                    break;
+                                case "Jun":
+                                    mm = 6;
+                                    break;
+                                case "Jul":
+                                    mm = 7;
+                                    break;
+                                case "Aug":
+                                    mm = 8;
+                                    break;
+                                case "Sep":
+                                    mm = 9;
+                                    break;
+                                case "Oct":
+                                    mm = 10;
+                                    break;
+                                case "Nov":
+                                    mm = 11;
+                                    break;
+                                case "Dec":
+                                    mm = 12;
+                                    break;
+                                default:
+                                    isInvalidMonth = true;
+                                    break;
                             }
                         }
                         if (!isInvalidMonth){
@@ -1464,26 +1586,38 @@ public class CSVStore extends Store {
                             }
                             p.getRecall().setDentalDate(LocalDate.of(yyyy,mm,1));
                         }
-                    }      
-                }
-                case DENTAL_RECALL_FREQUENCY -> p.getRecall().setDentalFrequency(Integer.parseInt(
+                    } 
+                    break;
+                case DENTAL_RECALL_FREQUENCY:
+                    p.getRecall().setDentalFrequency(Integer.parseInt(
                     patientRecord[PatientField.DENTAL_RECALL_FREQUENCY.ordinal()]));
-                case GENDER -> p.setGender(
+                    break;
+                case GENDER:
+                    p.setGender(
                         patientRecord[PatientField.GENDER.ordinal()]);
-                case PHONE1 -> p.setPhone1(
+                    break;
+                case PHONE1:
+                    p.setPhone1(
                         patientRecord[PatientField.PHONE1.ordinal()]);
-                case PHONE2 -> p.setPhone2(
+                    break;
+                case PHONE2:
+                    p.setPhone2(
                         patientRecord[PatientField.PHONE2.ordinal()]);
-                case DOB -> {
+                    break;
+                case DOB:
                     if (!patientRecord[PatientField.DOB.ordinal()].isEmpty()){
                         p.setDOB(LocalDate.parse(patientRecord[PatientField.DOB.ordinal()],ddMMyyyyFormat));
                     }
                     else p.setDOB(null);
-                }
-                case NOTES -> p.setNotes(
+                    break;
+                case NOTES:
+                    p.setNotes(
                         patientRecord[PatientField.NOTES.ordinal()]);
-                case IS_GUARDIAN_A_PATIENT -> p.setIsGuardianAPatient(Boolean.valueOf(
+                    break;
+                case IS_GUARDIAN_A_PATIENT:
+                    p.setIsGuardianAPatient(Boolean.valueOf(
                         patientRecord[PatientField.IS_GUARDIAN_A_PATIENT.ordinal()]));
+                    break;
 
             }
             if (pf.equals(PatientField.GUARDIAN)){

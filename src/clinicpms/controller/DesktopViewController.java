@@ -6,6 +6,7 @@
 package clinicpms.controller;
 
 import clinicpms.store.Store;
+import clinicpms.store.DbLocationStore;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.DesktopView;
@@ -58,10 +59,18 @@ public class DesktopViewController extends ViewController{
         String s;
         s = e.getSource().getClass().getSimpleName();
         switch(s){
-            case "DesktopView" -> doDesktopViewAction(e);
-            case "AppointmentViewController" -> doAppointmentViewControllerAction(e);
-            case "PatientViewController" -> doPatientViewControllerAction(e);
-            case "DatabaseLocatorViewController" -> doDatabaseLocatorViewControllerAction(e);
+            case "DesktopView":
+                doDesktopViewAction(e);
+                 break;
+            case "AppointmentViewController":
+                doAppointmentViewControllerAction(e);
+                break;
+            case "PatientViewController":
+                doPatientViewControllerAction(e);
+                break;
+            case "DatabaseLocatorViewController":
+                doDatabaseLocatorViewControllerAction(e);
+                break;
         }
     }
     
@@ -328,13 +337,21 @@ public class DesktopViewController extends ViewController{
              */
             if (args.length > 0){
                 switch (args[0]){
-                    case "ACCESS" -> {
+                    case "ACCESS":
                         Store.setStorageType(Storage.ACCESS);
-                    }
-                    case "CSV" -> Store.setStorageType(Storage.CSV);
-                    case "POSTGRES" -> Store.setStorageType(Storage.POSTGRES);
-                    case "SQL_EXPRESS" -> Store.setStorageType(Storage.SQL_EXPRESS);
+                        break;
+                    case "CSV":
+                        Store.setStorageType(Storage.CSV);
+                        break;
+                    case "POSTGRES":
+                        Store.setStorageType(Storage.POSTGRES);
+                        break;
+                    case "SQL_EXPRESS":
+                        Store.setStorageType(Storage.SQL_EXPRESS);
+                        break;
                 }
+                Store.setDatabaseLocatorPath(args[1]);
+      
             }
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {

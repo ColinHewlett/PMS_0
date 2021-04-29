@@ -42,17 +42,34 @@ public abstract class Store implements IStore {
                                  SQL_EXCEPTION,
                                  UNDEFINED_DATABASE}
     private static Storage storage = null;
+    private static String databaseLocatorPath = null;
     
     public static IStore factory()throws StoreException{
         IStore result = null;
-        result = switch (getStorageType()){
-            case ACCESS -> AccessStore.getInstance();
-            case CSV -> CSVStore.getInstance();
-            case POSTGRES -> PostgreSQLStore.getInstance();
-            case SQL_EXPRESS -> SQLExpressStore.getInstance();
-        };
+        switch (getStorageType()){
+            case ACCESS: 
+                result = AccessStore.getInstance();
+                break;
+            case CSV:
+                result = CSVStore.getInstance();
+                break;
+            case POSTGRES:
+                result = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                result = SQLExpressStore.getInstance();
+                break;
+        }
         return result;
     }
+    
+    public static String getDatabaseLocatorPath(){
+        return databaseLocatorPath;
+    }
+    
+    public static void setDatabaseLocatorPath(String path){
+        databaseLocatorPath = path;
+    } 
     
     public static Storage getStorageType(){
         return storage;

@@ -62,12 +62,17 @@ public class AppointmentsSingleColumnTableModel extends DefaultTableModel{
                     return null;
                 }
                 else{
-                    result =
-                            switch (column){
-                                case Duration -> appointment.getData().getDuration();
-                                case From -> appointment.getData().getStart();
-                                case Notes -> appointment.getData().getNotes();   
-                            };
+                    switch (column){
+                        case Duration:
+                            result = appointment.getData().getDuration();
+                            break;
+                        case From:
+                            result = appointment.getData().getStart();
+                            break;
+                        case Notes:
+                            result = appointment.getData().getNotes();
+                            break;
+                    }
                     break;
                 }
             }

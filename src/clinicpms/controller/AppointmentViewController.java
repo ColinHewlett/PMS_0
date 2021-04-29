@@ -126,16 +126,24 @@ public class AppointmentViewController extends ViewController{
         String s;
         s = e.getSource().getClass().getSimpleName();
         switch(s){
-            case "AppointmentsForDayView" -> {pcSupport.removePropertyChangeListener(this.dialog);
-                                                pcSupport.removePropertyChangeListener(this.view);
-                                                pcSupport.addPropertyChangeListener(view);
-                                                doAppointmentsForDayViewActions(e);}
-            case "AppointmentEditorDialog" -> {pcSupport.removePropertyChangeListener(view);
-                                                        pcSupport.removePropertyChangeListener(this.dialog);
-                                                        pcSupport.addPropertyChangeListener(this.dialog);
-                                                        doAppointmentViewDialogActions(e);}
-            case "DesktopViewController" -> doDesktopViewControllerAction(e);
-            case "EmptySlotScannerSettingsDialog" -> {doEmptySlotScannerSettingsDialogActions(e);}
+            case "AppointmentsForDayView":
+                    pcSupport.removePropertyChangeListener(this.dialog);
+                    pcSupport.removePropertyChangeListener(this.view);
+                    pcSupport.addPropertyChangeListener(view);
+                    doAppointmentsForDayViewActions(e);
+                    break;
+            case "AppointmentEditorDialog":
+                pcSupport.removePropertyChangeListener(view);
+                pcSupport.removePropertyChangeListener(this.dialog);
+                pcSupport.addPropertyChangeListener(this.dialog);
+                doAppointmentViewDialogActions(e);
+                break;
+            case "DesktopViewController":
+                doDesktopViewControllerAction(e);
+                break;
+            case "EmptySlotScannerSettingsDialog":
+                doEmptySlotScannerSettingsDialogActions(e);
+                break;
         }
     }
     private void doAppointmentViewDialogActions(ActionEvent e){
@@ -442,7 +450,7 @@ public class AppointmentViewController extends ViewController{
             Appointment sSlot = it.next();
             sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
             switch (state){
-                case STARTS_AFTER_PREVIOUS_SLOT ->{
+                case STARTS_AFTER_PREVIOUS_SLOT:
                     if(!rSlotEnd.isAfter(sSlot.getStart())){
                         /**
                          * requested slot is prior to scheduled slot so can add to schedule
@@ -459,7 +467,7 @@ public class AppointmentViewController extends ViewController{
                     }
                     else {//must mean rSlot overlaps sSlot
                         switch (mode){
-                            case CREATE ->{
+                            case CREATE:
                                 /**
                                  * --rSlot overlaps scheduled appointment so cannot be created 
                                  * --abort attempt to create a new appointment and post error
@@ -469,8 +477,7 @@ public class AppointmentViewController extends ViewController{
                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
                                         + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
                                 break;
-                            }
-                            case UPDATE ->{
+                            case UPDATE:
                                 /**
                                  * requested slot starts before schedule lot ends
                                  */
@@ -503,11 +510,11 @@ public class AppointmentViewController extends ViewController{
                                     result = null;
                                     break;
                                 }
-                            }
+                                break;
                         }
                     }
-                }
-                case ENDS_AFTER_PREVIOUS_SLOT ->{
+                    break;
+                case ENDS_AFTER_PREVIOUS_SLOT:
                     /**
                      * --requested slot is an updated version of the previous slot to scheduled appointment
                      */
@@ -531,7 +538,7 @@ public class AppointmentViewController extends ViewController{
                                 "Attempt to overwrite two separate appointments disallowed";
                         break;
                    }
-                }
+
             }
         }
         return result;   
@@ -548,38 +555,39 @@ public class AppointmentViewController extends ViewController{
     }
     
     private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
+        String error = null;
         Appointment result = null;
         Appointment rSlot = makeAppointmentFromEDRequest();
         LocalDate day = rSlot.getStart().toLocalDate();
         ArrayList<Appointment> appointments = new Appointments().getAppointmentsFor(day);
         if (appointments.size()==0){
             switch (mode){
-                case CREATE -> {
+                case CREATE:
                     result = rSlot.create();
-                }
-                case UPDATE -> {
+                    break;
+                case UPDATE:
                     result = rSlot.update();
-                }
+                    break;
             }
         }
         else{
             switch (mode){
-                case CREATE -> {
-                    String error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
+                case CREATE:
+                    error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
                         result = rSlot.create();
                     }
-                }
-                case UPDATE -> {
-                    String error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
+                    break;
+                case UPDATE:
+                    error = appointmentCollisionChangingSchedule(rSlot, appointments, mode);
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
                         result = rSlot.update();
                     }
-                }
+                    break;
             }
         }
         return result;
@@ -900,25 +908,63 @@ public class AppointmentViewController extends ViewController{
         Patient p = new Patient();
         for (PatientField pf: PatientField.values()){
             switch (pf){
-                case KEY -> p.setKey(eP.getData().getKey());
-                case TITLE -> p.getName().setTitle(eP.getData().getTitle());
-                case FORENAMES -> p.getName().setForenames(eP.getData().getForenames());
-                case SURNAME -> p.getName().setSurname(eP.getData().getSurname());
-                case LINE1 -> p.getAddress().setLine1(eP.getData().getLine1());
-                case LINE2 -> p.getAddress().setLine2(eP.getData().getLine2());
-                case TOWN -> p.getAddress().setTown(eP.getData().getTown());
-                case COUNTY -> p.getAddress().setCounty(eP.getData().getCounty());
-                case POSTCODE -> p.getAddress().setPostcode(eP.getData().getPostcode());
-                case DENTAL_RECALL_DATE -> p.getRecall().setDentalDate(eP.getData().getDentalRecallDate());
-                case HYGIENE_RECALL_DATE -> p.getRecall().setHygieneDate(eP.getData().getHygieneRecallDate());
-                case HYGIENE_RECALL_FREQUENCY -> p.getRecall().setHygieneFrequency(eP.getData().getHygieneRecallFrequency());
-                case DENTAL_RECALL_FREQUENCY -> p.getRecall().setDentalFrequency(eP.getData().getDentalRecallFrequency());
-                case GENDER -> p.setGender(eP.getData().getGender());
-                case PHONE1 -> p.setPhone1(eP.getData().getPhone1());
-                case PHONE2 -> p.setPhone2(eP.getData().getPhone2());
-                case DOB -> p.setDOB(eP.getData().getDOB());
-                case NOTES -> p.setNotes(eP.getData().getNotes());
-                case IS_GUARDIAN_A_PATIENT -> p.setIsGuardianAPatient(eP.getData().getIsGuardianAPatient());
+                case KEY:
+                    p.setKey(eP.getData().getKey());
+                    break;
+                case TITLE:
+                    p.getName().setTitle(eP.getData().getTitle());
+                    break;
+                case FORENAMES:
+                    p.getName().setForenames(eP.getData().getForenames());
+                    break;
+                case SURNAME:
+                    p.getName().setSurname(eP.getData().getSurname());
+                    break;
+                case LINE1:
+                    p.getAddress().setLine1(eP.getData().getLine1());
+                    break;
+                case LINE2:
+                    p.getAddress().setLine2(eP.getData().getLine2());
+                    break;
+                case TOWN:
+                    p.getAddress().setTown(eP.getData().getTown());
+                    break;
+                case COUNTY:
+                    p.getAddress().setCounty(eP.getData().getCounty());
+                    break;
+                case POSTCODE:
+                    p.getAddress().setPostcode(eP.getData().getPostcode());
+                    break;
+                case DENTAL_RECALL_DATE:
+                    p.getRecall().setDentalDate(eP.getData().getDentalRecallDate());
+                    break;
+                case HYGIENE_RECALL_DATE:
+                    p.getRecall().setHygieneDate(eP.getData().getHygieneRecallDate());
+                    break;
+                case HYGIENE_RECALL_FREQUENCY:
+                    p.getRecall().setHygieneFrequency(eP.getData().getHygieneRecallFrequency());
+                    break;
+                case DENTAL_RECALL_FREQUENCY:
+                    p.getRecall().setDentalFrequency(eP.getData().getDentalRecallFrequency());
+                    break;
+                case GENDER:
+                    p.setGender(eP.getData().getGender());
+                    break;
+                case PHONE1:
+                    p.setPhone1(eP.getData().getPhone1());
+                    break;
+                case PHONE2:
+                    p.setPhone2(eP.getData().getPhone2());
+                    break;
+                case DOB:
+                    p.setDOB(eP.getData().getDOB());
+                    break;
+                case NOTES:
+                    p.setNotes(eP.getData().getNotes());
+                    break;
+                case IS_GUARDIAN_A_PATIENT:
+                    p.setIsGuardianAPatient(eP.getData().getIsGuardianAPatient());
+                    break;
             }
         }
         return p;
@@ -989,25 +1035,63 @@ public class AppointmentViewController extends ViewController{
             RenderedPatient vp = new RenderedPatient();
             for (PatientField pf: PatientField.values()){
                 switch(pf){
-                    case KEY -> vp.setKey(p.getKey());
-                    case TITLE -> vp.setTitle((p.getName().getTitle()));
-                    case FORENAMES -> vp.setForenames((p.getName().getForenames()));
-                    case SURNAME -> vp.setSurname((p.getName().getSurname()));
-                    case LINE1 -> vp.setLine1((p.getAddress().getLine1()));
-                    case LINE2 -> vp.setLine2((p.getAddress().getLine2()));
-                    case TOWN -> vp.setTown((p.getAddress().getTown()));
-                    case COUNTY -> vp.setCounty((p.getAddress().getCounty()));
-                    case POSTCODE -> vp.setPostcode((p.getAddress().getPostcode()));
-                    case DENTAL_RECALL_DATE -> vp.setDentalRecallDate((p.getRecall().getDentalDate()));
-                    case HYGIENE_RECALL_DATE -> vp.setHygieneRecallDate((p.getRecall().getHygieneDate()));
-                    case DENTAL_RECALL_FREQUENCY -> vp.setHygieneRecallFrequency((p.getRecall().getDentalFrequency()));
-                    case HYGIENE_RECALL_FREQUENCY -> vp.setDentalRecallFrequency((p.getRecall().getDentalFrequency()));
-                    case DOB -> vp.setDOB((p.getDOB()));
-                    case GENDER -> vp.setGender((p.getGender()));
-                    case PHONE1 -> vp.setPhone1((p.getPhone1()));
-                    case PHONE2 -> vp.setPhone2((p.getPhone2()));
-                    case IS_GUARDIAN_A_PATIENT -> vp.setIsGuardianAPatient((p.getIsGuardianAPatient()));
-                    case NOTES -> vp.setNotes((p.getNotes()));
+                    case KEY:
+                        vp.setKey(p.getKey());
+                        break;
+                    case TITLE:
+                        vp.setTitle((p.getName().getTitle()));
+                        break;
+                    case FORENAMES:
+                        vp.setForenames((p.getName().getForenames()));
+                        break;
+                    case SURNAME:
+                        vp.setSurname((p.getName().getSurname()));
+                        break;
+                    case LINE1:
+                        vp.setLine1((p.getAddress().getLine1()));
+                        break;
+                    case LINE2:
+                        vp.setLine2((p.getAddress().getLine2()));
+                        break;
+                    case TOWN:
+                        vp.setTown((p.getAddress().getTown()));
+                        break;
+                    case COUNTY:
+                        vp.setCounty((p.getAddress().getCounty()));
+                        break;
+                    case POSTCODE:
+                        vp.setPostcode((p.getAddress().getPostcode()));
+                        break;
+                    case DENTAL_RECALL_DATE:
+                        vp.setDentalRecallDate((p.getRecall().getDentalDate()));
+                        break;
+                    case HYGIENE_RECALL_DATE:
+                        vp.setHygieneRecallDate((p.getRecall().getHygieneDate()));
+                        break;
+                    case DENTAL_RECALL_FREQUENCY:
+                        vp.setHygieneRecallFrequency((p.getRecall().getDentalFrequency()));
+                        break;
+                    case HYGIENE_RECALL_FREQUENCY:
+                        vp.setDentalRecallFrequency((p.getRecall().getDentalFrequency()));
+                        break;
+                    case DOB:
+                        vp.setDOB((p.getDOB()));
+                        break;
+                    case GENDER:
+                        p.setGender((p.getGender()));
+                        break;
+                    case PHONE1:
+                        vp.setPhone1((p.getPhone1()));
+                        break;
+                    case PHONE2:
+                        vp.setPhone2((p.getPhone2()));
+                        break;
+                    case IS_GUARDIAN_A_PATIENT:
+                        vp.setIsGuardianAPatient((p.getIsGuardianAPatient()));
+                        break;
+                    case NOTES:
+                        vp.setNotes((p.getNotes()));
+                        break;
                 }
             }
             result = vp;
@@ -1018,10 +1102,18 @@ public class AppointmentViewController extends ViewController{
         RenderedAppointment ra = new RenderedAppointment();
         for (AppointmentField af: AppointmentField.values()){
             switch(af){
-                case KEY -> ra.setKey(a.getKey());
-                case DURATION -> ra.setDuration(a.getDuration());
-                case NOTES -> ra.setNotes(a.getNotes());
-                case START -> ra.setStart(a.getStart());   
+                case KEY:
+                    ra.setKey(a.getKey());
+                    break;
+                case DURATION:
+                    ra.setDuration(a.getDuration());
+                    break;
+                case NOTES:
+                    ra.setNotes(a.getNotes());
+                    break;
+                case START:
+                    ra.setStart(a.getStart()); 
+                    break;
             }  
         }
         return ra;

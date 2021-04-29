@@ -462,21 +462,20 @@ public class AppointmentEditorDialog extends AppointmentViewDialog{
             }
             if (OKToSaveAppointment==JOptionPane.YES_OPTION){
                 switch (getViewMode()){
-                    case CREATE -> {
+                    case CREATE:
                         evt = new ActionEvent(AppointmentEditorDialog.this,
                                 ActionEvent.ACTION_PERFORMED,
                                 ViewController.AppointmentViewDialogActionEvent.
                                         APPOINTMENT_VIEW_CREATE_REQUEST.toString());
                         AppointmentEditorDialog.this.getMyController().actionPerformed(evt); 
-                    }
-                    case UPDATE -> {
+                        break;
+                    case UPDATE:
                         evt = new ActionEvent(AppointmentEditorDialog.this,
                                 ActionEvent.ACTION_PERFORMED,
                                 ViewController.AppointmentViewDialogActionEvent.
                                         APPOINTMENT_VIEW_UPDATE_REQUEST.toString());
                         AppointmentEditorDialog.this.getMyController().actionPerformed(evt); 
-
-                    }
+                        break;
                 }
             }
         }       

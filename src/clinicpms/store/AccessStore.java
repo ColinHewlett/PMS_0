@@ -439,25 +439,30 @@ public class AccessStore extends Store {
     private ArrayList<Patient> runSQL(
             PatientSQL q, Object entity, ArrayList<Patient> result)throws StoreException{
         Patient patient = (Patient)entity;
-        String sql =
-                switch (q){
-                    case READ_HIGHEST_KEY ->
+        String sql = null;
+        switch (q){
+            case READ_HIGHEST_KEY: sql =
                 "SELECT MAX(key) as highest_key "
                 + "FROM Patient;";
-                    case CREATE_PATIENT ->
+                break;
+            case CREATE_PATIENT: sql =
                 "INSERT INTO Patient "
                 + "(title, forenames, surname, line1, line2,"
                 + "town, county, postcode,phone1, phone2, gender, dob,"
                 + "isGuardianAPatient, recallFrequency, recallDate, notes,key) "
                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-                    case READ_PATIENT_WITH_KEY ->
+                break;
+            case READ_PATIENT_WITH_KEY: sql =
                 "SELECT key, title, forenames, surname, line1, line2, "
                 + "town, county, postcode, gender, dob, isGuardianAPatient, "
                 + "phone1, phone2, recallFrequency, recallDate, notes, guardianKey "
                 + "FROM Patient "
                 + "WHERE key=?;";
-                    case READ_ALL_PATIENTS -> "SELECT * FROM Patient ORDER BY surname, forenames ASC;";
-                    case UPDATE_PATIENT ->
+                break;
+            case READ_ALL_PATIENTS: 
+                sql = "SELECT * FROM Patient ORDER BY surname, forenames ASC;";
+                break;
+            case UPDATE_PATIENT: sql =
                 "UPDATE PATIENT "
                 + "SET title = ?, "
                 + "forenames = ?,"
@@ -476,9 +481,11 @@ public class AccessStore extends Store {
                 + "recallDate = ?,"
                 + "notes = ?,"
                 + "guardianKey = ? "
-                + "WHERE key = ? ;";};
+                + "WHERE key = ? ;";
+                break;
+        }
         switch (q){
-            case READ_HIGHEST_KEY -> {
+            case READ_HIGHEST_KEY:
                 try{
                     Integer key = null;
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
@@ -494,8 +501,8 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a READ_HIGHEST_KEY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case CREATE_PATIENT -> {
+                break;
+            case CREATE_PATIENT:
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     /*
@@ -533,8 +540,8 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during an CREATE_PATIENT statement",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case READ_PATIENT_WITH_KEY -> {
+                break;
+            case READ_PATIENT_WITH_KEY:
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patient.getKey());
@@ -546,8 +553,8 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a READ_PATIENT_WITH_KEY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case READ_ALL_PATIENTS ->{
+                break;
+            case READ_ALL_PATIENTS:
                 try{
                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql); 
                    ResultSet rs = preparedStatement.executeQuery();
@@ -558,8 +565,8 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a READ_ALL_PATIENTS query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case UPDATE_PATIENT ->{
+                break;
+            case UPDATE_PATIENT:
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setString(1, patient.getName().getTitle());
@@ -593,7 +600,7 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during an UPDATE_PATIENT statement",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
+                break;
         }
         return result;            
     }
@@ -601,51 +608,58 @@ public class AccessStore extends Store {
             AppointmentSQL q, Object entity, ArrayList<Appointment> appointments) throws StoreException{
         ArrayList<Appointment> records = appointments;
         String sql = null;
-        sql = 
-                switch (q){
-                    case READ_HIGHEST_KEY ->
+        Appointment appointment = null;
+        LocalDate day = null;
+        switch (q){
+            case READ_HIGHEST_KEY: sql =
                 "SELECT MAX(key) as highest_key "
                 + "FROM Appointment;";
-                    case DELETE_APPOINTMENT_WITH_KEY ->
+                break;
+            case DELETE_APPOINTMENT_WITH_KEY: sql =
                 "DELETE FROM Appointment WHERE Key = ?;";
-                    case CREATE_APPOINTMENT ->
+                break;
+            case CREATE_APPOINTMENT: sql = 
                 "INSERT INTO Appointment "
                 + "(PatientKey, Start, Duration, Notes,Key) "
                 + "VALUES (?,?,?,?,?);";
-                    case READ_APPOINTMENT_WITH_KEY ->
+                break;
+            case READ_APPOINTMENT_WITH_KEY: sql =
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes "
                 + "FROM Appointment AS a "
                 + "WHERE a.Key = ?;";
-                    case READ_APPOINTMENTS_FROM_DAY ->
+                break;
+            case READ_APPOINTMENTS_FROM_DAY: sql =
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.Start >= ? "
                 + "ORDER BY a.Start ASC;";
-                    case READ_APPOINTMENTS_FOR_PATIENT ->
+                break;
+            case READ_APPOINTMENTS_FOR_PATIENT: sql =
                 "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.PatientKey = ? " +
-                "ORDER BY a.Start DESC";    
-                    case READ_APPOINTMENTS_FOR_DAY ->
+                "ORDER BY a.Start DESC"; 
+                break;
+            case READ_APPOINTMENTS_FOR_DAY: sql =
                 "select *"
                 + "from appointment as a "
                 + "where DatePart(\"yyyy\",a.start) = ? "
                 + "AND  DatePart(\"m\",a.start) = ? "
                 + "AND  DatePart(\"d\",a.start) = ? "
-                + "ORDER BY a.start ASC;";  
-                        
-                    case UPDATE_APPOINTMENT -> 
+                + "ORDER BY a.start ASC;"; 
+                break;
+            case UPDATE_APPOINTMENT: sql = 
                 "UPDATE Appointment "
                 + "SET PatientKey = ?, "
                 + "Start = ?,"
                 + "Duration = ?,"
                 + "Notes = ?"
                 + "WHERE key = ? ;";
-        };
+                break;
+        }
         switch (q){
-            
-            case READ_HIGHEST_KEY -> {
-                Appointment appointment = (Appointment)entity;
+            case READ_HIGHEST_KEY:
+                appointment = (Appointment)entity;
                 try{
                     Integer key = null;
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
@@ -661,9 +675,9 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a READ_HIGHEST_KEY from Appointment table",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case DELETE_APPOINTMENT_WITH_KEY -> {
-                Appointment appointment = (Appointment)entity;
+                break;
+            case DELETE_APPOINTMENT_WITH_KEY:
+                appointment = (Appointment)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getKey());
@@ -674,9 +688,9 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a DELETE APPOINTMENT WITH KEY from Appointment table",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case CREATE_APPOINTMENT -> {
-                Appointment appointment = (Appointment)entity;
+                break;
+            case CREATE_APPOINTMENT:
+                appointment = (Appointment)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getPatient().getKey());
@@ -691,9 +705,9 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during an CREATE_APPOINTMENT statement",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case READ_APPOINTMENT_WITH_KEY -> {
-                Appointment appointment = (Appointment)entity;
+                break;
+            case READ_APPOINTMENT_WITH_KEY:
+                appointment = (Appointment)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, appointment.getKey());
@@ -705,9 +719,9 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a READ_APPOINTMENT_WITH_KEY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case READ_APPOINTMENTS_FROM_DAY -> {
-                LocalDate day = (LocalDate)entity;
+                break;
+            case READ_APPOINTMENTS_FROM_DAY:
+                day = (LocalDate)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setDate(1, java.sql.Date.valueOf(day));
@@ -719,9 +733,8 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a READ_APPOINTMENTS_FROM_DAY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-                
-            }
-            case READ_APPOINTMENTS_FOR_PATIENT -> {
+                break;
+            case READ_APPOINTMENTS_FOR_PATIENT:
                 Patient patient = (Patient)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
@@ -734,9 +747,9 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a READ_APPOINTMENTS_FOR_PATIENT query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case READ_APPOINTMENTS_FOR_DAY -> {
-                LocalDate day = (LocalDate)entity;
+                break;
+            case READ_APPOINTMENTS_FOR_DAY:
+                day = (LocalDate)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, day.getYear());
@@ -750,9 +763,9 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a READ_APPOINTMENTS_FOR_DAY query",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
-            case UPDATE_APPOINTMENT -> {
-                Appointment appointment = (Appointment)entity;
+                break;
+            case UPDATE_APPOINTMENT:
+                appointment = (Appointment)entity;
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getPatient().getKey());
@@ -767,7 +780,7 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during an UPDATE_APPOINTMENT statement",
                     ExceptionType.SQL_EXCEPTION);
                 }
-            }
+                break;
         }
         return records;
     }
@@ -909,8 +922,12 @@ public class AccessStore extends Store {
     }
     private Patient updateGender(Patient patient){
         switch (patient.getGender()){
-            case "M" -> patient.setGender("Male");
-            case "F" -> patient.setGender("Female");
+            case "M":
+                patient.setGender("Male");
+                break;
+            case "F":
+                patient.setGender("Female");
+                break;
         }
         return patient;
     }

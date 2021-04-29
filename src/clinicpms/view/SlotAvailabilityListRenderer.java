@@ -52,14 +52,22 @@ public class SlotAvailabilityListRenderer extends JLabel implements ListCellRend
             int hours = getHoursFromDuration(duration.toMinutes());
             int minutes = getMinutesFromDuration(duration.toMinutes());
             switch (hours){
-                case 0 -> result = String.valueOf(minutes) + " minutes";
-                case 1 -> {result = (minutes == 0) ? 
+                case 0:
+                    result = String.valueOf(minutes) + " minutes";
+                    break;
+                case 1:
+                    result = (minutes == 0) ? 
                         String.valueOf(hours) + " hour" : 
-                        String.valueOf(hours) + " hour " + String.valueOf(minutes) + " minutes";}
-                case 8 -> result = "all day";
-                default -> {result = (minutes == 0) ?
+                        String.valueOf(hours) + " hour " + String.valueOf(minutes) + " minutes";
+                    break;
+                case 8:
+                    result = "all day";
+                    break;
+                default:
+                    result = (minutes == 0) ?
                         String.valueOf(hours) + " hours" :
-                        String.valueOf(hours) + " hours " + String.valueOf(minutes) + " minutes";}
+                        String.valueOf(hours) + " hours " + String.valueOf(minutes) + " minutes";
+                    break;
             }
         }
         return result;

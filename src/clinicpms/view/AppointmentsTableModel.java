@@ -64,17 +64,19 @@ public class AppointmentsTableModel extends AbstractTableModel {
         Object result = null;
         EntityDescriptor.Appointment appointment = getAppointments().get(row);
         switch (column){
-            case 0 -> result = appointment.getData().getStart();
-            case 1 -> result = appointment.getData().getDuration();
-            case 2 -> result = appointment.getAppointee();
-            case 3 -> result = appointment.getData().getNotes();
+            case 0:
+                result = appointment.getData().getStart();
+                break;
+            case 1:
+                result = appointment.getData().getDuration();
+                break;
+            case 2:
+                result = appointment.getAppointee();
+                break;
+            case 3:
+                result = appointment.getData().getNotes();
+                break;
         }
         return result;
-    }
-    
-    
-  
-    
-    
-    
+    }   
 }

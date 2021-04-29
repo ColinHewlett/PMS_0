@@ -49,7 +49,7 @@ public class DbLocationStore extends Store{
         this.connection = con;
     }
     private Connection getConnection()throws StoreException{
-        String url = "jdbc:ucanaccess://" + "c://ProgramData//DbLocation.accdb" + ";showSchema=true";
+        String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
         if (connection == null){
             try{
                 connection = DriverManager.getConnection(url);

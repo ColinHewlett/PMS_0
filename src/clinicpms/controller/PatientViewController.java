@@ -59,10 +59,17 @@ public class PatientViewController extends ViewController {
         RenderedAppointment ra = new RenderedAppointment();
         for (AppointmentField af: AppointmentField.values()){
             switch(af){
-                case KEY -> ra.setKey(a.getKey());
-                case DURATION -> ra.setDuration(a.getDuration());
-                case NOTES -> ra.setNotes(a.getNotes());
-                case START -> ra.setStart(a.getStart());   
+                case KEY:
+                    ra.setKey(a.getKey());
+                    break;
+                case DURATION:
+                    ra.setDuration(a.getDuration());
+                    break;
+                case NOTES:
+                    ra.setNotes(a.getNotes());
+                    break;
+                case START:
+                    ra.setStart(a.getStart());   
             }  
         }
         return ra;
@@ -73,32 +80,63 @@ public class PatientViewController extends ViewController {
             RenderedPatient vp = new RenderedPatient();
             for (PatientField pf: PatientField.values()){
                 switch(pf){
-                    case KEY -> vp.setKey(p.getKey());
-                    case TITLE -> vp.setTitle((p.getName().getTitle()));
-                    case FORENAMES -> vp.setForenames((p.getName().getForenames()));
-                    case SURNAME -> vp.setSurname((p.getName().getSurname()));
-                    case LINE1 -> vp.setLine1((p.getAddress().getLine1()));
-                    case LINE2 -> vp.setLine2((p.getAddress().getLine2()));
-                    case TOWN -> vp.setTown((p.getAddress().getTown()));
-                    case COUNTY -> vp.setCounty((p.getAddress().getCounty()));
-                    case POSTCODE -> vp.setPostcode((p.getAddress().getPostcode()));
-                    case DENTAL_RECALL_DATE -> vp.setDentalRecallDate((p.getRecall().getDentalDate()));
-                    case HYGIENE_RECALL_DATE -> vp.setHygieneRecallDate((p.getRecall().getHygieneDate()));
+                    case KEY:
+                        vp.setKey(p.getKey());
+                        break;
+                    case TITLE:
+                        vp.setTitle((p.getName().getTitle()));
+                        break;
+                    case FORENAMES:
+                        vp.setForenames((p.getName().getForenames()));
+                        break;
+                    case SURNAME:
+                        vp.setSurname((p.getName().getSurname()));
+                        break;
+                    case LINE1:
+                        vp.setLine1((p.getAddress().getLine1()));
+                        break;
+                    case LINE2:
+                        vp.setLine2((p.getAddress().getLine2()));
+                        break;
+                    case TOWN:
+                        vp.setTown((p.getAddress().getTown()));
+                        break;
+                    case COUNTY:
+                        vp.setCounty((p.getAddress().getCounty()));
+                        break;
+                    case POSTCODE:
+                        vp.setPostcode((p.getAddress().getPostcode()));
+                        break;
+                    case DENTAL_RECALL_DATE:
+                        vp.setDentalRecallDate((p.getRecall().getDentalDate()));
+                        break;
+                    case HYGIENE_RECALL_DATE:
+                        vp.setHygieneRecallDate((p.getRecall().getHygieneDate()));
+                        break;
                     //case DENTAL_RECALL_FREQUENCY -> vp.setHygieneRecallFrequency((p.getRecall().getDentalFrequency()));
-                    case DENTAL_RECALL_FREQUENCY -> {
+                    case DENTAL_RECALL_FREQUENCY:
                         if (p.getRecall().getDentalFrequency()==null) p.getRecall().setDentalFrequency(0);
                         else vp.setDentalRecallFrequency((p.getRecall().getDentalFrequency()));
-                    }
-                    case DOB -> vp.setDOB((p.getDOB()));
-                    case GENDER -> vp.setGender((p.getGender()));
-                    case PHONE1 -> vp.setPhone1((p.getPhone1()));
-                    case PHONE2 -> vp.setPhone2((p.getPhone2()));
-                    case IS_GUARDIAN_A_PATIENT -> {
+                        break;
+                    case DOB:
+                        vp.setDOB((p.getDOB()));
+                        break;
+                    case GENDER:
+                        vp.setGender((p.getGender()));
+                        break;
+                    case PHONE1:
+                        vp.setPhone1((p.getPhone1()));
+                        break;
+                    case PHONE2:
+                        vp.setPhone2((p.getPhone2()));
+                        break;
+                    case IS_GUARDIAN_A_PATIENT:
                         if (p.getIsGuardianAPatient()==null) vp.setIsGuardianAPatient((false));
                         else vp.setIsGuardianAPatient(p.getIsGuardianAPatient());
-                    }
-                    case NOTES -> vp.setNotes((p.getNotes()));
-
+                        break;
+                    case NOTES:
+                        vp.setNotes((p.getNotes()));
+                        break;
                 }
             }
             result = vp;
@@ -177,25 +215,57 @@ public class PatientViewController extends ViewController {
         Patient p = new Patient();
         for (PatientField pf: PatientField.values()){
             switch (pf){
-                case KEY -> p.setKey(eP.getData().getKey());
-                case TITLE -> p.getName().setTitle(eP.getData().getTitle());
-                case FORENAMES -> p.getName().setForenames(eP.getData().getForenames());
-                case SURNAME -> p.getName().setSurname(eP.getData().getSurname());
-                case LINE1 -> p.getAddress().setLine1(eP.getData().getLine1());
-                case LINE2 -> p.getAddress().setLine2(eP.getData().getLine2());
-                case TOWN -> p.getAddress().setTown(eP.getData().getTown());
-                case COUNTY -> p.getAddress().setCounty(eP.getData().getCounty());
-                case POSTCODE -> p.getAddress().setPostcode(eP.getData().getPostcode());
-                case DENTAL_RECALL_DATE -> p.getRecall().setDentalDate(eP.getData().getDentalRecallDate());
-                //case HYGIENE_RECALL_DATE -> p.getRecall().setHygieneDate(eP.getData().getHygieneRecallDate());
-                //case HYGIENE_RECALL_FREQUENCY -> p.getRecall().setHygieneFrequency(eP.getData().getHygieneRecallFrequency());
-                case DENTAL_RECALL_FREQUENCY -> p.getRecall().setDentalFrequency(eP.getData().getDentalRecallFrequency());
-                case GENDER -> p.setGender(eP.getData().getGender());
-                case PHONE1 -> p.setPhone1(eP.getData().getPhone1());
-                case PHONE2 -> p.setPhone2(eP.getData().getPhone2());
-                case DOB -> p.setDOB(eP.getData().getDOB());
-                case NOTES -> p.setNotes(eP.getData().getNotes());
-                case IS_GUARDIAN_A_PATIENT -> p.setIsGuardianAPatient(eP.getData().getIsGuardianAPatient());
+                case KEY:
+                    p.setKey(eP.getData().getKey());
+                    break;
+                case TITLE:
+                    p.getName().setTitle(eP.getData().getTitle());
+                    break;
+                case FORENAMES:
+                    p.getName().setForenames(eP.getData().getForenames());
+                    break;
+                case SURNAME:
+                    p.getName().setSurname(eP.getData().getSurname());
+                    break;
+                case LINE1:
+                    p.getAddress().setLine1(eP.getData().getLine1());
+                    break;
+                case LINE2:
+                    p.getAddress().setLine2(eP.getData().getLine2());
+                    break;
+                case TOWN:
+                    p.getAddress().setTown(eP.getData().getTown());
+                    break;
+                case COUNTY:
+                    p.getAddress().setCounty(eP.getData().getCounty());
+                    break;
+                case POSTCODE:
+                    p.getAddress().setPostcode(eP.getData().getPostcode());
+                    break;
+                case DENTAL_RECALL_DATE:
+                    p.getRecall().setDentalDate(eP.getData().getDentalRecallDate());
+                    break;
+                case DENTAL_RECALL_FREQUENCY:
+                    p.getRecall().setDentalFrequency(eP.getData().getDentalRecallFrequency());
+                    break;
+                case GENDER:
+                    p.setGender(eP.getData().getGender());
+                    break;
+                case PHONE1:
+                    p.setPhone1(eP.getData().getPhone1());
+                    break;
+                case PHONE2:
+                    p.setPhone2(eP.getData().getPhone2());
+                    break;
+                case DOB:
+                    p.setDOB(eP.getData().getDOB());
+                    break;
+                case NOTES:
+                    p.setNotes(eP.getData().getNotes());
+                    break;
+                case IS_GUARDIAN_A_PATIENT:
+                    p.setIsGuardianAPatient(eP.getData().getIsGuardianAPatient());
+                    break;
             }
         }
         return p;

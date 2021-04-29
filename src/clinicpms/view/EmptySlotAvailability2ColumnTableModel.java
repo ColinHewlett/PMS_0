@@ -58,8 +58,12 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
     public String getColumnName(int columnIndex){
         String result = null;
         switch (columnIndex){
-            case 0 -> result = "Empty slots";
-            case 1 -> result = "Duration";
+            case 0:
+                result = "Empty slots";
+                break;
+            case 1:
+                result = "Duration";
+                break;
             }
 
         return result;
@@ -75,9 +79,13 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         Object result = null;
         EntityDescriptor.Appointment slot = getEmptySlots().get(row);
         switch (columnIndex){
-            case 0 -> result = slot.getData().getStart().format(emptySlotFormat);     
-            case 1 -> result = convertSlotDurationToString(
-                    slot.getData().getDuration(), slot.getData().getStart().toLocalDate());    
+            case 0:
+                result = slot.getData().getStart().format(emptySlotFormat);  
+                break;   
+            case 1:
+                result = convertSlotDurationToString(
+                    slot.getData().getDuration(), slot.getData().getStart().toLocalDate());   
+                break; 
         }
         return (String)result;
     }
@@ -103,13 +111,19 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
             int hours = getHoursFromDuration(duration.toMinutes());
             int minutes = getMinutesFromDuration(duration.toMinutes());
             switch (hours){
-                case 0 -> result = String.valueOf(minutes) + " minutes";
-                case 1 -> {result = (minutes == 0) ? 
+                case 0:
+                    result = String.valueOf(minutes) + " minutes";
+                    break;
+                case 1:
+                    result = (minutes == 0) ? 
                         String.valueOf(hours) + " hour" : 
-                        String.valueOf(hours) + " hour " + String.valueOf(minutes) + " minutes";}
-                default -> {result = (minutes == 0) ?
+                        String.valueOf(hours) + " hour " + String.valueOf(minutes) + " minutes";
+                    break;
+                default:
+                    result = (minutes == 0) ?
                         String.valueOf(hours) + " hours" :
-                        String.valueOf(hours) + " hours " + String.valueOf(minutes) + " minutes";}
+                        String.valueOf(hours) + " hours " + String.valueOf(minutes) + " minutes";
+                    break;
             }
         }
         return result;

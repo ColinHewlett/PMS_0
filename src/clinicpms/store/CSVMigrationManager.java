@@ -14,9 +14,15 @@ import clinicpms.store.exceptions.StoreException;
 public class CSVMigrationManager {
     public static void action(Store.MigrationMethod mm)throws StoreException{
         switch (mm){
-            case CSV_APPOINTMENT_FILE_CONVERTER -> CSVStore.getInstance().appointmentfileConverter();
-            case CSV_MIGRATION_INTEGRITY_PROCESS -> CSVStore.getInstance().checkAppointeeExists1();
-            case CSV_PATIENT_FILE_CONVERTER -> CSVStore.getInstance().patientfileConverter();
+            case CSV_APPOINTMENT_FILE_CONVERTER:
+                CSVStore.getInstance().appointmentfileConverter();
+                break;
+            case CSV_MIGRATION_INTEGRITY_PROCESS:
+                CSVStore.getInstance().checkAppointeeExists1();
+                break;
+            case CSV_PATIENT_FILE_CONVERTER:
+                CSVStore.getInstance().patientfileConverter();
+                break;
         }
     }
 }

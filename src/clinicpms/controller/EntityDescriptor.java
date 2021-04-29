@@ -224,7 +224,8 @@ public class EntityDescriptor {
         public String toString(){
             String cappedName = null;
             if (getData().getSurname().length()>0){
-                if (getData().getSurname().strip().contains("-")) 
+                //if (getData().getSurname().strip().contains("-")) 
+                if (getData().getSurname().contains("-"))
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "-");
                 else if (getData().getSurname().strip().contains(" ")) 
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "\\s+");

@@ -14,7 +14,9 @@ import clinicpms.store.exceptions.StoreException;
 public class AccessMigrationManager {
     public static void action(Store.MigrationMethod mm)throws StoreException{
         switch (mm){
-            case ACCESS_PATIENT_PREPROCESS -> AccessStore.getInstance(); 
+            case ACCESS_PATIENT_PREPROCESS:
+                AccessStore.getInstance();
+                break;
         }
     }
 }

@@ -19,11 +19,20 @@ import clinicpms.store.interfaces.IStore;
  */
 public class StorageFactory {
     public StorageFactory(Store.Storage type)  throws StoreException{
-        IStore store = switch (type){
-            case CSV -> CSVStore.getInstance();
-            case ACCESS -> AccessStore.getInstance();
-            case POSTGRES -> PostgreSQLStore.getInstance();
-            case SQL_EXPRESS -> SQLExpressStore.getInstance();  
+        IStore store = null;
+        switch (type){
+            case CSV:
+                store = CSVStore.getInstance();
+                break;
+            case ACCESS:
+                store = AccessStore.getInstance();
+                break;
+            case POSTGRES:
+                store = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                store = SQLExpressStore.getInstance();
+                break;
         };
     }
 }

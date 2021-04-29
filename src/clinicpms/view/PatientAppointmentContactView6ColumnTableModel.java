@@ -133,15 +133,26 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
                     contactDetails = contactDetails + "{Phone 2} " + phone2;
                     Boolean contactStatus = appointment.getHasBeenContacted();
                     
-                    result =
-                            switch (column){
-                                case Patient -> appointment.getPatient();
-                                case From -> start.toLocalTime();
-                                case To -> start.plusMinutes(duration.toMinutes()).toLocalTime();
-                                case Duration -> duration;
-                                case Contacts -> contactDetails; 
-                                case Contacted -> contactStatus;
-                            };
+                    switch (column){
+                        case Patient:
+                            result = appointment.getPatient();
+                            break;
+                        case From:
+                            result = start.toLocalTime();
+                            break;
+                        case To:
+                            result = start.plusMinutes(duration.toMinutes()).toLocalTime();
+                            break;
+                        case Duration:
+                            result = duration;
+                            break;
+                        case Contacts:
+                            result = contactDetails; 
+                            break;
+                        case Contacted:
+                            result = contactStatus;
+                            break;
+                    }
                     break;
                 }
             }

@@ -279,42 +279,94 @@ public class PatientView extends View{
         for (int index = 0; index < 2; index ++){
             for (PatientField pf: PatientField.values()){
                 switch (pf){
-                    case TITLE -> {if (newPatientValues.getData().getTitle().equals(
-                            oldPatientValues.getData().getTitle())){isTitle = true;}}
-                    case FORENAMES -> {if (newPatientValues.getData().getForenames().equals(
-                            oldPatientValues.getData().getForenames())){isForenames = true;}}
-                    case SURNAME -> {if (newPatientValues.getData().getSurname().equals(
-                            oldPatientValues.getData().getSurname())){isSurname = true;}}
-                    case LINE1 -> {if (newPatientValues.getData().getLine1().equals(
-                            oldPatientValues.getData().getLine1())){isLine1 = true;}}
-                    case LINE2 -> {if (newPatientValues.getData().getLine2().equals(
-                            oldPatientValues.getData().getLine2())){isLine2 = true;}}
-                    case TOWN -> {if (newPatientValues.getData().getTown().equals(
-                            oldPatientValues.getData().getTown())){isTown = true;}}
-                    case COUNTY -> {if (newPatientValues.getData().getCounty().equals(
-                            oldPatientValues.getData().getCounty())){isCounty = true;}}
-                    case POSTCODE -> {if (newPatientValues.getData().getPostcode().equals(
-                            oldPatientValues.getData().getPostcode())){isPostcode = true;}}
-                    case PHONE1 -> {if (newPatientValues.getData().getPhone1().equals(
-                            oldPatientValues.getData().getPhone1())){isPhone1 = true;}}
-                    case PHONE2 -> {if (newPatientValues.getData().getPhone2().equals(
-                            oldPatientValues.getData().getPhone2())){isPhone2 = true;}}
-                    case GENDER -> {if (newPatientValues.getData().getGender().equals(
-                            oldPatientValues.getData().getGender())){isGender = true;}}
-                    case DOB -> {if ((newPatientValues.getData().getDOB().compareTo(
-                            oldPatientValues.getData().getDOB())) == 0){isDOB = true;}}
-                    case IS_GUARDIAN_A_PATIENT -> {if (newPatientValues.getData().getIsGuardianAPatient() &&
-                            oldPatientValues.getData().getIsGuardianAPatient()){isGuardianAPatient = true;}}
-                    case NOTES -> {if (newPatientValues.getData().getNotes().equals(
-                            oldPatientValues.getData().getNotes())){isNotes = true;}}
-                    case DENTAL_RECALL_DATE -> {if (newPatientValues.getData().getDentalRecallDate().equals(
-                            oldPatientValues.getData().getDentalRecallDate())){isDentalRecallDate = true;}}
-                    case HYGIENE_RECALL_DATE -> {if (newPatientValues.getData().getHygieneRecallDate().equals(
-                            oldPatientValues.getData().getHygieneRecallDate())){isHygieneRecallDate = true;}}
-                    case DENTAL_RECALL_FREQUENCY -> {if (newPatientValues.getData().getDentalRecallFrequency()==
-                            oldPatientValues.getData().getDentalRecallFrequency()){isDentalRecallFrequency = true;}}
-                    case HYGIENE_RECALL_FREQUENCY -> {if (newPatientValues.getData().getHygieneRecallFrequency()==
-                            oldPatientValues.getData().getHygieneRecallFrequency()){isHygieneRecallFrequency = true;}}
+                    case TITLE:
+                        if (newPatientValues.getData().getTitle().equals(
+                            oldPatientValues.getData().getTitle())){isTitle = true;}
+                        break;
+                    case FORENAMES:
+                        if (newPatientValues.getData().getForenames().equals(
+                            oldPatientValues.getData().getForenames())){isForenames = true;
+                        }
+                        break;
+                    case SURNAME:
+                        if (newPatientValues.getData().getSurname().equals(
+                            oldPatientValues.getData().getSurname())){isSurname = true;
+                        }
+                        break;
+                    case LINE1:
+                        if (newPatientValues.getData().getLine1().equals(
+                            oldPatientValues.getData().getLine1())){isLine1 = true;
+                        }
+                        break;
+                    case LINE2: 
+                        if (newPatientValues.getData().getLine2().equals(
+                            oldPatientValues.getData().getLine2())){isLine2 = true;
+                        }
+                        break;
+                    case TOWN:
+                        if (newPatientValues.getData().getTown().equals(
+                            oldPatientValues.getData().getTown())){isTown = true;
+                        };
+                        break;
+                    case COUNTY:
+                        if (newPatientValues.getData().getCounty().equals(
+                            oldPatientValues.getData().getCounty())){isCounty = true;
+                        }
+                        break;
+                    case POSTCODE:
+                        if (newPatientValues.getData().getPostcode().equals(
+                            oldPatientValues.getData().getPostcode())){isPostcode = true;
+                        }
+                        break;
+                    case PHONE1:
+                        if (newPatientValues.getData().getPhone1().equals(
+                            oldPatientValues.getData().getPhone1())){isPhone1 = true;
+                        }
+                        break;
+                    case PHONE2:if (newPatientValues.getData().getPhone2().equals(
+                            oldPatientValues.getData().getPhone2())){isPhone2 = true;
+                    }
+                    break;
+                    case GENDER:
+                        if (newPatientValues.getData().getGender().equals(
+                            oldPatientValues.getData().getGender())){isGender = true;
+                        }
+                        break;
+                    case DOB:
+                        if ((newPatientValues.getData().getDOB().compareTo(
+                            oldPatientValues.getData().getDOB())) == 0){isDOB = true;
+                        }
+                        break;
+                    case IS_GUARDIAN_A_PATIENT:
+                        if (newPatientValues.getData().getIsGuardianAPatient() &&
+                            oldPatientValues.getData().getIsGuardianAPatient()){isGuardianAPatient = true;
+                        }
+                        break;
+                    case NOTES:
+                        if (newPatientValues.getData().getNotes().equals(
+                            oldPatientValues.getData().getNotes())){isNotes = true;
+                        }
+                        break;
+                    case DENTAL_RECALL_DATE:
+                        if (newPatientValues.getData().getDentalRecallDate().equals(
+                            oldPatientValues.getData().getDentalRecallDate())){isDentalRecallDate = true;
+                        }
+                        break;
+                    case HYGIENE_RECALL_DATE:
+                        if (newPatientValues.getData().getHygieneRecallDate().equals(
+                            oldPatientValues.getData().getHygieneRecallDate())){isHygieneRecallDate = true;
+                        }
+                        break;
+                    case DENTAL_RECALL_FREQUENCY:
+                        if (newPatientValues.getData().getDentalRecallFrequency()==
+                            oldPatientValues.getData().getDentalRecallFrequency()){isDentalRecallFrequency = true;
+                        }
+                        break;
+                    case HYGIENE_RECALL_FREQUENCY:
+                        if (newPatientValues.getData().getHygieneRecallFrequency()==
+                            oldPatientValues.getData().getHygieneRecallFrequency()){isHygieneRecallFrequency = true;
+                        }
+                        break;
 
                 }
                 if (errorType == null){
@@ -439,18 +491,18 @@ public class PatientView extends View{
         AppointmentsSingleColumnTableModel.appointments = appointments;
         int appointmentsCount = appointments.size();
         switch (appointments.size()){
-            case 0 ->{
+            case 0:
                 appointments.add(null);
                 appointments.add(null);
                 appointments.add(null);
-            }
-            case 1 -> {
+                break;
+            case 1:
                 appointments.add(null);
                 appointments.add(null);
-            }
-            case 2 -> {
+                break;
+            case 2:
                 appointments.add(null);
-            }
+                break;
         }
         tableModel = new AppointmentsSingleColumnTableModel();
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
@@ -504,16 +556,19 @@ public class PatientView extends View{
      */
     private void initialisePatientAppointmentHistoryViewFromED(PatientView.Category category){
         ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
-        String headerTitle = switch (category){
-            case DENTAL-> {appointments = 
+        String headerTitle = null;
+        switch (category){
+            case DENTAL:
+                appointments = 
                     getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
-                yield "Dental appointments";
-            }
-            case HYGIENE-> {appointments = 
+                headerTitle =  "Dental appointments";
+                break;
+            case HYGIENE:
+                appointments = 
                     getEntityDescriptor().getPatientAppointmentHistory().getHygieneAppointments();
-                yield "Hygiene appointments";
-            }   
-        };
+                headerTitle = "Hygiene appointments";
+                break; 
+        }
         populateAppointmentsHistoryTable(appointments, headerTitle);
     }
     private int getAge(LocalDate dob){
@@ -1413,28 +1468,33 @@ public class PatientView extends View{
     private void cmbIsGuardianAPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbIsGuardianAPatientActionPerformed
         if (this.cmbIsGuardianAPatient.getSelectedItem()!=null){
             switch ((YesNoItem)this.cmbIsGuardianAPatient.getSelectedItem()){
-                case Yes -> this.cmbSelectGuardian.setEnabled(true);
-                case No -> this.cmbSelectGuardian.setEnabled(false);
+                case Yes:
+                    this.cmbSelectGuardian.setEnabled(true);
+                    break;
+                case No:
+                    this.cmbSelectGuardian.setEnabled(false);
+                    break;
             }
         }
     }//GEN-LAST:event_cmbIsGuardianAPatientActionPerformed
 
     private void btnCreateUpdatePatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdatePatientActionPerformed
         // TODO add your handling code here:
+        ActionEvent actionEvent = null;
         initialiseEntityFromView();
         switch (getViewMode()){
-            case Create_new_patient ->{
-                ActionEvent actionEvent = new ActionEvent(
+            case Create_new_patient:
+                actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
                 this.getMyController().actionPerformed(actionEvent);
-            }
-            case Update_patient_details ->{
-                ActionEvent actionEvent = new ActionEvent(
+                break;
+            case Update_patient_details:
+                actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
                 this.getMyController().actionPerformed(actionEvent);
-            }
+                break;
         }
     }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
 
