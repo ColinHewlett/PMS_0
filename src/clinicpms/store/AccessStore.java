@@ -819,7 +819,8 @@ public class AccessStore extends Store {
         
         if (patient.getAddress().getLine1() == null) patient.getAddress().setLine1("");
         if (patient.getAddress().getLine1().length()>0){
-            cappedLine1 = patient.getAddress().getLine1().strip();
+            //cappedLine1 = patient.getAddress().getLine1().strip();
+            cappedLine1 = patient.getAddress().getLine1();
             if (cappedLine1.contains("-")){ 
                 cappedLine1 = capitaliseFirstLetter(cappedLine1, "-");
                 if (cappedLine1.contains(" ")){
@@ -834,7 +835,8 @@ public class AccessStore extends Store {
         
         if (patient.getAddress().getLine2() == null) patient.getAddress().setLine2("");
         if (patient.getAddress().getLine2().length()>0){
-            cappedLine2 = patient.getAddress().getLine2().strip();
+            //cappedLine2 = patient.getAddress().getLine2().strip();
+            cappedLine2 = patient.getAddress().getLine2();
             if (cappedLine2.contains("-")){ 
                 cappedLine2 = capitaliseFirstLetter(cappedLine2, "-");
                 if (cappedLine2.contains(" ")){
@@ -849,7 +851,8 @@ public class AccessStore extends Store {
         
         if (patient.getAddress().getTown() == null) patient.getAddress().setTown("");
         if (patient.getAddress().getTown().length()>0){
-            cappedTown = patient.getAddress().getTown().strip();
+            //cappedTown = patient.getAddress().getTown().strip();
+            cappedTown = patient.getAddress().getTown();
             if (cappedTown.contains("-")){ 
                 cappedTown = capitaliseFirstLetter(cappedTown, "-");
                 if (cappedTown.contains(" ")){
@@ -864,7 +867,8 @@ public class AccessStore extends Store {
         
         if (patient.getAddress().getCounty() == null) patient.getAddress().setCounty("");
         if (patient.getAddress().getCounty().length()>0){
-            cappedCounty = patient.getAddress().getCounty().strip();
+            //cappedCounty = patient.getAddress().getCounty().strip();
+            cappedCounty = patient.getAddress().getCounty();
             if (cappedCounty.contains("-")){ 
                 cappedCounty = capitaliseFirstLetter(cappedCounty, "-");
                 if (cappedCounty.contains(" ")){
@@ -879,7 +883,8 @@ public class AccessStore extends Store {
         
         if (patient.getName().getSurname() == null) patient.getName().setSurname("");
         if (patient.getName().getSurname().length()>0){
-            cappedSurname = patient.getName().getSurname().strip();
+            //cappedSurname = patient.getName().getSurname().strip();
+            cappedSurname = patient.getName().getSurname();
             if (cappedSurname.contains("-")){ 
                 cappedSurname = capitaliseFirstLetter(cappedSurname, "-");
                 if (cappedSurname.contains(" ")){
@@ -893,7 +898,8 @@ public class AccessStore extends Store {
         }
         if (patient.getName().getForenames() == null) patient.getName().setForenames("");
         if (patient.getName().getForenames().length()>0){
-            cappedForenames = patient.getName().getForenames().strip();
+            //cappedForenames = patient.getName().getForenames().strip();
+            cappedForenames = patient.getName().getForenames();
             if (cappedForenames.contains("-")){ 
                 cappedForenames = capitaliseFirstLetter(cappedForenames, "-");
                 if (cappedForenames.contains(" ")){
@@ -907,7 +913,8 @@ public class AccessStore extends Store {
         }
         if (patient.getName().getTitle() == null) patient.getName().setTitle("");
         if (patient.getName().getTitle().length()>0){
-            cappedTitle = patient.getName().getTitle().strip();
+            //cappedTitle = patient.getName().getTitle().strip();
+            cappedTitle = patient.getName().getTitle();
             cappedTitle = capitaliseFirstLetter(cappedTitle, "");
         }
         Patient p = new Patient();
@@ -934,7 +941,7 @@ public class AccessStore extends Store {
     private String capitaliseFirstLetter(String value, String delimiter){
         ArrayList<String> parts = new ArrayList<>();
         String result = null;
-        value = value.strip();
+        //value = value.strip();
         if (!delimiter.equals("")){
             String[] values = value.split(delimiter);
             for (int index = 0; index < values.length; index++){

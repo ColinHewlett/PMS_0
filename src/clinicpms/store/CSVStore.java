@@ -380,7 +380,7 @@ public class CSVStore extends Store {
                         Integer value = 0;
                         String s = dbfPatientRow[pf.ordinal()];
                         if (!s.isEmpty()){
-                            s = s.strip();
+                            //s = s.strip();
                             char[] c = s.toCharArray(); 
                             for (int index = 0; index < c.length; index++){
                                 if (!Character.isDigit(c[index])){
@@ -405,7 +405,7 @@ public class CSVStore extends Store {
                         LocalDate recallDate = null;
                         $value = dbfPatientRow[pf.ordinal()];
                         if (!$value.isEmpty()){
-                            $value = $value.strip();
+                            //$value = $value.strip();
                             values = $value.split("-");
                             if (values.length > 0){
                                 switch (values[0]){
@@ -651,7 +651,7 @@ public class CSVStore extends Store {
     
     private boolean isDigit(String s){
         boolean isDigit = true;
-        s = s.strip();
+        //s = s.strip();
         char[] c = s.toCharArray(); 
         for (int index = 0; index < c.length; index++){
             if (!Character.isDigit(c[index])){
@@ -667,7 +667,7 @@ public class CSVStore extends Store {
         Integer result = null;
         Integer c;
         boolean includesInt16Char = false;
-        s = s.strip();
+        //s = s.strip();
         if (!(s.equals("PRIVATE TIME")||
               s.equals("EMERGENCIES")||
               s.equals("emergencies")||

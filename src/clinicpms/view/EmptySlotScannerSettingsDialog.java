@@ -8,6 +8,7 @@ package clinicpms.view;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.interfaces.IView;
+import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +46,8 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
         this.buttonGroup1.add(this.rdbSelectWeeks);
         this.rdbSelectWeeks.setSelected(true);
         
+        cmbSelectSlotDurationActionPerformed(null);
+        /*
         if (this.cmbSelectSlotDuration.getSelectedIndex()==0){
             this.rdbSelectMonths.setEnabled(false);
             this.rdbSelectWeeks.setEnabled(false);
@@ -55,6 +58,7 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
             this.rdbSelectWeeks.setEnabled(true);
             this.spnSlotSearchOffset.setEnabled(true); 
         }
+        */
         initialiseDialogClosing();
         setEntityDescriptor(ed);
         setMyController(myController);
@@ -139,6 +143,7 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         cmbSelectSlotDuration = new javax.swing.JComboBox<Duration>();
@@ -149,12 +154,23 @@ public class EmptySlotScannerSettingsDialog extends AppointmentViewDialog{
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
 
+        javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
+        jLayeredPane1.setLayout(jLayeredPane1Layout);
+        jLayeredPane1Layout.setHorizontalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+        jLayeredPane1Layout.setVerticalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel3.setPreferredSize(new java.awt.Dimension(266, 144));
 
-        jLabel2.setText("Slot minimum duration");
+        jLabel2.setText("  Slot duration");
 
         cmbSelectSlotDuration.setModel(new javax.swing.DefaultComboBoxModel<>(new Duration[] {
             Duration.ofMinutes(0),
@@ -244,8 +260,9 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
             .addContainerGap()
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel3Layout.createSequentialGroup()
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGap(12, 12, 12)
+                    .addGap(39, 39, 39)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(cmbSelectSlotDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addContainerGap())
@@ -287,15 +304,19 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cmbSelectSlotDurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSelectSlotDurationActionPerformed
-        if (this.cmbSelectSlotDuration.getSelectedIndex()==0){
+        if ((this.cmbSelectSlotDuration.getSelectedIndex()==0) ||
+                (this.cmbSelectSlotDuration.getSelectedIndex()==-1)){
             this.rdbSelectMonths.setEnabled(false);
             this.rdbSelectWeeks.setEnabled(false);
             this.spnSlotSearchOffset.setEnabled(false);
+            this.cmbSelectSlotDuration.setForeground(Color.red);
         }
         else{
+            
             this.rdbSelectMonths.setEnabled(true);
             this.rdbSelectWeeks.setEnabled(true);
             this.spnSlotSearchOffset.setEnabled(true); 
+            this.cmbSelectSlotDuration.setForeground(Color.black);
         }
     }//GEN-LAST:event_cmbSelectSlotDurationActionPerformed
 
@@ -338,6 +359,7 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox<Duration> cmbSelectSlotDuration;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JRadioButton rdbSelectMonths;

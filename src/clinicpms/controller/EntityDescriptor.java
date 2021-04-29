@@ -185,7 +185,7 @@ public class EntityDescriptor {
             String result = null;
             String part1 = null;
             String part2 = null;
-            value = value.strip();
+            //value = value.strip();
             if (!delimiter.equals("")){
                 /*
                 if (getData().getKey()==20615){
@@ -227,23 +227,28 @@ public class EntityDescriptor {
                 //if (getData().getSurname().strip().contains("-")) 
                 if (getData().getSurname().contains("-"))
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "-");
-                else if (getData().getSurname().strip().contains(" ")) 
+                //else if (getData().getSurname().strip().contains(" "))
+                else if (getData().getSurname().strip().contains(" "))
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "\\s+");
                 else
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "");
             }
             if (getData().getForenames().length()>0){
                 if (cappedName!=null){
-                    if (getData().getForenames().strip().contains("-")) 
+                    //if (getData().getForenames().strip().contains("-")) 
+                    if (getData().getForenames().contains("-"))
                         cappedName = cappedName + ", " + capitaliseFirstLetter(getData().getForenames(), "-");
-                    else if (getData().getForenames().strip().contains(" ")) 
+                    //else if (getData().getForenames().strip().contains(" ")) 
+                    else if (getData().getForenames().contains(" "))
                         cappedName = cappedName + ", " + capitaliseFirstLetter(getData().getForenames(), "\\s+");
                     else cappedName = cappedName + ", " + capitaliseFirstLetter(getData().getForenames(), "");
                 }
                 else{
-                    if (getData().getForenames().strip().contains("-")) 
+                    //if (getData().getForenames().strip().contains("-")) 
+                    if (getData().getForenames().contains("-")) 
                         cappedName = ", " + capitaliseFirstLetter(getData().getForenames(), "-");
-                    else if (getData().getForenames().strip().contains(" ")) 
+                    //else if (getData().getForenames().strip().contains(" ")) 
+                    else if (getData().getForenames().contains(" "))
                         cappedName = ", " + capitaliseFirstLetter(getData().getForenames(), "\\s+");
                     else cappedName = ", " + capitaliseFirstLetter(getData().getForenames(), "");
                 }

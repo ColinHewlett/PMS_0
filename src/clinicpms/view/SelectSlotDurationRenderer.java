@@ -5,6 +5,7 @@
  */
 package clinicpms.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.time.Duration;
 import javax.swing.JLabel;
@@ -23,8 +24,14 @@ public class SelectSlotDurationRenderer extends JLabel implements ListCellRender
                                                    boolean isSelected,
                                                    boolean cellHasFocus) {
         
-        if ((value).isZero())super.setText("slot duration undefined");
-        else super.setText(renderDuration((Duration)value));
+        if ((value).isZero()){
+            super.setText("slot duration undefined");
+            super.setForeground(Color.red);
+        }
+        else {
+            super.setText(renderDuration((Duration)value));
+            super.setForeground(Color.black);
+        }
         return this; 
     }
     

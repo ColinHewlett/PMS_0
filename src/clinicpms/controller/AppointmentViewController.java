@@ -424,9 +424,14 @@ public class AppointmentViewController extends ViewController{
         forenames = slot.getPatient().getName().getForenames();
         surname = slot.getPatient().getName().getSurname();
         result = slot.getPatient().getName().getTitle();
+        /*
         if (title.strip().length()==0) title = "?";
         if (forenames.strip().length() == 0) forenames = "<...>";
         if (surname.strip().length() == 0) surname = "<...>";
+        */
+        if (title.length()==0) title = "?";
+        if (forenames.length() == 0) forenames = "<...>";
+        if (surname.length() == 0) surname = "<...>";
        
         return title + " " + forenames + " " + surname;
     }
