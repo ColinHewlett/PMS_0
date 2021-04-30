@@ -12,10 +12,14 @@ import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.MenuComponent;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JDesktopPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
@@ -66,12 +71,11 @@ public class AppointmentCreatorEditorModalViewer extends View {
         // If this still fails, we throw a RuntimeException.
         if (toUse == null) throw new RuntimeException   ("parentComponent does not have a valid parent");
         this.setClosable(true);
-
+        JDesktopPane x = (JDesktopPane)toUse;
         toUse.add(this);
         this.setLayer(JLayeredPane.MODAL_LAYER);
-        //this.initialiseView();
-
-        //frame.pack();
+        centreViewOnDesktop(x.getParent(),this);
+        this.initialiseView();
         this.setVisible(true);
         
         startModal(this);
@@ -126,6 +130,15 @@ public class AppointmentCreatorEditorModalViewer extends View {
             Container parent = f.getParent();
             if (parent != null) parent.remove(f);
         }
+    }
+    
+    private void centreViewOnDesktop(Container desktopView, JInternalFrame view){
+        Insets insets = desktopView.getInsets();
+        Dimension deskTopViewDimension = desktopView.getSize();
+        Dimension myViewDimension = view.getSize();
+        view.setLocation(new Point(
+                (int)(deskTopViewDimension.getWidth() - (myViewDimension.getWidth()))/2,
+                (int)((deskTopViewDimension.getHeight()-insets.top) - myViewDimension.getHeight())/2));
     }
     
     @Override
@@ -514,21 +527,20 @@ public class AppointmentCreatorEditorModalViewer extends View {
             }
             if (OKToSaveAppointment==JOptionPane.YES_OPTION){
                 switch (getViewMode()){
-                    case CREATE -> {
+                    case CREATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
                             ViewController.AppointmentViewDialogActionEvent.
                             APPOINTMENT_VIEW_CREATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
-                    }
-                    case UPDATE -> {
+                        break;
+                    case UPDATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
                             ViewController.AppointmentViewDialogActionEvent.
                             APPOINTMENT_VIEW_UPDATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
-
-                    }
+                        break;
                 }
             }
         }
