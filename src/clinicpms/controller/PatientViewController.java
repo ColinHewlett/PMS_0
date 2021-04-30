@@ -11,7 +11,8 @@ import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.view.PatientView;
+import clinicpms.view.DesktopView;
+import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import clinicpms.store.exceptions.StoreException;
 import java.beans.PropertyChangeSupport;
@@ -38,7 +39,7 @@ public class PatientViewController extends ViewController {
     private PropertyChangeSupport pcSupportForView = null;
     //private PropertyChangeSupport pcSupportForPatientSelector = null;
     private PropertyChangeEvent pcEvent = null;
-    private PatientView view = null;
+    private View view = null;
     private EntityDescriptor oldEntityDescriptor = new EntityDescriptor();
     private EntityDescriptor newEntityDescriptor = new EntityDescriptor();
     private EntityDescriptor entityDescriptorFromView = null;
@@ -308,16 +309,16 @@ public class PatientViewController extends ViewController {
         this.entityDescriptorFromView = e;
     }
     
-    public PatientViewController(DesktopViewController controller, JFrame desktopview)throws StoreException{
+    public PatientViewController(DesktopViewController controller, DesktopView desktopView)throws StoreException{
         setMyController(controller);
         pcSupportForView = new PropertyChangeSupport(this);
         this.newEntityDescriptor = new EntityDescriptor();
         this.oldEntityDescriptor = new EntityDescriptor();
         ArrayList<Patient> patients = new Patients().getPatients();
         serialisePatientsToEDCollection(patients);
-
-        view = new PatientView(this, getNewEntityDescriptor());
-        super.centreViewOnDesktop(desktopview, view);
+        View.setViewer(View.Viewer.PATIENT_VIEW);
+        this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
+        super.centreViewOnDesktop(desktopView, view);
         
         this.view.addInternalFrameClosingListener(); 
         pcSupportForView.addPropertyChangeListener(
@@ -503,12 +504,10 @@ public class PatientViewController extends ViewController {
     private void setMyController(ActionListener myController){
         this.myController = myController;
     }
-    public JInternalFrame getView( ){
+    public View getView( ){
         return view;
     }
-    private void setView(PatientView view ){
-        this.view = view;
-    }
+
     
     
 }

@@ -18,6 +18,7 @@ import clinicpms.view.AppointmentEditorDialog;
 import clinicpms.view.EmptySlotScannerSettingsDialog;
 import clinicpms.view.PatientAppointmentContactView;
 import clinicpms.view.DesktopView;
+import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,7 +62,8 @@ public class AppointmentViewController extends ViewController{
 
     private ActionListener myController = null;
     private PropertyChangeSupport pcSupport = null;
-    private AppointmentsForDayView view = null;
+    private View view = null;
+    private View view2 = null;
     private ArrayList<Appointment> appointments = null;  
     private EntityDescriptor newEntityDescriptor = null;
     private EntityDescriptor oldEntityDescriptor = null;
@@ -92,7 +94,8 @@ public class AppointmentViewController extends ViewController{
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
         //centre appointments view relative to desktop;
-        this.view = new AppointmentsForDayView(this, getNewEntityDescriptor());
+        View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
+        this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
         super.centreViewOnDesktop(desktopView, view);
         this.view.addInternalFrameClosingListener(); 
         this.view.initialiseView();
@@ -144,8 +147,82 @@ public class AppointmentViewController extends ViewController{
             case "EmptySlotScannerSettingsDialog":
                 doEmptySlotScannerSettingsDialogActions(e);
                 break;
+            case "AppointmentCreatorEditorModalViewer":
+                /**
+                 * this because this.view2 was not initialised on construction
+                 */
+                this.view2 = (View)e.getSource();
+                pcSupport.removePropertyChangeListener(this.dialog);
+                pcSupport.removePropertyChangeListener(this.view);
+                pcSupport.removePropertyChangeListener(this.view2);
+                doAppointmentCreatorEditorModalViewerActions(e);
         }
     }
+    
+    private void doAppointmentCreatorEditorModalViewerActions(ActionEvent e){
+        Appointment result = null;
+        LocalDate day = null;
+        try{
+            if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                    APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
+                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+                day = getEntityDescriptorFromView().getRequest().
+                        getAppointment().getData().getStart().toLocalDate();
+                initialiseNewEntityDescriptor();
+                result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
+            }
+            else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+                    APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
+                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+                day = getEntityDescriptorFromView().getRequest().
+                        getAppointment().getData().getStart().toLocalDate();
+                initialiseNewEntityDescriptor();
+                result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
+            }
+            if (result!=null){
+                try{
+                    this.view2.setClosed(true);
+                }
+                catch (PropertyVetoException ex){
+                    
+                }
+                this.appointments =
+                    new Appointments().getAppointmentsFor(day);
+                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                serialiseAppointmentsToEDCollection(this.appointments);
+
+                pcSupport.addPropertyChangeListener(this.view);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+
+                //either an update appt or create appt event has occurred
+                //so clear empty slot list!!!
+                initialiseNewEntityDescriptor();
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                    null,getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+
+            }
+            else{
+                pcSupport.addPropertyChangeListener(this.view2);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    
+    
     private void doAppointmentViewDialogActions(ActionEvent e){
         if (e.getActionCommand().equals(
                 AppointmentViewDialogActionEvent.APPOINTMENT_VIEW_CLOSE_REQUEST.toString())){
