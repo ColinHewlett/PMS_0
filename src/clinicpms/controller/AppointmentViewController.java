@@ -38,9 +38,11 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -156,6 +158,53 @@ public class AppointmentViewController extends ViewController{
                 pcSupport.removePropertyChangeListener(this.view);
                 pcSupport.removePropertyChangeListener(this.view2);
                 doAppointmentCreatorEditorModalViewerActions(e);
+                break;
+            case "EmptySlotScanEditorModalViewer":
+                this.view2 = (View)e.getSource();
+                pcSupport.removePropertyChangeListener(this.dialog);
+                pcSupport.removePropertyChangeListener(this.view);
+                pcSupport.removePropertyChangeListener(this.view2);
+                doEmptySlotScanEditorModalViewerActions(e);
+                break;
+        }
+    }
+    
+    private void doEmptySlotScanEditorModalViewerActions(ActionEvent e){
+        if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
+            try{
+                this.view2.setClosed(true);
+            }
+            catch (PropertyVetoException ex){
+                
+            }
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
+            try{
+                this.appointments =
+                    new Appointments().getAppointmentsFrom(day);
+                if (this.appointments.isEmpty()){
+                    JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
+                }
+                else{
+                    ArrayList<Appointment> availableSlotsOfDuration =  
+                            getAvailableSlotsOfDuration(
+                                    this.appointments,duration,day);
+                    serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
+                    /**
+                     * fire event over to APPOINTMENT_SCHEDULE
+                     */
+                    pcSupport.addPropertyChangeListener(view);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                }
+            }
+            catch (StoreException ex){
+                //UnspecifiedError action
+            }
         }
     }
     
@@ -333,13 +382,21 @@ public class AppointmentViewController extends ViewController{
         else if (e.getActionCommand().equals(   
                 AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
             /**
+             * EMPTY_SLOT_SCANNER_DIALOG_REQUEST constructs an EmptySlotScanEditorModalViewer
+             */
+            View.setViewer(View.Viewer.EMPTY_SLOT_SCANNER_VIEW);
+            this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView);
+
+            /**
              * EMPTY_SLOT_SCANNER_DIALOG_REQUEST empty slot scanner requested by view
              * -- construct a new dialog with a newly initialised EntityDescriptor, owning Frame
              */
+            /*
             this.dialog = new EmptySlotScannerSettingsDialog(
                     this,getNewEntityDescriptor(),this.owningFrame);
             this.dialog.setLocationRelativeTo(view);
             this.dialog.setVisible(true);
+            */
             
         }
         else if (e.getActionCommand().equals(
