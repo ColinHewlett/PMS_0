@@ -378,12 +378,16 @@ public class AppointmentViewController extends ViewController{
                     initialiseNewEntityDescriptor();
                     serialiseAppointmentToEDAppointment(appointment);
                     serialisePatientsToEDCollection(patients);
+                    View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
+                    this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
                     
+                    /*
                     this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
                             this.desktopView, ViewController.ViewMode.UPDATE);
                     this.dialog.setLocationRelativeTo(this.view);
                     this.dialog.initialiseView();
                     this.dialog.setVisible(true);
+                    */
                     
                 }
                 catch (StoreException ex){
@@ -398,11 +402,16 @@ public class AppointmentViewController extends ViewController{
                 ArrayList<Patient> patients = new Patients().getPatients();
                 serialisePatientsToEDCollection(patients);
                 Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
+                View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
+                this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
+                
+                /*
                 this.dialog = new AppointmentEditorDialog(this,getNewEntityDescriptor(),
                         window, ViewController.ViewMode.CREATE);
                 this.dialog.setLocationRelativeTo(this.view);
                 this.dialog.initialiseView();
                 this.dialog.setVisible(true);
+                */
 
             }
             catch (StoreException ex){
