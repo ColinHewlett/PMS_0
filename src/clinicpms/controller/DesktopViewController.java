@@ -28,8 +28,8 @@ public class DesktopViewController extends ViewController{
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
     private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
-    //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;
-     
+   
+    //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;    
     enum ViewControllers {
                             PATIENT_VIEW_CONTROLLER,
                             APPOINTMENT_VIEW_CONTROLLER,
@@ -432,7 +432,7 @@ public class DesktopViewController extends ViewController{
                 avc.getView().setIconifiable(true);
                 avc.getView().setResizable(false);
                 avc.getView().setSelected(true);
-                avc.getView().setSize(760,550);
+                avc.getView().setSize(760,600);
             }
             catch (StoreException ex){
                 displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);

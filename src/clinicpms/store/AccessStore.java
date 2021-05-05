@@ -19,6 +19,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 
@@ -973,6 +976,51 @@ public class AccessStore extends Store {
         result =  firstLetter + otherLetters;
         return result;
     }
-
-
+    
+    @Override
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        Dictionary<String,Boolean> surgeryDays = new Hashtable<String,Boolean>();
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        String sql = "Select Day, IsSurgery from SurgeryDays WHERE Day = ?;";
+        try{
+            PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+            for (int key = 0; key<days.length;key++){
+                preparedStatement.setString(1, days[key]);
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next())
+                    surgeryDays.put(rs.getString("Day"),rs.getBoolean("IsSurgery"));
+                else{
+                    message = "Unexpected error: could not locate a record with key = " + days[key];
+                    throw new StoreException(message, ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                } 
+            }
+            return surgeryDays;
+        }
+        catch (SQLException ex){
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised during AccessStore::readSurgeryDays statement",
+            ExceptionType.SQL_EXCEPTION);
+        } 
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
+        String day = null;
+        try{
+            String sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?;";
+            PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+            for (Enumeration<String>  key = d.keys(); key.hasMoreElements();){
+                day = key.nextElement();
+                preparedStatement.setString(2, day);
+                preparedStatement.setBoolean(1, d.get(day));
+                preparedStatement.executeUpdate();
+            }
+            return readSurgeryDays();
+        }
+        catch (SQLException ex){
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised during AccessStorage::updateSurgeryDays statement",
+            ExceptionType.SQL_EXCEPTION);
+        }  
+    }
 }

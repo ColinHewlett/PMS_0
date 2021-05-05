@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -369,8 +370,12 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         // TODO add your handling code here:
-        //EmptySlotScannerSettingsDialog.this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        //this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        try{
+            this.setClosed(true);
+        }
+        catch (PropertyVetoException ex){
+            
+        }
     }//GEN-LAST:event_btnCancelActionPerformed
 
 

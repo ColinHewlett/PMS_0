@@ -6,6 +6,7 @@
 package clinicpms.controller;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -228,7 +229,7 @@ public class EntityDescriptor {
                 if (getData().getSurname().contains("-"))
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "-");
                 //else if (getData().getSurname().strip().contains(" "))
-                else if (getData().getSurname().strip().contains(" "))
+                else if (getData().getSurname().contains(" "))
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "\\s+");
                 else
                     cappedName = capitaliseFirstLetter(getData().getSurname(), "");
@@ -433,17 +434,27 @@ public class EntityDescriptor {
         private LocalDate day = null;
         private Duration duration = null;
         private String databaseLocation = null;
+        private Dictionary<String,Boolean> surgeryDays = null;
+        
 
         protected Request() {
             appointment = new EntityDescriptor.Appointment();
             patient = new EntityDescriptor.Patient();
             guardian = new EntityDescriptor.Patient();
             day = LocalDate.now();
-            duration = Duration.ZERO;
+            duration = Duration.ZERO;   
         }
         
         public EntityDescriptor.Patient getPatient() {
             return patient;
+        }
+        
+        public void setSurgeryDays(Dictionary<String,Boolean> value){
+            surgeryDays = value;
+        }
+        
+        public Dictionary<String,Boolean> getSurgeryDays(){
+            return surgeryDays;
         }
         
         public void setDatabaseLocation(String value){

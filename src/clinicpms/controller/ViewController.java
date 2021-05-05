@@ -34,7 +34,10 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENTS_VIEW_CLOSED,
                                             APPOINTMENTS_FOR_DAY_REQUEST,/*triggered by day selection*/
                                             APPOINTMENT_SLOTS_FROM_DATE_REQUEST,
-                                            EMPTY_SLOT_SCANNER_DIALOG_REQUEST
+                                            EMPTY_SLOT_SCANNER_DIALOG_REQUEST,
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            SURGERY_DAYS_EDIT_REQUEST,
+                                            SURGERY_DAYS_EDITOR_VIEW_REQUEST
                                             }
     public enum AppointmentViewDialogActionEvent {
                                             APPOINTMENT_VIEW_CLOSE_REQUEST,
@@ -49,7 +52,8 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_CANCEL_COMPLETE,
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
-                                            APPOINTMENT_FOR_DAY_ERROR
+                                            APPOINTMENT_FOR_DAY_ERROR,
+                                            SURGERY_DAYS_UPDATE_RECEIVED
                                             }
     
     public enum DesktopViewControllerActionEvent {
@@ -57,6 +61,7 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
+                                            SURGERY_DATES_EDITOR_VIEW_CONTROLLER_REQUEST,
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
                                             VIEW_CLOSED_NOTIFICATION//raised by internal frame views
                                             }
@@ -130,6 +135,9 @@ public abstract class ViewController implements ActionListener{
                                             PATIENT_RECEIVED,
                                             PATIENTS_RECEIVED,
                                             PATIENT_GUARDIANS_RECEIVED}
+    
+    public static enum SurgeryDaysEditorViewControllerActionEvents  {
+                                            SURGERY_DATES_EDITOR_REQUEST}
 
     public enum ViewMode {CREATE,
                           UPDATE} 

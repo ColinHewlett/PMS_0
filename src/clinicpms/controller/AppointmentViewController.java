@@ -6,17 +6,15 @@
 package clinicpms.controller;
 
 import clinicpms.constants.ClinicPMS;
+import static clinicpms.controller.ViewController.displayErrorMessage;
 import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.view.AppointmentsForDayView;
+import clinicpms.store.interfaces.IStore;
 import clinicpms.view.AppointmentViewDialog;
-import clinicpms.view.AppointmentEditorDialog;
-import clinicpms.view.EmptySlotScannerSettingsDialog;
-import clinicpms.view.PatientAppointmentContactView;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
@@ -38,6 +36,7 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
@@ -77,7 +76,7 @@ public class AppointmentViewController extends ViewController{
     //private AppointmentEditorDialog dialog = null;
     private AppointmentViewDialog dialog = null;
     private InternalFrameAdapter internalFrameAdapter = null;
-    private PatientAppointmentContactView pacView = null;
+    private View pacView = null;
     private DesktopView desktopView = null;
     
     /**
@@ -95,13 +94,21 @@ public class AppointmentViewController extends ViewController{
         //getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
-        //centre appointments view relative to desktop;
-        View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
-        this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
-        super.centreViewOnDesktop(desktopView, view);
-        this.view.addInternalFrameClosingListener(); 
-        this.view.initialiseView();
-        this.day = getNewEntityDescriptor().getRequest().getDay();
+        try{
+            IStore store = Store.factory();
+            Dictionary<String,Boolean> surgeryDays = store.readSurgeryDays();
+            getNewEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
+            View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
+            this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
+            super.centreViewOnDesktop(desktopView, view);
+            this.view.addInternalFrameClosingListener(); 
+            this.view.initialiseView();
+            this.day = getNewEntityDescriptor().getRequest().getDay();
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+        
         /**
          * following code done in ignorance
          * but suspicion that threads had something to do with issue
@@ -166,6 +173,38 @@ public class AppointmentViewController extends ViewController{
                 pcSupport.removePropertyChangeListener(this.view2);
                 doEmptySlotScanEditorModalViewerActions(e);
                 break;
+            case "SurgeryDaysEditorModalViewer":
+                this.view2 = (View)e.getSource();
+                doSurgeryDaysEditorModalViewer(e);
+        }
+    }
+    
+    private void doSurgeryDaysEditorModalViewer(ActionEvent e){
+        if (e.getActionCommand().equals(
+                AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString())){
+            pcSupport.addPropertyChangeListener(view);
+            try{
+                this.view2.setClosed(true);
+            }
+            catch (PropertyVetoException ex){
+                String message = ex.getMessage() + "\n";
+                message = message + "Error when closing down the SURGERY_DAYS_EDITOR view in AppointmentViewController::doSurgeryDaysEditorModalViewer()";
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            }
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            Dictionary<String,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
+            try{
+                IStore store = Store.factory();
+                store.updateSurgeryDays(surgeryDays);
+                pcEvent = new PropertyChangeEvent(this,
+                    AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString(),
+                    getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+            }
+            catch(StoreException ex){
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
     
@@ -355,14 +394,29 @@ public class AppointmentViewController extends ViewController{
                     DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
             this.myController.actionPerformed(actionEvent);   
         }
-        
+        else if (e.getActionCommand().equals(
+                AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString())){
+            try{
+                IStore store = Store.factory();
+                Dictionary<String,Boolean> d  = store.readSurgeryDays();
+                setNewEntityDescriptor(new EntityDescriptor());
+                initialiseNewEntityDescriptor();
+                getNewEntityDescriptor().getRequest().setSurgeryDays(d);
+                View.setViewer(View.Viewer.SURGERY_DAYS_EDITOR_VIEW);
+                this.view = View.factory(this, getNewEntityDescriptor(), desktopView); 
+            }
+            catch (StoreException ex){
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            }
+        }
         else if (e.getActionCommand().equals(   
             ViewController.PatientAppointmentContactListViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_CLOSED.toString())){
 
         }
         
         else if (e.getActionCommand().equals(   
-            ViewController.PatientAppointmentContactListViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString())){
+            ViewController.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
@@ -370,12 +424,14 @@ public class AppointmentViewController extends ViewController{
                 this.appointments =
                     new Appointments().getAppointmentsFor(day);
                 serialiseAppointmentsToEDCollection(this.appointments);
-                this.pacView = new PatientAppointmentContactView(this, this.getNewEntityDescriptor()); 
+                View.setViewer(View.Viewer.SCHEDULE_CONTACT_LIST);
+                this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
                 this.desktopView.add(pacView);
                 this.pacView.initialiseView();
             }
             catch (StoreException ex){
-                
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
         }
         

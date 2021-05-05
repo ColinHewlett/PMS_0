@@ -7,6 +7,7 @@ package clinicpms.view;
 
 import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.controller.DesktopViewController;
+import clinicpms.controller.ViewController;
 import java.awt.event.ActionEvent;
 import java.awt.Image;
 import java.awt.Dimension;
@@ -30,6 +31,7 @@ public class DesktopView extends javax.swing.JFrame{
     private JMenuItem mniPatientView = null;
     private JMenuItem mniAppointmentView = null;
     private JMenuItem mniDatabaseLocator = null;
+    private JMenuItem mniSurgeryDaysSelector = null;
     private JMenuItem mniExitView = null;
     private WindowAdapter windowAdapter = null;  
     private Image img = null;
@@ -175,8 +177,8 @@ public class DesktopView extends javax.swing.JFrame{
     private javax.swing.JMenuBar mnbDesktop;
     private javax.swing.JMenu mnuView;
     // End of variables declaration//GEN-END:variables
+
     
-   
     private void mniAppointmentViewActionPerformed() {                                        
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,

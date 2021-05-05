@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.Comparator;
+import java.util.Dictionary;
 
 /**
  *
@@ -2059,6 +2060,16 @@ public class CSVStore extends Store {
             String message = "CsvException message -> + e.getMessage()" + "\n" +
                     "StoreException message -> Error encountered in appointmentfileconverter()";
         }
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
+        return null;
     }
 
 }

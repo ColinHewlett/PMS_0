@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Dictionary;
 
 /**
  *
@@ -120,6 +121,16 @@ public class PostgreSQLStore extends Store {
         return null;
     }
     public Appointment update(Appointment a) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
         return null;
     }
 }

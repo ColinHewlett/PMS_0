@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Dictionary;
 
 /**
  *
@@ -157,5 +158,15 @@ public class DbLocationStore extends Store{
              + "StoreException message -> exception raised during DbLocationStore::update statement",
             ExceptionType.SQL_EXCEPTION);
         }
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
+        return null;
     }
 }

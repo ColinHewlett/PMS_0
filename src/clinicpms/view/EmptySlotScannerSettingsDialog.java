@@ -345,8 +345,6 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         // TODO add your handling code here:
-        EmptySlotScannerSettingsDialog.this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }//GEN-LAST:event_btnCancelActionPerformed
 
     /**

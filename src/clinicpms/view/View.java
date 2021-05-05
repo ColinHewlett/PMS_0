@@ -31,7 +31,9 @@ public abstract class View extends JInternalFrame
                                 APPOINTMENT_CREATOR_EDITOR_VIEW,
                                 APPOINTMENT_EDITOR_VIEW,
                                 EMPTY_SLOT_SCANNER_VIEW,
-                                PATIENT_VIEW}
+                                PATIENT_VIEW,
+                                SCHEDULE_CONTACT_LIST,
+                                SURGERY_DAYS_EDITOR_VIEW}
     
     public static Viewer getViewer(){
         return viewer;
@@ -61,6 +63,12 @@ public abstract class View extends JInternalFrame
                 break;
             case PATIENT_VIEW:
                 result = new PatientView(controller, ed);
+                break;
+            case SCHEDULE_CONTACT_LIST:
+                result = new PatientAppointmentContactView(controller, ed);
+                break;
+            case SURGERY_DAYS_EDITOR_VIEW:
+                result = new SurgeryDaysEditorModalViewer(controller, ed, dtView.getContentPane());
                 break;
                 
         }

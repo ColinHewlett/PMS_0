@@ -14,6 +14,7 @@ import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Dictionary;
 
 /**
  * Defines simple interface for a CVS database to support the following breadth
@@ -43,6 +44,9 @@ public interface IStore {
     public ArrayList<Appointment> readAppointments(Patient p, Category c) throws StoreException;
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
     public ArrayList<Patient> readPatients() throws StoreException;
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException;
+    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException;
     public Patient update(Patient p) throws StoreException;
-    public Appointment update(Appointment a) throws StoreException;  
+    public Appointment update(Appointment a) throws StoreException;
+    
 }
