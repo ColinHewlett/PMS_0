@@ -6,19 +6,29 @@
     </Component>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="mnuOptions">
           <Properties>
             <Property name="text" type="java.lang.String" value="Options"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="mniScheduleContactList">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Appointee contact list"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="&quot;Display scheduled appointees&apos; contact details&quot;" type="code"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="mnuOptions.add(new JSeparator());"/>
+              </AuxValues>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="mniSelectNonSurgeryDay">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Select appointment schedule for a non-surgery day"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="mniSurgeryDaysEditor">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Surgery day editor"/>
+                <Property name="text" type="java.lang.String" value="Open surgery day editor"/>
               </Properties>
             </MenuItem>
           </SubComponents>
@@ -90,7 +100,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="jPanel5" pref="0" max="32767" attributes="0"/>
+                      <Component id="jPanel5" pref="183" max="32767" attributes="0"/>
                       <Component id="jPanel2" max="32767" attributes="0"/>
                   </Group>
               </Group>

@@ -7,6 +7,10 @@ package clinicpms.view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Component;
@@ -23,27 +27,25 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.time.LocalDate;
 import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
 /**
  *
  * @author colin
  */
-public class SurgeryDaysEditorModalViewer extends View {
-    private ActionListener myController = null;
+public class NonSurgeryDayEditorModalViewer extends View {
     private EntityDescriptor entityDescriptor = null;
-
+    private ActionListener myController = null;
     /**
-     * Creates new form CalendarVetoPolicyEditorModalViewer
+     * Creates new form NonSurgeryDayEditorModalViewer
      */
-    public SurgeryDaysEditorModalViewer(ActionListener myController,
+    public NonSurgeryDayEditorModalViewer(ActionListener myController,
             EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
@@ -127,75 +129,6 @@ public class SurgeryDaysEditorModalViewer extends View {
                 (int)(deskTopViewDimension.getWidth() - (myViewDimension.getWidth()))/2,
                 (int)((deskTopViewDimension.getHeight()-insets.top) - myViewDimension.getHeight())/2));
     }
-    
-    @Override
-    public void initialiseView(){
-        setTitle("Surgery days editor");
-        Dictionary<String, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
-        for (Enumeration<String>  key = surgeryDays.keys(); key.hasMoreElements();){
-            switch(key.nextElement()){
-                case "Monday":
-                    this.chkMonday.setSelected(surgeryDays.get("Monday"));
-                    break;
-                case "Tuesday":
-                    this.chkTuesday.setSelected(surgeryDays.get("Tuesday"));
-                    break;
-                case "Wednesday":
-                    this.chkWednesday.setSelected(surgeryDays.get("Wednesday"));
-                    break;
-                case "Thursday":
-                    this.chkThursday.setSelected(surgeryDays.get("Thursday"));
-                    break;
-                case "Friday":
-                    this.chkFriday.setSelected(surgeryDays.get("Friday"));
-                    break;
-                case "Saturday":
-                    this.chkSaturday.setSelected(surgeryDays.get("Saturday"));
-                    break;
-                case "Sunday":
-                    this.chkSunday.setSelected(surgeryDays.get("Sunday"));
-                    break;
-            }
-            
-        }
-    }
-    
-    @Override
-    public void addInternalFrameClosingListener(){
-        
-    }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent e){
-        setEntityDescriptor((EntityDescriptor)e.getNewValue());
-        
-        if (e.getPropertyName().equals(
-                ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
-            //initialiseViewFromED();
-        }
-        else if (e.getPropertyName().equals(
-            ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
-            ViewController.displayErrorMessage(getEntityDescriptor().getError(),
-                                               "Appointment editor dialog error",
-                                               JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-    @Override
-    public EntityDescriptor getEntityDescriptor(){
-        return this.entityDescriptor;
-    }
-    
-    private void setEntityDescriptor(EntityDescriptor value){
-        this.entityDescriptor = value;
-    }
-    
-    private ActionListener getMyController(){
-        return this.myController;
-    }
-    private void setMyController(ActionListener value){
-        this.myController = value;
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -207,66 +140,29 @@ public class SurgeryDaysEditorModalViewer extends View {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        chkTuesday = new javax.swing.JCheckBox();
-        chkMonday = new javax.swing.JCheckBox();
-        chkWednesday = new javax.swing.JCheckBox();
-        chkThursday = new javax.swing.JCheckBox();
-        chkFriday = new javax.swing.JCheckBox();
-        chkSaturday = new javax.swing.JCheckBox();
-        chkSunday = new javax.swing.JCheckBox();
+        dayDatePicker = new com.github.lgooddatepicker.components.DatePicker();
         btnSave = new javax.swing.JButton();
-        btnCancel = new javax.swing.JButton();
+        btnCloseView = new javax.swing.JButton();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Current selection", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+        setTitle("Non-surgery day editor");
 
-        chkTuesday.setText("Tuesday");
-
-        chkMonday.setText("Monday");
-
-        chkWednesday.setText("Wednesday");
-
-        chkThursday.setText("Thursday");
-
-        chkFriday.setText("Friday");
-
-        chkSaturday.setText("Saturday");
-
-        chkSunday.setText("Sunday");
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Select day"));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(55, 55, 55)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chkSunday)
-                    .addComponent(chkSaturday)
-                    .addComponent(chkFriday)
-                    .addComponent(chkThursday)
-                    .addComponent(chkWednesday)
-                    .addComponent(chkMonday)
-                    .addComponent(chkTuesday))
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addGap(27, 27, 27)
+                .addComponent(dayDatePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(43, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(chkMonday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkTuesday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkWednesday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkThursday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkFriday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkSaturday)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkSunday)
-                .addGap(20, 20, 20))
+                .addComponent(dayDatePicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         btnSave.setText("Save");
@@ -276,10 +172,10 @@ public class SurgeryDaysEditorModalViewer extends View {
             }
         });
 
-        btnCancel.setText("Close");
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+        btnCloseView.setText("Close view");
+        btnCloseView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
+                btnCloseViewActionPerformed(evt);
             }
         });
 
@@ -288,26 +184,27 @@ public class SurgeryDaysEditorModalViewer extends View {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addComponent(btnSave)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnCancel)
-                .addGap(25, 25, 25))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(42, 42, 42)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(65, 65, 65)
+                        .addComponent(btnSave)
+                        .addGap(35, 35, 35)
+                        .addComponent(btnCloseView)))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
-                    .addComponent(btnCancel))
-                .addContainerGap())
+                    .addComponent(btnCloseView))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -315,22 +212,19 @@ public class SurgeryDaysEditorModalViewer extends View {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        Dictionary<String,Boolean> surgeryDays = new Hashtable<String,Boolean>();
-        surgeryDays.put("Monday", this.chkMonday.isSelected());
-        surgeryDays.put("Tuesday", this.chkTuesday.isSelected());
-        surgeryDays.put("Wednesday", this.chkWednesday.isSelected());
-        surgeryDays.put("Thursday", this.chkThursday.isSelected());
-        surgeryDays.put("Friday", this.chkFriday.isSelected());
-        surgeryDays.put("Saturday", this.chkSaturday.isSelected()); 
-        surgeryDays.put("Sunday", this.chkSunday.isSelected());
-        getEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
-        ActionEvent actionEvent = new ActionEvent(this, 
-                ActionEvent.ACTION_PERFORMED,
-                ViewController.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString());
-        this.getMyController().actionPerformed(actionEvent);
+        if (dayDatePicker.getDate()!=null){
+            getEntityDescriptor().getRequest().setDay(dayDatePicker.getDate());
+            ActionEvent actionEvent = new ActionEvent(this, 
+                    ActionEvent.ACTION_PERFORMED,
+                    ViewController.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
+        else{
+            JOptionPane.showMessageDialog(this, "A date has not yet been selected");
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
-    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
         // TODO add your handling code here:
         try{
             this.setClosed(true);
@@ -338,19 +232,62 @@ public class SurgeryDaysEditorModalViewer extends View {
         catch (PropertyVetoException ex){
             
         }
-    }//GEN-LAST:event_btnCancelActionPerformed
+    }//GEN-LAST:event_btnCloseViewActionPerformed
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent e){
 
+    }
+
+    @Override
+    public void initialiseView(){
+        Dictionary<String, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
+        Dictionary<String,Boolean> nonSurgeryDays = new Hashtable<String,Boolean>();
+        if (surgeryDays.get("Monday")) nonSurgeryDays.put("Monday", false);
+        else nonSurgeryDays.put("Monday", true);
+        if (surgeryDays.get("Tuesday")) nonSurgeryDays.put("Tuesday", false);
+        else nonSurgeryDays.put("Tuesday", true);
+        if (surgeryDays.get("Wednesday")) nonSurgeryDays.put("Wednesday", false);
+        else nonSurgeryDays.put("Wednesday", true);
+        if (surgeryDays.get("Thursday")) nonSurgeryDays.put("Thursday", false);
+        else nonSurgeryDays.put("Thursday", true);
+        if (surgeryDays.get("Friday")) nonSurgeryDays.put("Friday", false);
+        else nonSurgeryDays.put("Friday", true);
+        if (surgeryDays.get("Saturday")) nonSurgeryDays.put("Saturday", false);
+        else nonSurgeryDays.put("Saturday", true);
+        if (surgeryDays.get("Sunday")) nonSurgeryDays.put("Sunday", false);
+        else nonSurgeryDays.put("Sunday", true);
+        
+        DatePickerSettings dps = dayDatePicker.getSettings();
+        dps.setVetoPolicy(new AppointmentDateVetoPolicy(nonSurgeryDays));
+    }
+
+    @Override
+    public EntityDescriptor getEntityDescriptor(){
+        return entityDescriptor;
+    }
+
+    private void setEntityDescriptor(EntityDescriptor value){
+        this.entityDescriptor = value;
+    }
+
+    public ActionListener getMyController(){
+        return myController;
+    }
+
+    private void setMyController(ActionListener value){
+        this.myController = value;
+    }
+
+    @Override
+    public void addInternalFrameClosingListener(){
+
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnCloseView;
     private javax.swing.JButton btnSave;
-    private javax.swing.JCheckBox chkFriday;
-    private javax.swing.JCheckBox chkMonday;
-    private javax.swing.JCheckBox chkSaturday;
-    private javax.swing.JCheckBox chkSunday;
-    private javax.swing.JCheckBox chkThursday;
-    private javax.swing.JCheckBox chkTuesday;
-    private javax.swing.JCheckBox chkWednesday;
+    private com.github.lgooddatepicker.components.DatePicker dayDatePicker;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }

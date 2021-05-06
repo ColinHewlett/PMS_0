@@ -9,7 +9,6 @@ import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.controller.ViewController.AppointmentViewControllerActionEvent;
 import com.github.lgooddatepicker.components.DatePicker;
-import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
@@ -23,9 +22,12 @@ import java.beans.PropertyVetoException;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalTime;
 import java.util.Iterator;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.JOptionPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -82,12 +84,15 @@ public class AppointmentsForDayView extends View{
             DatePickerSettings dps = dayDatePicker.getSettings();
             dps.setVetoPolicy(vetoPolicy);
         }
+        else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString())){
+            EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
+            setEntityDescriptor(ed);
+            temporarilySuspendDatePickerDateVetoPolicy(getEntityDescriptor().getRequest().getDay());
+        }
         else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
             refreshAppointmentTableWithCurrentlySelectedDate();
-            //initialiseViewFromEDCollection();
-            //APPOINTMENT_VIEW_ERROR
         } 
         else if (propertyName.equals(ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
@@ -95,13 +100,52 @@ public class AppointmentsForDayView extends View{
         }
     }
     
+    private void temporarilySuspendDatePickerDateVetoPolicy(LocalDate day){
+        DatePickerSettings dps = dayDatePicker.getSettings();
+        Dictionary<String, Boolean> allDaysSurgeryDays = new Hashtable<String, Boolean>();
+        allDaysSurgeryDays.put("Monday", true);
+        allDaysSurgeryDays.put("Tuesday", true);
+        allDaysSurgeryDays.put("Wednesday", true);
+        allDaysSurgeryDays.put("Thursday", true);
+        allDaysSurgeryDays.put("Friday", true);
+        allDaysSurgeryDays.put("Saturday", true);
+        allDaysSurgeryDays.put("Sunday", true);
+        dps.setVetoPolicy(new AppointmentDateVetoPolicy(allDaysSurgeryDays));
+        dayDatePicker.setDate(day);
+        refreshAppointmentTableWithCurrentlySelectedDate();
+        dps.setVetoPolicy(vetoPolicy);
+    }
     @Override
     public void initialiseView(){
         //following action invokes call to controller via DateChange\Listener
         this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDays());
         DatePickerSettings dps = dayDatePicker.getSettings();
         dps.setVetoPolicy(vetoPolicy);
-        LocalDate day = vetoPolicy.getNowDateOrClosestAvailableAfterNow();
+       
+        /**
+         * -- Valid date?
+         * ---- yes: 
+         * ------> proceed as normal
+         * ---- no: 
+         * ------> temporarily make all days surgery days
+         * ----  
+         */
+        //LocalDate day = vetoPolicy.getNowDateOrClosestAvailableAfterNow();
+        LocalDate day = getEntityDescriptor().getRequest().getDay();
+        if (!vetoPolicy.isDateAllowed(day)){
+            Dictionary<String, Boolean> allDaysSurgeryDays = new Hashtable<String, Boolean>();
+            allDaysSurgeryDays.put("Monday", true);
+            allDaysSurgeryDays.put("Tuesday", true);
+            allDaysSurgeryDays.put("Wednesday", true);
+            allDaysSurgeryDays.put("Thursday", true);
+            allDaysSurgeryDays.put("Friday", true);
+            allDaysSurgeryDays.put("Saturday", true);
+            allDaysSurgeryDays.put("Sunday", true);
+            dps.setVetoPolicy(new AppointmentDateVetoPolicy(allDaysSurgeryDays));
+            dayDatePicker.setDate(day);
+            refreshAppointmentTableWithCurrentlySelectedDate();
+            dps.setVetoPolicy(vetoPolicy);
+        }
         dayDatePicker.setDate(day);
         refreshAppointmentTableWithCurrentlySelectedDate();
         /**
@@ -149,7 +193,7 @@ public class AppointmentsForDayView extends View{
         //setTableHeaderCellBorderRendering();
         mniSurgeryDaysEditor.addActionListener((ActionEvent e) -> mniSurgeryDaysEditorActionPerformed(e));
         mniScheduleContactList.addActionListener((ActionEvent e) -> mniScheduleContactListActionPerformed(e));
-        
+        this.mniSelectNonSurgeryDay.addActionListener((ActionEvent e) -> mniSelectNonSurgeryDayActionPerformed(e));
     }
     
     private void mniSurgeryDaysEditorActionPerformed(ActionEvent e){
@@ -165,6 +209,13 @@ public class AppointmentsForDayView extends View{
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 ViewController.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
+    }
+    
+    private void mniSelectNonSurgeryDayActionPerformed(ActionEvent e){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                ViewController.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }
     private void setEmptySlotAvailabilityTableListener(){
@@ -193,13 +244,18 @@ public class AppointmentsForDayView extends View{
           public void run()
           {
             AppointmentsForDayView.this.setTitle(
-                    AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+                    AppointmentsForDayView.this.getEntityDescriptor().getRequest().getDay().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+                    //AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
           }
         });
     }
     private void doEmptySlotAvailabilityTableRowSelection(int row){
         String appointmentDate = (String)this.tblEmptySlotAvailability.getModel().getValueAt(row, 0);
         LocalDate start = LocalDateTime.parse(appointmentDate, emptySlotStartFormat).toLocalDate();
+        DatePickerSettings dps = dayDatePicker.getSettings();
+        if (!dps.getVetoPolicy().isDateAllowed(start)){
+            temporarilySuspendDatePickerDateVetoPolicy(start);
+        }
         dayDatePicker.setDate(start);
     }
     private void populateAppointmentsForDayTable(){
@@ -315,8 +371,9 @@ public class AppointmentsForDayView extends View{
         scrAppointmentsForDayTable = new javax.swing.JScrollPane();
         tblAppointments = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        mnuOptions = new javax.swing.JMenu();
         mniScheduleContactList = new javax.swing.JMenuItem();
+        mniSelectNonSurgeryDay = new javax.swing.JMenuItem();
         mniSurgeryDaysEditor = new javax.swing.JMenuItem();
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Appointment day selection", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
@@ -450,7 +507,7 @@ public class AppointmentsForDayView extends View{
             .addGroup(pnlControlsLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
@@ -533,15 +590,19 @@ public class AppointmentsForDayView extends View{
                 .addContainerGap())
         );
 
-        jMenu1.setText("Options");
+        mnuOptions.setText("Options");
 
-        mniScheduleContactList.setText("Appointee contact list");
-        jMenu1.add(mniScheduleContactList);
+        mniScheduleContactList.setText("Display scheduled appointees' contact details");
+        mnuOptions.add(mniScheduleContactList);
+        mnuOptions.add(new JSeparator());
 
-        mniSurgeryDaysEditor.setText("Surgery day editor");
-        jMenu1.add(mniSurgeryDaysEditor);
+        mniSelectNonSurgeryDay.setText("Select appointment schedule for a non-surgery day");
+        mnuOptions.add(mniSelectNonSurgeryDay);
 
-        jMenuBar1.add(jMenu1);
+        mniSurgeryDaysEditor.setText("Open surgery day editor");
+        mnuOptions.add(mniSurgeryDaysEditor);
+
+        jMenuBar1.add(mnuOptions);
 
         setJMenuBar(jMenuBar1);
 
@@ -695,7 +756,6 @@ public class AppointmentsForDayView extends View{
     private javax.swing.JButton btnUpdateAppointment;
     private javax.swing.ButtonGroup buttonGroup1;
     private com.github.lgooddatepicker.components.DatePicker dayDatePicker;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -703,7 +763,9 @@ public class AppointmentsForDayView extends View{
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuItem mniScheduleContactList;
+    private javax.swing.JMenuItem mniSelectNonSurgeryDay;
     private javax.swing.JMenuItem mniSurgeryDaysEditor;
+    private javax.swing.JMenu mnuOptions;
     private javax.swing.JPanel pnlAppointmentScheduleForDay;
     private javax.swing.JPanel pnlControls;
     private javax.swing.JScrollPane scrAppointmentsForDayTable;

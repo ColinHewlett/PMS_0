@@ -82,7 +82,7 @@ public class Appointments5ColumnTableModel extends DefaultTableModel{
                             result = duration;
                             break;
                         case Notes:
-                            appointment.getData().getNotes(); 
+                            result = appointment.getData().getNotes(); 
                             break;
                     }
                     break;

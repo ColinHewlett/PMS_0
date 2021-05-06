@@ -341,10 +341,13 @@ public class PatientViewController extends ViewController {
         if (e.getActionCommand().equals(
                     PatientViewControllerActionEvent.
                             APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
-                ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
-                getMyController().actionPerformed(actionEvent);
+            /**
+             * request forwarded onto the DesktopViewController
+             */    
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+            getMyController().actionPerformed(actionEvent);
         }
         else if (e.getActionCommand().equals(
                     PatientViewControllerActionEvent.

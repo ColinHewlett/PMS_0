@@ -36,6 +36,8 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENT_SLOTS_FROM_DATE_REQUEST,
                                             EMPTY_SLOT_SCANNER_DIALOG_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST,
+                                            NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST,
                                             SURGERY_DAYS_EDIT_REQUEST,
                                             SURGERY_DAYS_EDITOR_VIEW_REQUEST
                                             }
@@ -53,7 +55,8 @@ public abstract class ViewController implements ActionListener{
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
                                             APPOINTMENT_FOR_DAY_ERROR,
-                                            SURGERY_DAYS_UPDATE_RECEIVED
+                                            SURGERY_DAYS_UPDATE_RECEIVED,
+                                            NON_SURGERY_DAY_EDIT_RECEIVED
                                             }
     
     public enum DesktopViewControllerActionEvent {
