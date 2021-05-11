@@ -9,7 +9,7 @@ import clinicpms.store.Store;
 import clinicpms.store.DbLocationStore;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.view.DesktopView;
+import clinicpms.view.base.DesktopView;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -201,7 +201,8 @@ public class DesktopViewController extends ViewController{
                 pvc.getView().setIconifiable(true);
                 pvc.getView().setResizable(false);
                 pvc.getView().setSelected(true);
-                pvc.getView().setSize(635,585);
+                pvc.getView().setSize(700
+                        ,585);
             }
             catch (StoreException ex){
                 displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);

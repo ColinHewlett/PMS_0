@@ -141,6 +141,7 @@ public abstract class ViewController implements ActionListener{
     
     public static enum SurgeryDaysEditorViewControllerActionEvents  {
                                             SURGERY_DATES_EDITOR_REQUEST}
+    
 
     public enum ViewMode {CREATE,
                           UPDATE} 

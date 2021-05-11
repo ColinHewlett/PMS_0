@@ -3,28 +3,25 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.bits.patientView;
 
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
  * @author colin
  */
-public class Appointments5ColumnTableModel extends DefaultTableModel{
+public class AppointmentsSingleColumnTableModel extends DefaultTableModel{
     public static ArrayList<EntityDescriptor.Appointment> appointments = null;
-    private enum COLUMN{Patient, From,To,Duration,Notes};
+    private enum COLUMN{From,Duration,Notes};
     private final Class[] columnClass = new Class[] {
-        EntityDescriptor.Patient.class, 
-        LocalTime.class, 
-        LocalTime.class, 
-        Duration.class, 
-        String.class};
+        LocalDateTime.class, Duration.class,String.class};
     
     public ArrayList<EntityDescriptor.Appointment> getAppointments(){
         return this.appointments;
@@ -65,24 +62,15 @@ public class Appointments5ColumnTableModel extends DefaultTableModel{
                     return null;
                 }
                 else{
-                    LocalDateTime start = appointment.getData().getStart();
-                    long minutes = appointment.getData().getDuration().toMinutes();
-                    Duration duration = appointment.getData().getDuration();
                     switch (column){
-                        case Patient:
-                            result = appointment.getAppointee();
+                        case Duration:
+                            result = appointment.getData().getDuration();
                             break;
                         case From:
-                            result = start.toLocalTime();
-                            break;
-                        case To:
-                            result = start.plusMinutes(duration.toMinutes()).toLocalTime();
-                            break;
-                        case Duration:
-                            result = duration;
+                            result = appointment.getData().getStart();
                             break;
                         case Notes:
-                            result = appointment.getData().getNotes(); 
+                            result = appointment.getData().getNotes();
                             break;
                     }
                     break;
@@ -91,5 +79,4 @@ public class Appointments5ColumnTableModel extends DefaultTableModel{
         }
         return result;
     }
-    
 }

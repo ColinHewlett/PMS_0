@@ -3,23 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.common_bits;
 
 import java.awt.Component;
-import java.time.LocalDateTime;
+import java.awt.Font;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-
 /**
  *
  * @author colin
  */
-public class EmptySlotAvailabilityLocalDateTimeTableRenderer extends JLabel implements TableCellRenderer{
-    private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("(EEE) dd/MM/yy HH:mm ");
+public class AppointmentsTableLocalDateTimeRenderer extends JLabel implements TableCellRenderer{
+    private DateTimeFormatter ddMMyyhhmm12Format = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm ");
     
-    public EmptySlotAvailabilityLocalDateTimeTableRenderer()
+    public AppointmentsTableLocalDateTimeRenderer()
     {
         //Font f = super.getFont();
         // bold
@@ -32,9 +32,19 @@ public class EmptySlotAvailabilityLocalDateTimeTableRenderer extends JLabel impl
     {
         if (value != null){
             LocalDateTime startTime = (LocalDateTime)value;
-            setText(startTime.format(emptySlotFormat));
+            super.setText(startTime.format(ddMMyyhhmm12Format));
         }
         else super.setText("");
+        
+        if (isSelected) {
+            setBackground(table.getSelectionBackground());
+            setForeground(table.getSelectionForeground());
+        } else {
+            setBackground(table.getBackground());
+            setForeground(table.getForeground());
+        }
+        
+        setOpaque(true);
         return this;
     }
 }

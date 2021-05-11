@@ -11,7 +11,7 @@ import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.view.DesktopView;
+import clinicpms.view.base.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import clinicpms.store.exceptions.StoreException;
@@ -335,8 +335,8 @@ public class PatientViewController extends ViewController {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        PropertyChangeListener[] pcls = null;
-        Patient patient = null;
+        //PropertyChangeListener[] pcls;
+        Patient patient;
         setEntityDescriptorFromView(view.getEntityDescriptor());
         if (e.getActionCommand().equals(
                     PatientViewControllerActionEvent.
@@ -459,14 +459,14 @@ public class PatientViewController extends ViewController {
                 PatientViewControllerActionEvent.PATIENT_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             patient = deserialisePatientFromEDRequest();
-            pcls = pcSupportForView.getPropertyChangeListeners();
+            //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
             if (patient.getKey() != null){
                 try{
                     Patient p = patient.read();
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     this.initialiseNewEntityDescriptor();
                     serialisePatientToEDPatient(p);
-                    EntityDescriptor ed = getNewEntityDescriptor();
+                    //EntityDescriptor ed = getNewEntityDescriptor();
                     pcEvent = new PropertyChangeEvent(this,
                             PatientViewControllerPropertyEvent.
                             PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());

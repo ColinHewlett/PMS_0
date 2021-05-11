@@ -5,6 +5,7 @@
  */
 package clinicpms.view;
 
+import clinicpms.view.common_bits.AppointmentDateVetoPolicy;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import com.github.lgooddatepicker.components.DatePicker;
@@ -40,15 +41,17 @@ import javax.swing.JPanel;
  * @author colin
  */
 public class NonSurgeryDayEditorModalViewer extends View {
+    private View.Viewer myViewType = null;
     private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
     /**
      * Creates new form NonSurgeryDayEditorModalViewer
      */
-    public NonSurgeryDayEditorModalViewer(ActionListener myController,
+    public NonSurgeryDayEditorModalViewer(View.Viewer myViewType, ActionListener myController,
             EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
+        setMyViewType(myViewType);
         setEntityDescriptor(entityDescriptor);
         setMyController(myController);
         
@@ -290,4 +293,16 @@ public class NonSurgeryDayEditorModalViewer extends View {
     private com.github.lgooddatepicker.components.DatePicker dayDatePicker;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
+
 }
+
+

@@ -5,6 +5,8 @@
  */
 package clinicpms.view;
 
+import clinicpms.view.base.DesktopView;
+import clinicpms.view.factory_methods.*;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.interfaces.IView;
 import clinicpms.view.interfaces.IViewInternalFrameListener;
@@ -31,48 +33,52 @@ public abstract class View extends JInternalFrame
                                 APPOINTMENT_CREATOR_EDITOR_VIEW,
                                 APPOINTMENT_EDITOR_VIEW,
                                 EMPTY_SLOT_SCANNER_VIEW,
-                                NON_SURGERY_DAY_SCHEDULE_EDITOR,
+                                NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW,
                                 PATIENT_VIEW,
-                                SCHEDULE_CONTACT_LIST,
+                                SCHEDULE_CONTACT_LIST_VIEW,
                                 SURGERY_DAYS_EDITOR_VIEW}
-    
-    public static Viewer getViewer(){
-        return viewer;
-    }
     
     public static void setViewer(Viewer value){
         viewer = value;
     }
     
+    public abstract Viewer getMyViewType();
+    
+    /*
+    public static Viewer getViewer(){
+        return viewer;
+    }
+     */
+    
     public static View factory(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
         View result = null;
-        switch(getViewer()){
+        switch(viewer){
             case APPOINTMENT_SCHEDULE_VIEW:
-                result = new AppointmentsForDayView(controller, ed);
+                result = new AppointmentScheduleFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case APPOINTMENT_CREATOR_VIEW:
                 result = null;
                 break;
             case APPOINTMENT_CREATOR_EDITOR_VIEW:
-                result = new AppointmentCreatorEditorModalViewer(controller, ed, dtView.getContentPane());
+                result = new AppointmentCreatorEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case APPOINTMENT_EDITOR_VIEW:
                 result = null;
                 break;
             case EMPTY_SLOT_SCANNER_VIEW:
-                result = new EmptySlotScanEditorModalViewer(controller, ed, dtView.getContentPane());
+                result = new EmptySlotScannerFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case PATIENT_VIEW:
-                result = new PatientView(controller, ed);
+                result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
-            case NON_SURGERY_DAY_SCHEDULE_EDITOR:
-                result = new NonSurgeryDayEditorModalViewer(controller, ed, dtView.getContentPane());
+            case NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW:
+                result = new NonSurgeryDayEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
-            case SCHEDULE_CONTACT_LIST:
-                result = new PatientAppointmentContactView(controller, ed);
+            case SCHEDULE_CONTACT_LIST_VIEW:
+                result = new ScheduleContactListFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case SURGERY_DAYS_EDITOR_VIEW:
-                result = new SurgeryDaysEditorModalViewer(controller, ed, dtView.getContentPane());
+                result = new SurgeryDaysEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
                 
         }

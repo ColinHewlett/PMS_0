@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.common_bits;
 
 import java.awt.Color;
 import java.awt.Component;

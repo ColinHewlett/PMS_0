@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.bits.appointmentsForDayView;
 
+import clinicpms.controller.EntityDescriptor;
 import java.awt.Component;
-import java.time.Duration;
+import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
@@ -15,9 +16,9 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author colin
  */
-public class AppointmentsHistoryTableStringRenderer extends JLabel implements TableCellRenderer{
+public class AppointmentsTablePatientRenderer  extends JLabel implements TableCellRenderer{
     
-    public AppointmentsHistoryTableStringRenderer()
+    public AppointmentsTablePatientRenderer()
     {
         //Font f = super.getFont();
         // bold
@@ -26,11 +27,20 @@ public class AppointmentsHistoryTableStringRenderer extends JLabel implements Ta
     
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-        boolean hasFocus, int row, int column){
-        if (value!=null){
-            super.setText((String)value);
+        boolean hasFocus, int row, int column)
+    {
+        
+        EntityDescriptor.Patient patient = (EntityDescriptor.Patient)value;
+        if (patient == null) {
+            super.setText("NOT BOOKED");
+            super.setHorizontalAlignment(JLabel.CENTER);
+
+
         }
-        else super.setText("");
+        else {
+            super.setText(patient.toString());
+            super.setHorizontalAlignment(JLabel.LEFT);
+        }
         
         if (isSelected) {
             setBackground(table.getSelectionBackground());
@@ -39,9 +49,7 @@ public class AppointmentsHistoryTableStringRenderer extends JLabel implements Ta
             setBackground(table.getBackground());
             setForeground(table.getForeground());
         }
-        
         setOpaque(true);
         return this;
     }
-    
 }

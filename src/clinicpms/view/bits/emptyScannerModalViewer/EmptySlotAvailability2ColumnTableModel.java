@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.bits.emptyScannerModalViewer;
 
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
@@ -23,7 +23,7 @@ import javax.swing.table.AbstractTableModel;
  * @author colin
  */
 public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
-    public static ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
+    public ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
     private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private enum COLUMN{EmptySlot, Duration};
     private final Class[] columnClass = new Class[] { 

@@ -5,6 +5,7 @@
  */
 package clinicpms.view;
 
+import clinicpms.view.bits.appointmentCreatorEditorModalViewer.SelectStartTimeLocalDateTimeRenderer;
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
@@ -44,24 +45,24 @@ import javax.swing.JPanel;
  * @author colin
  */
 public class AppointmentCreatorEditorModalViewer extends View {
+    private View.Viewer myViewType = null;
     private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
     private ViewController.ViewMode viewMode = null;
     private final String CREATE_BUTTON = "Create appointment";
     private final String UPDATE_BUTTON = "Update appointment";
     private DateTimeFormatter appointmentScheduleFormat = DateTimeFormatter.ofPattern("EEEE, MMMM dd yyyy ");
-
-
+    
     /**
      * Creates new form AppointmentEditorInternalFrame
      */
-    public AppointmentCreatorEditorModalViewer(ActionListener myController,
+    public AppointmentCreatorEditorModalViewer(View.Viewer myViewType, ActionListener myController,
             EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
         setEntityDescriptor(entityDescriptor);
         setMyController(myController);
-        
+        setMyViewType(myViewType);
         initComponents();
         initialiseViewMode();
         // Try to find a JDesktopPane.
@@ -139,6 +140,15 @@ public class AppointmentCreatorEditorModalViewer extends View {
         view.setLocation(new Point(
                 (int)(deskTopViewDimension.getWidth() - (myViewDimension.getWidth()))/2,
                 (int)((deskTopViewDimension.getHeight()-insets.top) - myViewDimension.getHeight())/2));
+    }
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+    
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
     }
     
     @Override

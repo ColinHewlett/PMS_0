@@ -4,6 +4,13 @@
  * and open the template in the editor.
  */
 package clinicpms.view;
+import clinicpms.view.common_bits.AppointmentDateVetoPolicy;
+import clinicpms.view.common_bits.TableHeaderCellBorderRenderer;
+import clinicpms.view.bits.appointmentsForDayView.AppointmentsTablePatientRenderer;
+import clinicpms.view.common_bits.AppointmentsTableLocalDateTimeRenderer;
+import clinicpms.view.common_bits.AppointmentsTableDurationRenderer;
+import clinicpms.view.bits.appointmentsForDayView.Appointments5ColumnTableModel;
+import clinicpms.view.bits.emptyScannerModalViewer.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.controller.AppointmentViewController;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
@@ -55,6 +62,7 @@ import javax.swing.SwingUtilities;
  * @author colin
  */
 public class AppointmentsForDayView extends View{
+    private View.Viewer myViewType = null;
     private enum COLUMN{From,Duration,Patient,Notes};
     private JTable tblAppointmentsForDay = null;
     private ActionListener myController = null;
@@ -182,9 +190,11 @@ public class AppointmentsForDayView extends View{
      * @param controller
      * @param ed 
      */
-    public AppointmentsForDayView(ActionListener controller, EntityDescriptor ed) {
+    public AppointmentsForDayView(View.Viewer myViewType, ActionListener controller, EntityDescriptor ed) {
+        this.setMyViewType(myViewType);
         this.myController = controller;
         this.setEntityDescriptor(ed);
+
         //setView(this);
         initComponents();
         dayDatePicker.addDateChangeListener(new DayDatePickerChangeListener());
@@ -842,5 +852,15 @@ public class AppointmentsForDayView extends View{
 */
         //this.tblEmptySlotAvailability.repaint();
     }
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+    
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
+    
 
 }

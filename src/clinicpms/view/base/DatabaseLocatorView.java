@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.base;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import clinicpms.view.View;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -22,6 +23,7 @@ import javax.swing.event.InternalFrameEvent;
  * @author colin
  */
 public class DatabaseLocatorView extends View {
+    private View.Viewer myViewType = null;
     private JCheckBoxMenuItem mniLocateDatabase = null;
     private EntityDescriptor ed = null;
     private ActionListener myController = null;
@@ -254,4 +256,13 @@ public class DatabaseLocatorView extends View {
     private javax.swing.JMenu mnuAction;
     private javax.swing.JTextField txtDatabaseLocation;
     // End of variables declaration//GEN-END:variables
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
 }

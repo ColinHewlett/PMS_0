@@ -7,6 +7,8 @@ package clinicpms.view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import clinicpms.view.View;
+import clinicpms.view.bits.emptyScannerModalViewer.SelectSlotDurationRenderer;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Color;
@@ -38,7 +40,8 @@ import javax.swing.SpinnerNumberModel;
  *
  * @author colin
  */
-public class EmptySlotScanEditorModalViewer extends View {
+public class EmptySlotScannerModalViewer extends View {
+    private View.Viewer myViewType = null;
     private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
     private DateTimeFormatter appointmentScheduleFormat = DateTimeFormatter.ofPattern("EEEE, MMMM dd yyyy ");
@@ -47,10 +50,11 @@ public class EmptySlotScanEditorModalViewer extends View {
     /**
      * Creates new form AppointmentEditorInternalFrame
      */
-    public EmptySlotScanEditorModalViewer(ActionListener myController,
+    public EmptySlotScannerModalViewer(View.Viewer myViewType,ActionListener myController,
             EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
+        setMyViewType(myViewType);
         setEntityDescriptor(entityDescriptor);
         setMyController(myController);
         setTitle("Empty slot scanner" );
@@ -391,4 +395,15 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.JRadioButton rdbSelectWeeks;
     private javax.swing.JSpinner spnSlotSearchOffset;
     // End of variables declaration//GEN-END:variables
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
 }
+
+

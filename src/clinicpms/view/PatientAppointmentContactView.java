@@ -5,6 +5,11 @@
  */
 package clinicpms.view;
 
+import clinicpms.view.bits.patientAppointmentContactView.PatientAppointmentContactView6ColumnTableModel;
+import clinicpms.view.common_bits.TableHeaderCellBorderRenderer;
+import clinicpms.view.bits.appointmentsForDayView.AppointmentsTablePatientRenderer;
+import clinicpms.view.common_bits.AppointmentsTableLocalDateTimeRenderer;
+import clinicpms.view.common_bits.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import java.awt.Color;
@@ -29,6 +34,7 @@ import javax.swing.table.TableColumnModel;
  * @author colin
  */
 public class PatientAppointmentContactView extends View {
+    private View.Viewer myViewType = null;
     private EntityDescriptor entityDescriptor = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private ActionListener myController = null;
@@ -37,7 +43,8 @@ public class PatientAppointmentContactView extends View {
     /**
      * Creates new form PatientAppointmentContactList
      */
-    public PatientAppointmentContactView(ActionListener myController, EntityDescriptor value) {
+    public PatientAppointmentContactView(View.Viewer myViewType, ActionListener myController, EntityDescriptor value) {
+        this.setMyViewType(myViewType);
         this.myController = myController;
         this.entityDescriptor = value;
         initComponents();
@@ -229,4 +236,13 @@ public class PatientAppointmentContactView extends View {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane scrPatientAppointmentContactView;
     // End of variables declaration//GEN-END:variables
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
 }

@@ -37,16 +37,18 @@ import javax.swing.JPanel;
  * @author colin
  */
 public class SurgeryDaysEditorModalViewer extends View {
+    private View.Viewer myViewType = null;
     private ActionListener myController = null;
     private EntityDescriptor entityDescriptor = null;
 
     /**
      * Creates new form CalendarVetoPolicyEditorModalViewer
      */
-    public SurgeryDaysEditorModalViewer(ActionListener myController,
+    public SurgeryDaysEditorModalViewer(View.Viewer myViewType, ActionListener myController,
             EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
+        setMyViewType(myViewType);
         setEntityDescriptor(entityDescriptor);
         setMyController(myController);
         
@@ -353,4 +355,13 @@ public class SurgeryDaysEditorModalViewer extends View {
     private javax.swing.JCheckBox chkWednesday;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void setMyViewType(View.Viewer value){
+        this.myViewType = value;
+    }
+
+    @Override
+    public View.Viewer getMyViewType(){
+        return this.myViewType;
+    }
 }
