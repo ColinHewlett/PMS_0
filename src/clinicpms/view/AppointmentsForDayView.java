@@ -803,55 +803,7 @@ public class AppointmentsForDayView extends View{
         }
     }
     
-    private void populateEmptySlotAvailabilityTable(EntityDescriptor.Appointments a){
-        EmptySlotAvailability2ColumnTableModel model;
-        if (this.tblEmptySlotAvailability!=null){
-            jScrollPane1.remove(this.tblEmptySlotAvailability);   
-        }
-        this.tblEmptySlotAvailability = new JTable(new EmptySlotAvailability2ColumnTableModel());
-        jScrollPane1.setViewportView(this.tblEmptySlotAvailability);
-        setEmptySlotAvailabilityTableListener();
-        model = (EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel();
-        model.removeAllElements();
-//model.fireTableDataChanged();
-        Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
-        while (it.hasNext()){
-            ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).addElement(it.next());
-        }
-        //model.fireTableDataChanged();
-        JTableHeader tableHeader = this.tblEmptySlotAvailability.getTableHeader();
-        tableHeader.setBackground(new Color(220,220,220));
-        //tableHeader.setBackground(new Color(0,0,0));
-        tableHeader.setOpaque(true);
-        
-        TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
-        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        //this.tblEmptySlotAvailability.repaint();
-    }
-    private void populateEmptySlotAvailabilityTablex(EntityDescriptor.Appointments a){
-        
-        EmptySlotAvailability2ColumnTableModel.emptySlots = a.getData();
-        //this.tblEmptySlotAvailability = new JTable(new EmptySlotAvailability2ColumnTableModel() );
-        EmptySlotAvailability2ColumnTableModel.emptySlots = a.getData();
-        this.tblEmptySlotAvailability.setModel(new EmptySlotAvailability2ColumnTableModel());
-        
-        JTableHeader tableHeader = this.tblEmptySlotAvailability.getTableHeader();
-        tableHeader.setBackground(new Color(220,220,220));
-        tableHeader.setOpaque(true);
-        
-        TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
-        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-/*
-        if (a.getData().isEmpty()){
-            EmptySlotAvailability2ColumnTableModel model = (EmptySlotAvailability2ColumnTableModel)tblEmptySlotAvailability.getModel(); 
-            int count = model.getRowCount();
-            ((DefaultTableModel)tblEmptySlotAvailability.getModel()).setRowCount(0);
-        }
-*/
-        //this.tblEmptySlotAvailability.repaint();
-    }
+   
 
     private void setMyViewType(View.Viewer value){
         this.myViewType = value;

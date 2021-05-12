@@ -16,15 +16,27 @@ import javax.swing.table.TableModel;
 /**
  *
  * @author colin
+ * update to remove statically defined data structure
+ * -- replaces extension  from DefaultTableModel to AbstractTableModel
  */
-public class AppointmentsSingleColumnTableModel extends DefaultTableModel{
-    public static ArrayList<EntityDescriptor.Appointment> appointments = null;
+public class AppointmentsSingleColumnTableModel extends AbstractTableModel{
+    public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
+    //public static ArrayList<EntityDescriptor.Appointment> appointments = null;
     private enum COLUMN{From,Duration,Notes};
     private final Class[] columnClass = new Class[] {
         LocalDateTime.class, Duration.class,String.class};
     
     public ArrayList<EntityDescriptor.Appointment> getAppointments(){
-        return this.appointments;
+        return appointments;
+    }
+    
+    public void addElement(EntityDescriptor.Appointment a){
+        appointments.add(a);
+    }
+    
+    public void removeAllElements(){
+        appointments.clear();
+        this.fireTableDataChanged();
     }
 
     @Override

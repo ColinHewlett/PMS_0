@@ -15,6 +15,7 @@ import clinicpms.controller.ViewController;
 import clinicpms.controller.ViewController.PatientField;
 import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
 import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
+import clinicpms.view.bits.emptyScannerModalViewer.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.view.exceptions.CrossCheckErrorException;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
@@ -492,8 +493,10 @@ public class PatientView extends View{
             this.cmbSelectGuardian.setEnabled(false);
         }
     }
-    private void populateAppointmentsHistoryTable(ArrayList<EntityDescriptor.Appointment> appointments, String header){
     
+    
+    private void populateAppointmentsHistoryTable(ArrayList<EntityDescriptor.Appointment> appointments, String header){
+        /*
         AppointmentsSingleColumnTableModel.appointments = appointments;
         int appointmentsCount = appointments.size();
         switch (appointments.size()){
@@ -510,7 +513,16 @@ public class PatientView extends View{
                 appointments.add(null);
                 break;
         }
+        */
         tableModel = new AppointmentsSingleColumnTableModel();
+        
+        //new
+        tableModel.removeAllElements();
+        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
+        while (it.hasNext()){
+            tableModel.addElement(it.next());
+        }
+        
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
         this.tblAppointmentHistory.setModel(tableModel);
@@ -527,34 +539,6 @@ public class PatientView extends View{
         JTableHeader tableHeader = this.tblAppointmentHistory.getTableHeader();
         tableHeader.setBackground(new Color(220,220,220));
         tableHeader.setOpaque(true);
-        /*
-        DefaultTableCellRenderer renderer = 
-                (DefaultTableCellRenderer) tblAppointmentHistory.getTableHeader().getDefaultRenderer();
-        renderer.setHorizontalAlignment(0);
-        
-        TitledBorder titledBorder;
-        switch (appointmentsCount){
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-                //this.tblAppointmentHistory.setVisible(false);
-                //this.scrAppointmentHistory.getColumnHeader().setVisible(false);
-                titledBorder = (TitledBorder)this.pnlAppointmentHistory.getBorder();
-                titledBorder.setTitle(BorderTitles.Appointment_history.toString().replace('_', ' '));
-                this.pnlAppointmentHistory.repaint();
-                break;
-            default:
-                this.tblAppointmentHistory.setVisible(true);
-                this.scrAppointmentHistory.getColumnHeader().setVisible(true);
-                titledBorder = (TitledBorder)this.pnlAppointmentHistory.getBorder();
-                titledBorder.setTitle(
-                    BorderTitles.Appointment_history.toString().replace('_', ' ') + 
-                            " (" + String.valueOf(appointmentsCount + ")"));
-                this.pnlAppointmentHistory.repaint();
-                break;
-        }
-        */
     }
     /**
      * The method initialises the patient view's appointment history view 
