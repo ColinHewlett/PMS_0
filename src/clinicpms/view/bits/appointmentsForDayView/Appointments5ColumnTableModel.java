@@ -10,14 +10,21 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.AbstractTableModel;
+
 
 /**
  *
  * @author colin
+ * update:
+ * -- strategy remove the statically defined data structure in the table model
+ * -- client uses addElement method to add each appointment to table model
+ * -- extend from AbstractTableModel instead of DefaultTableModel
+ * -- replaces -> public static ArrayList<EntityDescriptor.Appointment> appointments = null;
+ * -- with -> public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
  */
-public class Appointments5ColumnTableModel extends DefaultTableModel{
-    public static ArrayList<EntityDescriptor.Appointment> appointments = null;
+public class Appointments5ColumnTableModel extends AbstractTableModel{
+    public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
     private enum COLUMN{Patient, From,To,Duration,Notes};
     private final Class[] columnClass = new Class[] {
         EntityDescriptor.Patient.class, 
@@ -28,6 +35,15 @@ public class Appointments5ColumnTableModel extends DefaultTableModel{
     
     public ArrayList<EntityDescriptor.Appointment> getAppointments(){
         return this.appointments;
+    }
+    
+    public void addElement(EntityDescriptor.Appointment a){
+        appointments.add(a);
+    }
+    
+    public void removeAllElements(){
+        appointments.clear();
+        this.fireTableDataChanged();
     }
 
     @Override

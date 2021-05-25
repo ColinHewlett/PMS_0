@@ -8,27 +8,42 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="mnuOptions">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Options"/>
+            <Property name="text" type="java.lang.String" value="List"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="mniScheduleContactList">
               <Properties>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="&quot;Display scheduled appointees&apos; contact details&quot;" type="code"/>
-                </Property>
+                <Property name="text" type="java.lang.String" value="List appointee contact details"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="mniPrintAppointmentDayList">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Print appointment day list"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="mnuOptions.add(new JSeparator());"/>
               </AuxValues>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="mniSelectNonSurgeryDay">
+            <MenuItem class="javax.swing.JMenuItem" name="mniCloseView">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Select appointment schedule for a non-surgery day"/>
+                <Property name="text" type="java.lang.String" value="Close view"/>
               </Properties>
             </MenuItem>
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="mnuSurgeryDayEdit">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Edit"/>
+          </Properties>
+          <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="mniSurgeryDaysEditor">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Open surgery day editor"/>
+                <Property name="text" type="java.lang.String" value="Define which days are surgery days"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="mniSelectNonSurgeryDay">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Open schedule on a non-surgery day"/>
               </Properties>
             </MenuItem>
           </SubComponents>

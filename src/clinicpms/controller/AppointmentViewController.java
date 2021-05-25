@@ -108,7 +108,7 @@ public class AppointmentViewController extends ViewController{
          * one, is active when property change events are fired
          */
         
-        View test = (View)e.getSource();
+        //View test = (View)e.getSource();
         if (e.getSource() instanceof DesktopViewController){
             doDesktopViewControllerAction(e);
         }
@@ -647,7 +647,10 @@ public class AppointmentViewController extends ViewController{
                          */
                         state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                         result = 
-                                "Attempt to overwrite two separate appointments disallowed";
+                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
+                                            + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
+                        //result = 
+                        //        "Attempt to overwrite two separate appointments disallowed";
                         break;
                    }
 
@@ -1297,13 +1300,14 @@ public class AppointmentViewController extends ViewController{
         this.myController = myController;
     }
     
+    /*public JInternalFrame getView( ){
+        return view;
+    }
+    */
+
     public JInternalFrame getView( ){
         return view;
     }
-    /*
-    public JInternalFrame getView( ){
-        return view;
-    }
-     */
+
   
 }

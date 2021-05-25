@@ -78,7 +78,7 @@ public class DesktopView extends javax.swing.JFrame{
         mniPatientView = new JMenuItem("Patient");
         mniAppointmentView = new JMenuItem("Appointments");
         mniDatabaseLocator = new JMenuItem("Database locator");
-        mniExitView = new JMenuItem("Exit The Clinic PMS");
+        mniExitView = new JMenuItem("Exit The Clinic practice management system");
         this.mnuView.add(mniPatientView);
         this.mnuView.add(mniAppointmentView);
         this.mnuView.add(new JSeparator());

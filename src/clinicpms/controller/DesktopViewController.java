@@ -162,7 +162,7 @@ public class DesktopViewController extends ViewController{
             if (!appointmentViewControllers.isEmpty()||!patientViewControllers.isEmpty()){
                 message = "At least one patient or appointment view is active. Close application anyway?";
             }
-            else {message = "Close The Clinic PMS?";}
+            else {message = "Close The Clinic practice management system?";}
             int close = JOptionPane.showOptionDialog(getView(),
                             message,null,
                             JOptionPane.YES_NO_OPTION,

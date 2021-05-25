@@ -25,6 +25,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -52,6 +53,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
     private final String CREATE_BUTTON = "Create appointment";
     private final String UPDATE_BUTTON = "Update appointment";
     private DateTimeFormatter appointmentScheduleFormat = DateTimeFormatter.ofPattern("EEEE, MMMM dd yyyy ");
+    private DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
     /**
      * Creates new form AppointmentEditorInternalFrame
@@ -158,14 +160,15 @@ public class AppointmentCreatorEditorModalViewer extends View {
     
     @Override
     public void propertyChange(PropertyChangeEvent e){
-        setEntityDescriptor((EntityDescriptor)e.getNewValue());
         if (e.getPropertyName().equals(
                 ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
+            setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromED();
         }
         else if (e.getPropertyName().equals(
             ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
-            ViewController.displayErrorMessage(getEntityDescriptor().getError(),
+            EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
+            ViewController.displayErrorMessage(ed.getError(),
                                                "Appointment editor dialog error",
                                                JOptionPane.ERROR_MESSAGE);
         }
@@ -202,7 +205,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         
         else this.cmbSelectStartTime.setSelectedIndex(0);
         //else this.cmbSelectStartTime.setSelectedIndex(0);
-        this.setTitle("Appointment editor for " + day.format(appointmentScheduleFormat));
+        this.setTitle("Appointment editor for " + day.format(ddMMyyyyFormat));
     }
     
     private ActionListener getMyController(){
@@ -454,10 +457,10 @@ public class AppointmentCreatorEditorModalViewer extends View {
             }
         });
 
-        btnCancel.setText("Cancel");
+        btnCancel.setText("Close view");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
+                btnCloseViewActionPerformed(evt);
             }
         });
 
@@ -556,8 +559,13 @@ public class AppointmentCreatorEditorModalViewer extends View {
         }
     }//GEN-LAST:event_btnCreateUpdateAppointmentActionPerformed
 
-    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        //this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        try{
+            this.setClosed(true);
+        }
+        catch (PropertyVetoException ex){
+            
+        }
     }//GEN-LAST:event_btnCancelActionPerformed
 
 
