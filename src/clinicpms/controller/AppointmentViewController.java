@@ -113,6 +113,24 @@ public class AppointmentViewController extends ViewController{
             doDesktopViewControllerAction(e);
         }
         else {
+            /**
+             * The following code is required because JInternalFrame modality is not directly supported in Java which has the following consequences
+             * -- usage of modality-based JDialogs (1) JDialogs can be moved outside the JDesktop view and (2) are visually different to JInternalFrames
+             * -- for this reason third party code has been used to add modality to JInternlFrames (https://stackoverflow.com/questions/16590399/modal-jinternalframe-that-returns-data-to-caller)
+             * -- the consequences of adoption of this approach explain the logic of following code
+             * 
+             * First action: reference to source of action event fetched
+             * If source is a modal JinternalFrame 2 views active for this view controller
+             * -- the main non-modal JInternalFrame and
+             * -- the modal JInternalFrame launched from the main JInternalFrame
+             * ---- on construction the modal JInternalFrame does not return (!) to the view controller and hence the controller does not have a reference to the non-modal view, which it needs
+             * ---- only when modal JInternalFrame sends an action event can view controller fetch the reference to the modal view 
+             * ---- modal form reference is needed to close down form when required, but is also used for any other reason the modal form might want to communicate with the view controller
+             * ------ in particular: because the modality of JInternalFrame does not restrict access to the desktop controls, at appropriate times the modal JInternalFrame requests the view controller to do this immediately after the construction of the modal JInternalFrame
+             * ---- the view controller maintains a global reference to the non modal JInternalForm
+             * ------ this is used to fire a property change event to the main form on the closure of the modal form
+             * 
+             */
             View view = (View)e.getSource();
             switch(view.getMyViewType()){
                 case APPOINTMENT_SCHEDULE_VIEW:
@@ -218,13 +236,17 @@ public class AppointmentViewController extends ViewController{
     
     private void doEmptySlotScannerViewAction(ActionEvent e){
         if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             try{
                 this.view2.setClosed(true);
+                /**
+                 * the modal JinternalFrame has closed
+                 */
+                
             }
             catch (PropertyVetoException ex){
                 
             }
-            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
             Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
@@ -240,7 +262,7 @@ public class AppointmentViewController extends ViewController{
                                     this.appointments,duration,day);
                     serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
                     /**
-                     * fire event over to APPOINTMENT_SCHEDULE
+                     * fire event over to APPOINTMENT_SCHEDULE view
                      */
                     pcSupport.addPropertyChangeListener(view);
                     pcEvent = new PropertyChangeEvent(this,
@@ -248,11 +270,30 @@ public class AppointmentViewController extends ViewController{
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
+                    
+                    /**
+                     * re-enabling of desktop view menu is handled when the View factory returns from the view constructor
+                     * -- note: a modal JInternalFrame constructor only returns on the closure of the JInternalFrame
+                     * -- which includes also when the modal view is closed locally via a Cancel button selection by the user
+                     * 
+                     * Post processing of data received from the modal view must be done at a time signalled by an action request sent by the modal view to the controller, whilst the view's entity descriptor is still accessible.. 
+                     */
                 }
             }
             catch (StoreException ex){
                 //UnspecifiedError action
             }
+        }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+            /**
+             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent); 
+            
         }
     }
     
@@ -341,6 +382,17 @@ public class AppointmentViewController extends ViewController{
             this.myController.actionPerformed(actionEvent);   
         }
         else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+            /**
+             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent); 
+            
+        }
+        else if (e.getActionCommand().equals(
                 AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
             try{
                 IStore store = Store.factory();
@@ -404,6 +456,16 @@ public class AppointmentViewController extends ViewController{
              */
             View.setViewer(View.Viewer.EMPTY_SLOT_SCANNER_VIEW);
             this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView);
+            
+            /**
+             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent);
             
         }
         else if (e.getActionCommand().equals(

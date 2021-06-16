@@ -71,15 +71,22 @@ public class EmptySlotScannerModalViewer extends View {
         if (toUse == null)  toUse = JLayeredPane.getLayeredPaneAbove(parent);
         // If this still fails, we throw a RuntimeException.
         if (toUse == null) throw new RuntimeException   ("parentComponent does not have a valid parent");
-        this.setClosable(true);
+        
         JDesktopPane x = (JDesktopPane)toUse;
         toUse.add(this);
         this.setLayer(JLayeredPane.MODAL_LAYER);
         centreViewOnDesktop(x.getParent(),this);
         this.initialiseView();
-        this.setVisible(true);
+        
+        
+        ActionEvent actionEvent = new ActionEvent(this,
+            ActionEvent.ACTION_PERFORMED,
+            ViewController.DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
+        
+        
     }
     
     private void startModal(JInternalFrame f) {
@@ -147,7 +154,12 @@ public class EmptySlotScannerModalViewer extends View {
     }
     
     public void initialiseView(){
-        
+        this.setVisible(true);
+        this.setClosable(true);
+        //disallow any resizing including minimising to tak bar
+        this.setMaximizable(false);
+        this.setIconifiable(false);
+        this.setResizable(false);
     }
     
     public EntityDescriptor getEntityDescriptor(){

@@ -16,13 +16,20 @@ import java.awt.event.ActionListener;
  * @author colin
  */
 public class AppointmentScheduleFactoryMethod extends ViewFactoryMethod{
+
     public AppointmentScheduleFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+        initialiseView(controller, ed, dtView);
+    }
+    
+    @Override
+    public View makeView(View.Viewer myViewType){
+        return new AppointmentsForDayView(myViewType, this.getViewController(), this.getEntityDescriptor());
+    }
+    
+    private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
         this.setDesktopView(dtView);
         this.setEntityDescriptor(ed);
         this.setViewController(controller);
-    }
-    public View makeView(View.Viewer myViewType){
-        return new AppointmentsForDayView(myViewType, this.getViewController(), this.getEntityDescriptor());
     }
     
     

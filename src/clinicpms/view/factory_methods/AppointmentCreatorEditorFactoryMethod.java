@@ -16,14 +16,20 @@ import java.awt.event.ActionListener;
  */
 public class AppointmentCreatorEditorFactoryMethod extends ViewFactoryMethod{
     public AppointmentCreatorEditorFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
-        this.setDesktopView(dtView);
-        this.setEntityDescriptor(ed);
-        this.setViewController(controller);
+        initialiseView(controller, ed, dtView);
     }
+    
+    @Override
     public View makeView(View.Viewer myViewType){
         return new AppointmentCreatorEditorModalViewer(myViewType, this.getViewController(), 
                 this.getEntityDescriptor(), getDesktopView().getContentPane());
         
+    }
+    
+    private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+        this.setDesktopView(dtView);
+        this.setEntityDescriptor(ed);
+        this.setViewController(controller);
     }
     
     

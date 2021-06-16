@@ -17,13 +17,18 @@ public class ScheduleContactListFactoryMethod extends ViewFactoryMethod{
     
     public ScheduleContactListFactoryMethod(ActionListener viewController,
             EntityDescriptor ed, DesktopView dtView){
-        this.setDesktopView(dtView);
-        this.setEntityDescriptor(ed);
-        this.setViewController(viewController);
+        initialiseView(viewController, ed, dtView);
     }
 
+    @Override
     public View makeView(View.Viewer myViewType){
         return new PatientAppointmentContactView(myViewType, getViewController(), getEntityDescriptor()); 
+    }
+    
+    private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+        this.setDesktopView(dtView);
+        this.setEntityDescriptor(ed);
+        this.setViewController(controller);
     }
     
 }

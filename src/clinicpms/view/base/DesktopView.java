@@ -98,6 +98,34 @@ public class DesktopView extends javax.swing.JFrame{
         return deskTop;
     }
     */
+    
+    /**
+     * enable following controls on this view
+     * -- mniPatientView
+     * -- mniAppointmentView
+     * -- mniExitView 
+     */
+    public void enableControls(){
+        //this.mnuView.setEnabled(true);
+        
+        //mniPatientView.setEnabled(true);
+        //mniAppointmentView.setEnabled(true);
+        //mniExitView.setEnabled(true);
+       
+    }
+    
+    /**
+     * enable following controls on this view
+     * -- mniPatientView
+     * -- mniAppointmentView
+     * -- mniExitView 
+     */
+    public void disableControls(){
+        this.setEnabled(false);
+       //this.mnuView.setEnabled(false);
+        
+    }
+    
     public javax.swing.JDesktopPane getDeskTop(){
         return deskTop;
     } 

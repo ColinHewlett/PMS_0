@@ -101,6 +101,16 @@ public class DesktopViewController extends ViewController{
                 }
             }
         }
+        else if (e.getActionCommand().equals(
+            ViewController.DesktopViewControllerActionEvent.
+                    ENABLE_CONTROLS_REQUEST.toString())){
+            getView().enableControls();
+        }
+        else if (e.getActionCommand().equals(
+            ViewController.DesktopViewControllerActionEvent.
+                    DISABLE_CONTROLS_REQUEST.toString())){
+            getView().disableControls();
+        }
     }
     private void doPatientViewControllerAction(ActionEvent e){
         PatientViewController pvc = null;

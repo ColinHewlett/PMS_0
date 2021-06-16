@@ -17,13 +17,18 @@ public class NonSurgeryDayEditorFactoryMethod extends ViewFactoryMethod{
     
     public NonSurgeryDayEditorFactoryMethod(ActionListener viewController, 
             EntityDescriptor ed, DesktopView dtView){
-        this.setDesktopView(dtView);
-        this.setEntityDescriptor(ed);
-        this.setViewController(viewController);
+        initialiseView(viewController,ed, dtView);
     }
     
+    @Override
     public View makeView(View.Viewer myViewType){
         return new NonSurgeryDayEditorModalViewer(myViewType, getViewController(),
                 getEntityDescriptor(), getDesktopView().getContentPane());
+    }
+    
+    private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+        this.setDesktopView(dtView);
+        this.setEntityDescriptor(ed);
+        this.setViewController(controller);
     }
 }

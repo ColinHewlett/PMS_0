@@ -61,6 +61,8 @@ public abstract class ViewController implements ActionListener{
     
     public enum DesktopViewControllerActionEvent {
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
+                                            ENABLE_CONTROLS_REQUEST,
+                                            DISABLE_CONTROLS_REQUEST,
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
