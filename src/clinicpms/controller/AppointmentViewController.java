@@ -317,49 +317,63 @@ public class AppointmentViewController extends ViewController{
                 initialiseNewEntityDescriptor();
                 result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
             }
-            if (result!=null){
-                try{
-                    this.view2.setClosed(true);
-                }
-                catch (PropertyVetoException ex){
-                    
-                }
-                this.appointments =
-                    new Appointments().getAppointmentsFor(day);
-                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                serialiseAppointmentsToEDCollection(this.appointments);
-                /**
-                 * fire event over to APPOINTMENT_SCHEDULE
-                 */
-                pcSupport.addPropertyChangeListener(this.view);
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-
-                //either an update appt or create appt event has occurred
-                //so clear empty slot list!!!
-                initialiseNewEntityDescriptor();
-                /**
-                 * fire event over to APPOINTMENT_SCHEDULE
-                 */
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-                    null,getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-                pcSupport.removePropertyChangeListener(this.view);
-
+            else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+            /**
+             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent); 
+            
             }
-            else{
-                /**
-                 * fire event over to APPOINTMENT_CREATOR_EDITOR_VIEW
-                 */
-                pcSupport.addPropertyChangeListener(this.view2);
-                pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupport.firePropertyChange(pcEvent);
-                pcSupport.removePropertyChangeListener(this.view2);
+            if (!e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){
+                if (result!=null){
+                    try{
+                        this.view2.setClosed(true);
+                    }
+                    catch (PropertyVetoException ex){
+
+                    }
+                    this.appointments =
+                        new Appointments().getAppointmentsFor(day);
+                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
+                    serialiseAppointmentsToEDCollection(this.appointments);
+                    /**
+                     * fire event over to APPOINTMENT_SCHEDULE
+                     */
+                    pcSupport.addPropertyChangeListener(this.view);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+
+                    //either an update appt or create appt event has occurred
+                    //so clear empty slot list!!!
+                    initialiseNewEntityDescriptor();
+                    /**
+                     * fire event over to APPOINTMENT_SCHEDULE
+                     */
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        null,getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                    pcSupport.removePropertyChangeListener(this.view);
+
+                }
+                else{
+                    /**
+                     * fire event over to APPOINTMENT_CREATOR_EDITOR_VIEW
+                     */
+                    pcSupport.addPropertyChangeListener(this.view2);
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                        getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                    pcSupport.removePropertyChangeListener(this.view2);
+                }
             }
             
         }
