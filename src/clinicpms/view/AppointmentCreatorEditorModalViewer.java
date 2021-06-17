@@ -81,6 +81,11 @@ public class AppointmentCreatorEditorModalViewer extends View {
         this.initialiseView();
         this.setVisible(true);
         
+        ActionEvent actionEvent = new ActionEvent(this,
+            ActionEvent.ACTION_PERFORMED,
+            ViewController.DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
+        
         startModal(this);
     }
     

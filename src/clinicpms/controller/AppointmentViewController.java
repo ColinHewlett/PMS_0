@@ -511,6 +511,15 @@ public class AppointmentViewController extends ViewController{
                     serialisePatientsToEDCollection(patients);
                     View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                     this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
+                    /**
+                     * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+                     * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+                     * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+                     */
+                    ActionEvent actionEvent = new ActionEvent(
+                            this,ActionEvent.ACTION_PERFORMED,
+                            DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                    this.myController.actionPerformed(actionEvent);
                 }
                 catch (StoreException ex){
                     String message = ex.getMessage();
@@ -526,6 +535,15 @@ public class AppointmentViewController extends ViewController{
                 Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
+                /**
+                 * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+                 * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+                 * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+                 */
+                ActionEvent actionEvent = new ActionEvent(
+                       this,ActionEvent.ACTION_PERFORMED,
+                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
                 String message = ex.getMessage();
