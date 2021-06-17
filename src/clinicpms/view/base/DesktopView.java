@@ -35,8 +35,12 @@ public class DesktopView extends javax.swing.JFrame{
     private JMenuItem mniExitView = null;
     private WindowAdapter windowAdapter = null;  
     private Image img = null;
+    private boolean viewMenuState = true;
     
-
+    /**
+     * Listener for window closing events (user selecting the window "X" icon).
+     * The listener initialised to DO_NOTHING_ON_CLOSE, in order to pass close request message onto the view controller 
+     */
     private void initFrameClosure() {
         this.windowAdapter = new WindowAdapter() {
             // WINDOW_CLOSING event handler
@@ -44,14 +48,21 @@ public class DesktopView extends javax.swing.JFrame{
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
                 /**
-                 * When an attempt to close the view (user clicking "X")
-                 * the view's controller is notified and will decide whether
-                 * to call the view's dispose() method
+                 * viewMenuState variable is checked on receipt of windowClosing event
+                 * -- true state indicates the main View menu is operational and closing event message sent to view controller
+                 * -- false state indicates the main View menu is currently disabled and therefor no message sent to view controller
                  */
-                ActionEvent actionEvent = new ActionEvent(DesktopView.this, 
-                        ActionEvent.ACTION_PERFORMED,
-                        DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
-                DesktopView.this.getController().actionPerformed(actionEvent);
+                if (DesktopView.this.viewMenuState){
+                    /**
+                     * When an attempt to close the view (user clicking "X")
+                     * the view's controller is notified and will decide whether
+                     * to call the view's dispose() method
+                     */
+                    ActionEvent actionEvent = new ActionEvent(DesktopView.this, 
+                            ActionEvent.ACTION_PERFORMED,
+                            DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+                    DesktopView.this.getController().actionPerformed(actionEvent);
+                }
             }
         };
 
@@ -85,7 +96,7 @@ public class DesktopView extends javax.swing.JFrame{
         this.mnuView.add(mniDatabaseLocator);
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
-
+        
         mniPatientView.addActionListener((ActionEvent e) -> mniPatientViewActionPerformed());
         mniAppointmentView.addActionListener((ActionEvent e) -> mniAppointmentViewActionPerformed());
         mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
@@ -100,30 +111,19 @@ public class DesktopView extends javax.swing.JFrame{
     */
     
     /**
-     * enable following controls on this view
-     * -- mniPatientView
-     * -- mniAppointmentView
-     * -- mniExitView 
+     * enable the main View menu and update global variable viewMenuState accordingly 
      */
     public void enableControls(){
-        //this.mnuView.setEnabled(true);
-        
-        //mniPatientView.setEnabled(true);
-        //mniAppointmentView.setEnabled(true);
-        //mniExitView.setEnabled(true);
-       
+        this.mnuView.setEnabled(true);
+        this.viewMenuState = true;
     }
     
     /**
-     * enable following controls on this view
-     * -- mniPatientView
-     * -- mniAppointmentView
-     * -- mniExitView 
+     * disable the main View menu and update global variable viewMenuState accordingly 
      */
     public void disableControls(){
-        this.setEnabled(false);
-       //this.mnuView.setEnabled(false);
-        
+        this.mnuView.setEnabled(false);
+        this.viewMenuState = false;   
     }
     
     public javax.swing.JDesktopPane getDeskTop(){
