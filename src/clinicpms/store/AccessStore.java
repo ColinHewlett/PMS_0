@@ -59,8 +59,23 @@ public class AccessStore extends Store {
     private void setConnection(Connection con){
         this.connection = con;
     }
+    
+    /**
+     * -- global databaseURL value checked in order to create the connection string for the PMS database
+     * -- if null the DbLocationStore inner class is constructed to access the location of the PMS database
+     * -- databaseURL is initialised with this value and the appropriate connection string formed
+     * @return Connection object
+     * @throws StoreException if an SQLException is raised by the connection attempt
+     */
     private Connection getConnection()throws StoreException{
-        String url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
+        String url = null;
+        if (getDatabaseURL() != null){
+            url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
+        }
+        else{
+            new DbLocationStore();
+            url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
+        }
         if (connection == null){
             try{
                 connection = DriverManager.getConnection(url);
@@ -88,39 +103,14 @@ public class AccessStore extends Store {
         }
     }
     
-    public static void setDatabaseURL(String url){
+    public void setDatabaseURL(String url){
         databaseURL = url;
     }
     
-    public static String getDatabaseURL()throws StoreException{
-        return DbLocationStore.getInstance().read();
-        //return databaseURL;
+    public String getDatabaseURL()throws StoreException{
+        return databaseURL;
     }
     
-    /*
-    public String getDatabaseURL()throws StoreException{
-        String result = null;
-        BufferedReader br = null;
-        try {
-            File file = new File ("c://ProgramData//DbLocation.accb");
-            if (file.exists()){
-                FileReader fr = new FileReader(file);
-                br = new BufferedReader(fr);
-                result = br.readLine();
-                return result;
-            }
-            else{
-                throw new StoreException(
-                        "Missing 'databasePath.txt' file", ExceptionType.UNDEFINED_DATABASE);
-            }
-        }
-        catch(IOException ex){
-            message = "IOException -> " + ex.getMessage() + "\n";
-            throw new StoreException(
-                    "StoreException -> raised in AccessStore::getDatabaseURL() when trying to read the 'database.txt' file",ExceptionType.IO_EXCEPTION );
-        }
-    }
-    */
     public AccessStore()throws StoreException{
         connection = getConnection();
     }
@@ -1022,5 +1012,62 @@ public class AccessStore extends Store {
              + "StoreException message -> exception raised during AccessStorage::updateSurgeryDays statement",
             ExceptionType.SQL_EXCEPTION);
         }  
+    }
+    
+    class DbLocationStore{
+        private Connection connection = null;
+        
+        public DbLocationStore()throws StoreException{
+            connection = getConnection();
+            setDatabaseURL(this.read());
+        }
+        
+        private Connection getConnection()throws StoreException{
+            String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
+            if (this.connection == null){
+                try{
+                    this.connection = DriverManager.getConnection(url);  
+                }
+                catch (SQLException ex){
+                    message = ex.getMessage();
+                    throw new StoreException("SQLException message -> " + message +"\n"
+                            + "StoreException message -> raised trying to connect to the DbLocationStore database",
+                    Store.ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            return this.connection;
+        }
+
+        public void closeConnection()throws StoreException{
+            try{
+                if (this.connection!=null){
+                    this.connection.close();
+                }
+            }
+            catch (SQLException ex){
+                message = "SQLException -> " + ex.getMessage() + "\n";
+                message = message + "StoreException -> raised in ProgreSQLStore::closeConnection()";
+                throw new StoreException(message, Store.ExceptionType.SQL_EXCEPTION);
+            }
+        }
+
+        public String read()throws StoreException{
+            String result = null;
+            String sql = "Select Location from LOCATION WHERE id = 1;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next()){
+                    result = rs.getString("location");
+                }
+                return result;
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::read() query",
+                ExceptionType.SQL_EXCEPTION);
+            }
+
+        }
     }
 }

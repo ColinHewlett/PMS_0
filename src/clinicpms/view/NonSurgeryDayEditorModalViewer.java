@@ -70,6 +70,12 @@ public class NonSurgeryDayEditorModalViewer extends View {
         this.initialiseView();
         this.setVisible(true);
         this.setClosable(true);
+        
+        ActionEvent actionEvent = new ActionEvent(this,
+            ActionEvent.ACTION_PERFORMED,
+            ViewController.DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
+        
         startModal(this);
     }
 

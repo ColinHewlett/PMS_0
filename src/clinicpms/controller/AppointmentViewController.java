@@ -199,6 +199,17 @@ public class AppointmentViewController extends ViewController{
             pcSupport.firePropertyChange(pcEvent);
             pcSupport.removePropertyChangeListener(view);
         }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+            /**
+             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent); 
+            
+        }
     }
     private void doSurgeryDaysEditorViewAction(ActionEvent e){
         if (e.getActionCommand().equals(
@@ -231,6 +242,17 @@ public class AppointmentViewController extends ViewController{
                 String message = ex.getMessage();
                 displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
+        }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+            /**
+             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            this.myController.actionPerformed(actionEvent); 
+            
         }
     }
     
@@ -416,6 +438,15 @@ public class AppointmentViewController extends ViewController{
                 getNewEntityDescriptor().getRequest().setSurgeryDays(d);
                 View.setViewer(View.Viewer.NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
+                /**
+                 * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+                 * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+                 * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+                 */
+                ActionEvent actionEvent = new ActionEvent(
+                       this,ActionEvent.ACTION_PERFORMED,
+                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
                 String message = ex.getMessage();
@@ -431,7 +462,16 @@ public class AppointmentViewController extends ViewController{
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().getRequest().setSurgeryDays(d);
                 View.setViewer(View.Viewer.SURGERY_DAYS_EDITOR_VIEW);
-                this.view = View.factory(this, getNewEntityDescriptor(), desktopView); 
+                this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
+                /**
+                 * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+                 * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+                 * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+                 */
+                ActionEvent actionEvent = new ActionEvent(
+                       this,ActionEvent.ACTION_PERFORMED,
+                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
                 String message = ex.getMessage();
