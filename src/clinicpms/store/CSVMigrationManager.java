@@ -12,6 +12,7 @@ import clinicpms.store.exceptions.StoreException;
  * @author colin
  */
 public class CSVMigrationManager {
+    /*
     public static void action(Store.MigrationMethod mm)throws StoreException{
         switch (mm){
             case CSV_APPOINTMENT_FILE_CONVERTER:
@@ -25,4 +26,5 @@ public class CSVMigrationManager {
                 break;
         }
     }
+*/
 }

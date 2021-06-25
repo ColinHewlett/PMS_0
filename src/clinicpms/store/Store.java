@@ -22,6 +22,52 @@ import java.util.Comparator;
  * @author colin
  */
 public abstract class Store implements IStore {
+    public enum MigrationMethod   { APPOINTMENTS_COUNT,
+                                    APPOINTMENT_TABLE_CREATE,
+                                    APPOINTMENT_TABLE_DROP,
+                                    APPOINTMENT_TABLE_POPULATE,
+                                    APPOINTMENT_TABLE_INTEGRITY_CHECK,
+                                    APPOINTMENT_START_TIMES_NORMALISED,
+                                    PATIENTS_COUNT,
+                                    PATIENT_TABLE_CREATE,
+                                    PATIENT_TABLE_DROP,
+                                    PATIENT_TABLE_POPULATE,
+                                    PATIENT_TABLE_TIDY
+                                  }
+    public enum CSVMigrationMethod  {   CSV_APPOINTMENT_FILE_CONVERTER,
+                                        CSV_MIGRATION_INTEGRITY_PROCESS,
+                                        CSV_PATIENT_FILE_CONVERTER,
+                                        ACCESS_PATIENT_PREPROCESS
+                                    }
+    
+    public enum MigrationAppointmentSQL {
+                            APPOINTMENT_TABLE_CREATE,
+                            APPOINTMENT_TABLE_DROP,
+                            APPOINTMENT_START_TIME_NORMALISED}
+    
+    public enum MigrationPatientSQL {
+                            PATIENT_TABLE_CREATE,
+                            PATIENT_TABLE_DROP}
+     
+    public enum Storage{ACCESS, 
+                        CSV,
+                        POSTGRES,
+                        SQL_EXPRESS,
+                        UNDEFINED_DATABASE}
+    
+    public enum ExceptionType {  APPOINTEE_NOT_FOUND_EXCEPTION,
+                                 IO_EXCEPTION,
+                                 CSV_EXCEPTION,
+                                 NULL_KEY_EXPECTED_EXCEPTION,
+                                 NULL_KEY_EXCEPTION,
+                                 INVALID_KEY_VALUE_EXCEPTION,
+                                 KEY_FOUND_EXCEPTION,
+                                 KEY_NOT_FOUND_EXCEPTION,
+                                 SQL_EXCEPTION,
+                                 STORE_EXCEPTION,
+                                 UNDEFINED_DATABASE}
+    
+    /*
     public enum MigrationMethod{    CSV_APPOINTMENT_FILE_CONVERTER,
                                     CSV_MIGRATION_INTEGRITY_PROCESS,
                                     CSV_PATIENT_FILE_CONVERTER,
@@ -41,6 +87,7 @@ public abstract class Store implements IStore {
                                  KEY_NOT_FOUND_EXCEPTION,
                                  SQL_EXCEPTION,
                                  UNDEFINED_DATABASE}
+    */
     private static Storage storage = null;
     private static String databaseLocatorPath = null;
     
