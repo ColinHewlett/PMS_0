@@ -294,15 +294,33 @@ public class AccessStore extends Store {
         }
         return appointment;
     }
+    @Override
     public Patient read(Patient p) throws StoreException{
-        ArrayList<Patient> patients = 
+        try{//ensure auto commit setting switched on
+            if (!getConnection().getAutoCommit()){
+                getConnection().setAutoCommit(true);
+            }
+            ArrayList<Patient> patients = 
                 runSQL(PatientSQL.READ_PATIENT_WITH_KEY,p,  new ArrayList<Patient>());
-        Patient patient = patients.get(0);
-        if (patient.getGuardian()!=null){
-            patients = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, patient.getGuardian(), new ArrayList<Patient>());  
+            if (patients.isEmpty()){//patient with this key not found
+                throw new StoreException(
+                        "Could not find patient with key = " + String.valueOf(p.getKey()), 
+                        ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+            }
+            else{
+                Patient patient = patients.get(0);
+                if (patient.getGuardian()!=null){
+                    patients = runSQL(PatientSQL.READ_PATIENT_WITH_KEY, patient.getGuardian(), new ArrayList<Patient>());  
+                }
+                patient.setGuardian(patients.get(0));
+                return patient;
+            }
         }
-        patient.setGuardian(patients.get(0));
-        return patient;
+        catch (SQLException ex){
+            message = "SQLException -> " + ex.getMessage() + "\n";
+            throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::read(Patient p)",
+            ExceptionType.SQL_EXCEPTION);
+        }
     }
     /**
      * 
