@@ -12,6 +12,7 @@ import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.base.DesktopView;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class DesktopViewController extends ViewController{
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
     private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
+    private static Boolean isDataMigrationOptionEnabled = null;
    
     //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;    
     enum ViewControllers {
@@ -38,6 +40,14 @@ public class DesktopViewController extends ViewController{
     public EntityDescriptor getEntityDescriptorFromView(){
         return null;
     }
+    
+    private Boolean getDataMigrationOption(){
+        return isDataMigrationOptionEnabled;
+    }
+    private void setDataMigrationOption(Boolean value){
+        isDataMigrationOptionEnabled = value;
+    }
+            
     
     private DesktopViewController(){
         
@@ -341,10 +351,12 @@ public class DesktopViewController extends ViewController{
      * @param args the command line arguments
      */
     public static void main(String[] args) {   
+        boolean isCommandLineError = false;
+        String usageError = null;
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
             /**
-             * Selection of persistent storage type
+             * checks first command line argument -> persistent store format
              */
             if (args.length > 0){
                 switch (args[0]){
@@ -360,10 +372,48 @@ public class DesktopViewController extends ViewController{
                     case "SQL_EXPRESS":
                         Store.setStorageType(Storage.SQL_EXPRESS);
                         break;
+                    default:
+                        Store.setStorageType(Storage.UNDEFINED_DATABASE);
+                        usageError = "usage error: target database format has not been defined";
+                        isCommandLineError = true;
                 }
-                Store.setDatabaseLocatorPath(args[1]);
-      
             }
+            else {
+                isCommandLineError = true;
+                usageError = "usage: expects at least 2 command line parameters which define the target store format and location.";
+            }
+            
+            /**
+             * checks second command line argument -> location of DbLocation.accb which defines persistent store location
+             */
+            if (!isCommandLineError){
+                if (args.length > 1){
+                    String path = args[1];
+                    File targetDB = new File(path);
+                    if (!targetDB.exists()){
+                        isCommandLineError = true;
+                        usageError = "usage error: cannot locate the defined target database file";    
+                    }
+                    else Store.setDatabaseLocatorPath(args[1]);
+                }
+                else {
+                    isCommandLineError = true;
+                    usageError = "usage error: 2nd command line argument expected defining location DbLocation.accb";
+                }
+            }
+            /**
+             * checks for third command line argument -> if present enables access in app to data migration function
+             */
+            if (!isCommandLineError){
+                if (args.length > 2){
+                    if (args[2].equals("DATA_MIGRATION_ENABLED")){
+                        isDataMigrationOptionEnabled = true;
+                    }
+                    else isDataMigrationOptionEnabled = false;
+                }
+                else isDataMigrationOptionEnabled = false;
+            }
+       
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -384,14 +434,22 @@ public class DesktopViewController extends ViewController{
             java.util.logging.Logger.getLogger(DesktopView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         
+        //start PMS app if no errors processing command line
+        if (!isCommandLineError){
+            //Schedule a job for the event-dispatching thread:
+            //creating and showing this application's GUI.
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    new DesktopViewController();
+                }
+            });
+        }
         
-        //Schedule a job for the event-dispatching thread:
-        //creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new DesktopViewController();
-            }
-        });
+        else { // or exit with usage error message
+            System.out.println(usageError);
+            System.exit(0);
+        }
+        
     }
     
     private void requestViewControllersToCloseViews(){
