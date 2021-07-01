@@ -51,9 +51,12 @@ public class DesktopViewController extends ViewController{
     
     private DesktopViewController(){
         
-        //setAppointmentsViewController(new AppointmentViewController(this));
-        //setPatientViewController(new PatientViewController(this));
-        view = new DesktopView(this);
+        /**
+         * Constructor for DesktopView takes two arguments
+         * -- object reference to view controller (this)
+         * -- Boolean signifying whether view enables data migration functions
+         */
+        view = new DesktopView(this, isDataMigrationOptionEnabled );
         view.setSize(1020, 650);
         view.setVisible(true);
         setView(view);
@@ -380,7 +383,7 @@ public class DesktopViewController extends ViewController{
             }
             else {
                 isCommandLineError = true;
-                usageError = "usage: expects at least 2 command line parameters which define the target store format and location.";
+                usageError = "usage error: expects at least 2 command line parameters which define the target store format and location.";
             }
             
             /**
@@ -392,7 +395,7 @@ public class DesktopViewController extends ViewController{
                     File targetDB = new File(path);
                     if (!targetDB.exists()){
                         isCommandLineError = true;
-                        usageError = "usage error: cannot locate the defined target database file";    
+                        usageError = "usage error: cannot locate the specified target database file";    
                     }
                     else Store.setDatabaseLocatorPath(args[1]);
                 }

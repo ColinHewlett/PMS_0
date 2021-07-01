@@ -33,6 +33,7 @@ public class DesktopView extends javax.swing.JFrame{
     private JMenuItem mniDatabaseLocator = null;
     private JMenuItem mniSurgeryDaysSelector = null;
     private JMenuItem mniExitView = null;
+    private JMenuItem mniDataMigrationView = null;
     private WindowAdapter windowAdapter = null;  
     private Image img = null;
     private boolean viewMenuState = true;
@@ -76,7 +77,7 @@ public class DesktopView extends javax.swing.JFrame{
      * 
      * @param controller 
      */
-    public DesktopView(DesktopViewController controller) { 
+    public DesktopView(DesktopViewController controller, Boolean isDataMigrationEnabled) { 
         this.controller = controller;       
         initComponents();
         /**
@@ -94,6 +95,11 @@ public class DesktopView extends javax.swing.JFrame{
         this.mnuView.add(mniAppointmentView);
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniDatabaseLocator);
+        if (isDataMigrationEnabled){
+            mniDataMigrationView = new JMenuItem("Data migrator");
+            this.mnuView.add(mniDataMigrationView);
+            mniDataMigrationView.addActionListener((ActionEvent e) -> mniDataMigrationViewActionPerformed());
+        }
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
         
@@ -228,6 +234,10 @@ public class DesktopView extends javax.swing.JFrame{
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniDataMigrationViewActionPerformed() {
+        
     }
 
     private void mniExitViewActionPerformed() {  
