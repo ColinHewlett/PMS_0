@@ -8,6 +8,7 @@ package clinicpms.store;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
+import clinicpms.store.interfaces.IMigrationManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -73,6 +74,11 @@ public class SQLExpressStore extends Store {
     
     @Override
     public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public IMigrationManager getMigrationManager(){
         return null;
     }
 }

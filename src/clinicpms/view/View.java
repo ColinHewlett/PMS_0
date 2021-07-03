@@ -33,6 +33,7 @@ public abstract class View extends JInternalFrame
                                 APPOINTMENT_CREATOR_EDITOR_VIEW,
                                 APPOINTMENT_EDITOR_VIEW,
                                 EMPTY_SLOT_SCANNER_VIEW,
+                                MIGRATION_VIEW,
                                 NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW,
                                 PATIENT_VIEW,
                                 SCHEDULE_CONTACT_LIST_VIEW,

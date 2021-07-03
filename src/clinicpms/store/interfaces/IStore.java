@@ -38,6 +38,7 @@ public interface IStore {
     public Patient create(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;
     public void delete(Patient p) throws StoreException;
+    public IMigrationManager getMigrationManager();
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException;

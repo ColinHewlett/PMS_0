@@ -97,9 +97,11 @@ public abstract class Store implements IStore {
             case ACCESS: 
                 result = AccessStore.getInstance();
                 break;
+            /*
             case CSV:
                 result = CSVStore.getInstance();
                 break;
+            */
             case POSTGRES:
                 result = PostgreSQLStore.getInstance();
                 break;
