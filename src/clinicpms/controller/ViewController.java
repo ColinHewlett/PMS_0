@@ -61,11 +61,18 @@ public abstract class ViewController implements ActionListener{
     
     public enum DesktopViewControllerActionEvent {
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
-                                            ENABLE_CONTROLS_REQUEST,
-                                            DISABLE_CONTROLS_REQUEST,
+                                            DISABLE_DESKTOP_CONTROLS_REQUEST,
+                                            DISABLE_DESKTOP_DATA_CONTROL_REQUEST,
+                                            DISABLE_DESKTOP_VIEW_CONTROL_REQUEST,
+                                            ENABLE_DESKTOP_CONTROLS_REQUEST,
+                                            ENABLE_DESKTOP_DATA_CONTROL_REQUEST,
+                                            ENABLE_DESKTOP_VIEW_CONTROL_REQUEST,
+                                            MIGRATION_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
+                                            SET_MIGRATION_DATABASE_LOCATION_REQUEST,
+                                            SET_PMS_DATABASE_LOCATION_REQUEST,
                                             SURGERY_DATES_EDITOR_VIEW_CONTROLLER_REQUEST,
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
                                             VIEW_CLOSED_NOTIFICATION//raised by internal frame views

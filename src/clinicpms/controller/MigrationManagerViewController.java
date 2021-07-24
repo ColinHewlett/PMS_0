@@ -7,7 +7,7 @@ package clinicpms.controller;
 
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
-import clinicpms.view.MigrationModalViewer;
+import clinicpms.view.MigrationManagerModalViewer;
 import clinicpms.view.View;
 import clinicpms.view.base.DesktopView;
 import clinicpms.store.AccessStore;
@@ -40,7 +40,7 @@ import javax.swing.JOptionPane;
  *
  * @author colin
  */
-public class MigrationViewController extends ViewController {
+public class MigrationManagerViewController extends ViewController {
     private MigrationDescriptor migrationDescriptorFromView = null;
     private ActionListener myController = null;
     private View view = null;
@@ -51,38 +51,37 @@ public class MigrationViewController extends ViewController {
     private EntityDescriptor newEntityDescriptor = null;
     private EntityDescriptor oldEntityDescriptor = null;
     
-    public MigrationViewController(DesktopViewController controller, DesktopView desktopView)throws StoreException{
+    /**
+     * The current location of app's persistent store (in DbLocation.accb) used to initialises EntityDescriptor sent to new Migration View
+     * @param controller
+     * @param desktopView
+     * @throws StoreException 
+     */
+    public MigrationManagerViewController(DesktopViewController controller, DesktopView desktopView)throws StoreException{
         setMyController(controller);
         this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
-        String targetPath = AccessStore.getInstance().getDbLocationStore().read();
-        MigrationDescriptor md = new MigrationDescriptor();
-        md.getTarget().setData(targetPath);
-        View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
-            this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
+        String targetPath = AccessStore.getInstance().getTargetsDatabase().read("MIGRATION_DB");
+        //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
+        setNewEntityDescriptor(new EntityDescriptor());
+        getNewEntityDescriptor().getMigrationDescriptor().getTarget().setData(targetPath);
+        View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
+        this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
         
-        /*
-        pcSupport.addPropertyChangeListener(view);
-        //centre appointments view relative to desktop;
-        super.centreViewOnDesktop(desktopView, view);
-        this.view.addInternalFrameClosingListener(); 
-        this.view.initialiseView();
-        */
+        /**
+         * This stage in code reached only when the view (a modal JInternalFrame) has been closed
+         * -- does the Desktop view controller require notification of this?
+         * -- yes: to re-enable both menus in the desktop view as well as the desktop view window closure control  
+         */
+        ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+        this.myController.actionPerformed(actionEvent);
     }
     
-    /**
-     * Executes requested action from view
-     * -- APPOINTMENTS_VIEW_CLOSED
-     * ----> sends VIEW_CLOSED_NOTIFICATION action to the DesktopViewController
-     * -- APPOINTMENT_MIGRATOR_REQUEST
-     * ----> the view's MigrationDescriptor is fetched which defines required migration action and input values sent by view for this
-     * ----> initiates execution of requested action via the factory creation of an appropriate IMigrationManger in the Store package 
-     * ----> returns on completion a newly initialised MigrationDescriptor with the results of the operation via a PropertyChangeSupport firePropertyChange message
-     * Catches and handles both IOException and StoreException that might arise
-     * @param e, ActionEvent 
-     */
     @Override
     public void actionPerformed(ActionEvent e) {
+        this.view = (View)e.getSource();
         File file = null;
         BufferedWriter bw = null;
         if (e.getActionCommand().equals(
@@ -97,6 +96,10 @@ public class MigrationViewController extends ViewController {
             this.myController.actionPerformed(actionEvent);   
         }
         else if (e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+        
+        }
+        else if (e.getActionCommand().equals(
                 ViewController.MigratorViewControllerActionEvent.
                         APPOINTMENT_MIGRATOR_REQUEST.toString())){
             /**
@@ -105,24 +108,28 @@ public class MigrationViewController extends ViewController {
              * --
              */
             setEntityDescriptorFromView(getView().getEntityDescriptor());
-            String path = getMigrationDescriptorFromView().getTarget().getData();
+            String path = getEntityDescriptorFromView().getMigrationDescriptor().getTarget().getData();
             try{
                 
                 initialiseMigrationSettings();
-                /**
-                 * Static call to AccessStore which initialise its DbLocation database (inner class) with the selected target database path for the app
-                 */
-                AccessStore.getInstance().getDbLocationStore().update(getMigrationDescriptorFromView().getTarget().getData());
+               
                 /**
                  * Store factory returns the database driver  selected by a command line value
                  */
                 IStore store = Store.factory(); 
                 IMigrationManager  manager = store.getMigrationManager();
                 this.doSelectedDataMigrationAction(
-                        getMigrationDescriptorFromView().getMigrationViewRequest(), manager);
+                        getEntityDescriptorFromView().getMigrationDescriptor().getMigrationViewRequest(), manager);
+                
+                /**
+                 * removal followed by adding the propertyChangeListener is necessary
+                 * -- successive additions of the propertyChangeListener, without first removing the in place propertyChangeListener, results in successive firing of the propertyChangeEvent; on for each time the same listener is added
+                 */
+                pcSupport.removePropertyChangeListener(this.view);
+                pcSupport.addPropertyChangeListener(this.view);
                 PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                     MigrationViewPropertyChangeEvents.MIGRATION_ACTION_COMPLETE.toString(),
-                    getMigrationDescriptorFromView(),getNewMigrationDescriptor());
+                    null,getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
             }
             catch (IOException ex){
@@ -136,7 +143,7 @@ public class MigrationViewController extends ViewController {
             }
         }
     }
-    
+   
     private EntityDescriptor getNewEntityDescriptor(){
         return this.newEntityDescriptor;
     }
@@ -212,9 +219,9 @@ public class MigrationViewController extends ViewController {
                     manager.action(Store.MigrationMethod.APPOINTMENT_START_TIMES_NORMALISED);
                     end = Instant.now();
                     duration = Duration.between(start, end);
-                    setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewMigrationDescriptor().setMigrationActionDuration(duration);
-                    getNewMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
+                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
                     break;
                 }
                 case MIGRATE_PATIENTS_TO_DATABASE:{
@@ -226,9 +233,9 @@ public class MigrationViewController extends ViewController {
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_POPULATE);
                     end = Instant.now();
                     duration = Duration.between(start, end);
-                    setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewMigrationDescriptor().setMigrationActionDuration(duration);
-                    getNewMigrationDescriptor().setPatientsCount(manager.getPatientCount());
+                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
+                    getNewEntityDescriptor().getMigrationDescriptor().setPatientsCount(manager.getPatientCount());
                     break;
                 }
                 case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:{
@@ -236,9 +243,18 @@ public class MigrationViewController extends ViewController {
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_INTEGRITY_CHECK);
                     end = Instant.now();
                     duration = Duration.between(start, end);
-                    setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewMigrationDescriptor().setMigrationActionDuration(duration); 
-                    getNewMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
+                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
+                    
+/*
+       MigrationDescriptor result = new MigrationDescriptor();
+       result.getAppointment().setData(getMigrationDescriptorFromView().getAppointment().getData());
+       result.getPatient().setData(getMigrationDescriptorFromView().getPatient().getData());
+       result.setTarget(getMigrationDescriptorFromView().getTarget());
+       result.setMigrationViewRequest(getMigrationDescriptorFromView().getMigrationViewRequest());
+                    */
+
                     break;
                 }
                 case TIDY_PATIENT_DATA_IN_DATABASE:{
@@ -246,8 +262,8 @@ public class MigrationViewController extends ViewController {
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_TIDY);
                     end = Instant.now();
                     duration = Duration.between(start, end);
-                    setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewMigrationDescriptor().setMigrationActionDuration(duration); 
+                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
                     break;
                 }
             }
@@ -271,29 +287,10 @@ public class MigrationViewController extends ViewController {
         File file;
         BufferedWriter bw;
         CSVStore.setAppointmentCSVPath(
-                this.getMigrationDescriptorFromView().getAppointment().getData());
-        CSVStore.setPatientCSVPath(this.getMigrationDescriptorFromView().getPatient().getData());
-        Path currentRelativePath = Paths.get("");
-        String s = currentRelativePath.toAbsolutePath().toString();
-        file = new File ("database/databasePath.txt");
-        if (file.exists()){
-            file.delete();
-        }
-        if (file.createNewFile()){
-            FileWriter fw = new FileWriter(file);
-            bw = new BufferedWriter(fw);
-            bw.write(getMigrationDescriptorFromView().getTarget().getData());
-            bw.close();
-        }
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
+        CSVStore.setPatientCSVPath(this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
+
     }
-    
-    private MigrationDescriptor createNewMigrationDescriptor(){
-       MigrationDescriptor result = new MigrationDescriptor();
-       result.getAppointment().setData(getMigrationDescriptorFromView().getAppointment().getData());
-       result.getPatient().setData(getMigrationDescriptorFromView().getPatient().getData());
-       result.setTarget(getMigrationDescriptorFromView().getTarget());
-       result.setMigrationViewRequest(getMigrationDescriptorFromView().getMigrationViewRequest());
-       return result;
-    }
+
 }
  

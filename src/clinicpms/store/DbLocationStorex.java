@@ -23,7 +23,7 @@ import java.util.Dictionary;
  *
  * @author colin
  */
-public class DbLocationStore extends Store{
+public class DbLocationStorex extends Store{
     public enum AppointmentSQL   {
                             CREATE_APPOINTMENT,
                             DELETE_APPOINTMENT_WITH_KEY,
@@ -40,7 +40,7 @@ public class DbLocationStore extends Store{
                                 READ_PATIENT_WITH_KEY,
                                 UPDATE_PATIENT}
 
-    private static DbLocationStore instance;
+    private static DbLocationStorex instance;
     private Connection connection = null;
     private String message = null;
     
@@ -81,13 +81,13 @@ public class DbLocationStore extends Store{
         }
     }
     
-    public DbLocationStore()throws StoreException{
+    public DbLocationStorex()throws StoreException{
         connection = getConnection();
     }
     
-    public static DbLocationStore getInstance()throws StoreException{
-        DbLocationStore result = null;
-        if (instance == null) result = new DbLocationStore();
+    public static DbLocationStorex getInstance()throws StoreException{
+        DbLocationStorex result = null;
+        if (instance == null) result = new DbLocationStorex();
         else result = instance;
         return result;
     }

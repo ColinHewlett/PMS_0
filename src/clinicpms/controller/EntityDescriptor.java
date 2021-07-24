@@ -98,6 +98,10 @@ public class EntityDescriptor {
     public void setPatients (EntityDescriptor.Patients value){
         patients = value;
     }
+    
+    public MigrationDescriptor getMigrationDescriptor(){
+        return this.migrationDescriptor;
+    }
 
     /**
      * EntityDescriptor.Appointment inner class

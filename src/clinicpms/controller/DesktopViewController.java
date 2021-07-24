@@ -5,8 +5,10 @@
  */
 package clinicpms.controller;
 
+import clinicpms.store.AccessStore;
 import clinicpms.store.Store;
-import clinicpms.store.DbLocationStore;
+import clinicpms.store.Store.ExceptionType;
+import clinicpms.store.DbLocationStorex;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.base.DesktopView;
@@ -16,6 +18,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JFrame;
 import javax.swing.border.Border;
 import javax.swing.JOptionPane;
 
@@ -29,12 +34,14 @@ public class DesktopViewController extends ViewController{
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
     private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
+    private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
    
     //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;    
     enum ViewControllers {
                             PATIENT_VIEW_CONTROLLER,
                             APPOINTMENT_VIEW_CONTROLLER,
+                            MIGRATION_VIEW_CONTROLLER
                          }
     @Override
     public EntityDescriptor getEntityDescriptorFromView(){
@@ -65,6 +72,7 @@ public class DesktopViewController extends ViewController{
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
         databaseLocatorViewControllers = new ArrayList<>();
+        migrationViewControllers = new ArrayList<>();
     }
     
     @Override
@@ -84,6 +92,8 @@ public class DesktopViewController extends ViewController{
             case "DatabaseLocatorViewController":
                 doDatabaseLocatorViewControllerAction(e);
                 break;
+            case "MigrationManagerViewController":
+                doMigrationManagerViewControllerAction(e);
         }
     }
     
@@ -112,17 +122,29 @@ public class DesktopViewController extends ViewController{
                 if (this.isDesktopPendingClosure){
                     this.requestViewControllersToCloseViews();
                 }
+                
+                if (this.appointmentViewControllers.isEmpty() && 
+                        this.patientViewControllers.isEmpty()){ 
+                    /**
+                     * re-enable view's data menu, if it exists
+                     */
+                    getView().enableDataControl();
+                    getView().enableWindowCloseControl();
+                }
             }
+            
         }
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
-                    ENABLE_CONTROLS_REQUEST.toString())){
-            getView().enableControls();
+                    ENABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+            getView().enableViewControl();
+            getView().enableWindowCloseControl();
         }
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
-                    DISABLE_CONTROLS_REQUEST.toString())){
-            getView().disableControls();
+                    DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+            getView().disableViewControl();
+            getView().disableWindowClosedControl();
         }
     }
     private void doPatientViewControllerAction(ActionEvent e){
@@ -150,6 +172,14 @@ public class DesktopViewController extends ViewController{
                 if (this.isDesktopPendingClosure){
                     this.requestViewControllersToCloseViews();
                 }
+                if (this.appointmentViewControllers.isEmpty() && 
+                        this.patientViewControllers.isEmpty()){ 
+                    /**
+                     * re-enable view's data menu, if it exists
+                     */
+                    getView().enableDataControl();
+                    getView().enableWindowCloseControl();
+                }
             }
         }
         else if (e.getActionCommand().equals(
@@ -160,6 +190,21 @@ public class DesktopViewController extends ViewController{
             createNewAppointmentViewController(ed);
             
         }
+    }
+    
+    private void doMigrationManagerViewControllerAction(ActionEvent e){
+        /**
+         * VIEW_CLOSED_NOTIFICATION -> 
+         * -- on closure of migration view controller re- enable both "View" and "Data" menus in the desktop view
+         * -- also re-enable the desktop view window closure control ("X")
+         */
+        if (e.getActionCommand().equals(
+            ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            getView().enableViewControl();
+            getView().enableDataControl();
+            getView().enableWindowCloseControl();
+        }
+        
     }
     
     private void doDatabaseLocatorViewControllerAction(ActionEvent e){
@@ -204,10 +249,36 @@ public class DesktopViewController extends ViewController{
                 }    
             }
         }
+        /**
+         * MIGRATION_VIEW_CONTROLLER_REQUEST -> 
+         * -- on receipt of this request the menu option to raise the request in the view must be enabled
+         * ---- therefore neither appointment or patient view controllers can be active either
+         * ---- nor can there be an active migration view controller, else the view's "data menu would be disabled
+         * -- after constructing a MigrationViewController the "View" menu option in the view is disabled
+         * -- as is the "Data" option in the view which prevents multiple copies of the migration view controller
+         */
+        else if (e.getActionCommand().equals(
+            ViewController.DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString())){
+            getView().disableDataControl();
+            getView().disableViewControl();
+            createNewMigrationViewController();
+            
+            
+        }
+        /**
+         * APPOINTMENT_VIEW_CONTROLLER_REQUEST -> allowed
+         * -- if migration view controller active this request would never have been made (menu option disabled)
+         * -- action posted to migration view controller to disable its "data" menu
+         */
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
                     APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
             createNewAppointmentViewController(Optional.ofNullable(null));
+            /**
+             * disable data menu in the desktop view, if it exists
+             */
+            getView().disableDataControl();
+            
         }
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
@@ -226,6 +297,10 @@ public class DesktopViewController extends ViewController{
                 pvc.getView().setSelected(true);
                 pvc.getView().setSize(700
                         ,585);
+                /**
+                 * disable data menu in the desktop view
+                 */
+                getView().disableDataControl();
             }
             catch (StoreException ex){
                 displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
@@ -280,7 +355,85 @@ public class DesktopViewController extends ViewController{
                 ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             System.exit(0);
         }
-        
+        /**
+         * SET_MIGRATION_DATABASE_LOCATION_REQUEST raised by user in the desktop view
+         * -- this is accomplished via a file dialog directly without the need for s view and a separate controller
+         * 
+         */
+        else if(e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString())){
+            /**
+             * SET_MIGRATION_DATABASE_LOCATION_REQUEST ->
+             * -- configure a file chooser to select the file and folder the current setting in the TARGETS_DATABASE for the migration database
+             * -- use a standard dialog to inform the user of the results of the update
+             */
+            try{
+                if (Store.getMigrationDatabasePath()==null){
+                    AccessStore.getInstance();
+                }
+                String targetPath = Store.getMigrationDatabasePath();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
+                File path = new File(targetPath);
+                JFileChooser chooser = new JFileChooser(path);
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(path);
+                int returnVal = chooser.showOpenDialog(getView());
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    String check1 = chooser.getSelectedFile().getPath();
+                    AccessStore.getInstance().getTargetsDatabase().update(check1,"MIGRATION_DB");
+                    Store.setMigrationDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("MIGRATION_DB"));
+                    JOptionPane.showMessageDialog(getView(),
+                            Store.getMigrationDatabasePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                
+                JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+            }
+        }
+        /**
+         * SET_PMS_DATABASE_LOCATION_REQUEST raised by user in the desktop view
+         * -- this is accomplished via a file dialog directly without the need for s view and a separate controller
+         */
+        else if(e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString())){
+            /**
+             * SET_PMS_DATABASE_LOCATION_REQUEST ->
+             * -- configure a file chooser to select the file and folder of the current migration database setting in the TARGETS_DATABASE
+             * -- use a standard dialog to inform the user of the results of the update
+             */
+            try{
+                if (Store.getPMSDatabasePath()==null){
+                    AccessStore.getInstance();
+                }
+                String targetPath = Store.getPMSDatabasePath();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
+                File path = new File(targetPath);
+                JFileChooser chooser = new JFileChooser(path);
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(path);
+                int returnVal = chooser.showOpenDialog(getView());
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    String check1 = chooser.getSelectedFile().getPath();
+                    AccessStore.getInstance().getTargetsDatabase().update(check1,"PMS_DB");
+                    Store.setPMSDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("PMS_DB"));
+                    JOptionPane.showMessageDialog(getView(),
+                            Store.getPMSDatabasePath(),
+                            "Current PMS database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                
+                JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+            }
+        }
         /*
         else if(e.getActionCommand().equals(
                 ViewController.DesktopViewControllerActionEvent.MIGRATE_APPOINTMENT_DBF_TO_CSV.toString())){
@@ -359,6 +512,11 @@ public class DesktopViewController extends ViewController{
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
             /**
+             * Location of the targets database (DbLocation.accb) now stored as an OS environment variable
+             */
+            String s = System.getenv("TARGETS_DATABASE");
+            Store.setDatabaseLocatorPath(System.getenv("TARGETS_DATABASE"));
+            /**
              * checks first command line argument -> persistent store format
              */
             if (args.length > 0){
@@ -383,12 +541,13 @@ public class DesktopViewController extends ViewController{
             }
             else {
                 isCommandLineError = true;
-                usageError = "usage error: expects at least 2 command line parameters which define the target store format and location.";
+                usageError = "usage error: expects at least 1 command line parameters which define the target persistent store format.";
             }
             
             /**
              * checks second command line argument -> location of DbLocation.accb which defines persistent store location
              */
+            /*
             if (!isCommandLineError){
                 if (args.length > 1){
                     String path = args[1];
@@ -404,12 +563,13 @@ public class DesktopViewController extends ViewController{
                     usageError = "usage error: 2nd command line argument expected defining location DbLocation.accb";
                 }
             }
+            */
             /**
-             * checks for third command line argument -> if present enables access in app to data migration function
+             * checks for 2nd command line argument -> if present enables access in app to data migration function
              */
             if (!isCommandLineError){
-                if (args.length > 2){
-                    if (args[2].equals("DATA_MIGRATION_ENABLED")){
+                if (args.length > 1){
+                    if (args[1].equals("DATA_MIGRATION_ENABLED")){
                         isDataMigrationOptionEnabled = true;
                     }
                     else isDataMigrationOptionEnabled = false;
@@ -487,6 +647,17 @@ public class DesktopViewController extends ViewController{
             //this.requestViewControllersToCloseViews();
         }
          
+    }
+    
+    private void createNewMigrationViewController(){
+        try{
+            this.migrationViewControllers.add(new MigrationManagerViewController(this, getView()));
+            MigrationManagerViewController mvc = 
+                        migrationViewControllers.get(migrationViewControllers.size()-1);
+        }
+        catch(StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
     }
     
     private void createNewAppointmentViewController(Optional<EntityDescriptor> ed){

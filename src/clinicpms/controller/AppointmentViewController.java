@@ -200,13 +200,13 @@ public class AppointmentViewController extends ViewController{
             pcSupport.removePropertyChangeListener(view);
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
@@ -244,13 +244,13 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
@@ -307,13 +307,13 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
@@ -340,18 +340,18 @@ public class AppointmentViewController extends ViewController{
                 result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
             }
             else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent); 
             
             }
             if (!e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
                 if (result!=null){
                     try{
                         this.view2.setClosed(true);
@@ -418,13 +418,13 @@ public class AppointmentViewController extends ViewController{
             this.myController.actionPerformed(actionEvent);   
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString())){ 
+                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
@@ -445,7 +445,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
@@ -470,7 +470,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
@@ -518,7 +518,7 @@ public class AppointmentViewController extends ViewController{
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                    DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
             this.myController.actionPerformed(actionEvent);
             
         }
@@ -572,7 +572,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
-                            DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                            DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
                     this.myController.actionPerformed(actionEvent);
                 }
                 catch (StoreException ex){
@@ -596,7 +596,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_CONTROLS_REQUEST.toString());
+                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){

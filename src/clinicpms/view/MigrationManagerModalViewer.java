@@ -6,7 +6,6 @@
 package clinicpms.view;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.controller.MigrationDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.store.Store;
 import java.awt.AWTEvent;
@@ -43,21 +42,21 @@ import javax.swing.JSeparator;
  *
  * @author colin
  */
-public class MigrationModalViewer extends View {
+public class MigrationManagerModalViewer extends View {
     private View.Viewer myViewType = null;
-    private MigrationDescriptor migrationDescriptor = null;
+    private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
 
     private InternalFrameAdapter internalFrameAdapter = null;
     private Store.Storage database = null;
     private ArrayList<String> stats = null;
     
-    public MigrationModalViewer(View.Viewer myViewType,ActionListener myController,
-            MigrationDescriptor migrationDescriptor, 
+    public MigrationManagerModalViewer(View.Viewer myViewType,ActionListener myController,
+            EntityDescriptor entityDescriptor, 
             Component parent) {//ViewMode arg
         //initialiseDialogClosing();
         setMyViewType(myViewType);
-        setMigrationDescriptor(migrationDescriptor);
+        setEntityDescriptor(entityDescriptor);
         setMyController(myController);
         initComponents();
         
@@ -73,13 +72,14 @@ public class MigrationModalViewer extends View {
         this.setLayer(JLayeredPane.MODAL_LAYER);
         centreViewOnDesktop(x.getParent(),this);
         this.initialiseView();
+        this.setVisible(true);
         
-        
+        /*
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
-        
+        */
         startModal(this);
  
     }
@@ -146,7 +146,7 @@ public class MigrationModalViewer extends View {
     
     @Override 
     public EntityDescriptor getEntityDescriptor(){
-        return null;
+        return entityDescriptor;
         
     }
     
@@ -166,11 +166,8 @@ public class MigrationModalViewer extends View {
         this.myController = value;
     }
     
-    public MigrationDescriptor getMigrationDescriptor(){
-        return this.migrationDescriptor;
-    }
-    private void setMigrationDescriptor(MigrationDescriptor value){
-        this.migrationDescriptor = value;
+    private void setEntityDescriptor(EntityDescriptor value){
+        this.entityDescriptor = value;
     }
     private Store.Storage getDatabase(){
         return database;
@@ -181,7 +178,7 @@ public class MigrationModalViewer extends View {
     
     public void initialiseView(){
         addInternalFrameClosingListener();
-        this.txtSelectedTargetFile.setText(getMigrationDescriptor().getTarget().getData());
+        this.txtMigrationDatabasePath.setText(getEntityDescriptor().getMigrationDescriptor().getTarget().getData());
         mniSelectTargetDatabase.setState(true);
         setDatabase(Store.getStorageType());
         if (getDatabase().equals(Store.Storage.UNDEFINED_DATABASE))
@@ -199,7 +196,7 @@ public class MigrationModalViewer extends View {
                     break;
             }
         }
-        super.repaint();
+        //super.repaint();
     }
     
     @Override
@@ -212,7 +209,7 @@ public class MigrationModalViewer extends View {
             @Override  
             public void internalFrameClosing(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
-                        MigrationModalViewer.this,ActionEvent.ACTION_PERFORMED,
+                        MigrationManagerModalViewer.this,ActionEvent.ACTION_PERFORMED,
                         ViewController.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
                 getMyController().actionPerformed(actionEvent);
             }
@@ -225,7 +222,7 @@ public class MigrationModalViewer extends View {
         String propertyName = e.getPropertyName();
         
         if (propertyName.equals(ViewController.MigrationViewPropertyChangeEvents.MIGRATION_ACTION_COMPLETE.toString())){
-            setMigrationDescriptor((MigrationDescriptor)e.getNewValue());
+            setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseStatsDisplay();  
         }
     }
@@ -233,25 +230,25 @@ public class MigrationModalViewer extends View {
     public void initialiseStatsDisplay(){
         String report = "";
         if (this.txaResults.getText().length()>0) report = "\n";
-        switch(getMigrationDescriptor().getMigrationViewRequest()){
+        switch(getEntityDescriptor().getMigrationDescriptor().getMigrationViewRequest()){
             case MIGRATE_APPOINTMENTS_TO_DATABASE:
                 report = "MIGRATE APPOINTMENTS TO DATABASE \n"
-                + "Total number of appointments = " + getMigrationDescriptor().getAppointmentsCount() + "\n"
-                + "Operation duration = " + normaliseDuration(getMigrationDescriptor().getMigrationActionDuration()) + "\n";
+                + "Total number of appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount() + "\n"
+                + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
             case MIGRATE_PATIENTS_TO_DATABASE:
                 report = "MIGRATE PATIENTS TO DATABASE \n"
-                + "Total number of patients = " + getMigrationDescriptor().getPatientsCount() + "\n"
-                + "Operation duration = " + normaliseDuration(getMigrationDescriptor().getMigrationActionDuration()) + "\n";
+                + "Total number of patients = " + getEntityDescriptor().getMigrationDescriptor().getPatientsCount() + "\n"
+                + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
             case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:
                 report = "REMOVAL OF BAD APPOINTMENTS FROM DATABASE \n"
-                + "Total number of remaining appointments = " + getMigrationDescriptor().getAppointmentsCount() + "\n"
-                + "Operation duration = " + normaliseDuration(getMigrationDescriptor().getMigrationActionDuration()) + "\n";
+                + "Total number of remaining appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount() + "\n"
+                + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
             case TIDY_PATIENT_DATA_IN_DATABASE:
                 report = "TIDY UP OF PATIENT DATA \n"
-                + "Operation duration = " + normaliseDuration(getMigrationDescriptor().getMigrationActionDuration()) + "\n";
+                + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
         };
         report = this.txaResults.getText() + report;
@@ -287,13 +284,13 @@ public class MigrationModalViewer extends View {
         jPanel1 = new javax.swing.JPanel();
         txtSelectedAppointmentSourceFile = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        txtSelectedTargetFile = new javax.swing.JTextField();
         txtSelectedPatientSourceFile = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txaResults = new javax.swing.JTextArea();
+        jPanel3 = new javax.swing.JPanel();
+        txtMigrationDatabasePath = new javax.swing.JTextField();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuAction = new javax.swing.JMenu();
         mniSelectAppointmentCSVFile = new javax.swing.JCheckBoxMenuItem();
@@ -315,10 +312,6 @@ public class MigrationModalViewer extends View {
 
         jLabel1.setText("Appointment source file");
 
-        jLabel2.setText("Target database");
-
-        txtSelectedTargetFile.setEditable(false);
-
         txtSelectedPatientSourceFile.setEditable(false);
 
         jLabel3.setText("Patient source file");
@@ -330,12 +323,10 @@ public class MigrationModalViewer extends View {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtSelectedAppointmentSourceFile)
+                    .addComponent(txtSelectedAppointmentSourceFile, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
                     .addComponent(txtSelectedPatientSourceFile)
-                    .addComponent(txtSelectedTargetFile)
                     .addComponent(jLabel1)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel3))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -349,10 +340,6 @@ public class MigrationModalViewer extends View {
                 .addComponent(jLabel3)
                 .addGap(6, 6, 6)
                 .addComponent(txtSelectedPatientSourceFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addGap(6, 6, 6)
-                .addComponent(txtSelectedTargetFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -375,8 +362,27 @@ public class MigrationModalViewer extends View {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
                 .addContainerGap())
+        );
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Selected target migration database", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(txtMigrationDatabasePath)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(txtMigrationDatabasePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         mnuAction.setText("Action");
@@ -470,6 +476,7 @@ public class MigrationModalViewer extends View {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(fchFileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -482,7 +489,9 @@ public class MigrationModalViewer extends View {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
+                .addGap(13, 13, 13)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fchFileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -512,7 +521,7 @@ public class MigrationModalViewer extends View {
             int result = this.fchFileChooser.showOpenDialog(new JFrame());
             if (result == fchFileChooser.APPROVE_OPTION) {
                 File selectedFile = fchFileChooser.getSelectedFile();
-                this.txtSelectedTargetFile.setText(selectedFile.getPath());
+                this.txtMigrationDatabasePath.setText(selectedFile.getPath());
                 mniSelectTargetDatabase.setState(true);
             }
             else mniSelectTargetDatabase.setState(false);
@@ -521,10 +530,10 @@ public class MigrationModalViewer extends View {
 
     private void mniMigrateAppointmentsToDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMigrateAppointmentsToDatabaseActionPerformed
         if (this.mniSelectAppointmentCSVFile.getState() && this.mniSelectTargetDatabase.getState()){
-            getMigrationDescriptor().getAppointment().setData(this.txtSelectedAppointmentSourceFile.getText());
+            getEntityDescriptor().getMigrationDescriptor().getAppointment().setData(this.txtSelectedAppointmentSourceFile.getText());
             //getMigrationDescriptor().getPatient().setData(this.txtSelectedPatientSourceFile.getText());
-            getMigrationDescriptor().getTarget().setData(this.txtSelectedTargetFile.getText());
-            getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.MIGRATE_APPOINTMENTS_TO_DATABASE);
+            getEntityDescriptor().getMigrationDescriptor().getTarget().setData(this.txtMigrationDatabasePath.getText());
+            getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.MIGRATE_APPOINTMENTS_TO_DATABASE);
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
                     ViewController.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -566,8 +575,8 @@ public class MigrationModalViewer extends View {
     private void mniRemoveBadAppointmentsFromDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRemoveBadAppointmentsFromDatabaseActionPerformed
        
         if (this.mniSelectTargetDatabase.getState()){
-            getMigrationDescriptor().getTarget().setData(this.txtSelectedTargetFile.getText());
-            getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.REMOVE_BAD_APPOINTMENTS_FROM_DATABASE);
+            getEntityDescriptor().getMigrationDescriptor().getTarget().setData(this.txtMigrationDatabasePath.getText());
+            getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.REMOVE_BAD_APPOINTMENTS_FROM_DATABASE);
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
                     ViewController.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -610,9 +619,9 @@ public class MigrationModalViewer extends View {
 
     private void mniMigratePatientsToDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMigratePatientsToDatabaseActionPerformed
         if (this.mniSelectPatientCSVFile.getState() && this.mniSelectTargetDatabase.getState()){
-            getMigrationDescriptor().getPatient().setData(this.txtSelectedPatientSourceFile.getText());
-            getMigrationDescriptor().getTarget().setData(this.txtSelectedTargetFile.getText());
-            getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.MIGRATE_PATIENTS_TO_DATABASE);
+            getEntityDescriptor().getMigrationDescriptor().getPatient().setData(this.txtSelectedPatientSourceFile.getText());
+            getEntityDescriptor().getMigrationDescriptor().getTarget().setData(this.txtMigrationDatabasePath.getText());
+            getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.MIGRATE_PATIENTS_TO_DATABASE);
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
                     ViewController.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -633,8 +642,8 @@ public class MigrationModalViewer extends View {
     }//GEN-LAST:event_mniMigratePatientsToDatabaseActionPerformed
 
     private void mniTidyPatientRecordsOnDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniTidyPatientRecordsOnDatabaseActionPerformed
-        getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.TIDY_PATIENT_DATA_IN_DATABASE);
-        getMigrationDescriptor().getTarget().setData(this.txtSelectedTargetFile.getText());    
+        getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(ViewController.MigrationViewRequest.TIDY_PATIENT_DATA_IN_DATABASE);
+        getEntityDescriptor().getMigrationDescriptor().getTarget().setData(this.txtMigrationDatabasePath.getText());    
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 ViewController.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -644,7 +653,6 @@ public class MigrationModalViewer extends View {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFileChooser fchFileChooser;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
@@ -652,6 +660,7 @@ public class MigrationModalViewer extends View {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuItem mniExitDataMigrator;
     private javax.swing.JMenuItem mniMigrateAppointmentsToDatabase;
@@ -663,9 +672,9 @@ public class MigrationModalViewer extends View {
     private javax.swing.JMenuItem mniTidyPatientRecordsOnDatabase;
     private javax.swing.JMenu mnuAction;
     private javax.swing.JTextArea txaResults;
+    private javax.swing.JTextField txtMigrationDatabasePath;
     private javax.swing.JTextField txtSelectedAppointmentSourceFile;
     private javax.swing.JTextField txtSelectedPatientSourceFile;
-    private javax.swing.JTextField txtSelectedTargetFile;
     // End of variables declaration//GEN-END:variables
 
     

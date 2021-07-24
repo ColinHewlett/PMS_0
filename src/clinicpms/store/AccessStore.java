@@ -7,7 +7,7 @@ package clinicpms.store;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
 import clinicpms.store.interfaces.IMigrationManager;
-import clinicpms.store.DbLocationStore;
+import clinicpms.store.DbLocationStorex;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
@@ -56,6 +56,8 @@ public class AccessStore extends Store {
 
     private static AccessStore instance;
     private Connection connection = null;
+    private Connection migrationConnection = null;
+    private Connection pmsConnection = null;
     private String message = null;
     private static String databaseURL = null;
     /*
@@ -71,44 +73,106 @@ public class AccessStore extends Store {
     }
     
     /**
-     * -- global databaseURL value checked in order to create the connection string for the PMS database
-     * -- if null the DbLocationStore inner class is constructed to access the location of the PMS database
-     * -- databaseURL is initialised with this value and the appropriate connection string formed
+     * The inherited Store.getTargetConnection() is used to fetch which connection is currently active
+     * -- if target connection has not yet been defined a connection the PMS database is assumed
      * @return Connection object
      * @throws StoreException if an SQLException is raised by the connection attempt
      */
     private Connection getConnection()throws StoreException{
         String url = null;
-        if (getDatabaseURL() != null){
-            url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
+        Connection result = null;
+        if (getTargetConnection()!=null){
+            switch(getTargetConnection()){
+                case CONNECTION_MIGRATION_DB:
+                    if (getMigrationDatabasePath() != null){
+                        url = "jdbc:ucanaccess://" + getMigrationDatabasePath() + ";showSchema=true";
+                    }
+                    else{
+                        new TargetsDatabase();
+                        url = "jdbc:ucanaccess://" + getMigrationDatabasePath() + ";showSchema=true";
+                    }
+                    if (migrationConnection == null){
+                        try{
+                            migrationConnection = DriverManager.getConnection(url);
+                            result = migrationConnection;
+                        }
+                        catch (SQLException ex){
+                            message = ex.getMessage();
+                            throw new StoreException("SQLException message -> " + message +"\n"
+                                    + "StoreException message -> raised trying to connect to the Access migration database",
+                            ExceptionType.SQL_EXCEPTION);
+                        }
+                    }
+                    result = migrationConnection;
+                    break;
+                case CONNECTION_PMS_DB:
+                    if (getPMSDatabasePath() != null){
+                        url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
+                    }
+                    else{
+                        new TargetsDatabase();
+                        url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
+                    }
+                    if (pmsConnection == null){
+                        try{
+                            pmsConnection = DriverManager.getConnection(url);
+                            result = pmsConnection;
+                        }
+                        catch (SQLException ex){
+                            message = ex.getMessage();
+                            throw new StoreException("SQLException message -> " + message +"\n"
+                                    + "StoreException message -> raised trying to connect to the Access PMS database",
+                            ExceptionType.SQL_EXCEPTION);
+                        }
+                    }
+                    else result = pmsConnection;
+                    break;
+            }
         }
         else{
-            new DbLocationStore();
-            url = "jdbc:ucanaccess://" + getDatabaseURL() + ";showSchema=true";
-        }
-        if (connection == null){
-            try{
-                connection = DriverManager.getConnection(url);
+            if (getPMSDatabasePath() != null){
+                url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
             }
-            catch (SQLException ex){
-                message = ex.getMessage();
-                throw new StoreException("SQLException message -> " + message +"\n"
-                        + "StoreException message -> raised trying to connect to the Access database",
-                ExceptionType.SQL_EXCEPTION);
+            else{
+                new TargetsDatabase();
+                url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
             }
+            if (pmsConnection == null){
+                try{
+                    pmsConnection = DriverManager.getConnection(url);
+                    result = pmsConnection;
+                }
+                catch (SQLException ex){
+                    message = ex.getMessage();
+                    throw new StoreException("SQLException message -> " + message +"\n"
+                            + "StoreException message -> raised trying to connect to the Access PMS database",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            } 
+            else result = pmsConnection;
         }
-        return connection;
+        return result;
     }
     
     public void closeConnection()throws StoreException{
+        String connectionName = null;
         try{
-            if (connection!=null){
-                connection.close();
+            switch(getTargetConnection()){
+                case CONNECTION_MIGRATION_DB:
+                    if (migrationConnection!=null) {
+                        connectionName = "migration database";
+                        migrationConnection.close();
+                    }
+                case CONNECTION_PMS_DB:
+                    if (migrationConnection!=null) {
+                        connectionName = "PMS database";
+                        pmsConnection.close();
+                    }
             }
         }
         catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
-            message = message + "StoreException -> raised in AccessStore::closeConnection()";
+            message = message + "StoreException -> raised in AccessStore::closeConnection() to close the " + connectionName;
             throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
         }
     }
@@ -119,6 +183,10 @@ public class AccessStore extends Store {
     
     public String getDatabaseURL()throws StoreException{
         return databaseURL;
+    }
+    
+    public TargetsDatabase getTargetsDatabase() throws StoreException{
+        return new TargetsDatabase();
     }
     
     public AccessStore()throws StoreException{
@@ -337,11 +405,6 @@ public class AccessStore extends Store {
             Iterator<Appointment> it = appointments.iterator();
             while(it.hasNext()){
                 Appointment appointment = it.next();
-                /**
-                 * only if fetchPatientRecord is set do we attempt to embed the actual patient record in the appointment record;
-                 * else we embed a key only empty patient record in the appointment record.
-                 * This allows the method to be used when checking the integrity of the relationship between the patient and appointment tables
-                 */
                 Patient p = read(appointment.getPatient());
                 appointment.setPatient(p);
             }
@@ -535,6 +598,10 @@ public class AccessStore extends Store {
                 + "guardianKey = ? "
                 + "WHERE key = ? ;";
                 break;
+            case PATIENTS_COUNT: 
+                sql = "SELECT COUNT(*) as record_count "
+                + "FROM Patient;";
+                break;
         }
         switch (q){
             case READ_HIGHEST_KEY:
@@ -650,6 +717,23 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during an UPDATE_PATIENT statement",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+                break;
+            case PATIENTS_COUNT:
+                try{
+                    Integer key = null;
+                    PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                    ResultSet rs = preparedStatement.executeQuery();
+                    if (rs.next()){
+                        key = (int)rs.getLong("record_count");
+                    }
+                    patient.setKey(key);
+                    result.add(patient);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during an APPOINTMENTS_COUNT in the Appointment table",
                     ExceptionType.SQL_EXCEPTION);
                 }
                 break;
@@ -1122,14 +1206,21 @@ public class AccessStore extends Store {
         }  
     }
     
-    class DbLocationStore{
+    public class TargetsDatabase{
         private Connection connection = null;
         
-        public DbLocationStore()throws StoreException{
+        public TargetsDatabase()throws StoreException{
             connection = getConnection();
-            setDatabaseURL(this.read());
+            //setDatabaseURL(this.read(1));
+            Store.setMigrationDatabasePath(this.read("MIGRATION_DB"));
+            Store.setPMSDatabasePath(this.read("PMS_DB"));
         }
         
+        /**
+         * Store.getDatabaseLocatorPath() initialised using TARGETS_DATABASE environment variable (main method)
+         * @return
+         * @throws StoreException 
+         */
         private Connection getConnection()throws StoreException{
             String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
             if (this.connection == null){
@@ -1159,11 +1250,18 @@ public class AccessStore extends Store {
             }
         }
 
-        public String read()throws StoreException{
+        /**
+         * fetches the database path in the specified row of the targets database (DbLocation.accb)
+         * @param db, Integer
+         * @return String defining the path to the selected database file
+         * @throws StoreException 
+         */
+        public String read(String db)throws StoreException{
             String result = null;
-            String sql = "Select Location from LOCATION WHERE id = 1;";
+            String sql = "Select location from Target WHERE db = ?;";
             try{
                 PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, db);
                 ResultSet rs = preparedStatement.executeQuery();
                 if (rs.next()){
                     result = rs.getString("location");
@@ -1177,9 +1275,26 @@ public class AccessStore extends Store {
             }
 
         }
+        
+        public String update(String updatedLocation, String db)throws StoreException{
+            String sql = "UPDATE Target SET location = ? WHERE db = ?;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, updatedLocation);
+                preparedStatement.setString(2, db);
+                preparedStatement.executeUpdate();
+                return read(db);
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::update statement",
+                ExceptionType.SQL_EXCEPTION);
+            }
+        }
     }
 
     public MigrationManager getMigrationManager(){
+        if (migrationManager == null) migrationManager = new MigrationManager();
         return migrationManager;
     }
     
@@ -1274,34 +1389,42 @@ public class AccessStore extends Store {
         }
         
         /**
-         * 
+         * Every migration method accessing the migration database is processed by the MigrationManager.action() method. Each persistent storage type embeds a MigrationManager fit for its purpose.
+         * -- before any migration method is accessed the Store.setTargetConnection() is sent a CONNECTION_MIGRATION_DB message
+         * ---- if this fails because the currently defined migration database path has not been defined, the user will be informed
+         * -- after the selected migration method has been executed the Store.setTargetConnection is sent CONNECTION_PMS_DB message
          * @param mm, the MigrationMethods (enum) are in order of execution in the switch statement
          * -- in particular, the patient must be populated before the APPOINTMENT_TABLE_INTEGRITY_CHECK
          * @throws StoreException 
          */
         @Override
         public void action(Store.MigrationMethod mm)throws StoreException{
+            setTargetConnection(TargetConnection.CONNECTION_MIGRATION_DB);
             int count = 0;
             switch (mm){ 
                 case APPOINTMENT_TABLE_DROP:
                     AccessStore.getInstance().getMigrationManager().dropAppointmentTable();
+                    break;
                 case APPOINTMENT_TABLE_CREATE: 
                     AccessStore.getInstance().getMigrationManager().createAppointmentTable();
-                case APPOINTMENT_TABLE_POPULATE: {
+                    break;
+                case APPOINTMENT_TABLE_POPULATE: 
                     AccessStore.getInstance().getMigrationManager().insertMigratedAppointments(getAppointments());
                     count = AccessStore.getInstance().getMigrationManager().getAppointmentsCount();
                     this.setAppointmentCount(count);
-                }
+                    break;
                 case PATIENT_TABLE_DROP:
                     AccessStore.getInstance().getMigrationManager().dropPatientTable();
+                    break;
                 case PATIENT_TABLE_CREATE:
                     AccessStore.getInstance().getMigrationManager().createPatientTable(); 
-                case PATIENT_TABLE_POPULATE: {
+                    break;
+                case PATIENT_TABLE_POPULATE: 
                     AccessStore.getInstance().getMigrationManager().insertMigratedPatients(getPatients());
                     count = AccessStore.getInstance().getMigrationManager().getPatientsCount();
                     this.setPatientCount(count);
-                }
-                case APPOINTMENT_TABLE_INTEGRITY_CHECK:{
+                    break;
+                case APPOINTMENT_TABLE_INTEGRITY_CHECK:
                     /**
                      * the first line in following code is new
                      */
@@ -1311,13 +1434,16 @@ public class AccessStore extends Store {
                     AccessStore.getInstance().getMigrationManager().migratedAppointmentsIntegrityCheck();
                     count = AccessStore.getInstance().getMigrationManager().getAppointmentsCount();
                     this.setAppointmentCount(count);
-                }
+                    break;
                 case APPOINTMENT_START_TIMES_NORMALISED:
                     AccessStore.getInstance().getMigrationManager().normaliseAppointmentStartTimes();
+                    break;
                 case PATIENT_TABLE_TIDY: 
                     AccessStore.getInstance().getMigrationManager().migratedPatientsTidied();
+                    break;
 
             }
+            setTargetConnection(TargetConnection.CONNECTION_PMS_DB);
         }
         
         private ArrayList<Appointment> readAppointments() throws StoreException{
@@ -1328,16 +1454,6 @@ public class AccessStore extends Store {
                 ArrayList<Appointment> the_appointments = 
                     runSQL(AppointmentSQL.READ_APPOINTMENTS, new Object(),new ArrayList<Appointment>());
                 Iterator<Appointment> it = the_appointments.iterator();
-                while(it.hasNext()){
-                    Appointment appointment = it.next();
-                    /**
-                     * only if fetchPatientRecord is set do we attempt to embed the actual patient record in the appointment record;
-                     * else we embed a key only empty patient record in the appointment record.
-                     * This allows the method to be used when checking the integrity of the relationship between the patient and appointment tables
-                     */
-                    Patient p = read(appointment.getPatient());
-                    appointment.setPatient(p);
-                }
                 return the_appointments;
             }
             catch (SQLException ex){

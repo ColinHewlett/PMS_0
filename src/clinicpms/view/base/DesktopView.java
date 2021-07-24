@@ -18,6 +18,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.ImageIcon;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
@@ -30,13 +31,20 @@ public class DesktopView extends javax.swing.JFrame{
     private DesktopViewController controller = null;
     private JMenuItem mniPatientView = null;
     private JMenuItem mniAppointmentView = null;
-    private JMenuItem mniDatabaseLocator = null;
+    
     private JMenuItem mniSurgeryDaysSelector = null;
     private JMenuItem mniExitView = null;
-    private JMenuItem mniDataMigrationView = null;
+    
     private WindowAdapter windowAdapter = null;  
     private Image img = null;
-    private boolean viewMenuState = true;
+    
+    private JMenu mnuData = null;
+    private JMenuItem mniDatabaseLocator = null;
+    private JMenuItem mniMigrationManagerView = null;
+    private JMenuItem mniMigrationDatabase = null;
+    private JMenuItem mniPMSDatabase = null;
+    private boolean closeIsEnabled = true;
+    
     
     /**
      * Listener for window closing events (user selecting the window "X" icon).
@@ -53,7 +61,7 @@ public class DesktopView extends javax.swing.JFrame{
                  * -- true state indicates the main View menu is operational and closing event message sent to view controller
                  * -- false state indicates the main View menu is currently disabled and therefor no message sent to view controller
                  */
-                if (DesktopView.this.viewMenuState){
+                if (DesktopView.this.closeIsEnabled){
                     /**
                      * When an attempt to close the view (user clicking "X")
                      * the view's controller is notified and will decide whether
@@ -93,13 +101,9 @@ public class DesktopView extends javax.swing.JFrame{
         mniExitView = new JMenuItem("Exit The Clinic practice management system");
         this.mnuView.add(mniPatientView);
         this.mnuView.add(mniAppointmentView);
-        this.mnuView.add(new JSeparator());
-        this.mnuView.add(mniDatabaseLocator);
-        if (isDataMigrationEnabled){
-            mniDataMigrationView = new JMenuItem("Data migrator");
-            this.mnuView.add(mniDataMigrationView);
-            mniDataMigrationView.addActionListener((ActionEvent e) -> mniDataMigrationViewActionPerformed());
-        }
+        //this.mnuView.add(new JSeparator());
+        //this.mnuView.add(mniDatabaseLocator);
+        if (isDataMigrationEnabled)addMigrationManagerMenu();
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
         
@@ -109,6 +113,22 @@ public class DesktopView extends javax.swing.JFrame{
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
         setContentPaneForInternalFrame();
     }
+    
+    private void addMigrationManagerMenu(){
+        mniMigrationManagerView = new JMenuItem("Run migration manager");
+        mniMigrationDatabase = new JMenuItem("Select migration database");
+        this.mniPMSDatabase = new JMenuItem("Select PMS database");
+        //this.mnuView.add(new JSeparator());
+        if (mnuData == null) mnuData = new JMenu("Data");
+        this.mnuData.add(mniMigrationManagerView);
+        this.mnuData.add(new JSeparator());
+        this.mnuData.add(mniMigrationDatabase);
+        this.mnuData.add(mniPMSDatabase);
+        this.mnbDesktop.add(mnuData);
+        mniMigrationManagerView.addActionListener((ActionEvent e) -> mniMigrationManagerViewActionPerformed());
+        mniMigrationDatabase.addActionListener((ActionEvent e) -> mniMigrationDatabaseActionPerformed());
+        mniPMSDatabase.addActionListener((ActionEvent e) -> mniPMSDatabaseActionPerformed());
+    }
     /*
     @Override
     public javax.swing.JDesktopPane getContentPane(){
@@ -116,20 +136,38 @@ public class DesktopView extends javax.swing.JFrame{
     }
     */
     
+    public void enableWindowCloseControl(){
+        this.closeIsEnabled = true;
+    }
+    
+    public void disableWindowClosedControl(){
+        this.closeIsEnabled = true;
+    }
     /**
-     * enable the main View menu and update global variable viewMenuState accordingly 
+     * enable the main View menu  
      */
-    public void enableControls(){
+    public void enableViewControl(){
         this.mnuView.setEnabled(true);
-        this.viewMenuState = true;
     }
     
     /**
-     * disable the main View menu and update global variable viewMenuState accordingly 
+     * disable the main View menu 
      */
-    public void disableControls(){
-        this.mnuView.setEnabled(false);
-        this.viewMenuState = false;   
+    public void disableViewControl(){
+        this.mnuView.setEnabled(false);   
+    }
+    /**
+     * enable the main Data menu
+     */
+    public void enableDataControl(){
+        this.mnuData.setEnabled(true);
+    }
+    
+    /**
+     * disable the main Data menu 
+     */
+    public void disableDataControl(){
+        this.mnuData.setEnabled(false);   
     }
     
     public javax.swing.JDesktopPane getDeskTop(){
@@ -229,15 +267,32 @@ public class DesktopView extends javax.swing.JFrame{
         this.getController().actionPerformed(actionEvent);
     }
     
+    private void mniMigrationManagerViewActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniMigrationDatabaseActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniPMSDatabaseActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
     private void mniDatabaseLocatorActionPerformed() {                                                      
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
-    }
-    
-    private void mniDataMigrationViewActionPerformed() {
-        
     }
 
     private void mniExitViewActionPerformed() {  

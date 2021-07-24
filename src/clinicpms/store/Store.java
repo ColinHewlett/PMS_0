@@ -55,6 +55,8 @@ public abstract class Store implements IStore {
                         SQL_EXPRESS,
                         UNDEFINED_DATABASE}
     
+    public enum TargetConnection{CONNECTION_MIGRATION_DB, CONNECTION_PMS_DB}
+    
     public enum ExceptionType {  APPOINTEE_NOT_FOUND_EXCEPTION,
                                  IO_EXCEPTION,
                                  CSV_EXCEPTION,
@@ -90,6 +92,9 @@ public abstract class Store implements IStore {
     */
     private static Storage storage = null;
     private static String databaseLocatorPath = null;
+    private static String migrationDatabasePath = null;
+    private static String pmsDatabasePath = null;
+    private static TargetConnection targetConnection = null;
     
     public static IStore factory()throws StoreException{
         IStore result = null;
@@ -112,6 +117,18 @@ public abstract class Store implements IStore {
         return result;
     }
     
+    public static void setTargetConnection(TargetConnection value){
+        targetConnection = value;
+    }
+    
+    public static TargetConnection getTargetConnection(){
+        return targetConnection;
+    }
+    
+    /**
+     * initialise by main method via a call to TARGETS_DATABASE OS environment variable
+     * @return 
+     */
     public static String getDatabaseLocatorPath(){
         return databaseLocatorPath;
     }
@@ -119,6 +136,22 @@ public abstract class Store implements IStore {
     public static void setDatabaseLocatorPath(String path){
         databaseLocatorPath = path;
     } 
+    
+    public static String getMigrationDatabasePath(){
+        return migrationDatabasePath;
+    }
+    
+    public static void setMigrationDatabasePath(String path){
+        migrationDatabasePath = path;
+    }
+    
+    public static String getPMSDatabasePath(){
+        return pmsDatabasePath;
+    }
+    
+    public static void setPMSDatabasePath(String path){
+        pmsDatabasePath = path;
+    }
     
     public static Storage getStorageType(){
         return storage;
@@ -128,8 +161,8 @@ public abstract class Store implements IStore {
         storage = type;
     }
 
-    public static DbLocationStore getDbLocationStore()throws StoreException{
-        return DbLocationStore.getInstance();
+    public static DbLocationStorex getDbLocationStore()throws StoreException{
+        return DbLocationStorex.getInstance();
     }   
 }
 

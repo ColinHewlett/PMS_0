@@ -70,7 +70,7 @@ public class SurgeryDaysEditorModalViewer extends View {
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_CONTROLS_REQUEST.toString());
+            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);

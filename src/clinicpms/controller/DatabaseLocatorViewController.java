@@ -7,7 +7,7 @@ package clinicpms.controller;
 
 import clinicpms.store.AccessStore;
 import clinicpms.store.Store;
-import clinicpms.store.DbLocationStore;
+import clinicpms.store.DbLocationStorex;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.store.interfaces.IStore;
 import clinicpms.view.base.DatabaseLocatorView;
@@ -155,7 +155,7 @@ public class DatabaseLocatorViewController extends ViewController {
             JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), ex.getMessage());
         }
         */
-        DbLocationStore store = null;
+        DbLocationStorex store = null;
         String result = null;
         try{
             store = Store.getDbLocationStore();
@@ -170,7 +170,7 @@ public class DatabaseLocatorViewController extends ViewController {
     }
     
     private String setDatabaseLocation(String location)throws IOException{
-        DbLocationStore store = null;
+        DbLocationStorex store = null;
         String result = null;
         try{
             store = Store.getDbLocationStore();
