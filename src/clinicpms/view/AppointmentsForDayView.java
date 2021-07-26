@@ -176,9 +176,16 @@ public class AppointmentsForDayView extends View{
         populateAppointmentsForDayTable();
     }
     private void initialiseEDSelectionFromView(int row){
+        /**
+         * on entry each row in the table represents an appointment object
+         * -- the row value indexes the selected appointment 
+         * -- EntityDescriptor.Request.Appointment is initialised with the selected appointment 
+         * -- as is EntityDescriptor.Request.Patient from EntityDescriptor.Request.Appointment.Appointee 
+         */
         if (row > -1){
             getEntityDescriptor().getRequest().setAppointment(
-                    getEntityDescriptor().getAppointments().getData().get(row));          
+                    getEntityDescriptor().getAppointments().getData().get(row));  
+            getEntityDescriptor().getRequest().setPatient(getEntityDescriptor().getRequest().getAppointment().getAppointee());
         }
     }
 
@@ -762,16 +769,26 @@ public class AppointmentsForDayView extends View{
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for cancellation");
         }
         else{
+            /**
+             * note: call to initialiseEDSelectionFromView(row) initialises both the following view's entity descriptor fields
+             * -- EntityDescriptor.Request.Appointment
+             * -- EntityDescriptor.Request.Patient
+             */
             int OKToCancelAppointment;
             initialiseEDSelectionFromView(row);
-            patient = getEntityDescriptor().getAppointments().getData().get(row).getAppointee();
-            name = patient.getData().getForenames();
-            start = getEntityDescriptor().getAppointments().getData().get(row).getData().getStart();
+            //patient = getEntityDescriptor().getAppointments().getData().get(row).getAppointee();
+            //getEntityDescriptor().getRequest().setPatient(patient);
+            //name = patient.getData().getForenames();
+            start = getEntityDescriptor().getRequest().getAppointment().getData().getStart();
+            //start = getEntityDescriptor().getAppointments().getData().get(row).getData().getStart();
             from = start.toLocalTime();
-            duration = getEntityDescriptor().getAppointments().getData().get(row).getData().getDuration().toMinutes();
+            duration = getEntityDescriptor().getRequest().getAppointment().getData().getDuration().toMinutes();
+            //duration = getEntityDescriptor().getAppointments().getData().get(row).getData().getDuration().toMinutes();
             LocalTime to = from.plusMinutes(duration);
+            name = getEntityDescriptor().getRequest().getPatient().getData().getForenames();
             if (!name.isEmpty())name = name + " ";
-            name = name + patient.getData().getSurname();
+            //name = name + patient.getData().getSurname();
+            name = name + getEntityDescriptor().getRequest().getPatient().getData().getSurname();
             from.format(DateTimeFormatter.ofPattern("HH:mm"));
             String[] options = {"Yes", "No"};
             OKToCancelAppointment = JOptionPane.showOptionDialog(this,

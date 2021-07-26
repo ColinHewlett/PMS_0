@@ -318,10 +318,16 @@ public class AppointmentViewController extends ViewController{
             
         }
     }
-    
+    /**
+     * on APPOINTMENT_VIEW_CREATE_REQUEST & APPOINTMENT_VIEW_UPDATE_REQUEST
+     * -- the view controller expects appointee data in EntityDescriptor.Request.Patient and start, duration and notes in EntityDescriptor.Request.Appointment
+     * @param e ActionEvent
+     */
     private void doAppointmentCreatorEditorViewAction(ActionEvent e){
         Appointment result = null;
         LocalDate day = null;
+        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        EntityDescriptor edFromAppointmentCreateEditView = getEntityDescriptorFromView();
         try{
             if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
                     APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
@@ -350,6 +356,15 @@ public class AppointmentViewController extends ViewController{
             this.myController.actionPerformed(actionEvent); 
             
             }
+            /**
+             * if current view request is not a DISABLE_DESKTOP_CONTROLS_REQUEST
+             * -- process "result" variable
+             * ---- if "result" not null
+             * ------ close APPOINTMENT_CREATOR_EDITOR_VIEW (this.view2)
+             * ------ fire updated appointment list to APPOINTMENT_SCHEDULE view (this.view) as a property change APPOINTMENTS_FOR_DAY_RECEIVED event
+             * ------ fire a blank list of appointment slots to APPOINTMENT_SCHEDULE view as a property change APPOINTMENTS_FOR_DAY_RECEIVED event
+             * ---- else fire error message to APPOINTMENT_CREATOR_EDITOR_VIEW to report APPOINTMENT_VIEW_ERROR as a property change event
+             */
             if (!e.getActionCommand().equals(
                 DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
                 if (result!=null){
@@ -365,6 +380,7 @@ public class AppointmentViewController extends ViewController{
                     serialiseAppointmentsToEDCollection(this.appointments);
                     /**
                      * fire event over to APPOINTMENT_SCHEDULE
+                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
                      */
                     pcSupport.addPropertyChangeListener(this.view);
                     pcEvent = new PropertyChangeEvent(this,
@@ -377,12 +393,22 @@ public class AppointmentViewController extends ViewController{
                     initialiseNewEntityDescriptor();
                     /**
                      * fire event over to APPOINTMENT_SCHEDULE
+                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
                      */
                     pcEvent = new PropertyChangeEvent(this,
                         AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
                         null,getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view);
+                    /**
+                     * send desktop view controller the APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
+                     * -- note: important to restore view controller's EntityDescriptorFromView with entity descriptor fetched from APPOINTMENT_CREATE_EDIT_VIEW
+                     */
+                    setEntityDescriptorFromView(edFromAppointmentCreateEditView);
+                    ActionEvent actionEvent = new ActionEvent(
+                            this,ActionEvent.ACTION_PERFORMED,
+                            DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                    this.myController.actionPerformed(actionEvent);
 
                 }
                 else{
@@ -554,6 +580,11 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
+            /**
+             * on receipt of APPOINTMENT_UPDATE_VIEW_REQUEST
+             * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
+             * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
+             */
             if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
                 try{
                     Appointment appointment = new Appointment(
@@ -582,6 +613,11 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
+            /**
+             * on receipt of APPOINTMENT_CREATE_VIEW_REQUEST
+             * -- initialises NewEntityDescriptor with the collection of all patients on the system
+             * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
+             */
             initialiseNewEntityDescriptor();
             try{
                 ArrayList<Patient> patients = new Patients().getPatients();
@@ -606,6 +642,11 @@ public class AppointmentViewController extends ViewController{
         }
         
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
+            /**
+             * on receipt of APPOINTMENT_CANCEL_REQUEST
+             * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
+             * -- hence: getRequest.getPatient() returns the patient whose appointment has been cancelled
+             */
             if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
                 Appointment appointment = new Appointment(
                         getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
@@ -627,6 +668,16 @@ public class AppointmentViewController extends ViewController{
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view);
+                    /**
+                     * send APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to Desktop view controller
+                     * -- prime the appointment view controller's entity description with the patient that has just been deleted
+                     * -- i.e so view controller can reliably let the desktop view controller know which patient has had an appointment deleted
+                     */
+                    
+                    ActionEvent actionEvent = new ActionEvent(
+                        this,ActionEvent.ACTION_PERFORMED,
+                        DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                    this.myController.actionPerformed(actionEvent);
                 }
                 catch (StoreException ex){
                     String message = ex.getMessage();
@@ -1415,8 +1466,9 @@ public class AppointmentViewController extends ViewController{
     }
    
     private void serialisePatientsToEDCollection(ArrayList<Patient> patients) throws StoreException{
-        //fetch all patients on the system from the model
-        
+        /**
+         * initialises NewEntityDescriptor with the collection of all the patients on the system
+         */
         getNewEntityDescriptor().getPatients().getData().clear();
         Iterator<Patient> patientsIterator = patients.iterator();
         while(patientsIterator.hasNext()){

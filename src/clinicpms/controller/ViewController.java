@@ -60,6 +60,7 @@ public abstract class ViewController implements ActionListener{
                                             }
     
     public enum DesktopViewControllerActionEvent {
+                                            APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
                                             DISABLE_DESKTOP_CONTROLS_REQUEST,
                                             DISABLE_DESKTOP_DATA_CONTROL_REQUEST,

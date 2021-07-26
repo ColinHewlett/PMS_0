@@ -135,6 +135,36 @@ public class DesktopViewController extends ViewController{
             
         }
         else if (e.getActionCommand().equals(
+                ViewController.DesktopViewControllerActionEvent.
+                        APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
+            /**
+             * on APPOINTMENT_HISTORY_CHANGE_NOTIFICATION from an appointment view controller
+             * -- desktop view controller checks if any patient view controllers active which refer to same patient
+             * -- yes: send them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
+             */
+            EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentViewController)e.getSource()).getEntityDescriptorFromView();
+            PatientViewController pvc = null;
+            Iterator<PatientViewController> viewControllerIterator = 
+                    this.patientViewControllers.iterator();
+            while(viewControllerIterator.hasNext()){
+                pvc = viewControllerIterator.next();               
+                int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey().intValue();
+                int k2 = edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue();
+                if (pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey().intValue() == 
+                        edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue()){
+                    /**
+                     * Found patient view controller for patient whose appointment history has been changed
+                     * -- patient view controller's EntityDescriptor.Request.Patient points to appointee
+                     * -- send PATIENT_REQUEST to patient view controller to refresh display of patient data
+                     */
+                    ActionEvent actionEvent = new ActionEvent(
+                            this,ActionEvent.ACTION_PERFORMED,
+                            ViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                    pvc.actionPerformed(actionEvent);
+                }
+            }  
+        }
+        else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
                     ENABLE_DESKTOP_CONTROLS_REQUEST.toString())){
             getView().enableViewControl();

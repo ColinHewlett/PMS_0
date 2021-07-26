@@ -266,11 +266,17 @@ public class AppointmentCreatorEditorModalViewer extends View {
             this.btnCreateUpdateAppointment.setText(CREATE_BUTTON);
         }
     }
+    /**
+     * the method process
+     * -- collects data about appointment (start, duration, notes)
+     * -- collects data about appointee (the patient)
+     */
     private void initialiseEntityDescriptorFromView(){
         //get the appointment with  which the view was initialised (in particular the appointment key)
         getEntityDescriptor().getRequest().setAppointment(
                     getEntityDescriptor().getAppointment());
         //update this from current state of view
+        
         getEntityDescriptor().getRequest().setPatient(
                 (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem());
         getEntityDescriptor().getRequest().getAppointment().getData().

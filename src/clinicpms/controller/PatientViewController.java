@@ -443,6 +443,7 @@ public class PatientViewController extends ViewController {
             patient = new Patient();
             try{
                 serialisePatientToEDPatient(patient);
+                getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(false);
                 pcEvent = new PropertyChangeEvent(this,
                             PatientViewControllerPropertyEvent.
                                     NULL_PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
@@ -453,7 +454,40 @@ public class PatientViewController extends ViewController {
             }
         }
         /**
-         * View has requested a patient object from view controller
+         * on APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
+         * -- prompts the view controller to do a PATIENT_REQUEST action but because executing directly the PATIENT_REQUEST action is problematic an alternative ActionEvent message is required
+         * -- -- the problem arises because the source of the ActionEvent is the desktop view controller and not the patient view controller's view 
+         * -- -- the code in the PATIENT_REQUEST action breaks with a casting error because the desktop view controller object is incompatible with what is expected; an IView type
+         * -- -- note: an alternative solution would be to separate out desktop view controller actions from the rest using the same message (PATIENT_REQUEST) twice, depending on its source 
+         */
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
+            patient = deserialisePatientFromEDRequest();
+            //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
+            if (patient.getKey() != null){
+                try{
+                    Patient p = patient.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    this.initialiseNewEntityDescriptor();
+                    serialisePatientToEDPatient(p);
+                    getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
+                    //EntityDescriptor ed = getNewEntityDescriptor();
+                    pcEvent = new PropertyChangeEvent(this,
+                            PatientViewControllerPropertyEvent.
+                            PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                }
+                catch (StoreException ex){
+                    JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+                }
+            }
+            
+        }
+        
+        /**
+         * on PATIENT_REQUEST, view has requested a patient's data
+         * -- assumed the view's EntityDescriptor.Request.Patient provides details of patient to be fetched by the controller
          */
         else if (e.getActionCommand().equals(
                 PatientViewControllerActionEvent.PATIENT_REQUEST.toString())){
@@ -466,6 +500,7 @@ public class PatientViewController extends ViewController {
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     this.initialiseNewEntityDescriptor();
                     serialisePatientToEDPatient(p);
+                    getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
                     //EntityDescriptor ed = getNewEntityDescriptor();
                     pcEvent = new PropertyChangeEvent(this,
                             PatientViewControllerPropertyEvent.
@@ -477,6 +512,10 @@ public class PatientViewController extends ViewController {
                                           new ErrorMessagePanel(ex.getMessage()));
                 }
             }
+        }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
+            
         }
         else if (e.getActionCommand().equals(
                 DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
