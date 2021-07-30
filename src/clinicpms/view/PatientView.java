@@ -1663,7 +1663,8 @@ public class PatientView extends View{
     
     private void cmbSelectPatientActionPerformed(){
         if (this.cmbSelectPatient.getSelectedItem()!=null){
-            EntityDescriptor.Patient patient = (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();
+            EntityDescriptor.Patient patient = 
+                    (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();
             getEntityDescriptor().getRequest().setPatient(patient);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,

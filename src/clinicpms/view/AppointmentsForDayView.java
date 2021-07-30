@@ -185,7 +185,8 @@ public class AppointmentsForDayView extends View{
         if (row > -1){
             getEntityDescriptor().getRequest().setAppointment(
                     getEntityDescriptor().getAppointments().getData().get(row));  
-            getEntityDescriptor().getRequest().setPatient(getEntityDescriptor().getRequest().getAppointment().getAppointee());
+            getEntityDescriptor().getRequest().setPatient(
+                    getEntityDescriptor().getRequest().getAppointment().getAppointee());
         }
     }
 

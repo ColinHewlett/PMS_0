@@ -181,10 +181,23 @@ public class PatientViewController extends ViewController {
     private void serialisePatientToEDPatient(Patient patient) throws StoreException{
         RenderedPatient p = renderPatient(patient);
         getNewEntityDescriptor().getPatient().setData(p);
-        //getNewEntityDescriptor().getRequest().getPatient().setData(p);
+        /**
+         * note: its the view controller's responsibility to initialise EntityDescriptor.Request.Patient
+         * -- the Patient View offers 2 choices; update current patient or create a new patient
+         * -- if an update is selected the view controller needs to know the key value of the currently selected patient to update
+         * -- since the view cannot access the key field of the rendered patient object (it is a protected property) it must ensure the key field is already initialised 
+         */
+        getNewEntityDescriptor().getRequest().getPatient().setData(p);
         if (p.getIsGuardianAPatient()){
             if (patient.getGuardian() != null){
                 RenderedPatient g = renderPatient(patient.getGuardian());
+                /**
+                 * update 30/07/2021 09:05
+                 * -- when a new entity descriptor is constructed cannot include in the construction a new Patient to represent a patient guardian because EntityDescriptor.Patient constructor would be recursively invoked
+                 * -- hence has to be done here to avoid a NullPointerException in case PatientGuardian is null shich probably be the case 
+                 */
+
+                getNewEntityDescriptor().getPatient().setPatientGuardian(new EntityDescriptor().getPatient());
                 getNewEntityDescriptor().getPatient().getPatientGuardian().setData(g);
                 //getNewEntityDescriptor().getPatientGuardian().setData(g);  
                 //getNewEntityDescriptor().getRequest().getPatientGuardian().setData(g);
