@@ -171,25 +171,32 @@ public class PatientViewController extends ViewController {
     /**
      * A request for a patient object is processed
      * -- the selected patient's key is fetched from the EntityDescriptor.Selection.Patient object
-     * -- the model patient with this key is fetched and serialised into the 
-     * EntityDescriptor.Patient object
+     * -- the model patient with this key is fetched and serialised into the EntityDescriptor.Patient object
+     * -- -- note: the model Patient object is flattened into EntityDescriptor.Patient.Data & EntityDescriptor.Patient.PatientGuardian
+     * -- -- reference update dated 30/07/2021 09:05
+     * -- -- also commented out updates to EntityDescriptor.Request.Patient.PatientGuardian (formerly EntityDescriptor.Request.PatientGuardian)
+     * -- -- note also:code assumes a patient guardian does not also have a patient guardian
      * @throws StoreException 
      */
     private void serialisePatientToEDPatient(Patient patient) throws StoreException{
         RenderedPatient p = renderPatient(patient);
         getNewEntityDescriptor().getPatient().setData(p);
-        getNewEntityDescriptor().getRequest().getPatient().setData(p);
+        //getNewEntityDescriptor().getRequest().getPatient().setData(p);
         if (p.getIsGuardianAPatient()){
             if (patient.getGuardian() != null){
                 RenderedPatient g = renderPatient(patient.getGuardian());
-                getNewEntityDescriptor().getPatientGuardian().setData(g);  
-                getNewEntityDescriptor().getRequest().getPatientGuardian().setData(g);
+                getNewEntityDescriptor().getPatient().getPatientGuardian().setData(g);
+                //getNewEntityDescriptor().getPatientGuardian().setData(g);  
+                //getNewEntityDescriptor().getRequest().getPatientGuardian().setData(g);
             }
             else
-                getNewEntityDescriptor().setPatientGuardian(null);
+                //getNewEntityDescriptor().setPatientGuardian(null);
+                getNewEntityDescriptor().getPatient().setPatientGuardian(null);
                 
         } 
-        else getNewEntityDescriptor().setPatientGuardian(null);
+        //else getNewEntityDescriptor().setPatientGuardian(null);
+        else getNewEntityDescriptor().getPatient().setPatientGuardian(null);
+        
         ArrayList<Appointment> appointments;
         if (patient.getAppointmentHistory().getDentalAppointments()!=null){
             if (patient.getAppointmentHistory().getDentalAppointments().size() > 0){

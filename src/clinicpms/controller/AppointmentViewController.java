@@ -844,19 +844,6 @@ public class AppointmentViewController extends ViewController{
         return result;   
     }
     
-    /*
-    private Patient deserialisePatientFromEDRequest(){
-        Patient patient = makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient());
-        if (getEntityDescriptorFromView().getRequest().getPatient().getData().getIsGuardianAPatient()){
-            if (getEntityDescriptorFromView().getRequest().getPatientGuardian()!=null){
-                patient.setGuardian(makePatientFrom(
-                        getEntityDescriptorFromView().getRequest().getPatientGuardian()));
-            }
-        }
-        return patient;
-    }
-    */
-    
     private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
         String error;
         Appointment result = null;
@@ -1326,6 +1313,15 @@ public class AppointmentViewController extends ViewController{
         getNewEntityDescriptor().getRequest().setDay(getOldEntityDescriptor().getRequest().getDay());
     }
     
+    /**
+     * serialiseAppointmentToEDAppointment method flattens the model appointment object
+     * -- EntityDescriptor.Appointment.Data = renderAppointment(appointment) -> initialises Data with the key, start, duration and note fields from the model appointment object
+     * -- -- EntityDescriptor.Appointment.Appointee = renderPatient(appointment.getPatient()) -> initialises Data with the model patient field values; else null of this is an empty appointment slot
+     * -- -- EntityDescriptor.Patient = Appointee
+     * -- -- for convenience an additional Appointment.Data.EmptySlot is initialised true or false as appropriate
+     * -- -- this is a duplication of the significance of the EntityDescriptor.Appointment.Appointee and EntityDescriptor.Patient values; a null value of which indicates EmptySlot = true
+     * @param model appointment object
+     */
     private void serialiseAppointmentToEDAppointment(Appointment appointment){
         RenderedAppointment renderedAppointment = renderAppointment(appointment);
         RenderedPatient renderedPatient;
@@ -1335,13 +1331,21 @@ public class AppointmentViewController extends ViewController{
             getNewEntityDescriptor().setAppointment(new EntityDescriptor().getAppointment());
             getNewEntityDescriptor().getAppointment().setData(renderedAppointment);
             getNewEntityDescriptor().getAppointment().getAppointee().setData(renderedPatient);
+            getNewEntityDescriptor().setPatient(getNewEntityDescriptor().getAppointment().getAppointee());
         }
         else {
             renderedAppointment.IsEmptySlot(true);
             getNewEntityDescriptor().getAppointment().setData(renderedAppointment);
             getNewEntityDescriptor().getAppointment().setAppointee(null);
+            getNewEntityDescriptor().setPatient(null);
         }
     }
+    /**
+     * Produces a flattened version of the model.Patient object which does not include a reference to a patient object if the legal guardian of this patient is also a patient of the practice.
+     * -- fields in the EntityDescriptor.Patient object include both a Data object (the rendered patient) as well as an Appointee object (a rendered patient object)
+     * @param p
+     * @return 
+     */
     private RenderedPatient renderPatient(Patient p){
         RenderedPatient result = null;
         if (p!=null){
@@ -1411,6 +1415,12 @@ public class AppointmentViewController extends ViewController{
         }
         return result;
     }
+    /**
+     * Produces a flattened version of the model.Appointment object which does not include a reference to a patient object if an appointee exists.
+     * -- fields in the EntityDescriptor.Appointment object include both a Data object (the rendered appointment) as well as an Appointee object (a rendered patient object)
+     * @param a model.Appointment object
+     * @return 
+     */
     private RenderedAppointment renderAppointment(Appointment a){
         RenderedAppointment ra = new RenderedAppointment();
         for (AppointmentField af: AppointmentField.values()){
@@ -1476,7 +1486,9 @@ public class AppointmentViewController extends ViewController{
             RenderedPatient renderedPatient = renderPatient(patient);
             getNewEntityDescriptor().setPatient(new EntityDescriptor().getPatient());
             getNewEntityDescriptor().getPatient().setData(renderedPatient);
-            getNewEntityDescriptor().setPatientGuardian(new EntityDescriptor().getPatientGuardian());
+            //getNewEntityDescriptor().setPatientGuardian(new EntityDescriptor().getPatientGuardian());
+            //update 30/07/2021 09:05
+            getNewEntityDescriptor().getPatient().setPatientGuardian(new EntityDescriptor().getPatient().getPatientGuardian());
             getNewEntityDescriptor().setPatientAppointmentHistory(null);
             getNewEntityDescriptor().getPatients().getData().add(getNewEntityDescriptor().getPatient());
         }

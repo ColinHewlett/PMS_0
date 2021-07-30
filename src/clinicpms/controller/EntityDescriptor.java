@@ -63,6 +63,8 @@ public class EntityDescriptor {
         patient = value;
     }
     
+    /*
+    update 30/07/2021 09:05
     public EntityDescriptor.Patient getPatientGuardian(){
         return patientGuardian;
     }
@@ -70,6 +72,7 @@ public class EntityDescriptor {
     protected void setPatientGuardian(EntityDescriptor.Patient value){
         patientGuardian = value;
     }
+    */
     
     public EntityDescriptor.PatientAppointmentHistory getPatientAppointmentHistory(){
         return patientAppointmentHistory;
@@ -175,9 +178,11 @@ public class EntityDescriptor {
 
     public class Patient {
         private RenderedPatient data = null;
+        private EntityDescriptor.Patient patientGuardian = null;
 
         protected Patient() {
             data = new RenderedPatient();
+            //patientGuardian = new EntityDescriptor.Patient();
         }
         
         protected void setData(RenderedPatient value) {
@@ -186,6 +191,14 @@ public class EntityDescriptor {
 
         public RenderedPatient getData() {
             return data;
+        }
+        
+        public EntityDescriptor.Patient getPatientGuardian(){
+            return patientGuardian;
+        }
+
+        protected void setPatientGuardian(EntityDescriptor.Patient value){
+            patientGuardian = value;
         }
         
         private String capitaliseFirstLetter(String value, String delimiter){

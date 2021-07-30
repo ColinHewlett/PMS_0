@@ -473,6 +473,7 @@ public class PatientView extends View{
     /**
      * The method initialises the guardian component of the view state from the 
      * current entity state
+     * -- note update 30/07/2021 09:05 applied
      */
     private void initialisePatientGuardianViewComponent(){
         EntityDescriptor ed = getEntityDescriptor();
@@ -482,10 +483,16 @@ public class PatientView extends View{
         if (this.cmbIsGuardianAPatient.getSelectedItem().equals(PatientView.YesNoItem.Yes)){
             this.cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.Yes);
             this.cmbSelectGuardian.setEnabled(true);
+            
             if (this.cmbSelectGuardian.getSelectedIndex()==-1){
-                if (getEntityDescriptor().getPatientGuardian()!=null){
-                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
+                if (getEntityDescriptor().getPatient().getPatientGuardian()!=null){
+                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getPatientGuardian());
                 }
+                
+                //if (getEntityDescriptor().getPatientGuardian()!=null){
+                    //this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
+                //}
+                
             }
         }
         else{//under 18 patient does not have a guardian who is also a patient
@@ -616,9 +623,15 @@ public class PatientView extends View{
         setNotes(patient.getNotes());
         setDOB(patient.getDOB());
         setIsGuardianAPatient(patient.getIsGuardianAPatient());
-        if(getEntityDescriptor().getPatientGuardian()!=null)
-                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
+        //update 30/07/2021 09:05 applied
+        if(getEntityDescriptor().getPatient().getPatientGuardian()!=null)
+                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getPatientGuardian());
         else this.cmbSelectGuardian.setSelectedIndex(-1);
+        
+        //if(getEntityDescriptor().getPatientGuardian()!=null)
+                //this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
+        //else this.cmbSelectGuardian.setSelectedIndex(-1);
+        
         initialisePatientAppointmentHistoryViewFromED(PatientView.Category.DENTAL);
     }
     private void initialiseEntityFromView(){
