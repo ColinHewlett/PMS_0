@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Vector;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.JOptionPane;
@@ -63,7 +64,7 @@ import javax.swing.SwingUtilities;
  *
  * @author colin
  */
-public class AppointmentsForDayView extends View{
+public class AppointmentScheduleView extends View{
     private View.Viewer myViewType = null;
     private enum COLUMN{From,Duration,Patient,Notes};
     private JTable tblAppointmentsForDay = null;
@@ -175,19 +176,13 @@ public class AppointmentsForDayView extends View{
         appointments = getEntityDescriptor().getAppointments().getData();
         populateAppointmentsForDayTable();
     }
-    private void initialiseEDSelectionFromView(int row){
-        /**
-         * on entry each row in the table represents an appointment object
-         * -- the row value indexes the selected appointment 
-         * -- EntityDescriptor.Request.Appointment is initialised with the selected appointment 
-         * -- as is EntityDescriptor.Request.Patient from EntityDescriptor.Request.Appointment.Appointee 
-         */
-        if (row > -1){
-            getEntityDescriptor().getRequest().setAppointment(
-                    getEntityDescriptor().getAppointments().getData().get(row));  
-            getEntityDescriptor().getRequest().setPatient(
-                    getEntityDescriptor().getRequest().getAppointment().getAppointee());
-        }
+    /**
+     * The abstract table model includes a getElementAt(int row) method which returns the element at the row defined index of an ArrayList<EntityDescriptor.Appointment> maintained in the table model
+     * @param row selected row in table
+     * update 30/07/2021 19:53
+     */
+    private void initialiseEDRequestFromView(int row){
+        getEntityDescriptor().getRequest().setAppointment(tableModel.getElementAt(row));    
     }
 
     /**
@@ -195,7 +190,7 @@ public class AppointmentsForDayView extends View{
      * @param controller
      * @param ed 
      */
-    public AppointmentsForDayView(View.Viewer myViewType, ActionListener controller, EntityDescriptor ed) {
+    public AppointmentScheduleView(View.Viewer myViewType, ActionListener controller, EntityDescriptor ed) {
         this.setMyViewType(myViewType);
         this.myController = controller;
         this.setEntityDescriptor(ed);
@@ -287,28 +282,39 @@ public class AppointmentsForDayView extends View{
         });
     }
     private void refreshAppointmentTableWithCurrentlySelectedDate(){
-        ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
+        ActionEvent actionEvent = new ActionEvent(AppointmentScheduleView.this, 
                 ActionEvent.ACTION_PERFORMED,
                 AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
-        AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
+        AppointmentScheduleView.this.getMyController().actionPerformed(actionEvent);
         SwingUtilities.invokeLater(new Runnable() 
         {
           public void run()
           {
-            AppointmentsForDayView.this.setTitle(
-                    AppointmentsForDayView.this.getEntityDescriptor().getRequest().getDay().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " Appointment schedule");
+            AppointmentScheduleView.this.setTitle(AppointmentScheduleView.this.getEntityDescriptor().getRequest().getDay().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " Appointment schedule");
                     //AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
           }
         });
     }
+    /**
+     * Update 30/07/2021 19:53
+     * @param row selected row in table
+     */
     private void doEmptySlotAvailabilityTableRowSelection(int row){
+        /*
         String appointmentDate = (String)this.tblEmptySlotAvailability.getModel().getValueAt(row, 0);
         LocalDate start = LocalDateTime.parse(appointmentDate, emptySlotStartFormat).toLocalDate();
+        */
+        
+        EntityDescriptor.Appointment appointment = 
+                ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).getElementAt(row);
+        LocalDate start = appointment.getData().getStart().toLocalDate();
         DatePickerSettings dps = dayDatePicker.getSettings();
         if (!dps.getVetoPolicy().isDateAllowed(start)){
-            temporarilySuspendDatePickerDateVetoPolicy(start);
+            temporarilySuspendDatePickerDateVetoPolicy(appointment.getData().getStart().toLocalDate());
         }
         dayDatePicker.setDate(start);
+        
+        
     }
     private void populateAppointmentsForDayTable(){
         //Appointments5ColumnTableModel.appointments = appointments;
@@ -383,7 +389,7 @@ public class AppointmentsForDayView extends View{
             @Override  
             public void internalFrameClosing(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
-                        AppointmentsForDayView.this,ActionEvent.ACTION_PERFORMED,
+                        AppointmentScheduleView.this,ActionEvent.ACTION_PERFORMED,
                         ViewController.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
                 getMyController().actionPerformed(actionEvent);
             }
@@ -560,7 +566,7 @@ public class AppointmentsForDayView extends View{
             .addGroup(pnlControlsLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
@@ -697,7 +703,7 @@ public class AppointmentsForDayView extends View{
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
-        initialiseEDSelectionFromView(-1);
+        initialiseEDRequestFromView(-1);
         ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
                 AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString());
@@ -713,7 +719,7 @@ public class AppointmentsForDayView extends View{
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
         }
         else{
-            initialiseEDSelectionFromView(row);
+            initialiseEDRequestFromView(row);
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
                     AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString());
@@ -776,7 +782,7 @@ public class AppointmentsForDayView extends View{
              * -- EntityDescriptor.Request.Patient
              */
             int OKToCancelAppointment;
-            initialiseEDSelectionFromView(row);
+            initialiseEDRequestFromView(row);
             //patient = getEntityDescriptor().getAppointments().getData().get(row).getAppointee();
             //getEntityDescriptor().getRequest().setPatient(patient);
             //name = patient.getData().getForenames();
@@ -853,17 +859,16 @@ public class AppointmentsForDayView extends View{
         @Override
         public void dateChanged(DateChangeEvent event) {
             LocalDate date = event.getNewDate();
-            getEntityDescriptor().getRequest().setDay(AppointmentsForDayView.this.dayDatePicker.getDate());
-            ActionEvent actionEvent = new ActionEvent(AppointmentsForDayView.this, 
+            getEntityDescriptor().getRequest().setDay(AppointmentScheduleView.this.dayDatePicker.getDate());
+            ActionEvent actionEvent = new ActionEvent(AppointmentScheduleView.this, 
                     ActionEvent.ACTION_PERFORMED,
                     AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
-            AppointmentsForDayView.this.getMyController().actionPerformed(actionEvent);
+            AppointmentScheduleView.this.getMyController().actionPerformed(actionEvent);
             SwingUtilities.invokeLater(new Runnable() 
             {
               public void run()
               {
-                AppointmentsForDayView.this.setTitle(
-                        AppointmentsForDayView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
+                AppointmentScheduleView.this.setTitle(AppointmentScheduleView.this.dayDatePicker.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yy")) + " schedule");
               }
             });
         }

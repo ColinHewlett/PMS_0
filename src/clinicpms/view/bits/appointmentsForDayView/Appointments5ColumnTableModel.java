@@ -45,6 +45,10 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
         appointments.clear();
         this.fireTableDataChanged();
     }
+    
+    public EntityDescriptor.Appointment getElementAt(int row){
+        return appointments.get(row);
+    }
 
     @Override
     public int getRowCount(){

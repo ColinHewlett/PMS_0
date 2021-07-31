@@ -7,7 +7,7 @@ package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.base.DesktopView;
-import clinicpms.view.AppointmentsForDayView;
+import clinicpms.view.AppointmentScheduleView;
 import clinicpms.view.View;
 import java.awt.event.ActionListener;
 
@@ -23,7 +23,7 @@ public class AppointmentScheduleFactoryMethod extends ViewFactoryMethod{
     
     @Override
     public View makeView(View.Viewer myViewType){
-        return new AppointmentsForDayView(myViewType, this.getViewController(), this.getEntityDescriptor());
+        return new AppointmentScheduleView(myViewType, this.getViewController(), this.getEntityDescriptor());
     }
     
     private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){

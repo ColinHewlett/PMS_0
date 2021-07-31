@@ -43,6 +43,10 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         emptySlots.clear();
         this.fireTableDataChanged();
     }
+    
+    public EntityDescriptor.Appointment getElementAt(int row){
+        return emptySlots.get(row);
+    }
 
     @Override
     public int getRowCount(){
