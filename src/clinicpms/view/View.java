@@ -5,7 +5,6 @@
  */
 package clinicpms.view;
 
-import clinicpms.view.base.DesktopView;
 import clinicpms.view.factory_methods.*;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.interfaces.IView;
@@ -34,10 +33,10 @@ public abstract class View extends JInternalFrame
                                 APPOINTMENT_EDITOR_VIEW,
                                 EMPTY_SLOT_SCANNER_VIEW,
                                 MIGRATION_MANAGER_VIEW,
-                                NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW,
+                                NON_SURGERY_DAY_EDITOR_VIEW,
                                 PATIENT_VIEW,
-                                SCHEDULE_CONTACT_LIST_VIEW,
-                                SURGERY_DAYS_EDITOR_VIEW}
+                                SCHEDULE_CONTACT_DETAILS_VIEW,
+                                SURGERY_DAY_EDITOR_VIEW}
     
     public static void setViewer(Viewer value){
         viewer = value;
@@ -74,13 +73,13 @@ public abstract class View extends JInternalFrame
             case PATIENT_VIEW:
                 result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
-            case NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW:
+            case NON_SURGERY_DAY_EDITOR_VIEW:
                 result = new NonSurgeryDayEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
-            case SCHEDULE_CONTACT_LIST_VIEW:
-                result = new ScheduleContactListFactoryMethod(controller, ed, dtView).makeView(viewer);
+            case SCHEDULE_CONTACT_DETAILS_VIEW:
+                result = new ScheduleContactDetailsFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
-            case SURGERY_DAYS_EDITOR_VIEW:
+            case SURGERY_DAY_EDITOR_VIEW:
                 result = new SurgeryDaysEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
                 

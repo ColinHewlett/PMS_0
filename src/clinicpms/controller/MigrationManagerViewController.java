@@ -7,9 +7,9 @@ package clinicpms.controller;
 
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
-import clinicpms.view.MigrationManagerModalViewer;
+import clinicpms.view.type.migrationmanagerview.MigrationManagerModalViewer;
 import clinicpms.view.View;
-import clinicpms.view.base.DesktopView;
+import clinicpms.view.DesktopView;
 import clinicpms.store.AccessStore;
 import clinicpms.store.CSVStore;
 import clinicpms.store.Store;

@@ -14,7 +14,7 @@ import clinicpms.model.Patients;
 import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.store.interfaces.IStore;
-import clinicpms.view.base.DesktopView;
+import clinicpms.view.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
@@ -144,14 +144,14 @@ public class AppointmentViewController extends ViewController{
                     this.view2 = (View)e.getSource();
                     doEmptySlotScannerViewAction(e);
                     break;
-                case NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW:
+                case NON_SURGERY_DAY_EDITOR_VIEW:
                     this.view2 = (View)e.getSource();
                     doNonSurgeryDayScheduleEditorViewAction(e);
                     break;
-                case SCHEDULE_CONTACT_LIST_VIEW:
+                case SCHEDULE_CONTACT_DETAILS_VIEW:
                     doScheduleContactListView(e);
                     break;
-                case SURGERY_DAYS_EDITOR_VIEW:
+                case SURGERY_DAY_EDITOR_VIEW:
                     this.view2 = (View)e.getSource();
                     doSurgeryDaysEditorViewAction(e);
                     break;
@@ -462,7 +462,7 @@ public class AppointmentViewController extends ViewController{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().getRequest().setSurgeryDays(d);
-                View.setViewer(View.Viewer.NON_SURGERY_DAY_SCHEDULE_EDITOR_VIEW);
+                View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
                  * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
@@ -487,7 +487,7 @@ public class AppointmentViewController extends ViewController{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().getRequest().setSurgeryDays(d);
-                View.setViewer(View.Viewer.SURGERY_DAYS_EDITOR_VIEW);
+                View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
                  * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
@@ -518,7 +518,7 @@ public class AppointmentViewController extends ViewController{
                 this.appointments =
                     new Appointments().getAppointmentsFor(day);
                 serialiseAppointmentsToEDCollection(this.appointments);
-                View.setViewer(View.Viewer.SCHEDULE_CONTACT_LIST_VIEW);
+                View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
                 this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
                 this.desktopView.add(pacView);
                 this.pacView.initialiseView();

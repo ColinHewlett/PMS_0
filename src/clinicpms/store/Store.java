@@ -69,27 +69,7 @@ public abstract class Store implements IStore {
                                  STORE_EXCEPTION,
                                  UNDEFINED_DATABASE}
     
-    /*
-    public enum MigrationMethod{    CSV_APPOINTMENT_FILE_CONVERTER,
-                                    CSV_MIGRATION_INTEGRITY_PROCESS,
-                                    CSV_PATIENT_FILE_CONVERTER,
-                                    ACCESS_PATIENT_PREPROCESS
-                                }
-    public enum Storage{CSV,
-                        ACCESS, 
-                        POSTGRES,
-                        SQL_EXPRESS}
     
-    public static enum ExceptionType {  IO_EXCEPTION,
-                                 CSV_EXCEPTION,
-                                 NULL_KEY_EXPECTED_EXCEPTION,
-                                 NULL_KEY_EXCEPTION,
-                                 INVALID_KEY_VALUE_EXCEPTION,
-                                 KEY_FOUND_EXCEPTION,
-                                 KEY_NOT_FOUND_EXCEPTION,
-                                 SQL_EXCEPTION,
-                                 UNDEFINED_DATABASE}
-    */
     private static Storage storage = null;
     private static String databaseLocatorPath = null;
     private static String migrationDatabasePath = null;

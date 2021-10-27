@@ -5,25 +5,25 @@
  */
 package clinicpms.view.factory_methods;
 
-import clinicpms.controller.EntityDescriptor;
+import clinicpms.view.type.schedulecontactdetailsview.ScheduleContactDetailsView;
 import clinicpms.view.DesktopView;
-import clinicpms.view.type.appontmentscheduleview.AppointmentScheduleView;
-import clinicpms.view.View;
+import clinicpms.controller.EntityDescriptor;
+import clinicpms.view.*;
 import java.awt.event.ActionListener;
-
 /**
  *
  * @author colin
  */
-public class AppointmentScheduleFactoryMethod extends ViewFactoryMethod{
-
-    public AppointmentScheduleFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
-        initialiseView(controller, ed, dtView);
-    }
+public class ScheduleContactDetailsFactoryMethod extends ViewFactoryMethod{
     
+    public ScheduleContactDetailsFactoryMethod(ActionListener viewController,
+            EntityDescriptor ed, DesktopView dtView){
+        initialiseView(viewController, ed, dtView);
+    }
+
     @Override
     public View makeView(View.Viewer myViewType){
-        return new AppointmentScheduleView(myViewType, this.getViewController(), this.getEntityDescriptor());
+        return new ScheduleContactDetailsView(myViewType, getViewController(), getEntityDescriptor()); 
     }
     
     private void initialiseView(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
@@ -31,6 +31,5 @@ public class AppointmentScheduleFactoryMethod extends ViewFactoryMethod{
         this.setEntityDescriptor(ed);
         this.setViewController(controller);
     }
-    
     
 }

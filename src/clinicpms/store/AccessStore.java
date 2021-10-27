@@ -1845,14 +1845,31 @@ public class AccessStore extends Store {
                 break;
             }
             case APPOINTMENT_TABLE_DROP:{
+                /**
+                 * Update to fix problem when trying to drop a non-existent appointment table
+                 * -- run a query on MSysObjects table to see if table exists or not
+                 * -- documented solution doesn't work (Access doesn't like the "sys" prefix)
+                 *
+                String sql_ = "SELECT COUNT(*) as the_count FROM sys.MSysObjects WHERE name = 'Appointment';";
+                */
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                    preparedStatement.executeUpdate();
+                    preparedStatement.execute();
+                    /*
+                    if (rs.next()){
+                        if ((int)rs.getLong("the_count") == 1){
+                            preparedStatement = getConnection().prepareStatement(sql);
+                            preparedStatement.executeUpdate();
+                        }
+                    }
+                    */
                 }
                 catch (SQLException ex){
+                    /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
                     ExceptionType.SQL_EXCEPTION);
+                    */
                 }
                 break;
             }
@@ -1916,16 +1933,20 @@ public class AccessStore extends Store {
                 }
                 break;
             case PATIENT_TABLE_DROP:
+                /**
+                 * -- given the issues with trying to drop a non-existing table in Access using Ucanaccess driver
+                 * -- when an SQLException is caught nothing is done
+                 */
                 try{
                     PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
                 }
                 catch (SQLException ex){
-                    
+                    /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a PATIENT_TABLE_DROP data migration operation",
                     ExceptionType.SQL_EXCEPTION);
-                    
+                    */
                 }
                 break;
         }

@@ -2178,6 +2178,7 @@ public class CSVStore  {
         String message = null;
         try{
             BufferedReader patientReader = Files.newBufferedReader(patientsPath,StandardCharsets.ISO_8859_1);
+            //BufferedReader patientReader = Files.newBufferedReader(patientsPath,StandardCharsets.UTF_8);
             CSVReader csvDBFPatientsReader = new CSVReader(patientReader);
             List<String[]> dbfPatients = csvDBFPatientsReader.readAll();
             convertToPatientsFromDBFFile(dbfPatients);

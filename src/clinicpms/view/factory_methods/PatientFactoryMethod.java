@@ -6,8 +6,8 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.view.base.DesktopView;
-import clinicpms.view.PatientView;
+import clinicpms.view.DesktopView;
+import clinicpms.view.type.patientview.PatientView;
 import clinicpms.view.View;
 import java.awt.event.ActionListener;
 /**

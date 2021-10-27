@@ -11,7 +11,7 @@ import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.view.base.DesktopView;
+import clinicpms.view.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import clinicpms.store.exceptions.StoreException;

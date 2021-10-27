@@ -11,7 +11,7 @@ import clinicpms.store.Store.ExceptionType;
 import clinicpms.store.DbLocationStorex;
 import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.view.base.DesktopView;
+import clinicpms.view.DesktopView;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -573,7 +573,21 @@ public class DesktopViewController extends ViewController{
                 isCommandLineError = true;
                 usageError = "usage error: expects at least 1 command line parameters which define the target persistent store format.";
             }
+           
+            /**
+             * checks for 2nd command line argument -> if present enables access in app to data migration function
+             */
+            if (!isCommandLineError){
+                if (args.length > 1){
+                    if (args[1].equals("DATA_MIGRATION_ENABLED")){
+                        isDataMigrationOptionEnabled = true;
+                    }
+                    else isDataMigrationOptionEnabled = false;
+                }
+                else isDataMigrationOptionEnabled = false;
+            }
             
+             
             /**
              * checks second command line argument -> location of DbLocation.accb which defines persistent store location
              */
@@ -594,18 +608,6 @@ public class DesktopViewController extends ViewController{
                 }
             }
             */
-            /**
-             * checks for 2nd command line argument -> if present enables access in app to data migration function
-             */
-            if (!isCommandLineError){
-                if (args.length > 1){
-                    if (args[1].equals("DATA_MIGRATION_ENABLED")){
-                        isDataMigrationOptionEnabled = true;
-                    }
-                    else isDataMigrationOptionEnabled = false;
-                }
-                else isDataMigrationOptionEnabled = false;
-            }
        
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
