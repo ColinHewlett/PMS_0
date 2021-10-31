@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.migrationmanagerview;
+package clinicpms.view.type.migration_manager_view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;

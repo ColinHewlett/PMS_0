@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.appointmentcreatoreditorview;
+package clinicpms.view.type.appointment_creator_editor_view;
 
 import java.awt.Component;
 import java.time.Duration;

@@ -6,7 +6,7 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.view.type.migrationmanagerview.MigrationManagerModalViewer;
+import clinicpms.view.type.migration_manager_view.MigrationManagerModalViewer;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
 import java.awt.event.ActionListener;

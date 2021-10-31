@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.schedulecontactdetailsview;
+package clinicpms.view.type.schedule_contact_details_view;
 
 import clinicpms.view.TableHeaderCellBorderRenderer;
-import clinicpms.view.type.appontmentscheduleview.AppointmentsTablePatientRenderer;
+import clinicpms.view.type.appontment_schedule_view.AppointmentsTablePatientRenderer;
 import clinicpms.view.AppointmentsTableLocalDateTimeRenderer;
 import clinicpms.view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;

@@ -3,34 +3,45 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.emptyslotscannerview;
+package clinicpms.view.type.empty_slot_scanner_view;
 
-import java.awt.Color;
+import clinicpms.controller.EntityDescriptor;
 import java.awt.Component;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+
 /**
  *
  * @author colin
  */
-public class SelectSlotDurationRenderer extends JLabel implements ListCellRenderer<Duration>{
+public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<EntityDescriptor.Appointment>{
+    public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    
+    public SlotAvailabilityListRenderer(){
+         setOpaque(true);   
+    }
+    
     
     @Override
-    public Component getListCellRendererComponent(JList<? extends Duration> list,
-                                                   Duration value,
+    public Component getListCellRendererComponent(JList<? extends EntityDescriptor.Appointment> list,
+                                                   EntityDescriptor.Appointment value,
                                                    int index,
                                                    boolean isSelected,
                                                    boolean cellHasFocus) {
         
-        if ((value).isZero()){
-            super.setText("slot duration undefined");
-            super.setForeground(Color.red);
-        }
-        else {
-            super.setText(renderDuration((Duration)value));
-            super.setForeground(Color.black);
+        
+        EntityDescriptor.Appointment appointment = value;
+        
+        setText(appointment.getData().getStart().format(dmyhhmmFormat));
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
         }
         return this; 
     }

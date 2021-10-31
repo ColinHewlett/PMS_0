@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.schedulecontactdetailsview;
+package clinicpms.view.type.schedule_contact_details_view;
 
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;

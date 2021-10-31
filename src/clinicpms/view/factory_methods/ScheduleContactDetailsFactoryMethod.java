@@ -5,7 +5,7 @@
  */
 package clinicpms.view.factory_methods;
 
-import clinicpms.view.type.schedulecontactdetailsview.ScheduleContactDetailsView;
+import clinicpms.view.type.schedule_contact_details_view.ScheduleContactDetailsView;
 import clinicpms.view.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;

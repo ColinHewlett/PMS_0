@@ -5,7 +5,7 @@
  */
 package clinicpms.view.factory_methods;
 
-import clinicpms.view.type.nonsurgerydayeditorview.NonSurgeryDayEditorModalViewer;
+import clinicpms.view.type.non_surgery_day_editor_view.NonSurgeryDayEditorModalViewer;
 import clinicpms.view.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;

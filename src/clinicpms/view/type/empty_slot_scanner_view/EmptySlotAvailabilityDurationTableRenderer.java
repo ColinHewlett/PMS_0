@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.emptyslotscannerview;
+package clinicpms.view.type.empty_slot_scanner_view;
 
 import java.awt.Component;
 import java.time.Duration;

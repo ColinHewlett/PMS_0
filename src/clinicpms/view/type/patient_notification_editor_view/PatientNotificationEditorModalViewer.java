@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.patientnotificationeditorview;
+package clinicpms.view.type.patient_notification_editor_view;
 
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;
-import clinicpms.view.type.appointmentcreatoreditorview.SelectStartTimeLocalDateTimeRenderer;
+import clinicpms.view.type.appointment_creator_editor_view.SelectStartTimeLocalDateTimeRenderer;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Component;

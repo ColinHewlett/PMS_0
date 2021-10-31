@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.patientview;
+package clinicpms.view.type.patient_editor_view;
 
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.AppointmentsTableLocalDateTimeRenderer;
@@ -15,7 +15,7 @@ import clinicpms.controller.ViewController.PatientField;
 import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
 import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
 import clinicpms.view.View;
-import clinicpms.view.type.emptyslotscannerview.EmptySlotAvailability2ColumnTableModel;
+import clinicpms.view.type.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.view.exceptions.CrossCheckErrorException;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
@@ -39,6 +39,8 @@ import java.util.Iterator;
 //import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.border.TitledBorder;
@@ -142,6 +144,13 @@ public class PatientView extends View{
         this.cmbSelectPatient.setSelectedIndex(-1);
         this.pnlGuardianDetails.setEnabled(false);
         this.cmbIsGuardianAPatient.setEnabled(false);
+        
+        /**
+         * improved form closure which tracks whether any change has been made to the view
+         * contents since it was launched; so this can decide if cautionary message displayed 
+         * when form is closed (noted on development log: 30/10/2021 08:32 entry)
+         */
+        setViewStatus(false);
     }
     
     /**
@@ -167,6 +176,22 @@ public class PatientView extends View{
         this.addInternalFrameListener(internalFrameAdapter);
         this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
     }
+    
+    /**
+     * Update logged at 30/10/2021 08:32
+     * The DocumentListener tracks any change made to any JTextField on form
+     */
+    DocumentListener documentListener = new DocumentListener() {
+        public void changedUpdate(DocumentEvent documentEvent) {
+          setViewStatus(true);
+        }
+        public void insertUpdate(DocumentEvent documentEvent) {
+          setViewStatus(true);
+        }
+        public void removeUpdate(DocumentEvent documentEvent) {
+          setViewStatus(true);
+        } 
+    };
     private void populatePatientSelector(JComboBox<EntityDescriptor.Patient> selector){
         DefaultComboBoxModel<EntityDescriptor.Patient> model = 
                 new DefaultComboBoxModel<>();
@@ -220,6 +245,13 @@ public class PatientView extends View{
             initialisePatientViewComponentFromED(); 
             String frameTitle = getEntityDescriptor().getPatient().toString();
             this.setTitle(frameTitle);
+            
+            /**
+             * Update logged at 30/10/2021 08:32
+             * inherited view status (set if any changes have been made to form since its initialisation)
+             * is initialised to false
+             */
+            setViewStatus(false);
         }
         else if (e.getPropertyName().equals(
                 PatientViewControllerPropertyEvent.NULL_PATIENT_RECEIVED.toString())){
@@ -229,12 +261,19 @@ public class PatientView extends View{
             initialisePatientViewComponentFromED();
             this.setTitle("Patient view");
             
+            /**
+             * Update logged at 30/10/2021 08:32
+             * inherited view status (set if any changes have been made to form since its initialisation)
+             * is initialised to false
+             */
+            setViewStatus(false);
         }
         else if (e.getPropertyName().equals(
                 PatientViewControllerPropertyEvent.PATIENTS_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populatePatientSelector(this.cmbSelectPatient);
             populatePatientSelector(this.cmbSelectGuardian);
+            
         }
         
         /**
@@ -995,6 +1034,8 @@ public class PatientView extends View{
 
         lblSurname.setText("Surname");
 
+        txtSurname.getDocument().addDocumentListener(documentListener);
+
         jblForenames.setText("Forenames");
 
         txtForenames.addActionListener(new java.awt.event.ActionListener() {
@@ -1531,22 +1572,40 @@ public class PatientView extends View{
     }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
 
     private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
-        String[] options = {"Yes", "No"};
-        int close = JOptionPane.showOptionDialog(this,
-            "Any changes to patient record will be lost. Cancel anyway?",null,
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.INFORMATION_MESSAGE,
-            null,
-            options,
-            null);
-        if (close == JOptionPane.YES_OPTION){
+        /**
+         * update logged at 30/10/2021 08:32 ensures cautionary dialog only displayed 
+         * if a change has been made in the view since its launched
+         */
+        if (getViewStatus()){
+            String[] options = {"Yes", "No"};
+            int close = JOptionPane.showOptionDialog(this,
+                "Any changes to patient record will be lost. Cancel anyway?",null,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                null);
+            if (close == JOptionPane.YES_OPTION){
+                try{
+                    /**
+                    * setClosed will fire INTERNAL_FRAME_CLOSED event for the
+                    * listener to send ActionEvent to the view controller
+                    */
+                    this.setClosed(true);
+                }
+                catch (PropertyVetoException e){
+                    //UnspecifiedError action
+                }
+            }   
+        }
+        else {
             try{
-                /**
-                * setClosed will fire INTERNAL_FRAME_CLOSED event for the
-                * listener to send ActionEvent to the view controller
-                */
-                this.setClosed(true);
-            }
+                    /**
+                    * setClosed will fire INTERNAL_FRAME_CLOSED event for the
+                    * listener to send ActionEvent to the view controller
+                    */
+                    this.setClosed(true);
+                }
             catch (PropertyVetoException e){
                 //UnspecifiedError action
             }

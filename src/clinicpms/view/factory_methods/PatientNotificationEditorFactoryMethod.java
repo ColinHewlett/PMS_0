@@ -8,7 +8,7 @@ package clinicpms.view.factory_methods;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
-import clinicpms.view.type.patientnotificationeditorview.PatientNotificationEditorModalViewer;
+import clinicpms.view.type.patient_notification_editor_view.PatientNotificationEditorModalViewer;
 import java.awt.event.ActionListener;
 
 /**

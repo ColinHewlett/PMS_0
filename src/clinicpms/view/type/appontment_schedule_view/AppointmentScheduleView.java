@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.type.appontmentscheduleview;
+package clinicpms.view.type.appontment_schedule_view;
 import clinicpms.view.AppointmentDateVetoPolicy;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.AppointmentsTableLocalDateTimeRenderer;
 import clinicpms.view.AppointmentsTableDurationRenderer;
-import clinicpms.view.type.emptyslotscannerview.EmptySlotAvailability2ColumnTableModel;
+import clinicpms.view.type.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.controller.ViewController.AppointmentViewControllerActionEvent;
@@ -553,7 +553,7 @@ public class AppointmentScheduleView extends View{
             .addGroup(pnlControlsLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
@@ -690,7 +690,7 @@ public class AppointmentScheduleView extends View{
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
-        initialiseEDRequestFromView(-1);
+        //27/10/21 18:12 bug fix by commenting out this code line initialiseEDRequestFromView(-1);
         ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
                 AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString());

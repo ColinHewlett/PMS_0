@@ -21,6 +21,7 @@ import javax.swing.JInternalFrame;
 public abstract class View extends JInternalFrame
                            implements PropertyChangeListener,IView, IViewInternalFrameListener{
     private static Viewer viewer = null;
+    private Boolean viewChangedSinceLastSaved = false;
     
     public View(){
         super("Appointments view",true,true,true,true);
@@ -37,6 +38,14 @@ public abstract class View extends JInternalFrame
                                 PATIENT_VIEW,
                                 SCHEDULE_CONTACT_DETAILS_VIEW,
                                 SURGERY_DAY_EDITOR_VIEW}
+    
+    protected Boolean getViewStatus(){
+        return viewChangedSinceLastSaved;
+    }
+    
+    protected void setViewStatus(Boolean value){
+        viewChangedSinceLastSaved = value;
+    }
     
     public static void setViewer(Viewer value){
         viewer = value;
