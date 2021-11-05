@@ -337,6 +337,9 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtForenamesActionPerformed"/>
           </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtForenames.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lblTitle">
           <Properties>
@@ -360,6 +363,7 @@
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;TitleItem&gt;()"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="cmbTitle.addItemListener(itemListener);"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;TitleItem&gt;"/>
           </AuxValues>
         </Component>
@@ -372,8 +376,17 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtAddressLine1ActionPerformed"/>
           </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtAddressLine1.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JTextField" name="txtAddressLine2">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtAddressLine2ActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtAddressLine2.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lblTown">
           <Properties>
@@ -381,6 +394,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="txtAddressTown">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtAddressTown.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jblCounty">
           <Properties>
@@ -388,6 +404,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="txtAddressCounty">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtAddressCounty.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jblPostcode">
           <Properties>
@@ -400,6 +419,9 @@
               <Dimension value="[20, 20]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtAddressPostcode.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jblPhoneHome">
           <Properties>
@@ -407,6 +429,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="txtPhone1">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtPhone1.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jblPhone2">
           <Properties>
@@ -414,6 +439,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="txtPhone2">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txtPhone2.getDocument().addDocumentListener(documentListener);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lblGender">
           <Properties>
@@ -434,6 +462,7 @@
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;GenderItem&gt;()"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="cmbGender.addItemListener(itemListener);"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;GenderItem&gt;"/>
           </AuxValues>
         </Component>
@@ -529,6 +558,7 @@
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;EntityDescriptor.Patient&gt;()"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="cmbSelectGuardian.addItemListener(itemSelectGuardianListener);"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;EntityDescriptor.Patient&gt;"/>
           </AuxValues>
         </Component>
@@ -559,6 +589,7 @@
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox&lt;YesNoItem&gt;()"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="cmbIsGuardianAPatient.addItemListener(itemListener);"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;YesNoItem&gt;"/>
           </AuxValues>
         </Component>
@@ -656,7 +687,7 @@
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="txtRecallDate.setHorizontalAlignment(JTextField.CENTER);"/>
-                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextField();&#xa;txtRecallDate.setEditable(false);&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextField();&#xa;txtRecallDate.getDocument().addDocumentListener(documentListener);&#xa;txtRecallDate.setEditable(false);&#xa;"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -703,6 +734,9 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="recall frequency (months)"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="final JTextField jtf = ((JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();&#xa;jtf.getDocument().addDocumentListener(documentListener);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
@@ -763,6 +797,7 @@
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="txaPatientNotes.setFont(new Font(&quot;Tahoma&quot;,Font.PLAIN,11));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="txaPatientNotes.getDocument().addDocumentListener(documentListener);"/>
               </AuxValues>
             </Component>
           </SubComponents>

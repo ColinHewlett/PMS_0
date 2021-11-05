@@ -39,6 +39,8 @@ import java.util.Iterator;
 //import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.InternalFrameAdapter;
@@ -144,13 +146,6 @@ public class PatientView extends View{
         this.cmbSelectPatient.setSelectedIndex(-1);
         this.pnlGuardianDetails.setEnabled(false);
         this.cmbIsGuardianAPatient.setEnabled(false);
-        
-        /**
-         * improved form closure which tracks whether any change has been made to the view
-         * contents since it was launched; so this can decide if cautionary message displayed 
-         * when form is closed (noted on development log: 30/10/2021 08:32 entry)
-         */
-        setViewStatus(false);
     }
     
     /**
@@ -177,6 +172,26 @@ public class PatientView extends View{
         this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
     }
     
+    ItemListener itemListener = new ItemListener() {
+        public void itemStateChanged(ItemEvent e){
+            setViewStatus(true);
+        }
+    };
+    
+    /**
+     * Update logged at 30/10/2021 08:32
+     * The ItemListener tracks any change made in cmbSelectGuardian
+     * if cmbIsGuardianAPatient has "Yes" selected
+     */
+    ItemListener itemSelectGuardianListener = new ItemListener(){
+        public void itemStateChanged(ItemEvent e){
+            if (String.valueOf(cmbIsGuardianAPatient.getSelectedItem()).equals("Yes")){
+                if (cmbIsGuardianAPatient.getSelectedIndex() == -1) setViewStatus(false);
+                else setViewStatus(true);
+            }
+            else setViewStatus(false); 
+        }  
+    };
     /**
      * Update logged at 30/10/2021 08:32
      * The DocumentListener tracks any change made to any JTextField on form
@@ -975,6 +990,7 @@ public class PatientView extends View{
 
         recallDatePicker = new com.github.lgooddatepicker.components.DatePicker(dateSettings);
         txtRecallDate = new javax.swing.JTextField();
+        txtRecallDate.getDocument().addDocumentListener(documentListener);
         txtRecallDate.setEditable(false);
         ;
         jPanel4 = new javax.swing.JPanel();
@@ -1038,6 +1054,7 @@ public class PatientView extends View{
 
         jblForenames.setText("Forenames");
 
+        txtForenames.getDocument().addDocumentListener(documentListener);
         txtForenames.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtForenamesActionPerformed(evt);
@@ -1046,6 +1063,7 @@ public class PatientView extends View{
 
         lblTitle.setText("Title");
 
+        cmbTitle.addItemListener(itemListener);
         cmbTitle.setEditable(true);
         cmbTitle.setModel(new javax.swing.DefaultComboBoxModel<>(TitleItem.values()));
         cmbTitle.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1057,26 +1075,44 @@ public class PatientView extends View{
 
         lblAddress.setText("Address");
 
+        txtAddressLine1.getDocument().addDocumentListener(documentListener);
         txtAddressLine1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtAddressLine1ActionPerformed(evt);
             }
         });
 
+        txtAddressLine2.getDocument().addDocumentListener(documentListener);
+        txtAddressLine2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAddressLine2ActionPerformed(evt);
+            }
+        });
+
         lblTown.setText("Town");
+
+        txtAddressTown.getDocument().addDocumentListener(documentListener);
 
         jblCounty.setText("County");
 
+        txtAddressCounty.getDocument().addDocumentListener(documentListener);
+
         jblPostcode.setText("Postcode");
 
+        txtAddressPostcode.getDocument().addDocumentListener(documentListener);
         txtAddressPostcode.setPreferredSize(new java.awt.Dimension(20, 20));
 
         jblPhoneHome.setText("Phone (1)");
 
+        txtPhone1.getDocument().addDocumentListener(documentListener);
+
         jblPhone2.setText("Phone (2)");
+
+        txtPhone2.getDocument().addDocumentListener(documentListener);
 
         lblGender.setText("Gender");
 
+        cmbGender.addItemListener(itemListener);
         cmbGender.setEditable(true);
         cmbGender.setModel(new javax.swing.DefaultComboBoxModel<>(GenderItem.values()));
         cmbGender.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1206,6 +1242,7 @@ public class PatientView extends View{
 
         pnlGuardianDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Guardian details (patient < 18)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
+        cmbSelectGuardian.addItemListener(itemSelectGuardianListener);
         cmbSelectGuardian.setEditable(false);
         cmbSelectGuardian.setModel(new DefaultComboBoxModel<EntityDescriptor.Patient>());
         cmbSelectGuardian.setMinimumSize(new java.awt.Dimension(175, 22));
@@ -1220,6 +1257,7 @@ public class PatientView extends View{
 
         lblGuardianIsAPatient.setText("Guardian is a patient?");
 
+        cmbIsGuardianAPatient.addItemListener(itemListener);
         cmbIsGuardianAPatient.setEditable(true);
         cmbIsGuardianAPatient.setModel(new javax.swing.DefaultComboBoxModel<YesNoItem>(YesNoItem.values()));
         cmbIsGuardianAPatient.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1299,6 +1337,8 @@ public class PatientView extends View{
 
         spnDentalRecallFrequency.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         spnDentalRecallFrequency.setToolTipText("recall frequency (months)");
+        final JTextField jtf = ((JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();
+        jtf.getDocument().addDocumentListener(documentListener);
 
         jLabel2.setText("months");
 
@@ -1346,6 +1386,7 @@ public class PatientView extends View{
 
         jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Notes", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
+        txaPatientNotes.getDocument().addDocumentListener(documentListener);
         txaPatientNotes.setColumns(20);
         txaPatientNotes.setLineWrap(true);
         txaPatientNotes.setRows(5);
@@ -1535,23 +1576,36 @@ public class PatientView extends View{
         /**
          * check at least following fields are not blank
          * -- gender, surname and phone 1
+         * -- check also if 
          */
-        if (this.cmbGender.getSelectedIndex()==-1){
+        boolean errorOnExit = false;
+        if (String.valueOf(cmbIsGuardianAPatient.getSelectedItem()).equals("Yes")){
+            if (this.cmbSelectGuardian.getSelectedIndex() == -1){
+                JOptionPane.showMessageDialog(this, "Patient guardian has not been specified");
+                errorOnExit = true;
+            }
+        }
+        else if (this.cmbGender.getSelectedIndex()==-1){
             JOptionPane.showMessageDialog(this, "Patient gender must be specified");
+            errorOnExit = true;
         }
         else if (this.getSurname()==null){
             JOptionPane.showMessageDialog(this, "Patient surname must be specified");
+            errorOnExit = true;
         }
         else if (this.getSurname().isEmpty()){
             JOptionPane.showMessageDialog(this, "Patient surname must be specified");
+            errorOnExit = true;
         }
         else if (this.getPhone1()==null){
             JOptionPane.showMessageDialog(this, "Patient phone 1 must be specified");
+            errorOnExit = true;
         }
         else if (this.getPhone1().isEmpty()){
             JOptionPane.showMessageDialog(this, "Patient phone 1 must be specified");
+            errorOnExit = true;
         }
-        else{
+        if (!errorOnExit){
             ActionEvent actionEvent = null;
             initialiseEntityFromView();
             switch (getViewMode()){
@@ -1568,7 +1622,14 @@ public class PatientView extends View{
                     this.getMyController().actionPerformed(actionEvent);
                     break;
             }
+            txtAddressLine1.getDocument().addDocumentListener(documentListener);
         }
+        /**
+             * Update logged at 30/10/2021 08:32
+             * inherited view status (set if any changes have been made to form since its initialisation)
+             * is initialised to post a successful save of changes
+             */
+            setViewStatus(false);
     }//GEN-LAST:event_btnCreateUpdatePatientActionPerformed
 
     private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
@@ -1628,6 +1689,10 @@ public class PatientView extends View{
             this.getMyController().actionPerformed(actionEvent);
         }
     }//GEN-LAST:event_btnFetchScheduleForSelectedAppointmentActionPerformed
+
+    private void txtAddressLine2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAddressLine2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtAddressLine2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClearPatientSelection;
@@ -1698,6 +1763,12 @@ public class PatientView extends View{
     class DOBDatePickerDateChangeListener implements DateChangeListener {
         @Override
         public void dateChanged(DateChangeEvent event) {
+            /**
+             * Update logged at 30/10/2021 08:32
+             * inherited view status (set if any changes have been made to form since its initialisation)
+             * is initialised to true (date changed)
+             */
+            setViewStatus(true);
             LocalDate date = event.getNewDate();
             if (date != null) {
                 lblAge.setText("(" + String.valueOf(getAge(date)) + " yrs)");
