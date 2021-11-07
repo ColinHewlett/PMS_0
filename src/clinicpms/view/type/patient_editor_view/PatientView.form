@@ -729,13 +729,13 @@
           <SubComponents>
             <Component class="javax.swing.JSpinner" name="spnDentalRecallFrequency">
               <Properties>
-                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor" postCode="spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));">
                   <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="recall frequency (months)"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="final JTextField jtf = ((JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();&#xa;jtf.getDocument().addDocumentListener(documentListener);"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="JTextField jtf = ((javax.swing.JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();&#xa;jtf.getDocument().addDocumentListener(documentListener);"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel2">

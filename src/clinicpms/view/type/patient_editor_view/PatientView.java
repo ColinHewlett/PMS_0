@@ -129,7 +129,8 @@ public class PatientView extends View{
         initComponents();
         btnFetchScheduleForSelectedAppointment.setText(
                 "<html>Fetch schedule<br><center>for selected appointment</center></html>");
-        this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
+        //this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
+
         populatePatientSelector(this.cmbSelectPatient); 
         populatePatientSelector(this.cmbSelectGuardian);
         this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
@@ -1336,8 +1337,9 @@ public class PatientView extends View{
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Frequency "));
 
         spnDentalRecallFrequency.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
         spnDentalRecallFrequency.setToolTipText("recall frequency (months)");
-        final JTextField jtf = ((JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();
+        JTextField jtf = ((javax.swing.JSpinner.DefaultEditor)spnDentalRecallFrequency.getEditor()).getTextField();
         jtf.getDocument().addDocumentListener(documentListener);
 
         jLabel2.setText("months");
