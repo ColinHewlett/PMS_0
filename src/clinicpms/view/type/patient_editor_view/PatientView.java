@@ -147,7 +147,7 @@ public class PatientView extends View{
         this.cmbSelectPatient.setSelectedIndex(-1);
         this.pnlGuardianDetails.setEnabled(false);
         this.cmbIsGuardianAPatient.setEnabled(false);
-    }
+    };
     
     /**
      * Establish an InternalFrameListener for when the view is closed 
@@ -176,6 +176,29 @@ public class PatientView extends View{
     ItemListener itemListener = new ItemListener() {
         public void itemStateChanged(ItemEvent e){
             setViewStatus(true);
+        }
+    };
+    
+    /**
+     * 07/11/2021 11:07 dev. log update
+     * Implements appointment double click event which displays appointment schedule day
+     * for row in appointment history table that's been double clicked
+     * Mouse listener added in the initialisation code for the JTable component 
+     * in "initComponents")
+     */
+    MouseAdapter mouseListener = new MouseAdapter() {
+        public void mouseClicked(MouseEvent me) {
+            if (me.getClickCount() == 2) {     // to detect doble click events
+                if (tblAppointmentHistory.getRowCount() > 0){ //ensures there are rows in the table
+                    int row = tblAppointmentHistory.getSelectedRow();
+                    LocalDate day = ((LocalDateTime)tblAppointmentHistory.getValueAt(row,0)).toLocalDate();
+                    getEntityDescriptor().getRequest().setDay(day);
+                    ActionEvent actionEvent = new ActionEvent(
+                            this,ActionEvent.ACTION_PERFORMED,
+                            PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                    getMyController().actionPerformed(actionEvent);
+                }
+            }
         }
     };
     
@@ -1415,6 +1438,8 @@ public class PatientView extends View{
         pnlAppointmentHistory.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Appointment history (latest apppointment top of list)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         scrAppointmentHistory.setRowHeaderView(null);
+
+        tblAppointmentHistory.addMouseListener(mouseListener);
         scrAppointmentHistory.setViewportView(tblAppointmentHistory);
 
         btnFetchScheduleForSelectedAppointment.setText("selected appointment");
