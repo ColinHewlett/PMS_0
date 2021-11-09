@@ -37,7 +37,7 @@ public interface IMigrationManager {
     public void setMigrationActionDuration(Duration value);
     
 
-            int filteredAppointmentCount = 0;
+            //int filteredAppointmentCount = 0;
 
 }
 

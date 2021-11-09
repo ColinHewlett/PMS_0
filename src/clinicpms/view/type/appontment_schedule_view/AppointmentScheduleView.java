@@ -779,10 +779,16 @@ public class AppointmentScheduleView extends View{
             duration = getEntityDescriptor().getRequest().getAppointment().getData().getDuration().toMinutes();
             //duration = getEntityDescriptor().getAppointments().getData().get(row).getData().getDuration().toMinutes();
             LocalTime to = from.plusMinutes(duration);
-            name = getEntityDescriptor().getRequest().getPatient().getData().getForenames();
+            /**
+             * 09/11/2021 16:53 [1.f]log notes -> update below because getRequest().getPatient() no longer initialised 
+             * with appointee details; instead request.appointment.appointee.data is
+             */
+            name = getEntityDescriptor().getRequest().getAppointment().getAppointee().getData().getForenames();
+            //name = getEntityDescriptor().getRequest().getPatient().getData().getForenames();
             if (!name.isEmpty())name = name + " ";
+            name = name + getEntityDescriptor().getRequest().getAppointment().getAppointee().getData().getSurname();
             //name = name + patient.getData().getSurname();
-            name = name + getEntityDescriptor().getRequest().getPatient().getData().getSurname();
+            //name = name + getEntityDescriptor().getRequest().getPatient().getData().getSurname();
             from.format(DateTimeFormatter.ofPattern("HH:mm"));
             String[] options = {"Yes", "No"};
             OKToCancelAppointment = JOptionPane.showOptionDialog(this,

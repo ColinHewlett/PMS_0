@@ -225,7 +225,12 @@ public class AccessStore extends Store {
                 else {
                     appointment = value.get(0);
                     patient = new Patient(appointment.getPatient().getKey());
-                    patient = create(patient);
+                    //patient = create(patient);
+                    patient = read(patient);
+                    /**
+                     * 09/11/2021 16:53 logged "bug"
+                     * patient = create(patient); replaced with patient = read(patient)
+                     */
                     appointment.setPatient(patient);
                     getConnection().commit();
                 }
@@ -1446,6 +1451,16 @@ public class AccessStore extends Store {
             setTargetConnection(TargetConnection.CONNECTION_PMS_DB);
         }
         
+        /**
+         * Should be renamed dataMigrationReadAppointments()
+         * It differs from AccessStore::readAppointments() because that method for each 
+         * Appointment object read, reads in the associated Patient object and embeds this 
+         * in the Appointment record.However at this stage in the data migration no
+         * Patient records (table) will exist
+         *
+         * @return ArrayList<Appointment>
+         * @throws StoreException 
+         */
         private ArrayList<Appointment> readAppointments() throws StoreException{
             try{//ensure auto commit setting switched on
                 if (!getConnection().getAutoCommit()){
