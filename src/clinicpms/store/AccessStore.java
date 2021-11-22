@@ -1408,7 +1408,7 @@ public class AccessStore extends Store {
             int count = 0;
             switch (mm){ 
                 case APPOINTMENT_TABLE_DROP:
-                    AccessStore.getInstance().getMigrationManager().dropAppointmentTable();
+                        AccessStore.getInstance().getMigrationManager().dropAppointmentTable();
                     break;
                 case APPOINTMENT_TABLE_CREATE: 
                     AccessStore.getInstance().getMigrationManager().createAppointmentTable();

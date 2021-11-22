@@ -7,8 +7,8 @@ package clinicpms.view.type.schedule_contact_details_view;
 
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.type.appontment_schedule_view.AppointmentsTablePatientRenderer;
-import clinicpms.view.AppointmentsTableLocalDateTimeRenderer;
-import clinicpms.view.AppointmentsTableDurationRenderer;
+import clinicpms.view.type.appontment_schedule_view.AppointmentsTableLocalDateTimeRenderer;
+import clinicpms.view.type.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;

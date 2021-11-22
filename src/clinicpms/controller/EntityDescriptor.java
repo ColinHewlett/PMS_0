@@ -241,6 +241,13 @@ public class EntityDescriptor {
         }
         
         @Override
+        /**
+         * re-defines default format patient name display
+         * -- basically: "surname, forename"
+         * -- first letter of surname and any subsequent part is capitalised
+         * -- first letter of forename and any subsequent part is capitalised 
+         * 
+         */
         public String toString(){
             String cappedName = null;
             if (getData().getSurname().length()>0){

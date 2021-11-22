@@ -49,7 +49,7 @@ public class MigrationManagerModalViewer extends View {
     private ActionListener myController = null;
 
     private InternalFrameAdapter internalFrameAdapter = null;
-    private Store.Storage database = null;
+    private String database = null;
     private ArrayList<String> stats = null;
     
     public MigrationManagerModalViewer(View.Viewer myViewType,ActionListener myController,
@@ -170,34 +170,41 @@ public class MigrationManagerModalViewer extends View {
     private void setEntityDescriptor(EntityDescriptor value){
         this.entityDescriptor = value;
     }
-    private Store.Storage getDatabase(){
+    private String getDatabase(){
         return database;
     }
-    private void setDatabase(Store.Storage value){
+    private void setDatabase(String value){
         database = value;
     }
     
+    @Override
+    /**
+     * Update 20/11/2021 07:55
+     * -- removes dependency of this view on Store (necessary info provided by view controller)
+     */
     public void initialiseView(){
+        String[] parts;
         addInternalFrameClosingListener();
-        this.txtMigrationDatabasePath.setText(getEntityDescriptor().getMigrationDescriptor().getTarget().getData());
-        mniSelectTargetDatabase.setState(true);
-        setDatabase(Store.getStorageType());
-        if (getDatabase().equals(Store.Storage.UNDEFINED_DATABASE))
-            super.setTitle("Undefined database appointments migration");
-        else{
-            switch (getDatabase()){
-                case ACCESS:
-                    super.setTitle("Access database appointments migration"); 
-                    break;
-                case POSTGRES:
-                    super.setTitle("PostgreSQL database appointments migration");
-                    break;
-                case SQL_EXPRESS:
-                    super.setTitle("SQL Express database appointments migration");
-                    break;
-            }
+        String targetDatabase = getEntityDescriptor().getMigrationDescriptor().getTarget().getData();
+        parts = targetDatabase.split(";");
+        this.txtMigrationDatabasePath.setText(parts[0]);
+        setDatabase(parts[1]);
+        switch(parts[1]){
+            case "UNDEFINED_DATABASE":
+                targetDatabase = "Undefined database appointments migration";
+                break;
+            case "ACCESS":
+                targetDatabase = "Access target database migration";
+                break;
+            case "POSTGRES":
+                targetDatabase = "PostgreSQL target database migration";
+                break;
+            case "SQL_EXPRESS":
+                targetDatabase = "SQL Express target database migration";
+                break;      
         }
-        //super.repaint();
+        super.setTitle(targetDatabase);
+        mniSelectTargetDatabase.setState(true);
     }
     
     @Override

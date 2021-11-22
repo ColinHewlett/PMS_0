@@ -52,7 +52,8 @@ public class MigrationManagerViewController extends ViewController {
     private EntityDescriptor oldEntityDescriptor = null;
     
     /**
-     * The current location of app's persistent store (in DbLocation.accb) used to initialises EntityDescriptor sent to new Migration View
+     * The current location of app's persistent store (in DbLocation.accdb) used to initialises EntityDescriptor sent to new Migration View
+     * -- update 20/11/2021 07:55 provides view with info on target storage type
      * @param controller
      * @param desktopView
      * @throws StoreException 
@@ -62,9 +63,12 @@ public class MigrationManagerViewController extends ViewController {
         this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
         String targetPath = AccessStore.getInstance().getTargetsDatabase().read("MIGRATION_DB");
+        targetPath = targetPath + ";" + Store.getStorageType().toString(); //20/11/2021 07:55 update
         //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getMigrationDescriptor().getTarget().setData(targetPath);
+        
+        
         View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
         

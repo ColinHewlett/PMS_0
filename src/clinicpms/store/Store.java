@@ -143,6 +143,7 @@ public abstract class Store implements IStore {
 
     public static DbLocationStorex getDbLocationStore()throws StoreException{
         return DbLocationStorex.getInstance();
-    }   
+    }
+    
 }
 

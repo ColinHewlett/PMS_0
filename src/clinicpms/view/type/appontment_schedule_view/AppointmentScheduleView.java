@@ -6,8 +6,6 @@
 package clinicpms.view.type.appontment_schedule_view;
 import clinicpms.view.AppointmentDateVetoPolicy;
 import clinicpms.view.TableHeaderCellBorderRenderer;
-import clinicpms.view.AppointmentsTableLocalDateTimeRenderer;
-import clinicpms.view.AppointmentsTableDurationRenderer;
 import clinicpms.view.type.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;

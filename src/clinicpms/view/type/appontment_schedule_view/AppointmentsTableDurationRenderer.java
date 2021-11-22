@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.type.appontment_schedule_view;
 
 import java.awt.Component;
 import java.awt.Font;
