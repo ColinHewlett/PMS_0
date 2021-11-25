@@ -8,7 +8,6 @@ package clinicpms.controller;
 import clinicpms.store.stores.AccessStore;
 import clinicpms.store.stores.Store;
 import clinicpms.store.stores.Store.ExceptionType;
-import clinicpms.store.DbLocationStorex;
 import clinicpms.store.stores.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.DesktopView;
@@ -33,7 +32,7 @@ public class DesktopViewController extends ViewController{
     private DesktopView view = null;
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
-    private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
+    //private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
    
@@ -71,7 +70,7 @@ public class DesktopViewController extends ViewController{
         
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
-        databaseLocatorViewControllers = new ArrayList<>();
+        //databaseLocatorViewControllers = new ArrayList<>();
         migrationViewControllers = new ArrayList<>();
     }
     
@@ -89,9 +88,11 @@ public class DesktopViewController extends ViewController{
             case "PatientViewController":
                 doPatientViewControllerAction(e);
                 break;
+            /*
             case "DatabaseLocatorViewController":
                 doDatabaseLocatorViewControllerAction(e);
                 break;
+            */
             case "MigrationManagerViewController":
                 doMigrationManagerViewControllerAction(e);
         }
@@ -237,6 +238,7 @@ public class DesktopViewController extends ViewController{
         
     }
     
+    /*
     private void doDatabaseLocatorViewControllerAction(ActionEvent e){
         if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
@@ -248,6 +250,7 @@ public class DesktopViewController extends ViewController{
             
         }
     }
+    */
     /**
      * 
      * @param e source of event is DesktopView object
@@ -347,6 +350,7 @@ public class DesktopViewController extends ViewController{
                 */
             }
         } 
+        /*
         else if (e.getActionCommand().equals(
                 ViewController.DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString())){
             if (!databaseLocatorViewControllers.isEmpty()){
@@ -370,14 +374,11 @@ public class DesktopViewController extends ViewController{
 
                 catch (PropertyVetoException ex){
                     displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*
-                    JOptionPane.showMessageDialog(getView(),
-                                              new ErrorMessagePanel(ex.getMessage()));
-                    */
+
                 }
             }
 
-        }
+        }*/
         /**
          * user has attempted to close the desktop view
          */

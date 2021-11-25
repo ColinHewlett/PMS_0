@@ -6,7 +6,6 @@
 package clinicpms.store.stores;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
-import clinicpms.store.DbLocationStorex;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
