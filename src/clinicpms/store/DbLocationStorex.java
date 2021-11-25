@@ -5,11 +5,11 @@
  */
 package clinicpms.store;
 
-import clinicpms.store.stores.Store;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.store.stores.IMigrationManager;
+import clinicpms.store.stores.Store;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

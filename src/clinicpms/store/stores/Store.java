@@ -5,7 +5,6 @@
  */
 package clinicpms.store.stores;
 
-import clinicpms.store.DbLocationStorex;
 import clinicpms.store.stores.AccessStore;
 import clinicpms.store.stores.SQLExpressStore;
 import clinicpms.store.stores.PostgreSQLStore;
@@ -165,9 +164,6 @@ public abstract class Store implements IStore {
         storage = type;
     }
 
-    public static DbLocationStorex getDbLocationStore()throws StoreException{
-        return DbLocationStorex.getInstance();
-    }
     
     public static TargetsDatabase getTargetsDatabase() throws StoreException{
         return new TargetsDatabase();

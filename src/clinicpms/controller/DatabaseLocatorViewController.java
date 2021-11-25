@@ -158,7 +158,7 @@ public class DatabaseLocatorViewController extends ViewController {
         DbLocationStorex store = null;
         String result = null;
         try{
-            store = Store.getDbLocationStore();
+            //store = Store.getDbLocationStore();
             result = store.read();
             return result;
         }
@@ -173,7 +173,7 @@ public class DatabaseLocatorViewController extends ViewController {
         DbLocationStorex store = null;
         String result = null;
         try{
-            store = Store.getDbLocationStore();
+            //store = Store.getDbLocationStore();
             result = store.update(location);
             return result;
         }
