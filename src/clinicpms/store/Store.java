@@ -11,6 +11,8 @@ import clinicpms.store.interfaces.IStore;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -75,7 +77,16 @@ public abstract class Store implements IStore {
     private static String migrationDatabasePath = null;
     private static String pmsDatabasePath = null;
     private static TargetConnection targetConnection = null;
+    protected static Store instance;
+    private TargetsDatabase targetsDatabase = null;
     
+    /**
+     * uses the initialised storage type to create a brand new instance of 
+     * the selected storage type; which involves nullifying the current instance
+     * (if any) of the selected storage type before creating a new instance
+     * @return
+     * @throws StoreException 
+     */
     public static IStore factory()throws StoreException{
         IStore result = null;
         switch (getStorageType()){
@@ -129,8 +140,17 @@ public abstract class Store implements IStore {
         return pmsDatabasePath;
     }
     
-    public static void setPMSDatabasePath(String path){
+    /**
+     * update logged 22/11/2021 08:52
+     * the target PMS database path is initialised
+     * -- create a new instance of the selected Store using the factory method
+     * -- this to ensure the new database path takes immediate effect
+     * @param path 
+     */
+    public static void setPMSDatabasePath(String path) throws StoreException{
+        if (instance != null) instance = null;
         pmsDatabasePath = path;
+        factory();
     }
     
     public static Storage getStorageType(){
@@ -144,6 +164,99 @@ public abstract class Store implements IStore {
     public static DbLocationStorex getDbLocationStore()throws StoreException{
         return DbLocationStorex.getInstance();
     }
+    
+    public static TargetsDatabase getTargetsDatabase() throws StoreException{
+        return new TargetsDatabase();
+    }
+    
+    public static class TargetsDatabase{
+        private Connection connection = null;
+        private String message = null;
+        
+        public TargetsDatabase()throws StoreException{
+            connection = getConnection();
+            //setDatabaseURL(this.read(1));
+            Store.setMigrationDatabasePath(this.read("MIGRATION_DB"));
+            Store.setPMSDatabasePath(this.read("PMS_DB"));
+        }
+        
+        /**
+         * Store.getDatabaseLocatorPath() initialised using TARGETS_DATABASE environment variable (main method)
+         * @return
+         * @throws StoreException 
+         */
+        private Connection getConnection()throws StoreException{
+            String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
+            if (this.connection == null){
+                try{
+                    this.connection = DriverManager.getConnection(url);  
+                }
+                catch (SQLException ex){
+                    message = ex.getMessage();
+                    throw new StoreException("SQLException message -> " + message +"\n"
+                            + "StoreException message -> raised trying to connect to the DbLocationStore database",
+                    Store.ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            return this.connection;
+        }
+
+        public void closeConnection()throws StoreException{
+            try{
+                if (this.connection!=null){
+                    this.connection.close();
+                }
+            }
+            catch (SQLException ex){
+                message = "SQLException -> " + ex.getMessage() + "\n";
+                message = message + "StoreException -> raised in ProgreSQLStore::closeConnection()";
+                throw new StoreException(message, Store.ExceptionType.SQL_EXCEPTION);
+            }
+        }
+
+        /**
+         * fetches the database path in the specified row of the targets database (DbLocation.accb)
+         * @param db, Integer
+         * @return String defining the path to the selected database file
+         * @throws StoreException 
+         */
+        public String read(String db)throws StoreException{
+            String result = null;
+            String sql = "Select location from Target WHERE db = ?;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, db);
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next()){
+                    result = rs.getString("location");
+                }
+                return result;
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::read() query",
+                ExceptionType.SQL_EXCEPTION);
+            }
+
+        }
+        
+        public String update(String updatedLocation, String db)throws StoreException{
+            String sql = "UPDATE Target SET location = ? WHERE db = ?;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, updatedLocation);
+                preparedStatement.setString(2, db);
+                preparedStatement.executeUpdate();
+                return read(db);
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::update statement",
+                ExceptionType.SQL_EXCEPTION);
+            }
+        }
+    }
+    
     
 }
 

@@ -54,7 +54,8 @@ public class AccessStore extends Store {
                                 READ_PATIENT_WITH_KEY,
                                 UPDATE_PATIENT}
 
-    private static AccessStore instance;
+    //private static AccessStore instance;#
+    //private static Store instance;
     private Connection connection = null;
     private Connection migrationConnection = null;
     private Connection pmsConnection = null;
@@ -185,9 +186,17 @@ public class AccessStore extends Store {
         return databaseURL;
     }
     
+    /**
+     * 22/11/2021 19:48 update
+     * -- TargetsDatabase inner class removed 
+     * @return
+     * @throws StoreException 
+     */
+    /*
     public TargetsDatabase getTargetsDatabase() throws StoreException{
         return new TargetsDatabase();
     }
+    */
     
     public AccessStore()throws StoreException{
         connection = getConnection();
@@ -198,7 +207,7 @@ public class AccessStore extends Store {
             result = new AccessStore();
             instance = result;
         }
-        else result = instance;
+        else result = (AccessStore)instance;
         
         return result;
     }
@@ -1406,6 +1415,7 @@ public class AccessStore extends Store {
         public void action(Store.MigrationMethod mm)throws StoreException{
             setTargetConnection(TargetConnection.CONNECTION_MIGRATION_DB);
             int count = 0;
+            /**
             switch (mm){ 
                 case APPOINTMENT_TABLE_DROP:
                         AccessStore.getInstance().getMigrationManager().dropAppointmentTable();
@@ -1430,9 +1440,6 @@ public class AccessStore extends Store {
                     this.setPatientCount(count);
                     break;
                 case APPOINTMENT_TABLE_INTEGRITY_CHECK:
-                    /**
-                     * the first line in following code is new
-                     */
                     ArrayList<Appointment> the_appointments = readAppointments();
                     this.appointments = the_appointments;
                     this.setAppointmentCount(the_appointments.size());
@@ -1445,6 +1452,50 @@ public class AccessStore extends Store {
                     break;
                 case PATIENT_TABLE_TIDY: 
                     AccessStore.getInstance().getMigrationManager().migratedPatientsTidied();
+                    break;
+
+            }
+            
+            **/
+            /**
+             * log 21/11/2021 07:26 -> to improve portability of code across different storage types
+             */
+            switch (mm){ 
+                case APPOINTMENT_TABLE_DROP:
+                        dropAppointmentTable();
+                    break;
+                case APPOINTMENT_TABLE_CREATE: 
+                    createAppointmentTable();
+                    break;
+                case APPOINTMENT_TABLE_POPULATE: 
+                    insertMigratedAppointments(getAppointments());
+                    count = getAppointmentsCount();
+                    this.setAppointmentCount(count);
+                    break;
+                case PATIENT_TABLE_DROP:
+                    dropPatientTable();
+                    break;
+                case PATIENT_TABLE_CREATE:
+                    createPatientTable(); 
+                    break;
+                case PATIENT_TABLE_POPULATE: 
+                    insertMigratedPatients(getPatients());
+                    count = getPatientsCount();
+                    this.setPatientCount(count);
+                    break;
+                case APPOINTMENT_TABLE_INTEGRITY_CHECK:
+                    ArrayList<Appointment> the_appointments = readAppointments();
+                    this.appointments = the_appointments;
+                    this.setAppointmentCount(the_appointments.size());
+                    migratedAppointmentsIntegrityCheck();
+                    count = getAppointmentsCount();
+                    this.setAppointmentCount(count);
+                    break;
+                case APPOINTMENT_START_TIMES_NORMALISED:
+                    normaliseAppointmentStartTimes();
+                    break;
+                case PATIENT_TABLE_TIDY: 
+                    migratedPatientsTidied();
                     break;
 
             }

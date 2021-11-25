@@ -396,10 +396,14 @@ public class DesktopViewController extends ViewController{
              * SET_MIGRATION_DATABASE_LOCATION_REQUEST ->
              * -- configure a file chooser to select the file and folder the current setting in the TARGETS_DATABASE for the migration database
              * -- use a standard dialog to inform the user of the results of the update
+             * 
+             * 22/11/2021 19:48 update
+             * --replace "AccessStore.getInstance();" with "Store.factory();"
              */
             try{
                 if (Store.getMigrationDatabasePath()==null){
-                    AccessStore.getInstance();
+                    //AccessStore.getInstance();
+                    Store.factory();
                 }
                 String targetPath = Store.getMigrationDatabasePath();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
@@ -410,8 +414,12 @@ public class DesktopViewController extends ViewController{
                 int returnVal = chooser.showOpenDialog(getView());
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     String check1 = chooser.getSelectedFile().getPath();
-                    AccessStore.getInstance().getTargetsDatabase().update(check1,"MIGRATION_DB");
-                    Store.setMigrationDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("MIGRATION_DB"));
+                    /**
+                     * 22/11/2021 19:48 update
+                     * -- replace "AccessStore.getInstance().getTargetsDatabase()" with "Store.getTargetsDatabase"
+                     */
+                    Store.getTargetsDatabase().update(check1,"MIGRATION_DB");
+                    Store.setMigrationDatabasePath(Store.getTargetsDatabase().read("MIGRATION_DB"));
                     JOptionPane.showMessageDialog(getView(),
                             Store.getMigrationDatabasePath(),
                             "Current migration database path", 
@@ -438,7 +446,12 @@ public class DesktopViewController extends ViewController{
              */
             try{
                 if (Store.getPMSDatabasePath()==null){
-                    AccessStore.getInstance();
+                    /**
+                     * 22/11/2021 19:48 update
+                     * -- replace "AccessStore.getInstance()" with "Store.factory()"
+                     */
+                    //AccessStore.getInstance();
+                    Store.factory();
                 }
                 String targetPath = Store.getPMSDatabasePath();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
@@ -449,8 +462,15 @@ public class DesktopViewController extends ViewController{
                 int returnVal = chooser.showOpenDialog(getView());
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     String check1 = chooser.getSelectedFile().getPath();
-                    AccessStore.getInstance().getTargetsDatabase().update(check1,"PMS_DB");
-                    Store.setPMSDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("PMS_DB"));
+                    /**
+                     * 22/11/2021 19:48 update
+                     * -- replace "AccessStore.getInstance()" with "Store.getTargetDatabase"
+                     * -- replace
+                     */
+                    //AccessStore.getInstance().getTargetsDatabase().update(check1,"PMS_DB");
+                    Store.getTargetsDatabase().update(check1,"PMS_DB");
+                    //Store.setPMSDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("PMS_DB"));
+                    Store.setPMSDatabasePath(Store.getTargetsDatabase().read("PMS_DB"));
                     JOptionPane.showMessageDialog(getView(),
                             Store.getPMSDatabasePath(),
                             "Current PMS database path", 

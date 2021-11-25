@@ -62,7 +62,11 @@ public class MigrationManagerViewController extends ViewController {
         setMyController(controller);
         this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
-        String targetPath = AccessStore.getInstance().getTargetsDatabase().read("MIGRATION_DB");
+        /**
+         * 22/11/2021 19:48 update
+         * -- replace "AccessStore.getInstance().getTargetsDatabase()" with Store.getTargetsDatabase()
+         */
+        String targetPath = Store.getTargetsDatabase().read("MIGRATION_DB");
         targetPath = targetPath + ";" + Store.getStorageType().toString(); //20/11/2021 07:55 update
         //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
         setNewEntityDescriptor(new EntityDescriptor());
