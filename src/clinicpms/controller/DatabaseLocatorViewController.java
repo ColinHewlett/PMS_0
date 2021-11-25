@@ -5,11 +5,11 @@
  */
 package clinicpms.controller;
 
-import clinicpms.store.AccessStore;
-import clinicpms.store.Store;
+import clinicpms.store.stores.AccessStore;
+import clinicpms.store.stores.Store;
 import clinicpms.store.DbLocationStorex;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.interfaces.IStore;
+import clinicpms.store.stores.IStore;
 import clinicpms.view.DatabaseLocatorView;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;

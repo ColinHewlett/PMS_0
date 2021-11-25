@@ -10,12 +10,12 @@ import clinicpms.model.Patient;
 import clinicpms.view.type.migration_manager_view.MigrationManagerModalViewer;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
-import clinicpms.store.AccessStore;
-import clinicpms.store.CSVStore;
-import clinicpms.store.Store;
+import clinicpms.store.stores.AccessStore;
+import clinicpms.store.stores.migration_import_store.CSVStore;
+import clinicpms.store.stores.Store;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.interfaces.IStore;
-import clinicpms.store.interfaces.IMigrationManager;
+import clinicpms.store.stores.IStore;
+import clinicpms.store.stores.IMigrationManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

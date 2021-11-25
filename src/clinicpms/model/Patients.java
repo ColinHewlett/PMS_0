@@ -5,10 +5,10 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.CSVStore;
-import clinicpms.store.Store;
+import clinicpms.store.stores.migration_import_store.CSVStore;
+import clinicpms.store.stores.Store;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.interfaces.IStore;
+import clinicpms.store.stores.IStore;
 import java.util.ArrayList;
 
 /**

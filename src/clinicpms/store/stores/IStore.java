@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.store.interfaces;
+package clinicpms.store.stores;
 
-import clinicpms.store.Store;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointment.Category;
 import clinicpms.model.Patient;

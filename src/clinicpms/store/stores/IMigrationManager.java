@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.store.interfaces;
+package clinicpms.store.stores;
 
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
-import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
 import java.time.Duration;
 import java.util.ArrayList;

@@ -7,7 +7,7 @@ package clinicpms.view.type.migration_manager_view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
-import clinicpms.store.Store;
+import clinicpms.store.stores.Store;
 import clinicpms.view.View;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;

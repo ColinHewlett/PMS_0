@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.store;
+package clinicpms.store.stores;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
-import clinicpms.store.interfaces.IMigrationManager;
 import clinicpms.store.DbLocationStorex;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;

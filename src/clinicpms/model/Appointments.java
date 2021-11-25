@@ -7,10 +7,10 @@ package clinicpms.model;
 
 import clinicpms.model.Appointment.Category;
 import clinicpms.model.interfaces.IAppointments;
-import clinicpms.store.CSVStore;
-import clinicpms.store.Store;
+import clinicpms.store.stores.migration_import_store.CSVStore;
+import clinicpms.store.stores.Store;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.interfaces.IStore;
+import clinicpms.store.stores.IStore;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
