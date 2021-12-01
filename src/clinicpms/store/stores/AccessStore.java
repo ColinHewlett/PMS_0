@@ -32,25 +32,7 @@ import javax.swing.JOptionPane;
  * @author colin
  */
 public class AccessStore extends Store {
-    public enum AppointmentSQL   {
-                            APPOINTMENTS_COUNT,
-                            CREATE_APPOINTMENT,
-                            DELETE_APPOINTMENT_WITH_KEY,
-                            DELETE_APPOINTMENTS_WITH_PATIENT_KEY,
-                            READ_APPOINTMENTS,
-                            READ_APPOINTMENTS_FOR_DAY,
-                            READ_APPOINTMENTS_FROM_DAY,
-                            READ_APPOINTMENTS_FOR_PATIENT,
-                            READ_APPOINTMENT_WITH_KEY,
-                            READ_HIGHEST_KEY,
-                            UPDATE_APPOINTMENT}
-
-    public enum PatientSQL   {CREATE_PATIENT,
-                                PATIENTS_COUNT,
-                                READ_ALL_PATIENTS,
-                                READ_HIGHEST_KEY,
-                                READ_PATIENT_WITH_KEY,
-                                UPDATE_PATIENT}
+    
 
     //private static AccessStore instance;#
     //private static Store instance;
@@ -65,6 +47,7 @@ public class AccessStore extends Store {
     */
     
     private MigrationManager migrationManager = null;
+    private TargetsDatabaseManager targetsDatabaseManager = null;
     
     DateTimeFormatter ymdFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private void setConnection(Connection con){
@@ -82,12 +65,12 @@ public class AccessStore extends Store {
         Connection result = null;
         if (getTargetConnection()!=null){
             switch(getTargetConnection()){
-                case CONNECTION_MIGRATION_DB:
+                case MIGRATION_DB:
                     if (getMigrationDatabasePath() != null){
                         url = "jdbc:ucanaccess://" + getMigrationDatabasePath() + ";showSchema=true";
                     }
                     else{
-                        new TargetsDatabase();
+                        new TargetsDatabaseManager();
                         url = "jdbc:ucanaccess://" + getMigrationDatabasePath() + ";showSchema=true";
                     }
                     if (migrationConnection == null){
@@ -104,12 +87,12 @@ public class AccessStore extends Store {
                     }
                     result = migrationConnection;
                     break;
-                case CONNECTION_PMS_DB:
+                case PMS_DB:
                     if (getPMSDatabasePath() != null){
                         url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
                     }
                     else{
-                        new TargetsDatabase();
+                        new TargetsDatabaseManager();
                         url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
                     }
                     if (pmsConnection == null){
@@ -133,7 +116,7 @@ public class AccessStore extends Store {
                 url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
             }
             else{
-                new TargetsDatabase();
+                new TargetsDatabaseManager();
                 url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
             }
             if (pmsConnection == null){
@@ -157,12 +140,12 @@ public class AccessStore extends Store {
         String connectionName = null;
         try{
             switch(getTargetConnection()){
-                case CONNECTION_MIGRATION_DB:
+                case MIGRATION_DB:
                     if (migrationConnection!=null) {
                         connectionName = "migration database";
                         migrationConnection.close();
                     }
-                case CONNECTION_PMS_DB:
+                case PMS_DB:
                     if (migrationConnection!=null) {
                         connectionName = "PMS database";
                         pmsConnection.close();
@@ -196,9 +179,22 @@ public class AccessStore extends Store {
     }
     */
     
+    /**
+     * The constructor has one task only -> to fetch a connection to the database
+     * -- different instances of the app will maintain separate connections to the database
+     * @throws StoreException 
+     */
     public AccessStore()throws StoreException{
         connection = getConnection();
     }
+    
+    /**
+     * Singleton pattern implemented
+     * -- only if the current instance variable in Store is null is a new
+     * -- instance of the AccessStore type constructed
+     * @return
+     * @throws StoreException 
+     */
     public static AccessStore getInstance() throws StoreException{
         AccessStore result = null;
         if (instance == null) {
@@ -209,6 +205,7 @@ public class AccessStore extends Store {
         
         return result;
     }
+    
     @Override
     public Appointment create(Appointment a) throws StoreException{
         ArrayList<Appointment> value = null;
@@ -1218,14 +1215,24 @@ public class AccessStore extends Store {
         }  
     }
     
-    public class TargetsDatabase{
+    public TargetsDatabaseManager getTargetsDatabaseManager() throws StoreException{
+        if (targetsDatabaseManager == null) targetsDatabaseManager = new TargetsDatabaseManager();
+        return targetsDatabaseManager;
+    }
+
+    public MigrationManager getMigrationManager(){
+        if (migrationManager == null) migrationManager = new MigrationManager();
+        return migrationManager;
+    }
+    
+    public class TargetsDatabaseManager implements ITargetsDatabaseManager{
         private Connection connection = null;
+        private String message = null;
         
-        public TargetsDatabase()throws StoreException{
+        public TargetsDatabaseManager()throws StoreException{
             connection = getConnection();
-            //setDatabaseURL(this.read(1));
-            Store.setMigrationDatabasePath(this.read("MIGRATION_DB"));
-            Store.setPMSDatabasePath(this.read("PMS_DB"));
+            Store.setMigrationDatabasePath(this.read(TargetDatabase.MIGRATION_DB));
+            Store.setPMSDatabasePath(this.read(TargetDatabase.PMS_DB));
         }
         
         /**
@@ -1233,7 +1240,7 @@ public class AccessStore extends Store {
          * @return
          * @throws StoreException 
          */
-        private Connection getConnection()throws StoreException{
+        public Connection getConnection()throws StoreException{
             String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
             if (this.connection == null){
                 try{
@@ -1242,8 +1249,8 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     message = ex.getMessage();
                     throw new StoreException("SQLException message -> " + message +"\n"
-                            + "StoreException message -> raised trying to connect to the DbLocationStore database",
-                    Store.ExceptionType.SQL_EXCEPTION);
+                            + "StoreException message -> raised trying to connect to the DbLocationStore database using AccessStore",
+                    ExceptionType.SQL_EXCEPTION);
                 }
             }
             return this.connection;
@@ -1257,8 +1264,8 @@ public class AccessStore extends Store {
             }
             catch (SQLException ex){
                 message = "SQLException -> " + ex.getMessage() + "\n";
-                message = message + "StoreException -> raised in ProgreSQLStore::closeConnection()";
-                throw new StoreException(message, Store.ExceptionType.SQL_EXCEPTION);
+                message = message + "StoreException -> raised in AccessStore::closeConnection()";
+                throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
             }
         }
 
@@ -1268,12 +1275,12 @@ public class AccessStore extends Store {
          * @return String defining the path to the selected database file
          * @throws StoreException 
          */
-        public String read(String db)throws StoreException{
+        public String read(TargetDatabase db)throws StoreException{
             String result = null;
             String sql = "Select location from Target WHERE db = ?;";
             try{
                 PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                preparedStatement.setString(1, db);
+                preparedStatement.setString(1, db.toString());
                 ResultSet rs = preparedStatement.executeQuery();
                 if (rs.next()){
                     result = rs.getString("location");
@@ -1288,12 +1295,12 @@ public class AccessStore extends Store {
 
         }
         
-        public String update(String updatedLocation, String db)throws StoreException{
+        public String update(String updatedLocation, TargetDatabase db)throws StoreException{
             String sql = "UPDATE Target SET location = ? WHERE db = ?;";
             try{
                 PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
                 preparedStatement.setString(1, updatedLocation);
-                preparedStatement.setString(2, db);
+                preparedStatement.setString(2, db.toString());
                 preparedStatement.executeUpdate();
                 return read(db);
             }
@@ -1303,11 +1310,6 @@ public class AccessStore extends Store {
                 ExceptionType.SQL_EXCEPTION);
             }
         }
-    }
-
-    public MigrationManager getMigrationManager(){
-        if (migrationManager == null) migrationManager = new MigrationManager();
-        return migrationManager;
     }
     
     public class MigrationManager implements IMigrationManager{
@@ -1411,50 +1413,9 @@ public class AccessStore extends Store {
          */
         @Override
         public void action(Store.MigrationMethod mm)throws StoreException{
-            setTargetConnection(TargetConnection.CONNECTION_MIGRATION_DB);
+            setTargetConnection(TargetDatabase.MIGRATION_DB);
             int count = 0;
-            /**
-            switch (mm){ 
-                case APPOINTMENT_TABLE_DROP:
-                        AccessStore.getInstance().getMigrationManager().dropAppointmentTable();
-                    break;
-                case APPOINTMENT_TABLE_CREATE: 
-                    AccessStore.getInstance().getMigrationManager().createAppointmentTable();
-                    break;
-                case APPOINTMENT_TABLE_POPULATE: 
-                    AccessStore.getInstance().getMigrationManager().insertMigratedAppointments(getAppointments());
-                    count = AccessStore.getInstance().getMigrationManager().getAppointmentsCount();
-                    this.setAppointmentCount(count);
-                    break;
-                case PATIENT_TABLE_DROP:
-                    AccessStore.getInstance().getMigrationManager().dropPatientTable();
-                    break;
-                case PATIENT_TABLE_CREATE:
-                    AccessStore.getInstance().getMigrationManager().createPatientTable(); 
-                    break;
-                case PATIENT_TABLE_POPULATE: 
-                    AccessStore.getInstance().getMigrationManager().insertMigratedPatients(getPatients());
-                    count = AccessStore.getInstance().getMigrationManager().getPatientsCount();
-                    this.setPatientCount(count);
-                    break;
-                case APPOINTMENT_TABLE_INTEGRITY_CHECK:
-                    ArrayList<Appointment> the_appointments = readAppointments();
-                    this.appointments = the_appointments;
-                    this.setAppointmentCount(the_appointments.size());
-                    AccessStore.getInstance().getMigrationManager().migratedAppointmentsIntegrityCheck();
-                    count = AccessStore.getInstance().getMigrationManager().getAppointmentsCount();
-                    this.setAppointmentCount(count);
-                    break;
-                case APPOINTMENT_START_TIMES_NORMALISED:
-                    AccessStore.getInstance().getMigrationManager().normaliseAppointmentStartTimes();
-                    break;
-                case PATIENT_TABLE_TIDY: 
-                    AccessStore.getInstance().getMigrationManager().migratedPatientsTidied();
-                    break;
-
-            }
             
-            **/
             /**
              * log 21/11/2021 07:26 -> to improve portability of code across different storage types
              */
@@ -1497,7 +1458,7 @@ public class AccessStore extends Store {
                     break;
 
             }
-            setTargetConnection(TargetConnection.CONNECTION_PMS_DB);
+            setTargetConnection(TargetDatabase.PMS_DB);
         }
         
         /**

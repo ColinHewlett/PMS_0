@@ -10,6 +10,8 @@ import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +43,8 @@ public class PostgreSQLStore extends Store {
     private static PostgreSQLStore instance;
     private Connection connection = null;
     private String message = null;
+    private AccessStore.MigrationManager migrationManager = null;
+    private TargetsDatabaseManager targetsDatabaseManager = null;
     
     String databaseURL = "jdbc:postgresql://localhost/ClinicPMS?user=colin";
     
@@ -134,8 +138,100 @@ public class PostgreSQLStore extends Store {
         return null;
     }
     
+    public class TargetsDatabaseManager implements ITargetsDatabaseManager{
+        private Connection connection = null;
+        private String message = null;
+        
+        public TargetsDatabaseManager()throws StoreException{
+            connection = getConnection();
+            Store.setMigrationDatabasePath(this.read(TargetDatabase.MIGRATION_DB));
+            Store.setPMSDatabasePath(this.read(TargetDatabase.PMS_DB));
+        }
+        
+        /**
+         * Store.getDatabaseLocatorPath() initialised using TARGETS_DATABASE environment variable (main method)
+         * @return
+         * @throws StoreException 
+         */
+        public Connection getConnection()throws StoreException{
+            String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
+            if (this.connection == null){
+                try{
+                    this.connection = DriverManager.getConnection(url);  
+                }
+                catch (SQLException ex){
+                    message = ex.getMessage();
+                    throw new StoreException("SQLException message -> " + message +"\n"
+                            + "StoreException message -> raised trying to connect to the DbLocationStore database using AccessStore",
+                    ExceptionType.SQL_EXCEPTION);
+                }
+            }
+            return this.connection;
+        }
+
+        public void closeConnection()throws StoreException{
+            try{
+                if (this.connection!=null){
+                    this.connection.close();
+                }
+            }
+            catch (SQLException ex){
+                message = "SQLException -> " + ex.getMessage() + "\n";
+                message = message + "StoreException -> raised in AccessStore::closeConnection()";
+                throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
+            }
+        }
+
+        /**
+         * fetches the database path in the specified row of the targets database (DbLocation.accb)
+         * @param db, Integer
+         * @return String defining the path to the selected database file
+         * @throws StoreException 
+         */
+        public String read(TargetDatabase db)throws StoreException{
+            String result = null;
+            String sql = "Select location from Target WHERE db = ?;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, db.toString());
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next()){
+                    result = rs.getString("location");
+                }
+                return result;
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::read() query",
+                ExceptionType.SQL_EXCEPTION);
+            }
+
+        }
+        
+        public String update(String updatedLocation, TargetDatabase db)throws StoreException{
+            String sql = "UPDATE Target SET location = ? WHERE db = ?;";
+            try{
+                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
+                preparedStatement.setString(1, updatedLocation);
+                preparedStatement.setString(2, db.toString());
+                preparedStatement.executeUpdate();
+                return read(db);
+            }
+            catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                 + "StoreException message -> exception raised during DbLocationStore::update statement",
+                ExceptionType.SQL_EXCEPTION);
+            }
+        }
+    }
+    
     @Override
     public IMigrationManager getMigrationManager(){
         return null;
+    }
+    
+    public TargetsDatabaseManager getTargetsDatabaseManager() throws StoreException{
+        if (targetsDatabaseManager == null) targetsDatabaseManager = new TargetsDatabaseManager();
+        return targetsDatabaseManager;
     }
 }

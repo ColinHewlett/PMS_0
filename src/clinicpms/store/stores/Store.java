@@ -5,6 +5,7 @@
  */
 package clinicpms.store.stores;
 
+import clinicpms.store.stores.Store.TargetDatabase;
 import clinicpms.store.stores.AccessStore;
 import clinicpms.store.stores.SQLExpressStore;
 import clinicpms.store.stores.PostgreSQLStore;
@@ -27,40 +28,6 @@ import java.util.Comparator;
  * @author colin
  */
 public abstract class Store implements IStore {
-    public enum MigrationMethod   { APPOINTMENTS_COUNT,
-                                    APPOINTMENT_TABLE_CREATE,
-                                    APPOINTMENT_TABLE_DROP,
-                                    APPOINTMENT_TABLE_POPULATE,
-                                    APPOINTMENT_TABLE_INTEGRITY_CHECK,
-                                    APPOINTMENT_START_TIMES_NORMALISED,
-                                    PATIENTS_COUNT,
-                                    PATIENT_TABLE_CREATE,
-                                    PATIENT_TABLE_DROP,
-                                    PATIENT_TABLE_POPULATE,
-                                    PATIENT_TABLE_TIDY
-                                  }
-    public enum CSVMigrationMethod  {   CSV_APPOINTMENT_FILE_CONVERTER,
-                                        CSV_MIGRATION_INTEGRITY_PROCESS,
-                                        CSV_PATIENT_FILE_CONVERTER,
-                                        ACCESS_PATIENT_PREPROCESS
-                                    }
-    
-    public enum MigrationAppointmentSQL {
-                            APPOINTMENT_TABLE_CREATE,
-                            APPOINTMENT_TABLE_DROP,
-                            APPOINTMENT_START_TIME_NORMALISED}
-    
-    public enum MigrationPatientSQL {
-                            PATIENT_TABLE_CREATE,
-                            PATIENT_TABLE_DROP}
-     
-    public enum Storage{ACCESS, 
-                        CSV,
-                        POSTGRES,
-                        SQL_EXPRESS,
-                        UNDEFINED_DATABASE}
-    
-    public enum TargetConnection{CONNECTION_MIGRATION_DB, CONNECTION_PMS_DB}
     
     public enum ExceptionType {  APPOINTEE_NOT_FOUND_EXCEPTION,
                                  IO_EXCEPTION,
@@ -74,19 +41,78 @@ public abstract class Store implements IStore {
                                  STORE_EXCEPTION,
                                  UNDEFINED_DATABASE}
     
+    public enum MigrationMethod   { APPOINTMENTS_COUNT,
+                                    APPOINTMENT_TABLE_CREATE,
+                                    APPOINTMENT_TABLE_DROP,
+                                    APPOINTMENT_TABLE_POPULATE,
+                                    APPOINTMENT_TABLE_INTEGRITY_CHECK,
+                                    APPOINTMENT_START_TIMES_NORMALISED,
+                                    PATIENTS_COUNT,
+                                    PATIENT_TABLE_CREATE,
+                                    PATIENT_TABLE_DROP,
+                                    PATIENT_TABLE_POPULATE,
+                                    PATIENT_TABLE_TIDY
+                                  }
+    
+    public enum Storage{ACCESS, 
+                        CSV,
+                        POSTGRES,
+                        SQL_EXPRESS,
+                        UNDEFINED_DATABASE}
+    
+    protected enum AppointmentSQL   {
+                            APPOINTMENTS_COUNT,
+                            CREATE_APPOINTMENT,
+                            DELETE_APPOINTMENT_WITH_KEY,
+                            DELETE_APPOINTMENTS_WITH_PATIENT_KEY,
+                            READ_APPOINTMENTS,
+                            READ_APPOINTMENTS_FOR_DAY,
+                            READ_APPOINTMENTS_FROM_DAY,
+                            READ_APPOINTMENTS_FOR_PATIENT,
+                            READ_APPOINTMENT_WITH_KEY,
+                            READ_HIGHEST_KEY,
+                            UPDATE_APPOINTMENT}
+
+    protected enum PatientSQL   {CREATE_PATIENT,
+                                PATIENTS_COUNT,
+                                READ_ALL_PATIENTS,
+                                READ_HIGHEST_KEY,
+                                READ_PATIENT_WITH_KEY,
+                                UPDATE_PATIENT}
+    
+    
+    protected enum CSVMigrationMethod  {   CSV_APPOINTMENT_FILE_CONVERTER,
+                                        //CSV_MIGRATION_INTEGRITY_PROCESS,
+                                        CSV_PATIENT_FILE_CONVERTER
+                                        //ACCESS_PATIENT_PREPROCESS
+                                    }
+    
+    protected enum MigrationAppointmentSQL {
+                            APPOINTMENT_TABLE_CREATE,
+                            APPOINTMENT_TABLE_DROP,
+                            APPOINTMENT_START_TIME_NORMALISED}
+    
+    protected enum MigrationPatientSQL {
+                            PATIENT_TABLE_CREATE,
+                            PATIENT_TABLE_DROP}
+    
+    public enum TargetDatabase{MIGRATION_DB,
+                               PMS_DB}
+    
+    //public enum TargetConnection{CONNECTION_MIGRATION_DB, CONNECTION_PMS_DB}
+    
     
     private static Storage storage = null;
     private static String databaseLocatorPath = null;
     private static String migrationDatabasePath = null;
     private static String pmsDatabasePath = null;
-    private static TargetConnection targetConnection = null;
+    private static TargetDatabase targetConnection = null;
     protected static Store instance;
-    private TargetsDatabase targetsDatabase = null;
+    //private TargetsDatabase targetsDatabase = null;
     
     /**
      * uses the initialised storage type to create a brand new instance of 
-     * the selected storage type; which involves nullifying the current instance
-     * (if any) of the selected storage type before creating a new instance
+     * the selected storage type
      * @return
      * @throws StoreException 
      */
@@ -111,11 +137,16 @@ public abstract class Store implements IStore {
         return result;
     }
     
-    public static void setTargetConnection(TargetConnection value){
+    /**
+     * The TargetConnection getter/setter maintains at all times which datatabase,
+     * the PMS or Migration database, should be accessed by the app
+     * @param value 
+     */
+    public static void setTargetConnection(TargetDatabase value){
         targetConnection = value;
     }
     
-    public static TargetConnection getTargetConnection(){
+    public static TargetDatabase getTargetConnection(){
         return targetConnection;
     }
     
@@ -164,7 +195,7 @@ public abstract class Store implements IStore {
         storage = type;
     }
 
-    
+    /*
     public static TargetsDatabase getTargetsDatabase() throws StoreException{
         return new TargetsDatabase();
     }
@@ -179,12 +210,7 @@ public abstract class Store implements IStore {
             Store.setMigrationDatabasePath(this.read("MIGRATION_DB"));
             Store.setPMSDatabasePath(this.read("PMS_DB"));
         }
-        
-        /**
-         * Store.getDatabaseLocatorPath() initialised using TARGETS_DATABASE environment variable (main method)
-         * @return
-         * @throws StoreException 
-         */
+
         private Connection getConnection()throws StoreException{
             String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
             if (this.connection == null){
@@ -214,12 +240,6 @@ public abstract class Store implements IStore {
             }
         }
 
-        /**
-         * fetches the database path in the specified row of the targets database (DbLocation.accb)
-         * @param db, Integer
-         * @return String defining the path to the selected database file
-         * @throws StoreException 
-         */
         public String read(String db)throws StoreException{
             String result = null;
             String sql = "Select location from Target WHERE db = ?;";
@@ -257,6 +277,6 @@ public abstract class Store implements IStore {
         }
     }
     
-    
+    */
 }
 

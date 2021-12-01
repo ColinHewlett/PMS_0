@@ -5,8 +5,10 @@
  */
 package clinicpms.controller;
 
+import clinicpms.store.stores.Store.TargetDatabase;
 import clinicpms.store.stores.AccessStore;
 import clinicpms.store.stores.Store;
+import clinicpms.store.stores.IStore;
 import clinicpms.store.stores.Store.ExceptionType;
 import clinicpms.store.stores.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
@@ -419,8 +421,9 @@ public class DesktopViewController extends ViewController{
                      * 22/11/2021 19:48 update
                      * -- replace "AccessStore.getInstance().getTargetsDatabase()" with "Store.getTargetsDatabase"
                      */
-                    Store.getTargetsDatabase().update(check1,"MIGRATION_DB");
-                    Store.setMigrationDatabasePath(Store.getTargetsDatabase().read("MIGRATION_DB"));
+                    IStore store = Store.factory();
+                    store.getTargetsDatabaseManager().update(check1,TargetDatabase.MIGRATION_DB);
+                    Store.setMigrationDatabasePath(store.getTargetsDatabaseManager().read(TargetDatabase.MIGRATION_DB));
                     JOptionPane.showMessageDialog(getView(),
                             Store.getMigrationDatabasePath(),
                             "Current migration database path", 
@@ -469,9 +472,10 @@ public class DesktopViewController extends ViewController{
                      * -- replace
                      */
                     //AccessStore.getInstance().getTargetsDatabase().update(check1,"PMS_DB");
-                    Store.getTargetsDatabase().update(check1,"PMS_DB");
+                    IStore store = Store.factory(); 
+                    store.getTargetsDatabaseManager().update(check1,TargetDatabase.PMS_DB);
                     //Store.setPMSDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("PMS_DB"));
-                    Store.setPMSDatabasePath(Store.getTargetsDatabase().read("PMS_DB"));
+                    Store.setPMSDatabasePath(store.getTargetsDatabaseManager().read(TargetDatabase.PMS_DB));
                     JOptionPane.showMessageDialog(getView(),
                             Store.getPMSDatabasePath(),
                             "Current PMS database path", 

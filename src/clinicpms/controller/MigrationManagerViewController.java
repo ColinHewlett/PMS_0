@@ -13,6 +13,7 @@ import clinicpms.view.DesktopView;
 import clinicpms.store.stores.AccessStore;
 import clinicpms.store.stores.migration_import_store.CSVStore;
 import clinicpms.store.stores.Store;
+import clinicpms.store.stores.Store.TargetDatabase;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.store.stores.IStore;
 import clinicpms.store.stores.IMigrationManager;
@@ -66,7 +67,8 @@ public class MigrationManagerViewController extends ViewController {
          * 22/11/2021 19:48 update
          * -- replace "AccessStore.getInstance().getTargetsDatabase()" with Store.getTargetsDatabase()
          */
-        String targetPath = Store.getTargetsDatabase().read("MIGRATION_DB");
+        IStore store = Store.factory();
+        String targetPath = store.getTargetsDatabaseManager().read(TargetDatabase.MIGRATION_DB);
         targetPath = targetPath + ";" + Store.getStorageType().toString(); //20/11/2021 07:55 update
         //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
         setNewEntityDescriptor(new EntityDescriptor());
