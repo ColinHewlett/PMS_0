@@ -5,7 +5,7 @@
  */
 package clinicpms.store.exceptions;
 
-import clinicpms.store.stores.Store.ExceptionType;
+import clinicpms.store.Store.ExceptionType;
 
 /**
  * Wrapper for all exceptions thrown by the store, the cause of which is

@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.store.stores;
+package clinicpms.store;
 
 /**
  *
  * @author colin
  */
 import java.sql.Connection;
-import clinicpms.store.stores.Store.TargetDatabase;
+import clinicpms.store.Store.TargetDatabase;
 import clinicpms.store.exceptions.StoreException;
 
 public interface ITargetsDatabaseManager {

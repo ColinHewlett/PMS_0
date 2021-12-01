@@ -5,12 +5,12 @@
  */
 package clinicpms.controller;
 
-import clinicpms.store.stores.Store.TargetDatabase;
-import clinicpms.store.stores.AccessStore;
-import clinicpms.store.stores.Store;
-import clinicpms.store.stores.IStore;
-import clinicpms.store.stores.Store.ExceptionType;
-import clinicpms.store.stores.Store.Storage;
+import clinicpms.store.Store.TargetDatabase;
+import clinicpms.store.AccessStore;
+import clinicpms.store.Store;
+import clinicpms.store.IStore;
+import clinicpms.store.Store.ExceptionType;
+import clinicpms.store.Store.Storage;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.view.DesktopView;
 import java.awt.event.ActionEvent;

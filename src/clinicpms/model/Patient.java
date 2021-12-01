@@ -8,8 +8,8 @@
 package clinicpms.model;
 
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.stores.IStore;
-import clinicpms.store.stores.Store;
+import clinicpms.store.IStore;
+import clinicpms.store.Store;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
