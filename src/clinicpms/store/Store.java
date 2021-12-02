@@ -103,6 +103,8 @@ public abstract class Store implements IStore {
     private static String databaseLocatorPath = null;
     private static String migrationDatabasePath = null;
     private static String pmsDatabasePath = null;
+    private static String appointmentCSVPath = null;
+    private static String patientCSVPath = null;
     private static TargetDatabase targetConnection = null;
     protected static Store instance;
     //private TargetsDatabase targetsDatabase = null;
@@ -192,88 +194,20 @@ public abstract class Store implements IStore {
         storage = type;
     }
 
-    /*
-    public static TargetsDatabase getTargetsDatabase() throws StoreException{
-        return new TargetsDatabase();
+    public static String getAppointmentCSVPath(){
+        return appointmentCSVPath;
     }
     
-    public static class TargetsDatabase{
-        private Connection connection = null;
-        private String message = null;
-        
-        public TargetsDatabase()throws StoreException{
-            connection = getConnection();
-            //setDatabaseURL(this.read(1));
-            Store.setMigrationDatabasePath(this.read("MIGRATION_DB"));
-            Store.setPMSDatabasePath(this.read("PMS_DB"));
-        }
-
-        private Connection getConnection()throws StoreException{
-            String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
-            if (this.connection == null){
-                try{
-                    this.connection = DriverManager.getConnection(url);  
-                }
-                catch (SQLException ex){
-                    message = ex.getMessage();
-                    throw new StoreException("SQLException message -> " + message +"\n"
-                            + "StoreException message -> raised trying to connect to the DbLocationStore database",
-                    Store.ExceptionType.SQL_EXCEPTION);
-                }
-            }
-            return this.connection;
-        }
-
-        public void closeConnection()throws StoreException{
-            try{
-                if (this.connection!=null){
-                    this.connection.close();
-                }
-            }
-            catch (SQLException ex){
-                message = "SQLException -> " + ex.getMessage() + "\n";
-                message = message + "StoreException -> raised in ProgreSQLStore::closeConnection()";
-                throw new StoreException(message, Store.ExceptionType.SQL_EXCEPTION);
-            }
-        }
-
-        public String read(String db)throws StoreException{
-            String result = null;
-            String sql = "Select location from Target WHERE db = ?;";
-            try{
-                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                preparedStatement.setString(1, db);
-                ResultSet rs = preparedStatement.executeQuery();
-                if (rs.next()){
-                    result = rs.getString("location");
-                }
-                return result;
-            }
-            catch (SQLException ex){
-                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                 + "StoreException message -> exception raised during DbLocationStore::read() query",
-                ExceptionType.SQL_EXCEPTION);
-            }
-
-        }
-        
-        public String update(String updatedLocation, String db)throws StoreException{
-            String sql = "UPDATE Target SET location = ? WHERE db = ?;";
-            try{
-                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                preparedStatement.setString(1, updatedLocation);
-                preparedStatement.setString(2, db);
-                preparedStatement.executeUpdate();
-                return read(db);
-            }
-            catch (SQLException ex){
-                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                 + "StoreException message -> exception raised during DbLocationStore::update statement",
-                ExceptionType.SQL_EXCEPTION);
-            }
-        }
+    public static String getPatientCSVPath(){
+        return patientCSVPath;
     }
     
-    */
+    public static void setAppointmentCSVPath(String value){
+        appointmentCSVPath = value;
+    }
+    
+    public static void setPatientCSVPath(String value){
+        patientCSVPath = value;
+    }
 }
 

@@ -296,9 +296,10 @@ public class MigrationManagerViewController extends ViewController {
     private void initialiseMigrationSettings()throws IOException{
         File file;
         BufferedWriter bw;
-        CSVStore.setAppointmentCSVPath(
+        Store.setAppointmentCSVPath(
                 this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
-        CSVStore.setPatientCSVPath(this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
+        Store.setPatientCSVPath(
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
 
     }
 
