@@ -227,17 +227,14 @@ public class AppointmentViewController extends ViewController{
                 message = message + "Error when closing down the SURGERY_DAYS_EDITOR view in AppointmentViewController::doSurgeryDaysEditorModalViewer()";
                 displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
-            
-            //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+
             HashMap<DayOfWeek,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             try{
                 /**
-                 * 05/12/2021 00:40 follows store.update() call with a store.read() call
+                 * 05/12/2021 09:17 follows store.update() call with a store.read() call
                  */
                 new SurgeryDays().update(surgeryDays);
                 getEntityDescriptorFromView().getRequest().setSurgeryDays(new SurgeryDays().read());
-                //IStore store = Store.factory();
-                //store.updateSurgeryDays(surgeryDays);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */

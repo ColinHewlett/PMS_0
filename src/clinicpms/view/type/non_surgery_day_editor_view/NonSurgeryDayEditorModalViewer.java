@@ -252,13 +252,18 @@ public class NonSurgeryDayEditorModalViewer extends View {
     }
 
     @Override
+    /**
+     * 05/12/2021 09:17 updates 
+     * -- the current surgery days settings are toggled and used to create a new HashMap of settings
+     * -- the new (toggled) version of the settings is then used to initialise the DatePickerSettings
+     */
     public void initialiseView(){
         HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
         HashMap<DayOfWeek,Boolean> nonSurgeryDays = new HashMap<DayOfWeek,Boolean>();
         for(Map.Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
-            nonSurgeryDays.put(entry.getKey(), entry.getValue());
+            if (entry.getValue()) nonSurgeryDays.put(entry.getKey(), Boolean.FALSE);
+            else nonSurgeryDays.put(entry.getKey(), Boolean.TRUE);    
         }
-        
         DatePickerSettings dps = dayDatePicker.getSettings();
         dps.setVetoPolicy(new AppointmentDateVetoPolicy(nonSurgeryDays));
     }
