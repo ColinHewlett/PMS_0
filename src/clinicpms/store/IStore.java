@@ -10,10 +10,13 @@ import clinicpms.model.Appointment.Category;
 import clinicpms.model.Patient;
 import com.opencsv.exceptions.CsvException;
 import clinicpms.model.Patient;
+import clinicpms.model.SurgeryDays;
 import clinicpms.store.exceptions.StoreException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.HashMap;
 
 /**
  * Defines simple interface for a CVS database to support the following breadth
@@ -39,6 +42,7 @@ public interface IStore {
     public void delete(Patient p) throws StoreException;
     public IMigrationManager getMigrationManager();
     public ITargetsDatabaseManager getTargetsDatabaseManager() throws StoreException;
+    public HashMap<DayOfWeek,Boolean> read(HashMap<DayOfWeek,Boolean> value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException;
@@ -46,7 +50,7 @@ public interface IStore {
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
     public ArrayList<Patient> readPatients() throws StoreException;
     public Dictionary<String,Boolean> readSurgeryDays() throws StoreException;
-    public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException;
+    public HashMap<DayOfWeek,Boolean> update(HashMap<DayOfWeek,Boolean> value) throws StoreException;
     public Patient update(Patient p) throws StoreException;
     public Appointment update(Appointment a) throws StoreException;
     

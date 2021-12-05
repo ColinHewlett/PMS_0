@@ -6,11 +6,12 @@
 package clinicpms.controller;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
+import java.util.HashMap;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.DayOfWeek;
 
 /**
  *
@@ -460,7 +461,7 @@ public class EntityDescriptor {
         private LocalDate day = null;
         private Duration duration = null;
         private String databaseLocation = null;
-        private Dictionary<String,Boolean> surgeryDays = null;
+        private HashMap<DayOfWeek,Boolean> surgeryDays = null;
         
 
         protected Request() {
@@ -475,11 +476,11 @@ public class EntityDescriptor {
             return patient;
         }
         
-        public void setSurgeryDays(Dictionary<String,Boolean> value){
+        public void setSurgeryDays(HashMap<DayOfWeek,Boolean> value){
             surgeryDays = value;
         }
         
-        public Dictionary<String,Boolean> getSurgeryDays(){
+        public HashMap<DayOfWeek,Boolean> getSurgeryDays(){
             return surgeryDays;
         }
         

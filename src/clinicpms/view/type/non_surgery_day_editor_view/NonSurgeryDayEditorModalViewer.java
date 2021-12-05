@@ -30,8 +30,10 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.time.LocalDate;
-import java.util.Dictionary;
+import java.time.DayOfWeek;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
@@ -251,22 +253,11 @@ public class NonSurgeryDayEditorModalViewer extends View {
 
     @Override
     public void initialiseView(){
-        Dictionary<String, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
-        Dictionary<String,Boolean> nonSurgeryDays = new Hashtable<String,Boolean>();
-        if (surgeryDays.get("Monday")) nonSurgeryDays.put("Monday", false);
-        else nonSurgeryDays.put("Monday", true);
-        if (surgeryDays.get("Tuesday")) nonSurgeryDays.put("Tuesday", false);
-        else nonSurgeryDays.put("Tuesday", true);
-        if (surgeryDays.get("Wednesday")) nonSurgeryDays.put("Wednesday", false);
-        else nonSurgeryDays.put("Wednesday", true);
-        if (surgeryDays.get("Thursday")) nonSurgeryDays.put("Thursday", false);
-        else nonSurgeryDays.put("Thursday", true);
-        if (surgeryDays.get("Friday")) nonSurgeryDays.put("Friday", false);
-        else nonSurgeryDays.put("Friday", true);
-        if (surgeryDays.get("Saturday")) nonSurgeryDays.put("Saturday", false);
-        else nonSurgeryDays.put("Saturday", true);
-        if (surgeryDays.get("Sunday")) nonSurgeryDays.put("Sunday", false);
-        else nonSurgeryDays.put("Sunday", true);
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
+        HashMap<DayOfWeek,Boolean> nonSurgeryDays = new HashMap<DayOfWeek,Boolean>();
+        for(Map.Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
+            nonSurgeryDays.put(entry.getKey(), entry.getValue());
+        }
         
         DatePickerSettings dps = dayDatePicker.getSettings();
         dps.setVetoPolicy(new AppointmentDateVetoPolicy(nonSurgeryDays));

@@ -7,13 +7,13 @@ package clinicpms.view;
 import com.github.lgooddatepicker.optionalusertools.DateVetoPolicy;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.Dictionary;
+import java.util.HashMap;
 /**
  *
  * @author colin
  */
 public class AppointmentDateVetoPolicy implements DateVetoPolicy{
-    private Dictionary<String,Boolean> surgeryDays = null;
+    private HashMap<DayOfWeek,Boolean> surgeryDays = null;
     /**
     * isDateAllowed, Return true if a date should be allowed, or false if a date should be
     * vetoed.
@@ -21,37 +21,13 @@ public class AppointmentDateVetoPolicy implements DateVetoPolicy{
     * @return boolean
     */
     
-    public AppointmentDateVetoPolicy(Dictionary<String,Boolean> surgeryDays){
+    public AppointmentDateVetoPolicy(HashMap<DayOfWeek,Boolean> surgeryDays){
         setSurgeryDays(surgeryDays);
     }
     
     @Override
     public boolean isDateAllowed(LocalDate date) {
-        String day = null;
-        switch(date.getDayOfWeek().toString()){
-            case "MONDAY":
-                day = "Monday";
-                break;
-            case "TUESDAY":
-                day = "Tuesday";
-                break;
-            case "WEDNESDAY":
-                day = "Wednesday";
-                break;
-            case "THURSDAY":
-                day = "Thursday";
-                break;
-            case "FRIDAY":
-                day = "Friday";
-                break;
-            case "SATURDAY":
-                day = "Saturday";
-                break;
-            case "SUNDAY":
-                day = "Sunday";
-                break;
-        }
-        boolean result = getSurgeryDays().get(day);
+        boolean result = getSurgeryDays().get(date.getDayOfWeek());
         return result;
     }
 
@@ -77,11 +53,11 @@ public class AppointmentDateVetoPolicy implements DateVetoPolicy{
         return day;
     }
     
-    public void setSurgeryDays(Dictionary<String,Boolean> value) {
+    public void setSurgeryDays(HashMap<DayOfWeek,Boolean> value) {
         this.surgeryDays = value;
     }
     
-    public Dictionary<String,Boolean> getSurgeryDays(){
+    public HashMap<DayOfWeek,Boolean> getSurgeryDays(){
         return this.surgeryDays;
     }
 }

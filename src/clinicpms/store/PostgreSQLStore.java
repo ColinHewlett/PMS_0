@@ -17,10 +17,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.HashMap;
 
 /**
  *
@@ -113,31 +115,53 @@ public class PostgreSQLStore extends Store {
     public Patient read(Patient p) throws StoreException{
         return null;
     }
+    
+    
+    
+    @Override
     public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException{
         return null;
     }
+    
+    @Override
     public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
         return null;
     }
+    
+    @Override
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
         return null;
     }
+    
+    @Override
     public ArrayList<Patient> readPatients() throws StoreException{
         return null;
     }
+    
+    @Override
     public Patient update(Patient p) throws StoreException{
         return null;
     }
+    
+    @Override
     public Appointment update(Appointment a) throws StoreException{
         return null;
     }
     
     @Override
-    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+    public HashMap<DayOfWeek,Boolean> update(HashMap<DayOfWeek,Boolean> value){
+        return null;
+    }
+
+    @Override
+    public HashMap<DayOfWeek,Boolean> read(HashMap<DayOfWeek,Boolean> value) throws StoreException{
         return null;
     }
     
-    @Override
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        return null;
+    }
+
     public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
         return null;
     }

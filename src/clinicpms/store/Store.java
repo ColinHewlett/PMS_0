@@ -48,9 +48,15 @@ public abstract class Store implements IStore {
                                     PATIENT_TABLE_CREATE,
                                     PATIENT_TABLE_DROP,
                                     PATIENT_TABLE_POPULATE,
-                                    PATIENT_TABLE_TIDY
+                                    PATIENT_TABLE_TIDY,
+                                    SURGERY_DAYS_TABLE_CREATE,
+                                    SURGERY_DAYS_TABLE_DROP,
+                                    DURGERY_DAYS_TABLE_READ
                                   }
     
+    public enum SurgeryDaysSQL {READ_SURGERY_DAYS,
+                                UPDATE_SURGERY_DAYS}
+
     public enum Storage{ACCESS, 
                         CSV,
                         POSTGRES,
@@ -84,14 +90,14 @@ public abstract class Store implements IStore {
                                         //ACCESS_PATIENT_PREPROCESS
                                     }
     
-    protected enum MigrationAppointmentSQL {
+    protected enum MigrationSQL {
                             APPOINTMENT_TABLE_CREATE,
                             APPOINTMENT_TABLE_DROP,
-                            APPOINTMENT_START_TIME_NORMALISED}
-    
-    protected enum MigrationPatientSQL {
+                            APPOINTMENT_START_TIME_NORMALISED,
                             PATIENT_TABLE_CREATE,
-                            PATIENT_TABLE_DROP}
+                            PATIENT_TABLE_DROP,
+                            SURGERY_DAYS_TABLE_CREATE,
+                            SURGERY_DAYS_TABLE_DROP}
     
     public enum TargetDatabase{MIGRATION_DB,
                                PMS_DB}
@@ -121,11 +127,6 @@ public abstract class Store implements IStore {
             case ACCESS: 
                 result = AccessStore.getInstance();
                 break;
-            /*
-            case CSV:
-                result = CSVStore.getInstance();
-                break;
-            */
             case POSTGRES:
                 result = PostgreSQLStore.getInstance();
                 break;

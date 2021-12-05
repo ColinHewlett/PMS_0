@@ -121,7 +121,11 @@ public class MigrationManagerViewController extends ViewController {
             String path = getEntityDescriptorFromView().getMigrationDescriptor().getTarget().getData();
             try{
                 
-                initialiseMigrationSettings();
+                //initialiseMigrationSettings();
+                Store.setAppointmentCSVPath(
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
+                Store.setPatientCSVPath(
+                        this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
                
                 /**
                  * Store factory returns the database driver  selected by a command line value
@@ -142,11 +146,13 @@ public class MigrationManagerViewController extends ViewController {
                     null,getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
             }
+            /*
             catch (IOException ex){
                JOptionPane.showMessageDialog(null,
                                           new ErrorMessagePanel(ex.getMessage())); 
 
             }
+            */
             catch (StoreException ex){
                     JOptionPane.showMessageDialog(null,
                                               new ErrorMessagePanel(ex.getMessage()));
@@ -221,8 +227,12 @@ public class MigrationManagerViewController extends ViewController {
             switch(mvr){
                 case MIGRATE_APPOINTMENTS_TO_DATABASE:{
                     start = Instant.now();
-                    ArrayList<Appointment> appointments = CSVStore.migrateAppointments();
-                    manager.setAppointments(appointments);
+                    /**
+                     * 03/12/2021 08:51 update
+                     * -- APPOINTMENT_TABLE_POPULATE starts the migration process
+                     */
+                    //ArrayList<Appointment> appointments = CSVStore.migrateAppointments();
+                    //manager.setAppointments(appointments);
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_DROP);
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_CREATE);
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_POPULATE); 
@@ -236,8 +246,12 @@ public class MigrationManagerViewController extends ViewController {
                 }
                 case MIGRATE_PATIENTS_TO_DATABASE:{
                     start = Instant.now();
-                    ArrayList<Patient> patients = CSVStore.migratePatients();
-                    manager.setPatients(patients);
+                    /**
+                     * 03/12/2021 08:51 update
+                     * -- PATIENT_TABLE_POPULATE starts the migration process
+                     */
+                    //ArrayList<Patient> patients = CSVStore.migratePatients();
+                   //manager.setPatients(patients);
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_DROP);
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_CREATE);
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_POPULATE);

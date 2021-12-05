@@ -11,6 +11,7 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
+import clinicpms.model.SurgeryDays;
 import clinicpms.store.Store;
 import clinicpms.store.exceptions.StoreException;
 import clinicpms.store.IStore;
@@ -30,7 +31,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Optional;
 import javax.swing.JInternalFrame;
@@ -84,9 +85,12 @@ public class AppointmentViewController extends ViewController{
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
         try{
+            getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
+            /**
             IStore store = Store.factory();
             Dictionary<String,Boolean> surgeryDays = store.readSurgeryDays();
             getNewEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
+            */
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
             super.centreViewOnDesktop(desktopView, view);
@@ -223,11 +227,17 @@ public class AppointmentViewController extends ViewController{
                 message = message + "Error when closing down the SURGERY_DAYS_EDITOR view in AppointmentViewController::doSurgeryDaysEditorModalViewer()";
                 displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
+            
             //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-            Dictionary<String,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
+            HashMap<DayOfWeek,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             try{
-                IStore store = Store.factory();
-                store.updateSurgeryDays(surgeryDays);
+                /**
+                 * 05/12/2021 00:40 follows store.update() call with a store.read() call
+                 */
+                new SurgeryDays().update(surgeryDays);
+                getEntityDescriptorFromView().getRequest().setSurgeryDays(new SurgeryDays().read());
+                //IStore store = Store.factory();
+                //store.updateSurgeryDays(surgeryDays);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
@@ -457,11 +467,15 @@ public class AppointmentViewController extends ViewController{
         else if (e.getActionCommand().equals(
                 AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
             try{
+                /**
+                 * 04/12/2021 09:35 update
+                 *
                 IStore store = Store.factory();
                 Dictionary<String,Boolean> d  = store.readSurgeryDays();
+                */
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDays(d);
+                getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
                 View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
@@ -482,11 +496,15 @@ public class AppointmentViewController extends ViewController{
         else if (e.getActionCommand().equals(
                 AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString())){
             try{
+                /**
+                 * 04/12/2021 09:35 update
+                 *
                 IStore store = Store.factory();
                 Dictionary<String,Boolean> d  = store.readSurgeryDays();
+                */
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDays(d);
+                getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
                 View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**

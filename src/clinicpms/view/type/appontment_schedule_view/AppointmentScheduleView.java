@@ -20,10 +20,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
+import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalTime;
 import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
@@ -103,14 +104,14 @@ public class AppointmentScheduleView extends View{
     
     private void temporarilySuspendDatePickerDateVetoPolicy(LocalDate day){
         DatePickerSettings dps = dayDatePicker.getSettings();
-        Dictionary<String, Boolean> allDaysSurgeryDays = new Hashtable<String, Boolean>();
-        allDaysSurgeryDays.put("Monday", true);
-        allDaysSurgeryDays.put("Tuesday", true);
-        allDaysSurgeryDays.put("Wednesday", true);
-        allDaysSurgeryDays.put("Thursday", true);
-        allDaysSurgeryDays.put("Friday", true);
-        allDaysSurgeryDays.put("Saturday", true);
-        allDaysSurgeryDays.put("Sunday", true);
+        HashMap<DayOfWeek, Boolean> allDaysSurgeryDays = new HashMap<DayOfWeek, Boolean>();
+        allDaysSurgeryDays.put(DayOfWeek.MONDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.TUESDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.WEDNESDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.THURSDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.FRIDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.SATURDAY, true);
+        allDaysSurgeryDays.put(DayOfWeek.SUNDAY, true);
         dps.setVetoPolicy(new AppointmentDateVetoPolicy(allDaysSurgeryDays));
         dayDatePicker.setDate(day);
         refreshAppointmentTableWithCurrentlySelectedDate();
@@ -134,14 +135,14 @@ public class AppointmentScheduleView extends View{
         //LocalDate day = vetoPolicy.getNowDateOrClosestAvailableAfterNow();
         LocalDate day = getEntityDescriptor().getRequest().getDay();
         if (!vetoPolicy.isDateAllowed(day)){
-            Dictionary<String, Boolean> allDaysSurgeryDays = new Hashtable<String, Boolean>();
-            allDaysSurgeryDays.put("Monday", true);
-            allDaysSurgeryDays.put("Tuesday", true);
-            allDaysSurgeryDays.put("Wednesday", true);
-            allDaysSurgeryDays.put("Thursday", true);
-            allDaysSurgeryDays.put("Friday", true);
-            allDaysSurgeryDays.put("Saturday", true);
-            allDaysSurgeryDays.put("Sunday", true);
+            HashMap<DayOfWeek, Boolean> allDaysSurgeryDays = new HashMap<DayOfWeek, Boolean>();
+            allDaysSurgeryDays.put(DayOfWeek.MONDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.TUESDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.WEDNESDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.THURSDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.FRIDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.SATURDAY, true);
+            allDaysSurgeryDays.put(DayOfWeek.SUNDAY, true);
             dps.setVetoPolicy(new AppointmentDateVetoPolicy(allDaysSurgeryDays));
             dayDatePicker.setDate(day);
             refreshAppointmentTableWithCurrentlySelectedDate();

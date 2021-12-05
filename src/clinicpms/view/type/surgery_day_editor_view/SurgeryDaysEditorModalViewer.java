@@ -26,12 +26,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.time.DayOfWeek;
 
 /**
  *
@@ -140,29 +142,29 @@ public class SurgeryDaysEditorModalViewer extends View {
     @Override
     public void initialiseView(){
         setTitle("Surgery days editor");
-        Dictionary<String, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
-        for (Enumeration<String>  key = surgeryDays.keys(); key.hasMoreElements();){
-            switch(key.nextElement()){
-                case "Monday":
-                    this.chkMonday.setSelected(surgeryDays.get("Monday"));
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
+        for(Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
+            switch(entry.getKey()){
+                case MONDAY:
+                    this.chkMonday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Tuesday":
-                    this.chkTuesday.setSelected(surgeryDays.get("Tuesday"));
+                case TUESDAY:
+                    this.chkTuesday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Wednesday":
-                    this.chkWednesday.setSelected(surgeryDays.get("Wednesday"));
+                case WEDNESDAY:
+                    this.chkWednesday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Thursday":
-                    this.chkThursday.setSelected(surgeryDays.get("Thursday"));
+                case THURSDAY:
+                    this.chkThursday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Friday":
-                    this.chkFriday.setSelected(surgeryDays.get("Friday"));
+                case FRIDAY:
+                    this.chkFriday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Saturday":
-                    this.chkSaturday.setSelected(surgeryDays.get("Saturday"));
+                case SATURDAY:
+                    this.chkSaturday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
-                case "Sunday":
-                    this.chkSunday.setSelected(surgeryDays.get("Sunday"));
+                case SUNDAY:
+                    this.chkSunday.setSelected(surgeryDays.get(entry.getKey()));
                     break;
             }
             
@@ -324,14 +326,14 @@ public class SurgeryDaysEditorModalViewer extends View {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        Dictionary<String,Boolean> surgeryDays = new Hashtable<String,Boolean>();
-        surgeryDays.put("Monday", this.chkMonday.isSelected());
-        surgeryDays.put("Tuesday", this.chkTuesday.isSelected());
-        surgeryDays.put("Wednesday", this.chkWednesday.isSelected());
-        surgeryDays.put("Thursday", this.chkThursday.isSelected());
-        surgeryDays.put("Friday", this.chkFriday.isSelected());
-        surgeryDays.put("Saturday", this.chkSaturday.isSelected()); 
-        surgeryDays.put("Sunday", this.chkSunday.isSelected());
+        HashMap<DayOfWeek,Boolean> surgeryDays = new HashMap<DayOfWeek,Boolean>();
+        surgeryDays.put(DayOfWeek.MONDAY, this.chkMonday.isSelected());
+        surgeryDays.put(DayOfWeek.TUESDAY, this.chkTuesday.isSelected());
+        surgeryDays.put(DayOfWeek.WEDNESDAY, this.chkWednesday.isSelected());
+        surgeryDays.put(DayOfWeek.THURSDAY, this.chkThursday.isSelected());
+        surgeryDays.put(DayOfWeek.FRIDAY, this.chkFriday.isSelected());
+        surgeryDays.put(DayOfWeek.SATURDAY, this.chkSaturday.isSelected()); 
+        surgeryDays.put(DayOfWeek.SUNDAY, this.chkSunday.isSelected());
         getEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,

@@ -9,10 +9,6 @@ import clinicpms.model.Appointment;
 import java.util.ArrayList;
 import clinicpms.model.Patient;
 import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.migration_import_store.CSVStore;
-import static clinicpms.store.migration_import_store.CSVStore.ddMMyyyyFormat;
-import static clinicpms.store.migration_import_store.CSVStore.getAppointmentCSVPath;
-import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +19,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
 /**
@@ -199,18 +196,28 @@ public class CSVReader implements ICSVReader{
     
     private ArrayList<Appointment> appointments = null;
     private ArrayList<Patient> patients = null;
+    private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     
-    private void setAppointments(ArrayList<Appointment> value){
+    private void setAppointmentRecords(ArrayList<Appointment> value){
         appointments = value;
     }
     
-    private void setPatients(ArrayList<Patient> value){
+    private ArrayList<Appointment> getAppointmentRecords(){
+        return appointments;
+    }
+    
+    private ArrayList<Patient> getPatientRecords(){
+        return patients;
+    }
+    
+    private void setPatientRecords(ArrayList<Patient> value){
         patients = value;
     }
     
     @Override
     public ArrayList<Patient> getPatients()throws StoreException{
+        setPatientRecords(new ArrayList<Patient>());
         Path patientsPath = Path.of(Store.getPatientCSVPath());
         String message = null;
         try{
@@ -221,7 +228,7 @@ public class CSVReader implements ICSVReader{
             convertToPatientsFromDBFFile(dbfPatients);
             //create csv file from patient collection
             //convertPatientsToCSV(patients);
-            return patients;
+            return getPatientRecords();
         }
         catch (java.nio.charset.MalformedInputException e){
             message = "MalformedInputException message -> " + e.getMessage() + "\n" +
@@ -244,18 +251,19 @@ public class CSVReader implements ICSVReader{
                     "on call to CSVStore::csvDBFPatientsReader";
             throw new StoreException(message, Store.ExceptionType.CSV_EXCEPTION);
         }    
-        return patients;
+        return getPatientRecords();
     }
     
     public ArrayList<Appointment> getAppointments()throws StoreException{
-        Path sourcePath = Path.of(getAppointmentCSVPath());
+        setAppointmentRecords(new ArrayList<Appointment>()); //03/12/2021 08:51 update requirement
+        Path sourcePath = Path.of(Store.getAppointmentCSVPath());
         try{
             BufferedReader appointmentReader = Files.newBufferedReader(sourcePath,StandardCharsets.ISO_8859_1);
             com.opencsv.CSVReader csvDBFAppointments = new com.opencsv.CSVReader(appointmentReader);
             List<String[]> dbfAppointments = csvDBFAppointments.readAll();
             convertToAppointmentsFromDBFFile(dbfAppointments);
             //convertAppointmentsToCSV(appointments);
-            return appointments;
+            return getAppointmentRecords();
         }
         catch (IOException e){
             String message = "IOException message -> " + e.getMessage() + "\n" +
@@ -345,8 +353,8 @@ public class CSVReader implements ICSVReader{
                                                          appointmentStartTimeRowIndex,
                                                          appointmentEndTimeRowIndex,
                                                          patientKey);
-                        appointment.setKey(appointments.size()+1);
-                        appointments.add(appointment);
+                        appointment.setKey(getAppointmentRecords().size()+1);
+                        getAppointmentRecords().add(appointment);
                         patientKey = null;
                 }
                 rowIndex++;
@@ -367,8 +375,8 @@ public class CSVReader implements ICSVReader{
                                                              appointmentStartTimeRowIndex,
                                                              appointmentEndTimeRowIndex,
                                                              patientKey);
-                            appointment.setKey(appointments.size()+1);
-                            appointments.add(appointment);
+                            appointment.setKey(getAppointmentRecords().size()+1);
+                            getAppointmentRecords().add(appointment);
                             patientKey = value;
                             appointmentStartTimeRowIndex = rowIndex;
                         }
@@ -473,7 +481,7 @@ public class CSVReader implements ICSVReader{
     }
     
     public ArrayList<Patient> convertToPatientsFromDBFFile(List<String[]> dbfPatients){
-        ArrayList<Patient> result = new ArrayList<>();
+        //ArrayList<Patient> result = new ArrayList<>();
         int message = 0;
         int count = 0;
         int size = dbfPatients.size();
@@ -685,11 +693,11 @@ public class CSVReader implements ICSVReader{
                 }
                 patient.setIsGuardianAPatient(Boolean.FALSE);
                 patient.setGuardian(null);
-                result.add(patient);  
+                patients.add(patient);  
             }
         } 
         //count = patients.size();
-        return result;
+        return patients;
     }
     
 }
