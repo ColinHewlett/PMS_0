@@ -14,7 +14,7 @@ import clinicpms.model.Patients;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
-import clinicpms.store.exceptions.StoreException;
+import clinicpms.store.StoreException;
 import java.beans.PropertyChangeSupport;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -382,7 +382,8 @@ public class PatientViewController extends ViewController {
             patient = deserialisePatientFromEDRequest();
             if (patient.getKey() == null){
                 try{
-                    patient = patient.create();
+                    patient.insert();//was patient.create()
+                    patient = patient.read();
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     initialiseNewEntityDescriptor();
                     serialisePatientToEDPatient(patient);
@@ -416,7 +417,8 @@ public class PatientViewController extends ViewController {
             patient = deserialisePatientFromEDRequest();
             if (patient.getKey() != null){
                 try{
-                    patient = patient.update();
+                    patient.update();
+                    patient = patient.read();
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     initialiseNewEntityDescriptor();
                     serialisePatientToEDPatient(patient);

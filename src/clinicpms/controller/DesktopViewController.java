@@ -5,13 +5,8 @@
  */
 package clinicpms.controller;
 
-import clinicpms.store.Store.TargetDatabase;
-import clinicpms.store.AccessStore;
-import clinicpms.store.Store;
-import clinicpms.store.IStore;
-import clinicpms.store.Store.ExceptionType;
-import clinicpms.store.Store.Storage;
-import clinicpms.store.exceptions.StoreException;
+import clinicpms.model.StoreManager;
+import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -21,8 +16,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.JFrame;
-import javax.swing.border.Border;
 import javax.swing.JOptionPane;
 
 /**
@@ -404,28 +397,43 @@ public class DesktopViewController extends ViewController{
              * --replace "AccessStore.getInstance();" with "Store.factory();"
              */
             try{
+                /**
+                 * 07/12/2021 19:17 updates
+                 */
+                /*
                 if (Store.getMigrationDatabasePath()==null){
                     //AccessStore.getInstance();
                     Store.factory();
                 }
-                String targetPath = Store.getMigrationDatabasePath();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
+                */
+                FileNameExtensionFilter filter = null;
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+                String targetPath = storeManager.getMigrationTargetStorePath();
+                String storageType = storeManager.getStorageType();
+                switch (storageType){
+                    case "ACCESS":
+                        filter = new FileNameExtensionFilter("Access database files", "accdb");
+                        break;
+                    case "POSTGRESQL":
+                        break;
+                    case "SQL_EXPRESS":
+                        filter = new FileNameExtensionFilter("SQL Express database files", "mdf");
+                }
+                
                 File path = new File(targetPath);
                 JFileChooser chooser = new JFileChooser(path);
                 chooser.setFileFilter(filter);
                 chooser.setSelectedFile(path);
                 int returnVal = chooser.showOpenDialog(getView());
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    String check1 = chooser.getSelectedFile().getPath();
+                    String updatedMigrationTargetPath = chooser.getSelectedFile().getPath();
                     /**
                      * 22/11/2021 19:48 update
                      * -- replace "AccessStore.getInstance().getTargetsDatabase()" with "Store.getTargetsDatabase"
                      */
-                    IStore store = Store.factory();
-                    store.getTargetsDatabaseManager().update(check1,TargetDatabase.MIGRATION_DB);
-                    Store.setMigrationDatabasePath(store.getTargetsDatabaseManager().read(TargetDatabase.MIGRATION_DB));
+                    storeManager.setMigrationTargetStorePath(updatedMigrationTargetPath);
                     JOptionPane.showMessageDialog(getView(),
-                            Store.getMigrationDatabasePath(),
+                            storeManager.getMigrationTargetStorePath(),
                             "Current migration database path", 
                             JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -449,15 +457,20 @@ public class DesktopViewController extends ViewController{
              * -- use a standard dialog to inform the user of the results of the update
              */
             try{
-                if (Store.getPMSDatabasePath()==null){
+                //if (Store.getPMSDatabasePath()==null){
                     /**
                      * 22/11/2021 19:48 update
                      * -- replace "AccessStore.getInstance()" with "Store.factory()"
                      */
                     //AccessStore.getInstance();
-                    Store.factory();
-                }
-                String targetPath = Store.getPMSDatabasePath();
+                    //Store.factory();
+                //}
+                //String targetPath = Store.getPMSDatabasePath();
+                /**
+                 * 07/12/2021 19:17
+                 */
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+                String targetPath = storeManager.getPMSTargetStorePath();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
                 File path = new File(targetPath);
                 JFileChooser chooser = new JFileChooser(path);
@@ -465,19 +478,13 @@ public class DesktopViewController extends ViewController{
                 chooser.setSelectedFile(path);
                 int returnVal = chooser.showOpenDialog(getView());
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    String check1 = chooser.getSelectedFile().getPath();
+                    String updatedPMSDatabasePath = chooser.getSelectedFile().getPath();
                     /**
-                     * 22/11/2021 19:48 update
-                     * -- replace "AccessStore.getInstance()" with "Store.getTargetDatabase"
-                     * -- replace
+                     * 07/12/2021 19:17
                      */
-                    //AccessStore.getInstance().getTargetsDatabase().update(check1,"PMS_DB");
-                    IStore store = Store.factory(); 
-                    store.getTargetsDatabaseManager().update(check1,TargetDatabase.PMS_DB);
-                    //Store.setPMSDatabasePath(AccessStore.getInstance().getTargetsDatabase().read("PMS_DB"));
-                    Store.setPMSDatabasePath(store.getTargetsDatabaseManager().read(TargetDatabase.PMS_DB));
+                    storeManager.setPMSTargetStorePath(updatedPMSDatabasePath);
                     JOptionPane.showMessageDialog(getView(),
-                            Store.getPMSDatabasePath(),
+                            storeManager.getPMSTargetStorePath(),
                             "Current PMS database path", 
                             JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -562,77 +569,20 @@ public class DesktopViewController extends ViewController{
      * @param args the command line arguments
      */
     public static void main(String[] args) {   
+        
+        
         boolean isCommandLineError = false;
         String usageError = null;
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
-            /**
-             * Location of the targets database (DbLocation.accb) now stored as an OS environment variable
-             */
-            String s = System.getenv("TARGETS_DATABASE");
-            Store.setDatabaseLocatorPath(System.getenv("TARGETS_DATABASE"));
-            /**
-             * checks first command line argument -> persistent store format
-             */
-            if (args.length > 0){
-                switch (args[0]){
-                    case "ACCESS":
-                        Store.setStorageType(Storage.ACCESS);
-                        break;
-                    case "CSV":
-                        Store.setStorageType(Storage.CSV);
-                        break;
-                    case "POSTGRES":
-                        Store.setStorageType(Storage.POSTGRES);
-                        break;
-                    case "SQL_EXPRESS":
-                        Store.setStorageType(Storage.SQL_EXPRESS);
-                        break;
-                    default:
-                        Store.setStorageType(Storage.UNDEFINED_DATABASE);
-                        usageError = "usage error: target database format has not been defined";
-                        isCommandLineError = true;
-                }
-            }
-            else {
-                isCommandLineError = true;
-                usageError = "usage error: expects at least 1 command line parameters which define the target persistent store format.";
-            }
-           
-            /**
-             * checks for 2nd command line argument -> if present enables access in app to data migration function
-             */
-            if (!isCommandLineError){
-                if (args.length > 1){
-                    if (args[1].equals("DATA_MIGRATION_ENABLED")){
-                        isDataMigrationOptionEnabled = true;
-                    }
-                    else isDataMigrationOptionEnabled = false;
+        
+            if (args.length == 1){
+                if (args[0].equals("DATA_MIGRATION_ENABLED")){
+                    isDataMigrationOptionEnabled = true;
                 }
                 else isDataMigrationOptionEnabled = false;
             }
-            
-             
-            /**
-             * checks second command line argument -> location of DbLocation.accb which defines persistent store location
-             */
-            /*
-            if (!isCommandLineError){
-                if (args.length > 1){
-                    String path = args[1];
-                    File targetDB = new File(path);
-                    if (!targetDB.exists()){
-                        isCommandLineError = true;
-                        usageError = "usage error: cannot locate the specified target database file";    
-                    }
-                    else Store.setDatabaseLocatorPath(args[1]);
-                }
-                else {
-                    isCommandLineError = true;
-                    usageError = "usage error: 2nd command line argument expected defining location DbLocation.accb";
-                }
-            }
-            */
+            else isDataMigrationOptionEnabled = false;
        
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
@@ -640,10 +590,6 @@ public class DesktopViewController extends ViewController{
                     break;
                 }
             }
-            /*
-            javax.swing.UIManager.getDefaults().put("TableHeader.cellBorder",new LineBorder(Color.RED,2));
-            border = javax.swing.UIManager.getBorder("TableHeader.cellBorder");
-            */
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(DesktopView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -654,22 +600,11 @@ public class DesktopViewController extends ViewController{
             java.util.logging.Logger.getLogger(DesktopView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         
-        //start PMS app if no errors processing command line
-        if (!isCommandLineError){
-            //Schedule a job for the event-dispatching thread:
-            //creating and showing this application's GUI.
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    new DesktopViewController();
-                }
-            });
-        }
-        
-        else { // or exit with usage error message
-            System.out.println(usageError);
-            System.exit(0);
-        }
-        
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new DesktopViewController();
+            }
+        });   
     }
     
     private void requestViewControllersToCloseViews(){

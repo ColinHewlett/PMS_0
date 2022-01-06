@@ -5,33 +5,21 @@
  */
 package clinicpms.controller;
 
-import clinicpms.model.Appointment;
-import clinicpms.model.Patient;
-import clinicpms.view.type.migration_manager_view.MigrationManagerModalViewer;
+import clinicpms.model.PatientTable;
+import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.AppointmentTable;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
-import clinicpms.store.AccessStore;
-import clinicpms.store.migration_import_store.CSVStore;
-import clinicpms.store.Store;
-import clinicpms.store.Store.TargetDatabase;
-import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.IStore;
-import clinicpms.store.IMigrationManager;
+import clinicpms.model.StoreManager;
+import clinicpms.store.StoreException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
@@ -67,9 +55,9 @@ public class MigrationManagerViewController extends ViewController {
          * 22/11/2021 19:48 update
          * -- replace "AccessStore.getInstance().getTargetsDatabase()" with Store.getTargetsDatabase()
          */
-        IStore store = Store.factory();
-        String targetPath = store.getTargetsDatabaseManager().read(TargetDatabase.MIGRATION_DB);
-        targetPath = targetPath + ";" + Store.getStorageType().toString(); //20/11/2021 07:55 update
+        StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+        String targetPath = storeManager.getMigrationTargetStorePath();
+        targetPath = targetPath + ";" + storeManager.getStorageType().toString(); //20/11/2021 07:55 update
         //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getMigrationDescriptor().getTarget().setData(targetPath);
@@ -112,6 +100,7 @@ public class MigrationManagerViewController extends ViewController {
         else if (e.getActionCommand().equals(
                 ViewController.MigratorViewControllerActionEvent.
                         APPOINTMENT_MIGRATOR_REQUEST.toString())){
+            
             /**
              * APPOINTMENT_MIGRATOR_REQUEST
              * -- the view's MigrationDescriptor is fetched which defines required migration action and input values for this
@@ -120,20 +109,26 @@ public class MigrationManagerViewController extends ViewController {
             setEntityDescriptorFromView(getView().getEntityDescriptor());
             String path = getEntityDescriptorFromView().getMigrationDescriptor().getTarget().getData();
             try{
-                
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
                 //initialiseMigrationSettings();
+                storeManager.setAppointmentCSVPath(
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
+                storeManager.setPatientCSVPath(
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
+                 
+                /*
                 Store.setAppointmentCSVPath(
                 this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
                 Store.setPatientCSVPath(
                         this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
-               
+               */
                 /**
                  * Store factory returns the database driver  selected by a command line value
                  */
-                IStore store = Store.factory(); 
-                IMigrationManager  manager = store.getMigrationManager();
-                this.doSelectedDataMigrationAction(
-                        getEntityDescriptorFromView().getMigrationDescriptor().getMigrationViewRequest(), manager);
+                //IStore store = Store.factory(); 
+                //IMigrationManager  manager = store.getMigrationManager();
+                doSelectedDataMigrationAction(
+                        getEntityDescriptorFromView().getMigrationDescriptor().getMigrationViewRequest());
                 
                 /**
                  * removal followed by adding the propertyChangeListener is necessary
@@ -202,6 +197,63 @@ public class MigrationManagerViewController extends ViewController {
         this.myController = myController;
     }
     
+    private void doSelectedDataMigrationAction(ViewController.MigrationViewRequest mvr){
+        Instant start;
+        Instant end;
+        Duration duration;
+        AppointmentTable appointmentTable = null;
+        PatientTable patientTable = null;
+        SurgeryDaysTable surgeryDaysTable = null;
+        try{
+            switch(mvr){
+                case MIGRATE_APPOINTMENTS_TO_DATABASE:{
+                    start = Instant.now();
+
+                    appointmentTable = new AppointmentTable();
+                    appointmentTable.drop();
+                    appointmentTable.create();
+                    appointmentTable.populate();
+
+                    end = Instant.now();
+                    duration = Duration.between(start, end);
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
+                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new AppointmentTable().count());
+                    break;
+                }
+                case MIGRATE_PATIENTS_TO_DATABASE:{
+                    start = Instant.now();
+                    
+                    patientTable = new PatientTable();
+                    patientTable.drop();
+                    patientTable.create();
+                    patientTable.populate();
+                    
+                    end = Instant.now();
+                    duration = Duration.between(start, end);
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
+                    getNewEntityDescriptor().getMigrationDescriptor().setPatientsCount(new PatientTable().count());
+                    break;
+                }
+                case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:{
+                    start = Instant.now();
+                    //manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_INTEGRITY_CHECK);
+                    appointmentTable = new AppointmentTable();
+                    appointmentTable.checkIntegrity();
+                    end = Instant.now();
+                    duration = Duration.between(start, end);
+                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new AppointmentTable().count());
+                    break;
+                }        
+            }
+        }
+        catch (StoreException ex){
+            JOptionPane.showMessageDialog(null,
+                                      new ErrorMessagePanel(ex.getMessage()));
+        }
+       
+    }
     /**
      * method performs execution of one of the following actions selected by the received MigrationViewRequest
      * -- MIGRATE_APPOINTMENTS_TO_DATABASE -> creates new Appointment table in selected database, populated by Appointment records derived from the specified appointments CSV file
@@ -219,18 +271,14 @@ public class MigrationManagerViewController extends ViewController {
      * @param mvr, MigrationViewRequest switch expression which selects action(s) to perform by the configured MigrationManager 
      * @param manager, IMigrationManager responsible for execution of selected migration action(s)
      */
-    private void doSelectedDataMigrationAction(ViewController.MigrationViewRequest mvr, IMigrationManager manager){
+    /*
+    private void doSelectedDataMigrationActionOld(ViewController.MigrationViewRequest mvr, IMigrationManager manager){
         Instant start;
         Instant end;
         Duration duration;
         try{
             switch(mvr){
                 case MIGRATE_APPOINTMENTS_TO_DATABASE:{
-                    start = Instant.now();
-                    /**
-                     * 03/12/2021 08:51 update
-                     * -- APPOINTMENT_TABLE_POPULATE starts the migration process
-                     */
                     //ArrayList<Appointment> appointments = CSVStore.migrateAppointments();
                     //manager.setAppointments(appointments);
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_DROP);
@@ -246,10 +294,7 @@ public class MigrationManagerViewController extends ViewController {
                 }
                 case MIGRATE_PATIENTS_TO_DATABASE:{
                     start = Instant.now();
-                    /**
-                     * 03/12/2021 08:51 update
-                     * -- PATIENT_TABLE_POPULATE starts the migration process
-                     */
+
                     //ArrayList<Patient> patients = CSVStore.migratePatients();
                    //manager.setPatients(patients);
                     manager.action(Store.MigrationMethod.PATIENT_TABLE_DROP);
@@ -270,14 +315,6 @@ public class MigrationManagerViewController extends ViewController {
                     //setNewMigrationDescriptor(createNewMigrationDescriptor());
                     getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
                     getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
-                    
-/*
-       MigrationDescriptor result = new MigrationDescriptor();
-       result.getAppointment().setData(getMigrationDescriptorFromView().getAppointment().getData());
-       result.getPatient().setData(getMigrationDescriptorFromView().getPatient().getData());
-       result.setTarget(getMigrationDescriptorFromView().getTarget());
-       result.setMigrationViewRequest(getMigrationDescriptorFromView().getMigrationViewRequest());
-                    */
 
                     break;
                 }
@@ -298,7 +335,7 @@ public class MigrationManagerViewController extends ViewController {
         }
        
     }
-    
+    */
     /**
      * initialiseMigrationSettings() fetchs from the view's migration descriptor 
      * -- the appointment source csv file path; this is sent to the CSVStore class responsible for the conversion to appointment objects from the CSV file
@@ -307,6 +344,7 @@ public class MigrationManagerViewController extends ViewController {
      * 
      * @throws IOException from an abortive attempt to create a file which defines the database path
      */
+    /*
     private void initialiseMigrationSettings()throws IOException{
         File file;
         BufferedWriter bw;
@@ -316,6 +354,7 @@ public class MigrationManagerViewController extends ViewController {
                 this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
 
     }
+*/
 
 }
  

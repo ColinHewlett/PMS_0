@@ -5,17 +5,18 @@
  */
 package clinicpms.store;
 
+import clinicpms.model.PatientTable;
+import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointment.Category;
+import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
-import com.opencsv.exceptions.CsvException;
-import clinicpms.model.Patient;
-import clinicpms.model.SurgeryDays;
-import clinicpms.store.exceptions.StoreException;
+import clinicpms.model.Patients;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 
 /**
@@ -32,26 +33,37 @@ import java.util.HashMap;
  * -- Appointment queries will be returned time ordered.
  * @author colin
  */
-import java.io.IOException;
-public interface IStore {
+public interface IPMSStoreAction {
 
-    public void closeConnection()throws StoreException;
-    public Appointment create(Appointment a) throws StoreException;
-    public Patient create(Patient p) throws StoreException;
+    public void checkIntegrity()throws StoreException;
+    public int countRowsIn(Appointments table)throws StoreException;
+    public int countRowsIn(Patients table)throws StoreException;
+    public void insert(Appointment a) throws StoreException;
+    public void insert(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;
     public void delete(Patient p) throws StoreException;
-    public IMigrationManager getMigrationManager();
-    public ITargetsDatabaseManager getTargetsDatabaseManager() throws StoreException;
-    public HashMap<DayOfWeek,Boolean> read(HashMap<DayOfWeek,Boolean> value) throws StoreException;
+    public SurgeryDaysValues read(SurgeryDaysValues value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
-    public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException;
+    public String read(Store.SelectedTargetStore db)throws StoreException;
+    public String readAppointmentCSVPath();
+    public ArrayList<Appointment> readAppointments() throws StoreException;
     public ArrayList<Appointment> readAppointments(Patient p, Category c) throws StoreException;
+    public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException;
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
+    public String readMigrationTargetStorePath();
+    public String readPatientCSVPath();
     public ArrayList<Patient> readPatients() throws StoreException;
-    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException;
-    public HashMap<DayOfWeek,Boolean> update(HashMap<DayOfWeek,Boolean> value) throws StoreException;
-    public Patient update(Patient p) throws StoreException;
-    public Appointment update(Appointment a) throws StoreException;
+    public String readPMSTargetStorePath();
+    public void update(Appointment a) throws StoreException;
+    public void update(SurgeryDaysValues value) throws StoreException;
+    public void update(Patient p) throws StoreException;
+    public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
+    public void updateAppointmentCSVPath(String path);
+    public void updateMigrationTargetStorePath(String path)throws StoreException;
+    public void updatePatientCSVPath(String path);
+    public void updatePMSTargetStorePath(String path)throws StoreException;
+    
+    
     
 }

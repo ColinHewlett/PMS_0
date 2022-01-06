@@ -12,15 +12,13 @@ import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.SurgeryDays;
-import clinicpms.store.Store;
-import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.IStore;
+import clinicpms.model.SurgeryDaysValues;
+import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -36,8 +34,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -86,11 +82,6 @@ public class AppointmentViewController extends ViewController{
         setNewEntityDescriptor(e);
         try{
             getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
-            /**
-            IStore store = Store.factory();
-            Dictionary<String,Boolean> surgeryDays = store.readSurgeryDays();
-            getNewEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
-            */
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
             super.centreViewOnDesktop(desktopView, view);
@@ -135,8 +126,8 @@ public class AppointmentViewController extends ViewController{
              * ------ this is used to fire a property change event to the main form on the closure of the modal form
              * 
              */
-            View view = (View)e.getSource();
-            switch(view.getMyViewType()){
+            View the_view = (View)e.getSource();
+            switch(the_view.getMyViewType()){
                 case APPOINTMENT_SCHEDULE_VIEW:
                     doAppointmentScheduleViewAction(e);
                     break;
@@ -167,6 +158,7 @@ public class AppointmentViewController extends ViewController{
     private void doScheduleContactListView(ActionEvent e){
         //SCHEDULE_CONTACT_LIST_VIEW performs no actions currently
     }
+
     
     private void doNonSurgeryDayScheduleEditorViewAction(ActionEvent e){
         /**
@@ -228,12 +220,16 @@ public class AppointmentViewController extends ViewController{
                 displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             }
 
+            //SurgeryDaysValues surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             HashMap<DayOfWeek,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             try{
                 /**
                  * 05/12/2021 09:17 follows store.update() call with a store.read() call
                  */
-                new SurgeryDays().update(surgeryDays);
+                SurgeryDaysValues surgeryDaysValues = new SurgeryDaysValues();
+                surgeryDaysValues.putAll(surgeryDays);
+                SurgeryDays the_surgeryDays = new SurgeryDays(surgeryDaysValues);
+                the_surgeryDays.update();
                 getEntityDescriptorFromView().getRequest().setSurgeryDays(new SurgeryDays().read());
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
@@ -464,12 +460,6 @@ public class AppointmentViewController extends ViewController{
         else if (e.getActionCommand().equals(
                 AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
             try{
-                /**
-                 * 04/12/2021 09:35 update
-                 *
-                IStore store = Store.factory();
-                Dictionary<String,Boolean> d  = store.readSurgeryDays();
-                */
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
@@ -493,12 +483,6 @@ public class AppointmentViewController extends ViewController{
         else if (e.getActionCommand().equals(
                 AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString())){
             try{
-                /**
-                 * 04/12/2021 09:35 update
-                 *
-                IStore store = Store.factory();
-                Dictionary<String,Boolean> d  = store.readSurgeryDays();
-                */
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
@@ -588,10 +572,13 @@ public class AppointmentViewController extends ViewController{
             }
             catch (StoreException ex){
                 String message = ex.getMessage();
-                if (ex.getErrorType().equals(Store.ExceptionType.UNDEFINED_DATABASE))
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+                /*
+                if (ex.getErrorType().toString().equals(Store.ExceptionType.UNDEFINED_DATABASE))
                     JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), message);
                 else 
                     displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+                */
             }
         }
         else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
@@ -602,9 +589,11 @@ public class AppointmentViewController extends ViewController{
              */
             if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
                 try{
+                    
                     Appointment appointment = new Appointment(
                             getEntityDescriptorFromView().getRequest().
                                     getAppointment().getData().getKey()).read();
+                    
                     ArrayList<Patient> patients = new Patients().getPatients();
                     initialiseNewEntityDescriptor();
                     serialiseAppointmentToEDAppointment(appointment);
@@ -637,7 +626,7 @@ public class AppointmentViewController extends ViewController{
             try{
                 ArrayList<Patient> patients = new Patients().getPatients();
                 serialisePatientsToEDCollection(patients);
-                Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
+                //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
                 /**
@@ -870,10 +859,12 @@ public class AppointmentViewController extends ViewController{
         if (appts.isEmpty()){
             switch (mode){
                 case CREATE:
-                    result = rSlot.create();
+                    rSlot.insert();
+                    result = rSlot.read();
                     break;
                 case UPDATE:
-                    result = rSlot.update();
+                    rSlot.update();
+                    result = rSlot.read();
                     break;
             }
         }
@@ -884,7 +875,8 @@ public class AppointmentViewController extends ViewController{
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
-                        result = rSlot.create();
+                        rSlot.insert(); //was rslot.create()
+                        result = rSlot.read();
                     }
                     break;
                 case UPDATE:
@@ -892,7 +884,8 @@ public class AppointmentViewController extends ViewController{
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
-                        result = rSlot.update();
+                        rSlot.update();
+                        result = rSlot.read();
                     }
                     break;
             }
@@ -998,7 +991,7 @@ public class AppointmentViewController extends ViewController{
                 }
                 Appointment appointment = it.next();
                 if (finalisedResult.isEmpty()&&multiDayIntervalWithNoAppointments==null){//start of procedure on entry
-                    multiDayIntervalHasStarted = true;
+                    //multiDayIntervalHasStarted = true;
                     multiDayIntervalWithNoAppointments = new Appointment();
                     multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                     multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
@@ -1007,26 +1000,29 @@ public class AppointmentViewController extends ViewController{
                 else{
                     //LocalDate appointmentDate = appointment.getStart().toLocalDate();
                     if (areTheseSlotsOnConsecutivePracticeDays(multiDayIntervalWithNoAppointments,appointment)){
-                        //while (!intervalEndDate.isEqual(appointmentDate)){
+                        if (multiDayIntervalWithNoAppointments!=null){
                             Duration d = multiDayIntervalWithNoAppointments.getDuration();
                             multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                            //intervalEndDate = intervalEndDate.plusDays(1);
-                        //}
+                        }
                     }
                     else{
-                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                        finalisedResult.add(multiDayIntervalWithNoAppointments);
-                        multiDayIntervalWithNoAppointments = new Appointment();
-                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                        if (multiDayIntervalWithNoAppointments!=null){
+                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                            finalisedResult.add(multiDayIntervalWithNoAppointments);
+                            multiDayIntervalWithNoAppointments = new Appointment();
+                            multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                            multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
+                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                        }
                     }
                 }
             }
-            Duration d = multiDayIntervalWithNoAppointments.getDuration();
-            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-            finalisedResult.add(multiDayIntervalWithNoAppointments);
+            if (multiDayIntervalWithNoAppointments!=null){
+                Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                finalisedResult.add(multiDayIntervalWithNoAppointments);
+            }
         }
         else{// this is not a scan of all day slots
             while(it.hasNext()){
@@ -1047,32 +1043,40 @@ public class AppointmentViewController extends ViewController{
                     }
                     else if (areTheseSlotsOnConsecutivePracticeDays(
                             multiDayIntervalWithNoAppointments,appointment)){
-                        duration = multiDayIntervalWithNoAppointments.getDuration();
-                        multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
+                            if (multiDayIntervalWithNoAppointments!=null){
+                                duration = multiDayIntervalWithNoAppointments.getDuration();
+                                multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
+                            }
                     }
                     else{
-                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                        finalisedResult.add(multiDayIntervalWithNoAppointments);
-                        multiDayIntervalWithNoAppointments = new Appointment();
-                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                        if (multiDayIntervalWithNoAppointments!=null){
+                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                            finalisedResult.add(multiDayIntervalWithNoAppointments);
+                            multiDayIntervalWithNoAppointments = new Appointment();
+                            multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
+                            multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
+                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                        }
                     }
                 }
                 else if (multiDayIntervalHasStarted){
-                    Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                    multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                    finalisedResult.add(multiDayIntervalWithNoAppointments);
-                    multiDayIntervalHasStarted = false;
-                    finalisedResult.add(appointment);
+                    if (multiDayIntervalWithNoAppointments!=null){
+                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                        finalisedResult.add(multiDayIntervalWithNoAppointments);
+                        multiDayIntervalHasStarted = false;
+                        finalisedResult.add(appointment);
+                    }
                 }
                 else finalisedResult.add(appointment);  
             } 
             if (multiDayIntervalHasStarted){
-                Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                finalisedResult.add(multiDayIntervalWithNoAppointments);
+                if (multiDayIntervalWithNoAppointments!=null){
+                    Duration d = multiDayIntervalWithNoAppointments.getDuration();
+                    multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
+                    finalisedResult.add(multiDayIntervalWithNoAppointments);
+                }
             }
         }
         
@@ -1082,7 +1086,6 @@ public class AppointmentViewController extends ViewController{
         
         long intervalHours = slot.getDuration().toHours();
         long intervalDays = intervalHours/8;
-        int dayCount = 0;
         LocalDate currentDate = slot.getStart().toLocalDate();
         for (int index = 0; index < intervalDays ; index ++){
             do{

@@ -47,8 +47,8 @@ public class AppointmentTest {
         System.out.println("create");
         Appointment instance = new Appointment();
         Appointment expResult = null;
-        Appointment result = instance.create();
-        assertEquals(expResult, result);
+        //Appointment result = instance.create();
+        //assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -87,8 +87,8 @@ public class AppointmentTest {
         System.out.println("update");
         Appointment instance = new Appointment();
         Appointment expResult = null;
-        Appointment result = instance.update();
-        assertEquals(expResult, result);
+        //Appointment result = instance.update();
+        //assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }

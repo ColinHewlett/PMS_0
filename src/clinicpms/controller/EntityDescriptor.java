@@ -5,13 +5,14 @@
  */
 package clinicpms.controller;
 
+import clinicpms.model.SurgeryDaysValues;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.DayOfWeek;
+import java.util.HashMap;
 
 /**
  *
@@ -461,6 +462,7 @@ public class EntityDescriptor {
         private LocalDate day = null;
         private Duration duration = null;
         private String databaseLocation = null;
+        
         private HashMap<DayOfWeek,Boolean> surgeryDays = null;
         
 
@@ -469,7 +471,8 @@ public class EntityDescriptor {
             patient = new EntityDescriptor.Patient();
             guardian = new EntityDescriptor.Patient();
             day = LocalDate.now();
-            duration = Duration.ZERO;   
+            duration = Duration.ZERO; 
+            
         }
         
         public EntityDescriptor.Patient getPatient() {

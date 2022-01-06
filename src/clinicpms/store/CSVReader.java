@@ -8,7 +8,6 @@ package clinicpms.store;
 import clinicpms.model.Appointment; 
 import java.util.ArrayList;
 import clinicpms.model.Patient;
-import clinicpms.store.exceptions.StoreException;
 import com.opencsv.exceptions.CsvException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -216,9 +215,9 @@ public class CSVReader implements ICSVReader{
     }
     
     @Override
-    public ArrayList<Patient> getPatients()throws StoreException{
+    public ArrayList<Patient> getPatients(String path)throws StoreException{
         setPatientRecords(new ArrayList<Patient>());
-        Path patientsPath = Path.of(Store.getPatientCSVPath());
+        Path patientsPath = Path.of(path);
         String message = null;
         try{
             BufferedReader patientReader = Files.newBufferedReader(patientsPath,StandardCharsets.ISO_8859_1);
@@ -254,9 +253,9 @@ public class CSVReader implements ICSVReader{
         return getPatientRecords();
     }
     
-    public ArrayList<Appointment> getAppointments()throws StoreException{
+    public ArrayList<Appointment> getAppointments(String path)throws StoreException{
         setAppointmentRecords(new ArrayList<Appointment>()); //03/12/2021 08:51 update requirement
-        Path sourcePath = Path.of(Store.getAppointmentCSVPath());
+        Path sourcePath = Path.of(path);
         try{
             BufferedReader appointmentReader = Files.newBufferedReader(sourcePath,StandardCharsets.ISO_8859_1);
             com.opencsv.CSVReader csvDBFAppointments = new com.opencsv.CSVReader(appointmentReader);

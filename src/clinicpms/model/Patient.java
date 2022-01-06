@@ -7,17 +7,17 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.IStore;
+import clinicpms.store.StoreException;
 import clinicpms.store.Store;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class Patient {
+public class Patient implements IEntity, IEntityType{
     
     private LocalDate dob = null;
     private Patient guardian = null;
@@ -62,6 +62,21 @@ public class Patient {
                                                 NEXT_HYGIENE_APPOINTMENT
                                             }
                                 }
+    @Override
+    public boolean isAppointment(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatient(){
+        return true;
+    }
+    
+    @Override
+    public boolean isSurgeryDaysValues(){
+        return false;
+    }
+    
     /**
      * Constructs a new Patient object with none of its fields initialised
      */
@@ -80,24 +95,24 @@ public class Patient {
             this.key = key;
     } 
     
-    public Patient create() throws StoreException{
-        IStore store = Store.factory();
-        return store.create(this);    
+    public void insert() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.insert(this);    
     }
     
     public void delete() throws StoreException{
-        IStore store = Store.factory();
+        IPMSStoreAction store = Store.FACTORY(this);
         store.delete(this);
     }
     
     public Patient read() throws StoreException{
-        IStore store = Store.factory();
+        IPMSStoreAction store = Store.FACTORY(this);
         return store.read(this); 
     }
     
-    public Patient update() throws StoreException{ 
-        IStore store = Store.factory();
-        return store.update(this);
+    public void update() throws StoreException{ 
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.update(this);
     }
 
     public class Name {

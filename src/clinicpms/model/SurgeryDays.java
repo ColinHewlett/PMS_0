@@ -6,29 +6,61 @@
 package clinicpms.model;
 
 import clinicpms.store.Store;
-import clinicpms.store.IStore;
-import clinicpms.store.exceptions.StoreException;
+import clinicpms.store.StoreException;
 import java.time.DayOfWeek;
 import java.util.HashMap;
+import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class SurgeryDays {
-    private IStore store = null;
+public class SurgeryDays implements IEntity {
+    private IPMSStoreAction store = null;
+    private SurgeryDaysValues values = null; 
     
-    public SurgeryDays() throws StoreException{
-       store = Store.factory(); 
+    public SurgeryDays(){
+        
+    }
+    
+    public SurgeryDays(SurgeryDaysValues surgeryDaysValues){
+        setValues(surgeryDaysValues);
+    }
+    
+    public SurgeryDaysValues getValues(){
+        return values;
     }
 
-    public HashMap<DayOfWeek, Boolean> read() throws StoreException{
-        return store.read(new HashMap<>());
+    public void setValues(SurgeryDaysValues values){
+        this.values = values;
     }
     
-    public HashMap<DayOfWeek,Boolean> update(HashMap<DayOfWeek,Boolean> value) throws StoreException{
-        return store.update(value);
+    @Override
+    /**
+     * not currently implemented
+     */
+    public void delete() throws StoreException{
+        //not currently implemented
     }
+    
+    @Override
+    /**
+     * not currently implemented
+     */
+    public void insert() throws StoreException{
+        //not currently implemented
+    }
+    
+    public SurgeryDaysValues read() throws StoreException{
+        store = Store.FACTORY(this); 
+        return store.read(new SurgeryDaysValues());
+    }
+            
+    public void update() throws StoreException{
+        store = Store.FACTORY(this); 
+        store.update(getValues());
+    }
+    
     
     
     

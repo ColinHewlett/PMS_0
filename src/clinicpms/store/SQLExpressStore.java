@@ -5,191 +5,354 @@
  */
 package clinicpms.store;
 
-import clinicpms.store.Store;
-import clinicpms.store.ITargetsDatabaseManager;
-import clinicpms.store.IMigrationManager;
 import clinicpms.model.Appointment;
+import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
-import clinicpms.store.exceptions.StoreException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.DayOfWeek;
+import clinicpms.model.Patients;
+import clinicpms.model.AppointmentTable;
+import clinicpms.model.PatientTable;
+import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.SurgeryDaysValues;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.HashMap;
 
 /**
  *
  * @author colin
  */
 public class SQLExpressStore extends Store {
-    private TargetsDatabaseManager targetsDatabaseManager = null;
-    private static SQLExpressStore instance = null;
+    //private static SQLExpressStore instance = null;
     public static SQLExpressStore getInstance(){
-        SQLExpressStore result = null;
+        SQLExpressStore result;
         if (instance == null) result = new SQLExpressStore();
-        else result = instance;
+        else result = (SQLExpressStore)instance;
         return result;
     }
-    
-    public void closeConnection()throws StoreException{
+
+    @Override
+    public void insert(Appointment a) throws StoreException{
         
     }
-    public Appointment create(Appointment a) throws StoreException{
-        return null;
+    
+    @Override
+    public void insert(Patient p) throws StoreException{
+        
     }
-    public Patient create(Patient p) throws StoreException{
-        return null;
-    }
+    
+    @Override
     public void delete(Appointment a) throws StoreException{
         
     }
+    
+    @Override
     public void delete(Patient p) throws StoreException{
         
     }
-    public Appointment read(Appointment a) throws StoreException{
-        return null;
-    }
-    public Patient read(Patient p) throws StoreException{
-        return null;
-    }
-    public ArrayList<Appointment> readAppointments(LocalDate day) throws StoreException{
-        return null;
-    }
-    public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
-        return null;
-    }
-    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
-        return null;
-    }
-    public ArrayList<Patient> readPatients() throws StoreException{
-        return null;
-    }
-    public Patient update(Patient p) throws StoreException{
-        return null;
-    }
-    public Appointment update(Appointment a) throws StoreException{
+    
+    @Override
+    public String read(Store.SelectedTargetStore db)throws StoreException{
         return null;
     }
     
     @Override
-    public HashMap<DayOfWeek,Boolean> update(HashMap<DayOfWeek,Boolean> value){
+    public Appointment read(Appointment a) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public Patient read(Patient p) throws StoreException{
         return null;
     }
 
     @Override
-    public HashMap<DayOfWeek,Boolean> read(HashMap<DayOfWeek,Boolean> value) throws StoreException{
+    /**
+     * Automatic transaction processing enabled
+     * -- reads all appointments stored on the system
+     * @return ArrayList<Appointment>
+     * @throws StoreException 
+     */
+    public ArrayList<Appointment> readAppointments() throws StoreException{
         return null;
     }
     
     @Override
-    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+    public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException{
         return null;
     }
     
+    @Override
+    public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public ArrayList<Patient> readPatients() throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
+        
+    }
+    
+    @Override
+    public void update(Patient p) throws StoreException{
+        
+    }
+    
+    @Override
+    public void update(Appointment a) throws StoreException{
+        
+    }
+    
+    @Override
+    public void update(SurgeryDaysValues value){
+
+    }
+
+    @Override
+    public SurgeryDaysValues read(SurgeryDaysValues value) throws StoreException{
+        return null;
+    }
+    
+    public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
+        return null;
+    }
+
     public Dictionary<String,Boolean> updateSurgeryDays(Dictionary<String,Boolean> d) throws StoreException{
         return null;
     }
     
+    /**
+     * 05/12/2021 11:00 updates included at end of storage type class
+     */
+    
+    /**
+     * 
+     * @param a:Appointments
+     * @return 
+     */
     @Override
-    public IMigrationManager getMigrationManager(){
+    public int countRowsIn(Appointments a){
+        return 0;
+    }
+    
+    /**
+     * 
+     * @param table:AppointmenTable 
+    * @return 
+     */
+    @Override
+    public int countRowsInTable(AppointmentTable table){
+        return 0;
+    }
+    
+    /**
+     * 
+     * @param p Patients
+     * @return 
+     */
+    @Override
+    public int countRowsIn(Patients p){
+        return 0;
+    }
+    
+    /**
+     * 
+     * @param table:PatientTable
+     * @return 
+     */
+    @Override
+    public int countRowsInTable(PatientTable table){
+        return 0;
+    }
+    
+    @Override
+    public int countRowsInTable(SurgeryDaysTable table){
+        return 0;
+    }
+    
+    /**
+     * Creates an appointment table in the migration store
+     * @param table:AppointmentTable)
+     * @throws StoreException 
+     */
+    @Override
+    public void create(AppointmentTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Creates a patient table in the migration store
+     * @param table:PatientTable
+     * @throws StoreException 
+     */
+    @Override
+    public void create(PatientTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Creates a SurgeryDays table in the migration store
+     * @param table:SurgeryDaysTable
+     * @throws StoreException 
+     */
+    @Override
+    public void create(SurgeryDaysTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * drops the current appointment table (if any) in the migration store
+     * @param table:AppointmentTable
+     * @throws StoreException 
+     */
+    @Override
+    public void drop(AppointmentTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Drops the current patient table (if any) in the migration store
+     * @param table:PatientTable
+     * @throws StoreException 
+     */
+    @Override
+    public void drop(PatientTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Drops the current SurgeryDaysTable (if any) in the migration store
+     * @param table:SurgeyDaysTable
+     * @throws StoreException 
+     */
+    @Override
+    public void drop(SurgeryDaysTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Populates the appointment table in the migration store with the imported Appointment objects 
+     * @param table:AppointmentTable
+     * @throws StoreException 
+     */
+    @Override
+    public void populate(AppointmentTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Populates the patient table in the migration store with the imported Patient objects 
+     * @param table:PatientTable
+     * @throws StoreException 
+     */
+    @Override
+    public void populate(PatientTable table)throws StoreException{
+        
+    }
+    
+    /**
+     * Populates the surgery days table in the migration store from the specified SurgeryDaysValues collection of values
+     * @param data:SurgeryDaysValues
+     * @throws StoreException 
+     */
+    @Override
+    public void populate(SurgeryDaysValues data)throws StoreException{
+        
+    }
+    
+    /**
+     * Fetches the selected storage type used by the app
+     * @return String representing the storage type
+     */
+    @Override
+    public String getStoreType(){
+        return getStorageType().toString();
+    }
+    
+    /**
+     * Checks the integrity of the data stored in the appointment table
+     * -- ensures no appointment refers to a patient key that does not exist in the patient table
+     * -- if an appointment does; the appointment is deleted
+     * @throws StoreException 
+     */
+    @Override
+    public void checkIntegrity()throws StoreException{
+        
+    }
+    
+    /**
+     * Convenience method that normalises imported appointment start times
+     * @throws StoreException 
+     */
+    public void normaliseAppointmentStartTimes()throws StoreException{
+ 
+    }
+    
+    /**
+     * Fetches the selected path to the CSV file of imported appointment data
+     * @return String representing the path
+     */
+    @Override
+    public String readAppointmentCSVPath(){
+        return null;
+    }
+    
+    /**
+     * Fetches the selected path to the CSV file of imported patient data
+     * @return String representing the path
+     */
+    @Override
+    public String readPatientCSVPath(){
+        return null;
+    }
+    
+    /**
+     * Updates the path to the CSV file of i ported appointment data
+     * -- stored as a memory image only and not in persistent store
+     * @param path:String representing the updated path value 
+     */
+    @Override
+    public void updateAppointmentCSVPath(String path){
+        
+    }
+    
+    /**
+     * Updates the path to the CSV file of imported patient data
+     * -- stored as a memory image only and not in persistent store
+     * @param path:String representing the updated path value 
+     */
+    @Override
+    public void updatePatientCSVPath(String path){
+        
+    }
+    
+    @Override
+    public void updateMigrationTargetStorePath(String path){
+        
+    }
+    
+    @Override
+    public void updatePMSTargetStorePath(String path){
+        
+    }
+    
+    @Override
+    public String readPMSTargetStorePath(){
         return null;
     }
     
     @Override
-    public TargetsDatabaseManager getTargetsDatabaseManager() throws StoreException{
-        if (targetsDatabaseManager == null) targetsDatabaseManager = new TargetsDatabaseManager();
-        return targetsDatabaseManager;
+    public String readMigrationTargetStorePath(){
+        return null;
     }
     
-    public class TargetsDatabaseManager implements ITargetsDatabaseManager{
-        private Connection connection = null;
-        private String message = null;
-        
-        public TargetsDatabaseManager()throws StoreException{
-            connection = getConnection();
-            Store.setMigrationDatabasePath(this.read(TargetDatabase.MIGRATION_DB));
-            Store.setPMSDatabasePath(this.read(TargetDatabase.PMS_DB));
-        }
-        
-        /**
-         * Store.getDatabaseLocatorPath() initialised using TARGETS_DATABASE environment variable (main method)
-         * @return
-         * @throws StoreException 
-         */
-        public Connection getConnection()throws StoreException{
-            String url = "jdbc:ucanaccess://" + Store.getDatabaseLocatorPath() + ";showSchema=true";
-            if (this.connection == null){
-                try{
-                    this.connection = DriverManager.getConnection(url);  
-                }
-                catch (SQLException ex){
-                    message = ex.getMessage();
-                    throw new StoreException("SQLException message -> " + message +"\n"
-                            + "StoreException message -> raised trying to connect to the DbLocationStore database using AccessStore",
-                    ExceptionType.SQL_EXCEPTION);
-                }
-            }
-            return this.connection;
-        }
 
-        public void closeConnection()throws StoreException{
-            try{
-                if (this.connection!=null){
-                    this.connection.close();
-                }
-            }
-            catch (SQLException ex){
-                message = "SQLException -> " + ex.getMessage() + "\n";
-                message = message + "StoreException -> raised in AccessStore::closeConnection()";
-                throw new StoreException(message, ExceptionType.SQL_EXCEPTION);
-            }
-        }
-
-        /**
-         * fetches the database path in the specified row of the targets database (DbLocation.accb)
-         * @param db, Integer
-         * @return String defining the path to the selected database file
-         * @throws StoreException 
-         */
-        public String read(TargetDatabase db)throws StoreException{
-            String result = null;
-            String sql = "Select location from Target WHERE db = ?;";
-            try{
-                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                preparedStatement.setString(1, db.toString());
-                ResultSet rs = preparedStatement.executeQuery();
-                if (rs.next()){
-                    result = rs.getString("location");
-                }
-                return result;
-            }
-            catch (SQLException ex){
-                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                 + "StoreException message -> exception raised during DbLocationStore::read() query",
-                ExceptionType.SQL_EXCEPTION);
-            }
-
-        }
-        
-        public String update(String updatedLocation, TargetDatabase db)throws StoreException{
-            String sql = "UPDATE Target SET location = ? WHERE db = ?;";
-            try{
-                PreparedStatement preparedStatement = getConnection().prepareStatement(sql);
-                preparedStatement.setString(1, updatedLocation);
-                preparedStatement.setString(2, db.toString());
-                preparedStatement.executeUpdate();
-                return read(db);
-            }
-            catch (SQLException ex){
-                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                 + "StoreException message -> exception raised during DbLocationStore::update statement",
-                ExceptionType.SQL_EXCEPTION);
-            }
-        }
-    }
 }

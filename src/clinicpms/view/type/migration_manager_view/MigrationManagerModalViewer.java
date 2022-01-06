@@ -519,6 +519,7 @@ public class MigrationManagerModalViewer extends View {
     }//GEN-LAST:event_mniSelectAppointmentCSVFileActionPerformed
 
     private void mniSelectTargetDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSelectTargetDatabaseActionPerformed
+        /*
         if (getDatabase().equals(Store.Storage.UNDEFINED_DATABASE)){
             JOptionPane.showMessageDialog(null, 
                 "Database has not been defined; file selection aborted", 
@@ -526,14 +527,15 @@ public class MigrationManagerModalViewer extends View {
                 JOptionPane.WARNING_MESSAGE);
         }
         else{
-            int result = this.fchFileChooser.showOpenDialog(new JFrame());
-            if (result == fchFileChooser.APPROVE_OPTION) {
-                File selectedFile = fchFileChooser.getSelectedFile();
-                this.txtMigrationDatabasePath.setText(selectedFile.getPath());
-                mniSelectTargetDatabase.setState(true);
-            }
-            else mniSelectTargetDatabase.setState(false);
+        */
+        int result = this.fchFileChooser.showOpenDialog(new JFrame());
+        if (result == fchFileChooser.APPROVE_OPTION) {
+            File selectedFile = fchFileChooser.getSelectedFile();
+            this.txtMigrationDatabasePath.setText(selectedFile.getPath());
+            mniSelectTargetDatabase.setState(true);
         }
+        else mniSelectTargetDatabase.setState(false);
+
     }//GEN-LAST:event_mniSelectTargetDatabaseActionPerformed
 
     private void mniMigrateAppointmentsToDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMigrateAppointmentsToDatabaseActionPerformed

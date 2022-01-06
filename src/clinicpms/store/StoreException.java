@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.store.exceptions;
+package clinicpms.store;
 
 import clinicpms.store.Store.ExceptionType;
 

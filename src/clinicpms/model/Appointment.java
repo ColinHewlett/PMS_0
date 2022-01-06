@@ -5,30 +5,44 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.migration_import_store.CSVStore;
 import clinicpms.store.Store;
-import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.IStore;
+import clinicpms.store.StoreException;
 import java.time.LocalDateTime;
 import java.time.Duration;
+import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class Appointment {
+public class Appointment  implements IEntity, IEntityType{
     public static enum Status{BOOKED,UNBOOKED};
     private Integer key = null;
     private LocalDateTime start = null;
     private Duration duration  = null;
     private String notes = null;
-    private Patient patient = null;
+    private Patient patient;
     private Category category = null;
     private Status status = Appointment.Status.BOOKED;
     
     public static enum Category{DENTAL, HYGIENE, ALL}
+    
+    @Override
+    public boolean isAppointment(){
+        return true;
+    }
+    
+    @Override
+    public boolean isPatient(){
+        return false;
+    }
+    
+    @Override
+    public boolean isSurgeryDaysValues(){
+        return false;
+    }
 
-    public Appointment() {
+    public Appointment(){
     } //constructor creates a new Appointment record
 
     /**
@@ -39,24 +53,27 @@ public class Appointment {
         this.key = key;
     }
     
-    public Appointment create() throws StoreException{
-        IStore store = Store.factory();
-        return store.create(this);  
+    @Override
+    public void insert() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.insert(this);  
     }
     
+    @Override
     public void delete() throws StoreException{
-        IStore store = Store.factory();
+        IPMSStoreAction store = Store.FACTORY(this);
         store.delete(this);
     }
     
     public Appointment read() throws StoreException{
-        IStore store = Store.factory();
+        IPMSStoreAction store = Store.FACTORY(this);
         return store.read(this);
     }
     
-    public Appointment update() throws StoreException{ 
-        IStore store = Store.factory();
-        return store.update(this);
+    @Override
+    public void update() throws StoreException{ 
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.update(this);
     }
 
     public LocalDateTime getStart() {

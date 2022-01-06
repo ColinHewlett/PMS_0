@@ -5,19 +5,23 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.migration_import_store.CSVStore;
 import clinicpms.store.Store;
-import clinicpms.store.exceptions.StoreException;
-import clinicpms.store.IStore;
+import clinicpms.store.StoreException;
 import java.util.ArrayList;
+import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class Patients {
+public class Patients implements IEntityCounter{
     public ArrayList<Patient> getPatients() throws StoreException{
-        IStore store = Store.factory();
+        IPMSStoreAction store = Store.FACTORY(new Patient());
         return store.readPatients();
+    }
+    
+    public int count()throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(new Patient());
+        return store.countRowsIn(this);
     }
 }
