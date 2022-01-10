@@ -14,6 +14,7 @@ import clinicpms.model.Appointment;
 import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
+import clinicpms.model.AppointmentDate;
 import java.sql.*;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -49,14 +50,21 @@ public class AccessStore extends Store {
     private Connection getMigrationConnection()throws StoreException{
         try{
             if (this.migrationConnection == null){
+                /**
+                 * DEBUG -- add check and action in case getMigrationDatabasePath() is null
+                 */
+                if (getMigrationDatabasePath()==null) readMigrationTargetStorePath();
+                //DEBUG end
                 String url = "jdbc:ucanaccess://" + getMigrationDatabasePath() + ";showSchema=true";
                 migrationConnection = DriverManager.getConnection(url);
             }
-        }catch (SQLException ex){
-            
+        }catch (SQLException ex){//message handling added
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised in AccessStore::getMigrationConnection() method",
+            ExceptionType.SQL_EXCEPTION);
         }
         return migrationConnection;
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     /**
      * If on entry pms connection is undefined the pms database path is used to make a new connection
@@ -67,15 +75,23 @@ public class AccessStore extends Store {
     private Connection getPMSConnection()throws StoreException{
         try{
             if (this.pmsConnection == null){
+                /**
+                 * DEBUG -- add check and action in case getPMSDatabasePath() is null
+                 */
+                if (getPMSDatabasePath()==null) readPMSTargetStorePath();
+                //DEBUG end
                 String url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
                 pmsConnection = DriverManager.getConnection(url);
             }
-            return pmsConnection;
-        }catch (SQLException ex){
             
+        }catch (SQLException ex){//message handling added
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised in AccessStore::getPMSConnection() method",
+            ExceptionType.SQL_EXCEPTION);
         }
+        
         return pmsConnection;
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
 
     /**
      * If on entry migration connection is defined the connection is closed
@@ -115,13 +131,16 @@ public class AccessStore extends Store {
      */
     private void closeMigrationConnection()throws StoreException{
         try{
-           if (getMigrationConnection()!=null)getMigrationConnection().close(); 
+            /**
+             * DEBUG -- use of connection getter avoided to prevent stack overflow (recursive reentry issue)
+             */
+           if (migrationConnection!=null)migrationConnection.close(); 
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closeMigrationConnection() method",
             ExceptionType.SQL_EXCEPTION);
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     /**
      * If on entry migration connection is defined the connection is closed
@@ -129,13 +148,16 @@ public class AccessStore extends Store {
      */
     private void closePMSConnection()throws StoreException{
         try{
-           if (getPMSConnection()!=null)getPMSConnection().close(); 
+            /**
+             * DEBUG -- use of connection getter avoided to prevent stack overflow (recursive reentry issue)
+             */
+           if (pmsConnection!=null)pmsConnection.close(); 
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closePMSConnection() method",
             ExceptionType.SQL_EXCEPTION);
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     /**
      * If on entry target connection is defined the connection is closed
@@ -143,13 +165,16 @@ public class AccessStore extends Store {
      */
     private void closeTargetConnection()throws StoreException{
         try{
-           if (getTargetConnection()!=null)getTargetConnection().close(); 
+           /**
+             * DEBUG -- use of connection getter avoided to prevent stack overflow (recursive reentry issue)
+             */
+           if (targetConnection!=null)targetConnection.close(); 
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closeTargetConnection() method",
             ExceptionType.SQL_EXCEPTION);
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     /**
      * If the target connection is undefined the database locator path is used to make a new connection
@@ -168,16 +193,18 @@ public class AccessStore extends Store {
         }
         if (this.targetConnection==null){
             url = "jdbc:ucanaccess://" + getDatabaseLocatorPath() + ";showSchema=true"; 
+        
+            try{
+                targetConnection = DriverManager.getConnection(url);
+                //return targetConnection;
+            }catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+             + "StoreException message -> exception raised in AccessStore::getTargetConnection() method",
+            ExceptionType.SQL_EXCEPTION);
+            } 
         }
-        try{
-            targetConnection = DriverManager.getConnection(url);
-            return targetConnection;
-        }catch (SQLException ex){
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-         + "StoreException message -> exception raised in AccessStore::getTargetConnection() method",
-        ExceptionType.SQL_EXCEPTION);
-        }    
-    }
+        return targetConnection;
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     /**
      * Utility method involved in the "tidy up" of the imported patient's contact details
@@ -244,15 +271,18 @@ public class AccessStore extends Store {
      * @throws StoreException wraps the SQLException that can be thrown on execution of the SQL statement
      */
     private ArrayList<Appointment> runSQL(
-            AppointmentSQL q, Object entity) throws StoreException{
-        ArrayList<Appointment> records = appointments;
+            AppointmentSQL q, IEntityType entity) throws StoreException{
+        ArrayList<Appointment> records = new ArrayList<>();
         
         Appointment appointment = null;
         LocalDate day = null;
         Patient patient = null;
-        if (entity instanceof Appointment) appointment = (Appointment)entity;
-        else if (entity instanceof LocalDate) day = (LocalDate)entity;
-        else if (entity instanceof Patient) patient = (Patient)entity;
+        
+        if(entity!=null){
+            if (entity.isAppointment()) appointment = (Appointment)entity;
+            if (entity.isAppointmentDate()) day = ((AppointmentDate)entity).getValue();
+            if (entity.isPatient()) patient = (Patient)entity;
+        }
         
         String sql = null; 
         switch (q){
@@ -332,8 +362,7 @@ public class AccessStore extends Store {
                     }
                 }
                 break;
-            case READ_HIGHEST_KEY:
-                if (appointment!=null){
+            case READ_HIGHEST_KEY:{
                     try{
                         Integer key = null;
                         PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
@@ -341,8 +370,11 @@ public class AccessStore extends Store {
                         if (rs.next()){
                             key = (int)rs.getLong("highest_key");
                         }
-                        appointment.setKey(key);
-                        records.add(appointment);
+                        /**
+                         * wrap highest key value in an Appointment record and wrap this inside an ArrayList<Appointment>
+                         */
+                        records = new ArrayList<Appointment>();
+                        records.add(new Appointment(key));
                     }
                     catch (SQLException ex){
                         throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
@@ -1675,6 +1707,8 @@ public class AccessStore extends Store {
         try{//turn off jdbc driver's auto commit after each SQL statement
             setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
             runSQL(AppointmentSQL.DELETE_APPOINTMENT_WITH_KEY, a);
+            result = true;
+            /*
             ArrayList value = runSQL(AppointmentSQL.READ_APPOINTMENT_WITH_KEY, a);
             if (value.isEmpty()){
                 message = 
@@ -1682,13 +1716,15 @@ public class AccessStore extends Store {
                         + String.valueOf(a.getKey()) + ")";
                 throw new StoreException(message, ExceptionType.KEY_FOUND_EXCEPTION);
             }
+            */
         }catch (SQLException ex){
             message = message + "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                 message + "StoreException raised in method AccessStore::delete(Appointment a)\n"
-                        + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                        + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
                 ExceptionType.SQL_EXCEPTION);
         }
+        
         finally{
             try{
                 setConnectionState(result);
@@ -1700,6 +1736,7 @@ public class AccessStore extends Store {
                     ExceptionType.SQL_EXCEPTION);    
             }
         }
+        
     }
     
     @Override
@@ -1872,8 +1909,11 @@ public class AccessStore extends Store {
         }
         finally{
             try{
-                if (result) getMigrationConnection().commit();
-                else getMigrationConnection().rollback();
+                /**
+                 * DEBUG - references should be to getTargetConnection
+                 */
+                if (result) getTargetConnection().commit();
+                else getTargetConnection().rollback();
             }catch (SQLException ex){
                 message = "SQLException message -> " + ex.getMessage() +"\n";
                 throw new StoreException(
@@ -1883,7 +1923,7 @@ public class AccessStore extends Store {
 
             }
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     @Override
     /**
@@ -1933,30 +1973,28 @@ public class AccessStore extends Store {
      * Automatic transaction processing enabled
      * -- reads all appointments stored on the system
      * @return ArrayList; collection of appointments
-     * @throws StoreException 
+     * @throws StoreException, used to wrap SQLException if thrown
      */
     @Override
     public ArrayList<Appointment> readAppointments() throws StoreException{
+        ArrayList<Appointment> readAppointments = null;
         try{//ensure auto commit setting switched on
-            if (!getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(true);
-            }
-            ArrayList<Appointment> readAppointments = 
-                runSQL(AppointmentSQL.READ_APPOINTMENTS, new Object());
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            readAppointments = runSQL(AppointmentSQL.READ_APPOINTMENTS, new Appointment());
             Iterator<Appointment> it = readAppointments.iterator();
             while(it.hasNext()){
                 Appointment appointment = it.next();
                 Patient p = read(appointment.getPatient());
                 appointment.setPatient(p);
                 //appointmentsWithPatients.add(appointment);
-            }
-            return appointments; 
+            } 
         }
         catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
-            throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readAppointments()",
+            throw new StoreException(message + "StoreException -> unexpected error thrown in call to setConnectionMode(AUTO_COMMIT_ON) in AccessStore::readAppointments()",
             ExceptionType.SQL_EXCEPTION);
         }
+        return readAppointments;
     }
     
     /**
@@ -1968,13 +2006,10 @@ public class AccessStore extends Store {
      */
     @Override
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
-        //ArrayList<Appointment> appointmentsWithPatients = new ArrayList<>();
         ArrayList<Appointment> readAppointments = null;
         try{//ensure auto commit setting switched on
-            if (!getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(true);
-            }
-            appointments = runSQL(AppointmentSQL.READ_APPOINTMENTS_FROM_DAY,day);
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            readAppointments = runSQL(AppointmentSQL.READ_APPOINTMENTS_FROM_DAY,new AppointmentDate(day));
             if (readAppointments!=null){
                 Iterator<Appointment> it = readAppointments.iterator();
                 while(it.hasNext()){
@@ -2000,23 +2035,22 @@ public class AccessStore extends Store {
      * @throws StoreException 
      */
     public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException{
+        ArrayList<Appointment> readAppointments;
         try{
-            if (!getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(true);
-            }
-            ArrayList<Appointment> readAppointments = runSQL(AppointmentSQL.READ_APPOINTMENTS_FOR_DAY,day);
-            Iterator<Appointment> it = appointments.iterator();
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            readAppointments = runSQL(AppointmentSQL.READ_APPOINTMENTS_FOR_DAY,new AppointmentDate(day));
+            Iterator<Appointment> it = readAppointments.iterator();
             while(it.hasNext()){
                 Appointment appointment = it.next();
                 Patient p =read(appointment.getPatient());
                 appointment.setPatient(p);
             }
-            return readAppointments;
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
-            throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readAppointments(LocalDate d)",
+            throw new StoreException(message + "StoreException -> unexpected error accessing setConnectionMode(AUTO_COMMIT_ON) in AccessStore::readAppointments(LocalDate d)",
             ExceptionType.SQL_EXCEPTION);
         }
+        return readAppointments;
     }
     
     @Override
@@ -2052,9 +2086,7 @@ public class AccessStore extends Store {
      */
     public ArrayList<Patient> readPatients() throws StoreException{
         try{
-            if (!getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(true);
-            }
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON); //autoCommit() calls replaced 
             ArrayList<Patient> readPatients = runSQL(PatientSQL.READ_ALL_PATIENTS,new Patient());
             return readPatients;
         }catch (SQLException ex){
@@ -2062,7 +2094,7 @@ public class AccessStore extends Store {
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readPatients()",
             ExceptionType.SQL_EXCEPTION);
         }
-    }
+    } //store_package_updates_05_12_21_09_17_devDEBUG
 
     @Override
     /**
@@ -2549,14 +2581,26 @@ public class AccessStore extends Store {
     }
 
     @Override
-    public String readMigrationTargetStorePath(){
+    public String readMigrationTargetStorePath()throws StoreException{
+        /**
+         * DEBUG
+         * -- adds check and action on initialisation of migrationDatabasePath
+         * -- and direct access to store database path variable to avoid use of store setter 
+         */
+        if (getMigrationDatabasePath()==null)migrationDatabasePath = read(SelectedTargetStore.MIGRATION_DB);
         return getMigrationDatabasePath();
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     @Override
-    public String readPMSTargetStorePath(){
+    public String readPMSTargetStorePath()throws StoreException{
+        /**
+         * DEBUG
+         * -- adds check and action on initialisation of migrationDatabasePath
+         * -- and direct access to store database path variable to avoid use of store setter 
+         */
+        if (getPMSDatabasePath()==null)pmsDatabasePath = read(SelectedTargetStore.PMS_DB);
         return getPMSDatabasePath();
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     @Override
     public String readAppointmentCSVPath(){

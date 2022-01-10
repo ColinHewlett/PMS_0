@@ -33,6 +33,11 @@ public class Appointment  implements IEntity, IEntityType{
     }
     
     @Override
+    public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    @Override
     public boolean isPatient(){
         return false;
     }

@@ -377,10 +377,33 @@ public class AppointmentViewController extends ViewController{
                     catch (PropertyVetoException ex){
 
                     }
+                    
+                    /**
+                     * either an update or create appointment event has occurred, so clear empty slot list
+                     * fire event over to APPOINTMENT_SCHEDULE
+                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
+                     */
+                    initialiseNewEntityDescriptor();
+                    pcEvent = new PropertyChangeEvent(this,
+                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        null,getNewEntityDescriptor());
+                    pcSupport.firePropertyChange(pcEvent);
+                    pcSupport.removePropertyChangeListener(this.view);
+                    
+                    /**
+                     * initialise entity descriptor
+                     * -- with new list of appointments and available slots for the day
+                     * -- as well as the fully instanciated appointment that's been created or updated
+                     */
                     this.appointments =
                         new Appointments().getAppointmentsFor(day);
                     this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
                     serialiseAppointmentsToEDCollection(this.appointments);
+                    /**
+                     * Added request to update ED with serialised new or updated appointment
+                     */
+                    serialiseAppointmentToEDAppointment(result);
+                    
                     /**
                      * fire event over to APPOINTMENT_SCHEDULE
                      * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
@@ -391,23 +414,12 @@ public class AppointmentViewController extends ViewController{
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
 
-                    //either an update appt or create appt event has occurred
-                    //so clear empty slot list!!!
-                    initialiseNewEntityDescriptor();
-                    /**
-                     * fire event over to APPOINTMENT_SCHEDULE
-                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
-                     */
-                    pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-                        null,getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(this.view);
+                    
                     /**
                      * send desktop view controller the APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
                      * -- note: important to restore view controller's EntityDescriptorFromView with entity descriptor fetched from APPOINTMENT_CREATE_EDIT_VIEW
                      */
-                    setEntityDescriptorFromView(edFromAppointmentCreateEditView);
+                    setEntityDescriptorFromView(getNewEntityDescriptor());
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
                             DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
@@ -651,11 +663,23 @@ public class AppointmentViewController extends ViewController{
              * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
              * -- hence: getRequest.getPatient() returns the patient whose appointment has been cancelled
              */
-            if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()!=null){
-                Appointment appointment = new Appointment(
-                        getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey());
+            if (getEntityDescriptorFromView().getRequest().getAppointment().getAppointee().getData().getKey()!=null){
+                
                 try{
+                    /**
+                     * The requested appointment is read into memory from the store using the specified appointment key
+                     * -- this means the appointee (patient) object is encapsulated in the appointment object
+                     * -- knowledge of the patient object is required to maintain consistency between views, which is a responsibility of the desktop view controller
+                     * 
+                     */
+                    Appointment appointment = new Appointment(
+                        getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()).read();
                     appointment.delete();
+                    /**
+                     * two updates to a new Entity Descriptor required
+                     * -- serialise appointments derived from appointments and empty slots for the day
+                     * -- serialise the appointment which has just been delete (required for post processing by DesktopViewController)
+                     */
                     LocalDate day = getEntityDescriptorFromView().
                             getRequest().getAppointment().getData().getStart().toLocalDate();
                     initialiseNewEntityDescriptor();
@@ -663,6 +687,10 @@ public class AppointmentViewController extends ViewController{
                         new Appointments().getAppointmentsFor(day);
                     this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
                     serialiseAppointmentsToEDCollection(this.appointments);
+                    /**
+                     * appointment serialisation to ED ensures appointee key is accessible by the desktop view controller
+                     */
+                    serialiseAppointmentToEDAppointment(appointment);
                     /**
                      * fire event over to APPOINTMENT_SCHEDULE
                      */ 
@@ -677,7 +705,7 @@ public class AppointmentViewController extends ViewController{
                      * -- prime the appointment view controller's entity description with the patient that has just been deleted
                      * -- i.e so view controller can reliably let the desktop view controller know which patient has had an appointment deleted
                      */
-                    
+                    setEntityDescriptorFromView(getNewEntityDescriptor());
                     ActionEvent actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
                         DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
@@ -848,6 +876,12 @@ public class AppointmentViewController extends ViewController{
         return result;   
     }
     
+    /**
+     * Attempts to CREATE/UPDATE an appointment according to ED request
+     * @param mode:ViewMode; either an appointment CREATE or UPDATE 
+     * @return Appointment if the CREATE or UPSATE is successful; else null if not
+     * @throws StoreException 
+     */
     private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
         String error;
         Appointment result = null;
@@ -857,19 +891,22 @@ public class AppointmentViewController extends ViewController{
         //NOTE: changed "appointments" to "appts" because former hid a previous definition of "appointments"
         ArrayList<Appointment> appts = new Appointments().getAppointmentsFor(day);
         if (appts.isEmpty()){
+            /**
+             * no appointments for selected day so go head and CREATE appointment (no appointment to UPGRADE)
+             */
             switch (mode){
                 case CREATE:
                     rSlot.insert();
                     result = rSlot.read();
                     break;
-                case UPDATE:
+                case UPDATE://this shouldn't be ever the case
                     rSlot.update();
                     result = rSlot.read();
                     break;
             }
         }
         else{
-            switch (mode){
+            switch (mode){//one or more appointmwent already exist so check the CREATE or UPGRADE make sense
                 case CREATE:
                     error = appointmentCollisionChangingSchedule(rSlot, appts, mode);
                     getNewEntityDescriptor().setError(error);

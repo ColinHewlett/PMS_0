@@ -134,20 +134,25 @@ public class DesktopViewController extends ViewController{
                 ViewController.DesktopViewControllerActionEvent.
                         APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
             /**
-             * on APPOINTMENT_HISTORY_CHANGE_NOTIFICATION from an appointment view controller
-             * -- desktop view controller checks if any patient view controllers active which refer to same patient
-             * -- yes: send them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
+             * on entry DeskTop View Controller
+             * -- knows the appointment view controller's EntityDescriptorFromView stores the newly created or updated appointee object
+             * -- desktop view controller checks if any active patient view controllers refer to the same appointee
+             * -- yes: controller sends them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
              */
             EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentViewController)e.getSource()).getEntityDescriptorFromView();
-            PatientViewController pvc = null;
+            int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
-                pvc = viewControllerIterator.next();               
-                int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey().intValue();
-                int k2 = edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue();
+                PatientViewController pvc = viewControllerIterator.next();               
+                int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
+                //int k2 = edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue();
+                //int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
+                /*
                 if (pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey().intValue() == 
                         edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue()){
+                */
+                if (k1==k2){
                     /**
                      * Found patient view controller for patient whose appointment history has been changed
                      * -- patient view controller's EntityDescriptor.Request.Patient points to appointee

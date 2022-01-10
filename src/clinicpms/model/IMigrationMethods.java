@@ -4,14 +4,15 @@
  * and open the template in the editor.
  */
 package clinicpms.model;
+import clinicpms.store.StoreException;
 
 /**
  *
  * @author colin
  */
-public interface IEntityType {
-    public boolean isAppointment();
-    public boolean isPatient();
-    public boolean isSurgeryDaysValues();
-    public boolean isAppointmentDate();
+public interface IMigrationMethods {
+    public void create()throws StoreException;
+    public void drop()throws StoreException;
+    public void populate()throws StoreException;
+    
 }

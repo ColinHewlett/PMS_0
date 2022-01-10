@@ -51,10 +51,8 @@ public interface IPMSStoreAction {
     public ArrayList<Appointment> readAppointments(Patient p, Category c) throws StoreException;
     public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException;
     public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
-    public String readMigrationTargetStorePath();
     public String readPatientCSVPath();
     public ArrayList<Patient> readPatients() throws StoreException;
-    public String readPMSTargetStorePath();
     public void update(Appointment a) throws StoreException;
     public void update(SurgeryDaysValues value) throws StoreException;
     public void update(Patient p) throws StoreException;

@@ -5,14 +5,14 @@
  */
 package clinicpms.model;
 
-import java.time.DayOfWeek;
-import java.util.HashMap;
-
+import java.time.LocalDate;
 /**
  *
  * @author colin
  */
-public class SurgeryDaysValues extends HashMap<DayOfWeek,Boolean> implements IEntityType{
+public class AppointmentDate implements IEntityType{
+    private LocalDate value = null;
+    
     @Override
     public boolean isAppointment(){
         return false;
@@ -20,7 +20,7 @@ public class SurgeryDaysValues extends HashMap<DayOfWeek,Boolean> implements IEn
     
     @Override
     public boolean isAppointmentDate(){
-        return false;
+        return true;
     }
     
     @Override
@@ -30,6 +30,14 @@ public class SurgeryDaysValues extends HashMap<DayOfWeek,Boolean> implements IEn
     
     @Override
     public boolean isSurgeryDaysValues(){
-        return true;
+        return false;
+    }
+    
+    public AppointmentDate(LocalDate date){
+        value = date;
+    }
+    
+    public LocalDate getValue(){
+        return value;
     }
 }

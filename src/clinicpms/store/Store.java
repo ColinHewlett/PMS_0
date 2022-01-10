@@ -88,8 +88,13 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
     
     private static Storage storage = null;
     private static String databaseLocatorPath = null;
-    private static String migrationDatabasePath = null;
-    private static String pmsDatabasePath = null;
+    /**
+     * DEBUG -- following DatabasePath variables updated from private to protected scope
+     * which enables access from the concrete store class
+     */
+    protected static String migrationDatabasePath = null;
+    protected static String pmsDatabasePath = null;
+    //store_package_updates_05_12_21_09_17_devDEBUG
     private static String appointmentCSVPath = null;
     private static String patientCSVPath = null;
     private static SelectedTargetStore selectedTargetStore = null;
@@ -286,11 +291,16 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
      */
     protected void setMigrationDatabasePath(String path) throws StoreException{
         migrationDatabasePath = path;
-        if (!isPMSStoreCurrentlyUnderConstruction||isMigrationStoreCurrentlyUnderConstruction){
+        /**
+         * DEBUG -- only if a FACTOTY() method is not currently being executed
+         */
+        if (!isPMSStoreCurrentlyUnderConstruction&&
+                !isMigrationStoreCurrentlyUnderConstruction&&
+                !isTargetsStoreCurrentlyUnderConstruction){
             if (instance != null) instance = null;
             MIGRATION_STORE_FACTORY();
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
     
     protected String getPMSDatabasePath(){
         return pmsDatabasePath;
@@ -305,11 +315,16 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
      */
     protected void setPMSDatabasePath(String path) throws StoreException{
         pmsDatabasePath = path;
-        if (!isPMSStoreCurrentlyUnderConstruction||isMigrationStoreCurrentlyUnderConstruction){
+        /**
+         * DEBUG -- only if a FACTOTY() method is not currently being executed
+         */
+        if (!isPMSStoreCurrentlyUnderConstruction&&
+                !isMigrationStoreCurrentlyUnderConstruction&&
+                !isTargetsStoreCurrentlyUnderConstruction){
             if (instance != null) instance = null;
             PMS_STORE_FACTORY();
         }
-    }
+    }//store_package_updates_05_12_21_09_17_devDEBUG
    
     /**
      * Getters & setters enabling the Controller to update the path to the input data sources for data migration purposes

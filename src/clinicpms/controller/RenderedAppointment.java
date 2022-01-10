@@ -19,6 +19,10 @@ public class RenderedAppointment {
     private boolean isKeyDefined = false;
     private boolean isEmptySlot = false;
     
+    /**
+     * Note: scope of method is protected so that only classes in the controller package are able to access it
+     * @return key:Integer
+     */
     protected Integer getKey(){
         return key;
     }

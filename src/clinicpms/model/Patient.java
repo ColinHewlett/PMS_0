@@ -68,6 +68,11 @@ public class Patient implements IEntity, IEntityType{
     }
     
     @Override
+    public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    @Override
     public boolean isPatient(){
         return true;
     }
