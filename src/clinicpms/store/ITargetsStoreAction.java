@@ -10,7 +10,7 @@ package clinicpms.store;
  * @author colin
  */
 public interface ITargetsStoreAction {
-    public String getStoreType()throws StoreException;
+    public String getStoreType();
     public String readAppointmentCSVPath() throws StoreException;
     public String readMigrationTargetStorePath()throws StoreException;
     public String readPatientCSVPath() throws StoreException;

@@ -93,10 +93,23 @@ public class DesktopViewController extends ViewController{
         }
     }
     
+    /**
+     * ActionEvent responder; action events sent by an ActionViewController include
+     * -- APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
+     * -- DISABLE_DESKTOP_CONTROLS_REQUEST
+     * -- ENABLE_DESKTOP_CONTROLS_REQUEST
+     * -- VIEW_CLOSED_NOTIFICATION
+     * @param e:ActionEvent received; indicates which ActionCommand from above list was sent
+     */
     private void doAppointmentViewControllerAction(ActionEvent e){
         AppointmentViewController avc = null;
         if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            /**
+             * on reception of VIEW_CLOSED_NOTIFICATION action command
+             * -- loops through the active appointment view controllers to find the ActionEvent sender
+             * -- attempts to remove this controller from the collection of active controllers; displays error if unable to remove controller
+             */
             Iterator<AppointmentViewController> viewControllerIterator = 
                     this.appointmentViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
@@ -115,6 +128,11 @@ public class DesktopViewController extends ViewController{
                 */
             }
             else{
+                /**
+                 * after successfully removing the specified controller and view
+                 * -- check to see if Desktop view is waiting to be closed; and continue closure of other controllers and views if so
+                 * -- if at this stage there are no appointment or patient view controllers active, re-enable the DesktopView DATA menu and its window close control
+                 */
                 if (this.isDesktopPendingClosure){
                     this.requestViewControllersToCloseViews();
                 }
@@ -136,8 +154,8 @@ public class DesktopViewController extends ViewController{
             /**
              * on entry DeskTop View Controller
              * -- knows the appointment view controller's EntityDescriptorFromView stores the newly created or updated appointee object
-             * -- desktop view controller checks if any active patient view controllers refer to the same appointee
-             * -- yes: controller sends them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
+             * -- desktop view controller can check if any active patient view controllers refer to the same appointee
+             * -- if so: controller sends them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
              */
             EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentViewController)e.getSource()).getEntityDescriptorFromView();
             int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
@@ -146,17 +164,11 @@ public class DesktopViewController extends ViewController{
             while(viewControllerIterator.hasNext()){
                 PatientViewController pvc = viewControllerIterator.next();               
                 int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
-                //int k2 = edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue();
-                //int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
-                /*
-                if (pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey().intValue() == 
-                        edOfPatientWithAppointmentHistoryChange.getRequest().getPatient().getData().getKey().intValue()){
-                */
                 if (k1==k2){
                     /**
                      * Found patient view controller for patient whose appointment history has been changed
                      * -- patient view controller's EntityDescriptor.Request.Patient points to appointee
-                     * -- send PATIENT_REQUEST to patient view controller to refresh display of patient data
+                     * -- send APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to patient view controller to refresh patient's appointment history
                      */
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
@@ -168,12 +180,20 @@ public class DesktopViewController extends ViewController{
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
                     ENABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+            /**
+             * on receipt of ENABLE_DESKTOP_CONTROLS_REQUEST
+             * -- sends desktop view controller sends message to its view to re-enable VIEW and DATA controls as well as its window closing control
+             */
             getView().enableViewControl();
             getView().enableWindowCloseControl();
         }
         else if (e.getActionCommand().equals(
             ViewController.DesktopViewControllerActionEvent.
                     DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+            /**
+             * on receipt of DISABLE_DESKTOP_CONTROLS_REQUEST
+             * -- sends desktop view controller sends message to its view to disable VIEW and DATA controls as well as its window closing control
+             */
             getView().disableViewControl();
             getView().disableWindowClosedControl();
         }

@@ -22,11 +22,11 @@ import java.util.Dictionary;
  * @author colin
  */
 public class SQLExpressStore extends Store {
-    //private static SQLExpressStore instance = null;
+    //private static SQLExpressStore INSTANCE = null;
     public static SQLExpressStore getInstance(){
         SQLExpressStore result;
-        if (instance == null) result = new SQLExpressStore();
-        else result = (SQLExpressStore)instance;
+        if (INSTANCE == null) result = new SQLExpressStore();
+        else result = (SQLExpressStore)INSTANCE;
         return result;
     }
 

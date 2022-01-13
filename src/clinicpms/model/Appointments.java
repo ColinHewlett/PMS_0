@@ -16,7 +16,7 @@ import clinicpms.store.IPMSStoreAction;
  *
  * @author colin
  */
-public class Appointments implements IEntityCounter{
+public class Appointments implements IEntityCollecton{
 
     /**
      * 

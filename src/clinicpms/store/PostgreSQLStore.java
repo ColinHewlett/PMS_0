@@ -32,8 +32,8 @@ public class PostgreSQLStore extends Store {
     
     public static PostgreSQLStore getInstance()throws StoreException{
         PostgreSQLStore result;
-        if (instance == null) result = new PostgreSQLStore();
-        else result = (PostgreSQLStore)instance;
+        if (INSTANCE == null) result = new PostgreSQLStore();
+        else result = (PostgreSQLStore)INSTANCE;
         return result;
     }
     

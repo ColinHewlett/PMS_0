@@ -1564,17 +1564,17 @@ public class AccessStore extends Store {
     
     /**
      * The static method implements the singleton pattern to ensure only one AccessStore ever exists
-     * -- only if the current Store instance variable is undefined is it defined with a new AccessStore instance
-     * @return AccessStore instance 
+ -- only if the current Store INSTANCE variable is undefined is it defined with a new AccessStore INSTANCE
+     * @return AccessStore INSTANCE 
      * @throws StoreException 
      */
     public static AccessStore getInstance() throws StoreException{
         AccessStore result;
-        if (instance == null) {
+        if (INSTANCE == null) {
             result = new AccessStore();
-            instance = result;
+            INSTANCE = result;
         }
-        else result = (AccessStore)instance;
+        else result = (AccessStore)INSTANCE;
         
         return result;
     }
@@ -2614,7 +2614,7 @@ public class AccessStore extends Store {
 
     @Override
     public String getStoreType(){
-        return Store.getStorageType().toString();
+        return getStorageType().toString();
     }
         
     

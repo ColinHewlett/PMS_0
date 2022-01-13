@@ -10,6 +10,6 @@ import clinicpms.store.StoreException;
  *
  * @author colin
  */
-public interface IEntityCounter {
+public interface IEntityCollecton {
     public int count() throws StoreException;
 }

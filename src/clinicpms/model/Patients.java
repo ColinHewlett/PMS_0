@@ -14,7 +14,7 @@ import clinicpms.store.IPMSStoreAction;
  *
  * @author colin
  */
-public class Patients implements IEntityCounter{
+public class Patients implements IEntityCollecton{
     public ArrayList<Patient> getPatients() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(new Patient());
         return store.readPatients();
