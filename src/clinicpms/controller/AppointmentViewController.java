@@ -5,14 +5,12 @@
  */
 package clinicpms.controller;
 
-import clinicpms.constants.ClinicPMS;
 import static clinicpms.controller.ViewController.displayErrorMessage;
 import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.model.SurgeryDays;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
@@ -81,7 +79,7 @@ public class AppointmentViewController extends ViewController{
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
         try{
-            getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
+            getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
             super.centreViewOnDesktop(desktopView, view);
@@ -172,7 +170,7 @@ public class AppointmentViewController extends ViewController{
          * The latter call simulates the event raised when the date is updated on the AppointmentsForDayView object
          */
         if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             try{
                 this.view2.setClosed(true);
@@ -185,31 +183,30 @@ public class AppointmentViewController extends ViewController{
             initialiseNewEntityDescriptor();
             getNewEntityDescriptor().getRequest().setDay(
                     getEntityDescriptorFromView().getRequest().getDay());
-            getNewEntityDescriptor().getRequest().setSurgeryDays(
-                    getEntityDescriptorFromView().getRequest().getSurgeryDays());
+            getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(
+                    getEntityDescriptorFromView().getRequest().getSurgeryDaysAssignmentValue());
             
             pcSupport.addPropertyChangeListener(view);
             pcEvent = new PropertyChangeEvent(this,
-                AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString(),
+                EntityDescriptor.AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString(),
                 getOldEntityDescriptor(),getNewEntityDescriptor());
             pcSupport.firePropertyChange(pcEvent);
             pcSupport.removePropertyChangeListener(view);
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
-            this.myController.actionPerformed(actionEvent); 
-            
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
+            this.myController.actionPerformed(actionEvent);     
         }
     }
     private void doSurgeryDaysEditorViewAction(ActionEvent e){
         if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             try{
                 this.view2.setClosed(true);
@@ -221,22 +218,22 @@ public class AppointmentViewController extends ViewController{
             }
 
             //SurgeryDaysValues surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
-            HashMap<DayOfWeek,Boolean> surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
+            HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = getEntityDescriptorFromView().getRequest().getSurgeryDaysAssignmentValue();
             try{
                 /**
                  * 05/12/2021 09:17 follows store.update() call with a store.read() call
                  */
-                SurgeryDaysValues surgeryDaysValues = new SurgeryDaysValues();
-                surgeryDaysValues.putAll(surgeryDays);
-                SurgeryDays the_surgeryDays = new SurgeryDays(surgeryDaysValues);
-                the_surgeryDays.update();
-                getEntityDescriptorFromView().getRequest().setSurgeryDays(new SurgeryDays().read());
+                //SurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
+                //surgeryDaysValues.putAll(surgeryDays);
+                SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment(surgeryDaysAssignmentValue);
+                surgeryDaysAssignment.update();
+                getEntityDescriptorFromView().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
                 pcSupport.addPropertyChangeListener(view);
                 pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString(),
+                    EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString(),
                     getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
                 pcSupport.removePropertyChangeListener(view);
@@ -247,20 +244,20 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
             /**
-             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
+             * passes message to DesktopView Controller to disable the VIEW control
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
     }
     
     private void doEmptySlotScannerViewAction(ActionEvent e){
-        if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
+        if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             try{
                 this.view2.setClosed(true);
@@ -291,7 +288,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     pcSupport.addPropertyChangeListener(view);
                     pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
@@ -310,13 +307,13 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
@@ -332,7 +329,7 @@ public class AppointmentViewController extends ViewController{
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         EntityDescriptor edFromAppointmentCreateEditView = getEntityDescriptorFromView();
         try{
-            if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+            if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewDialogActionEvent.
                     APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
                 setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
                 day = getEntityDescriptorFromView().getRequest().
@@ -340,7 +337,7 @@ public class AppointmentViewController extends ViewController{
                 initialiseNewEntityDescriptor();
                 result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
             }
-            else if (e.getActionCommand().equals(AppointmentViewDialogActionEvent.
+            else if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewDialogActionEvent.
                     APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
                 setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
                 day = getEntityDescriptorFromView().getRequest().
@@ -349,13 +346,13 @@ public class AppointmentViewController extends ViewController{
                 result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
             }
             else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
             this.myController.actionPerformed(actionEvent); 
             
             }
@@ -369,7 +366,7 @@ public class AppointmentViewController extends ViewController{
              * ---- else fire error message to APPOINTMENT_CREATOR_EDITOR_VIEW to report APPOINTMENT_VIEW_ERROR as a property change event
              */
             if (!e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
                 if (result!=null){
                     try{
                         this.view2.setClosed(true);
@@ -385,7 +382,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     initialiseNewEntityDescriptor();
                     pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
                         null,getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view);
@@ -410,7 +407,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     pcSupport.addPropertyChangeListener(this.view);
                     pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
 
@@ -422,7 +419,7 @@ public class AppointmentViewController extends ViewController{
                     setEntityDescriptorFromView(getNewEntityDescriptor());
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
-                            DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                            DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
                     this.myController.actionPerformed(actionEvent);
 
                 }
@@ -432,7 +429,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     pcSupport.addPropertyChangeListener(this.view2);
                     pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                        EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view2);
@@ -448,33 +445,33 @@ public class AppointmentViewController extends ViewController{
     
     private void doAppointmentScheduleViewAction(ActionEvent e){
         if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.
+                EntityDescriptor.AppointmentViewControllerActionEvent.
                         APPOINTMENTS_VIEW_CLOSED.toString())){
             /**
              * APPOINTMENTS_VIEW_CLOSED
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
             this.myController.actionPerformed(actionEvent);   
         }
         else if (e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
             /**
              * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
             this.myController.actionPerformed(actionEvent); 
             
         }
         else if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
+                getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
                 View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
@@ -484,7 +481,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                       DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
@@ -493,11 +490,11 @@ public class AppointmentViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString())){
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDays(new SurgeryDays().read());
+                getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
                 View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
@@ -507,7 +504,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                       DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
@@ -521,7 +518,7 @@ public class AppointmentViewController extends ViewController{
         }
         
         else if (e.getActionCommand().equals(   
-            ViewController.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString())){
+            EntityDescriptor.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
@@ -541,7 +538,7 @@ public class AppointmentViewController extends ViewController{
         }
         
         else if (e.getActionCommand().equals(   
-                AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
+                EntityDescriptor.AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString())){
             /**
              * EMPTY_SLOT_SCANNER_DIALOG_REQUEST constructs an EmptySlotScanEditorModalViewer
              */
@@ -555,7 +552,7 @@ public class AppointmentViewController extends ViewController{
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
             this.myController.actionPerformed(actionEvent);
             
         }
@@ -563,7 +560,7 @@ public class AppointmentViewController extends ViewController{
             /**
              * APPOINTMENTS_REQUEST would be sent by view on a change of the selected day
              */
-            AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString())){
+            EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
@@ -577,7 +574,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 pcSupport.addPropertyChangeListener(this.view);
                 pcEvent = new PropertyChangeEvent(this,
-                    AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                    EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                     getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
                 pcSupport.removePropertyChangeListener(this.view);
@@ -593,7 +590,7 @@ public class AppointmentViewController extends ViewController{
                 */
             }
         }
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
+        else if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString())){
             /**
              * on receipt of APPOINTMENT_UPDATE_VIEW_REQUEST
              * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
@@ -619,7 +616,7 @@ public class AppointmentViewController extends ViewController{
                      */
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
-                            DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                            DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
                     this.myController.actionPerformed(actionEvent);
                 }
                 catch (StoreException ex){
@@ -628,7 +625,7 @@ public class AppointmentViewController extends ViewController{
                 } 
             }
         }
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
+        else if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString())){
             /**
              * on receipt of APPOINTMENT_CREATE_VIEW_REQUEST
              * -- initialises NewEntityDescriptor with the collection of all patients on the system
@@ -648,7 +645,7 @@ public class AppointmentViewController extends ViewController{
                  */
                 ActionEvent actionEvent = new ActionEvent(
                        this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewControllerActionEvent.ENABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                       DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
                 this.myController.actionPerformed(actionEvent);
             }
             catch (StoreException ex){
@@ -657,7 +654,7 @@ public class AppointmentViewController extends ViewController{
             }
         }
         
-        else if (e.getActionCommand().equals(AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
+        else if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString())){
             /**
              * on receipt of APPOINTMENT_CANCEL_REQUEST
              * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
@@ -696,7 +693,7 @@ public class AppointmentViewController extends ViewController{
                      */ 
                     pcSupport.addPropertyChangeListener(this.view);
                     pcEvent = new PropertyChangeEvent(this,
-                        AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view);
@@ -708,7 +705,7 @@ public class AppointmentViewController extends ViewController{
                     setEntityDescriptorFromView(getNewEntityDescriptor());
                     ActionEvent actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
-                        DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                        DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
                     this.myController.actionPerformed(actionEvent);
                 }
                 catch (StoreException ex){
@@ -719,7 +716,7 @@ public class AppointmentViewController extends ViewController{
         }   
     }
     private void doDesktopViewControllerAction(ActionEvent e){
-        if (e.getActionCommand().equals(DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
+        if (e.getActionCommand().equals(DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
             try{
                 /**
                  * view will message view controller when view is closed 
@@ -985,7 +982,7 @@ public class AppointmentViewController extends ViewController{
                             || currentDate.getDayOfWeek().equals(DayOfWeek.THURSDAY)
                             || currentDate.getDayOfWeek().equals(DayOfWeek.FRIDAY))
                         result.add(this.createEmptyAppointmentSlot(
-                              currentDate.atTime(ClinicPMS.FIRST_APPOINTMENT_SLOT))); 
+                              currentDate.atTime(ViewController.FIRST_APPOINTMENT_SLOT))); 
                 currentDate = currentDate.plusDays(1); 
             }
             ArrayList<Appointment> slotsForDay = 
@@ -1177,7 +1174,7 @@ public class AppointmentViewController extends ViewController{
             ArrayList<Appointment> appointments, LocalDate day) {
         LocalDateTime nextEmptySlotStartTime;
         nextEmptySlotStartTime = LocalDateTime.of(day, 
-                                                  ClinicPMS.FIRST_APPOINTMENT_SLOT);
+                                                  ViewController.FIRST_APPOINTMENT_SLOT);
         ArrayList<Appointment> apptsForDayIncludingEmptySlots = new ArrayList<>();      
         Iterator<Appointment> it = appointments.iterator();
         /**
@@ -1230,7 +1227,7 @@ public class AppointmentViewController extends ViewController{
         if (lastAppointment.getStatus().equals(Appointment.Status.BOOKED)){
             //check if bookable time after last appointment
             Duration durationToDayEnd = 
-                    Duration.between(nextEmptySlotStartTime.toLocalTime(), ClinicPMS.LAST_APPOINTMENT_SLOT).abs();
+                    Duration.between(nextEmptySlotStartTime.toLocalTime(), ViewController.LAST_APPOINTMENT_SLOT).abs();
             if (!durationToDayEnd.isZero()) {
                 Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime);
                 apptsForDayIncludingEmptySlots.add(emptySlot);
@@ -1243,7 +1240,7 @@ public class AppointmentViewController extends ViewController{
         appointment.setPatient(null);
         appointment.setStart(start);
         appointment.setDuration(Duration.between(start.toLocalTime(), 
-                                                ClinicPMS.LAST_APPOINTMENT_SLOT));
+                                                ViewController.LAST_APPOINTMENT_SLOT));
         appointment.setStatus(Appointment.Status.UNBOOKED);
         return appointment;
     }
@@ -1259,7 +1256,7 @@ public class AppointmentViewController extends ViewController{
     }
     private Patient makePatientFrom(EntityDescriptor.Patient eP){
         Patient p = new Patient();
-        for (PatientField pf: PatientField.values()){
+        for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
             switch (pf){
                 case KEY:
                     p.setKey(eP.getData().getKey());
@@ -1405,7 +1402,7 @@ public class AppointmentViewController extends ViewController{
         RenderedPatient result = null;
         if (p!=null){
             RenderedPatient vp = new RenderedPatient();
-            for (PatientField pf: PatientField.values()){
+            for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
                 switch(pf){
                     case KEY:
                         vp.setKey(p.getKey());
@@ -1478,7 +1475,7 @@ public class AppointmentViewController extends ViewController{
      */
     private RenderedAppointment renderAppointment(Appointment a){
         RenderedAppointment ra = new RenderedAppointment();
-        for (AppointmentField af: AppointmentField.values()){
+        for (EntityDescriptor.AppointmentField af: EntityDescriptor.AppointmentField.values()){
             switch(af){
                 case KEY:
                     ra.setKey(a.getKey());

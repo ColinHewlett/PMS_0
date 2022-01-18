@@ -8,8 +8,11 @@ package clinicpms.controller;
 import clinicpms.model.StoreManager;
 import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,6 +33,7 @@ public class DesktopViewController extends ViewController{
     //private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
+    private PropertyChangeSupport pcSupport = null;
    
     //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;    
     enum ViewControllers {
@@ -37,6 +41,34 @@ public class DesktopViewController extends ViewController{
                             APPOINTMENT_VIEW_CONTROLLER,
                             MIGRATION_VIEW_CONTROLLER
                          }
+    
+    public enum DesktopViewControllerActionEvent {
+                                            APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
+                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST,
+                                            DATABASE_LOCATOR_REQUEST,
+                                            MODAL_VIEWER_ACTIVATED,
+                                            MODAL_VIEWER_CLOSED,
+                                            MIGRATION_VIEW_CONTROLLER_REQUEST,
+                                            PATIENT_VIEW_CONTROLLER_REQUEST,
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            SET_CSV_APPOINTMENT_FILE_REQUEST,
+                                            SET_CSV_PATIENT_FILE_REQUEST,
+                                            SET_MIGRATION_DATABASE_LOCATION_REQUEST,
+                                            SET_PMS_DATABASE_LOCATION_REQUEST,
+                                            SURGERY_DATES_EDITOR_VIEW_CONTROLLER_REQUEST,
+                                            VIEW_CLOSE_REQUEST,//raised by Desktop view
+                                            VIEW_CLOSED_NOTIFICATION//raised by internal frame views
+                                            }
+    
+    public enum DesktopViewControllerPropertyChangeEvent {
+                                            DISABLE_DESKTOP_DATA_CONTROL,
+                                            DISABLE_DESKTOP_VIEW_CONTROL,
+                                            ENABLE_DESKTOP_DATA_CONTROL,
+                                            ENABLE_DESKTOP_VIEW_CONTROL,
+                                            DISABLE_DESKTOP_WINDOW_CONTROL,
+                                            ENABLE_DESKTOP_WINDOW_CONTROL
+                                            }
+    
     @Override
     public EntityDescriptor getEntityDescriptorFromView(){
         return null;
@@ -62,7 +94,7 @@ public class DesktopViewController extends ViewController{
         view.setVisible(true);
         setView(view);
         //view.setContentPane(view);
-        
+        pcSupport = new PropertyChangeSupport(this);
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
         //databaseLocatorViewControllers = new ArrayList<>();
@@ -104,7 +136,7 @@ public class DesktopViewController extends ViewController{
     private void doAppointmentViewControllerAction(ActionEvent e){
         AppointmentViewController avc = null;
         if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             /**
              * on reception of VIEW_CLOSED_NOTIFICATION action command
              * -- loops through the active appointment view controllers to find the ActionEvent sender
@@ -142,14 +174,28 @@ public class DesktopViewController extends ViewController{
                     /**
                      * re-enable view's data menu, if it exists
                      */
-                    getView().enableDataControl();
+                    pcSupport.addPropertyChangeListener(view);
+                    PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
+                        DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
+                        Color.BLACK,Color.BLUE);
+                    pcSupport.firePropertyChange(pcEvent);
+                    pcSupport.removePropertyChangeListener(view);
+                    
+                    pcSupport.addPropertyChangeListener(view);
+                    pcEvent = new PropertyChangeEvent(this,
+                        DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
+                        Color.BLACK,Color.BLUE);
+                    pcSupport.firePropertyChange(pcEvent);
+                    pcSupport.removePropertyChangeListener(view);
+                    /*getView().enableDataControl();
                     getView().enableWindowCloseControl();
+                    */
                 }
             }
             
         }
         else if (e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.
+                DesktopViewControllerActionEvent.
                         APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
             /**
              * on entry DeskTop View Controller
@@ -172,36 +218,65 @@ public class DesktopViewController extends ViewController{
                      */
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
-                            ViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                            DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
                     pvc.actionPerformed(actionEvent);
                 }
             }  
         }
         else if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.
-                    ENABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+             DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString())){
+            
+            pcSupport.addPropertyChangeListener(view);
+            PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
+                DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
+                Color.BLACK,Color.BLUE);
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(view);
+            
+            pcSupport.addPropertyChangeListener(view);
+            pcEvent = new PropertyChangeEvent(this,
+                DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
+                Color.BLACK,Color.BLUE);
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(view);
             /**
              * on receipt of ENABLE_DESKTOP_CONTROLS_REQUEST
              * -- sends desktop view controller sends message to its view to re-enable VIEW and DATA controls as well as its window closing control
-             */
+             
             getView().enableViewControl();
             getView().enableWindowCloseControl();
+            */
         }
         else if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.
-                    DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+            DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
+            
+            pcSupport.addPropertyChangeListener(view);
+            PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
+                DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_VIEW_CONTROL.toString(),
+                Color.BLACK,Color.BLUE);
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(view);
+            
+            pcSupport.addPropertyChangeListener(view);
+            pcEvent = new PropertyChangeEvent(this,
+                DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_WINDOW_CONTROL.toString(),
+                Color.BLACK,Color.BLUE);
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(view);
             /**
              * on receipt of DISABLE_DESKTOP_CONTROLS_REQUEST
              * -- sends desktop view controller sends message to its view to disable VIEW and DATA controls as well as its window closing control
-             */
+             
+            
             getView().disableViewControl();
             getView().disableWindowClosedControl();
+            */
         }
     }
     private void doPatientViewControllerAction(ActionEvent e){
         PatientViewController pvc = null;
         if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
@@ -234,7 +309,7 @@ public class DesktopViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-            ViewController.PatientViewControllerActionEvent.
+            EntityDescriptor.PatientViewControllerActionEvent.
                     APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
             PatientViewController patientViewController = (PatientViewController)e.getSource();
             Optional<EntityDescriptor> ed = Optional.of(patientViewController.getEntityDescriptorFromView());
@@ -250,7 +325,7 @@ public class DesktopViewController extends ViewController{
          * -- also re-enable the desktop view window closure control ("X")
          */
         if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+            DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             getView().enableViewControl();
             getView().enableDataControl();
             getView().enableWindowCloseControl();
@@ -277,7 +352,7 @@ public class DesktopViewController extends ViewController{
      */
     private void doDesktopViewAction(ActionEvent e){  
         if(e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
+                DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
             String[] options = {"Yes", "No"};
             String message;
             if (!appointmentViewControllers.isEmpty()||!patientViewControllers.isEmpty()){
@@ -311,7 +386,7 @@ public class DesktopViewController extends ViewController{
          * -- as is the "Data" option in the view which prevents multiple copies of the migration view controller
          */
         else if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString())){
+            DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString())){
             getView().disableDataControl();
             getView().disableViewControl();
             createNewMigrationViewController();
@@ -324,7 +399,7 @@ public class DesktopViewController extends ViewController{
          * -- action posted to migration view controller to disable its "data" menu
          */
         else if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.
+            DesktopViewControllerActionEvent.
                     APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
             createNewAppointmentViewController(Optional.ofNullable(null));
             /**
@@ -334,7 +409,7 @@ public class DesktopViewController extends ViewController{
             
         }
         else if (e.getActionCommand().equals(
-            ViewController.DesktopViewControllerActionEvent.
+            DesktopViewControllerActionEvent.
                     PATIENT_VIEW_CONTROLLER_REQUEST.toString())){
             try{
                 patientViewControllers.add(
@@ -403,7 +478,7 @@ public class DesktopViewController extends ViewController{
          * user has attempted to close the desktop view
          */
         else if(e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
+                DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             System.exit(0);
         }
         /**
@@ -412,7 +487,7 @@ public class DesktopViewController extends ViewController{
          * 
          */
         else if(e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString())){
+                DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString())){
             /**
              * SET_MIGRATION_DATABASE_LOCATION_REQUEST ->
              * -- configure a file chooser to select the file and folder the current setting in the TARGETS_DATABASE for the migration database
@@ -475,7 +550,7 @@ public class DesktopViewController extends ViewController{
          * -- this is accomplished via a file dialog directly without the need for s view and a separate controller
          */
         else if(e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString())){
+                DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString())){
             /**
              * SET_PMS_DATABASE_LOCATION_REQUEST ->
              * -- configure a file chooser to select the file and folder of the current migration database setting in the TARGETS_DATABASE
@@ -639,7 +714,7 @@ public class DesktopViewController extends ViewController{
                 PatientViewController pvc = pvcIterator.next();
                 ActionEvent actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+                        DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
                 pvc.actionPerformed(actionEvent);    
             }
         }
@@ -650,7 +725,7 @@ public class DesktopViewController extends ViewController{
                 AppointmentViewController avc = avcIterator.next();
                 ActionEvent actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+                        DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
                 avc.actionPerformed(actionEvent);    
             }
         }

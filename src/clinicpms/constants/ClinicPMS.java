@@ -74,7 +74,7 @@ public class ClinicPMS {
                                 DENTAL_RECALL_DATE,
                                 HYGIENE_RECALL_DATE,
                                 NOTES}
-    */
+    
     
     public enum DesktopViewControllerActionEvent {
                                     
@@ -87,7 +87,7 @@ public class ClinicPMS {
     }
     
     
-    /*PATIENT VIEW CONTROLLER & VIEW OPTIONS*/
+
     public enum PatientViewControllerActionEvent {
                                             PATIENT_SELECTION_ERROR,
                                             PATIENT_SELECTION_PERFORMED,
@@ -111,7 +111,9 @@ public class ClinicPMS {
 
     
     public static final LocalTime FIRST_APPOINTMENT_SLOT = LocalTime.of(9,0);
+  */
     public static final LocalTime LAST_APPOINTMENT_SLOT = LocalTime.of(17,0);
+  /*  
     public static final int LAST_APPOINTMENT_DURATION = 30;
     
     public static final String APPOINTMENTS_VIEW_REQUEST = "Create new appointments view";
@@ -124,5 +126,5 @@ public class ClinicPMS {
     public static final int INVALID_KEY_VALUE_EXCEPTION = 5;
     public static final int KEY_NOT_FOUND_EXCEPTION = 6;
     
-    
+    */
 }

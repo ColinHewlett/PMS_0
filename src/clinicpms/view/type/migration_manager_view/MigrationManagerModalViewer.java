@@ -74,13 +74,7 @@ public class MigrationManagerModalViewer extends View {
         centreViewOnDesktop(x.getParent(),this);
         this.initialiseView();
         this.setVisible(true);
-        
-        /*
-        ActionEvent actionEvent = new ActionEvent(this,
-            ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
-        this.getMyController().actionPerformed(actionEvent);
-        */
+
         startModal(this);
  
     }
@@ -218,7 +212,7 @@ public class MigrationManagerModalViewer extends View {
             public void internalFrameClosing(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
                         MigrationManagerModalViewer.this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
+                        EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
                 getMyController().actionPerformed(actionEvent);
             }
         };

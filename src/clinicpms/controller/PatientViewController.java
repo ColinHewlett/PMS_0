@@ -5,9 +5,7 @@
  */
 package clinicpms.controller;
 
-import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
-import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
-import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
+import clinicpms.controller.DesktopViewController.DesktopViewControllerActionEvent;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
@@ -58,7 +56,7 @@ public class PatientViewController extends ViewController {
     }
     private RenderedAppointment renderAppointment(Appointment a){
         RenderedAppointment ra = new RenderedAppointment();
-        for (AppointmentField af: AppointmentField.values()){
+        for (EntityDescriptor.AppointmentField af: EntityDescriptor.AppointmentField.values()){
             switch(af){
                 case KEY:
                     ra.setKey(a.getKey());
@@ -79,7 +77,7 @@ public class PatientViewController extends ViewController {
         RenderedPatient result = null;
         if (p!=null){
             RenderedPatient vp = new RenderedPatient();
-            for (PatientField pf: PatientField.values()){
+            for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
                 switch(pf){
                     case KEY:
                         vp.setKey(p.getKey());
@@ -234,7 +232,7 @@ public class PatientViewController extends ViewController {
     }
     private Patient makePatientFrom(EntityDescriptor.Patient  eP){
         Patient p = new Patient();
-        for (PatientField pf: PatientField.values()){
+        for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
             switch (pf){
                 case KEY:
                     p.setKey(eP.getData().getKey());
@@ -342,13 +340,13 @@ public class PatientViewController extends ViewController {
         
         this.view.addInternalFrameClosingListener(); 
         pcSupportForView.addPropertyChangeListener(
-                PatientViewControllerPropertyEvent.
+                EntityDescriptor.PatientViewControllerPropertyEvent.
                         PATIENTS_RECEIVED.toString(),view);
         pcSupportForView.addPropertyChangeListener(
-                PatientViewControllerPropertyEvent.
+                EntityDescriptor.PatientViewControllerPropertyEvent.
                         PATIENT_RECEIVED.toString(),view);
         pcSupportForView.addPropertyChangeListener(
-                PatientViewControllerPropertyEvent.
+                EntityDescriptor.PatientViewControllerPropertyEvent.
                         NULL_PATIENT_RECEIVED.toString(),view);
         view.initialiseView();
     }
@@ -359,18 +357,18 @@ public class PatientViewController extends ViewController {
         Patient patient;
         setEntityDescriptorFromView(view.getEntityDescriptor());
         if (e.getActionCommand().equals(
-                    PatientViewControllerActionEvent.
+                    EntityDescriptor.PatientViewControllerActionEvent.
                             APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
             /**
              * request forwarded onto the DesktopViewController
              */    
             ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
-                PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
             getMyController().actionPerformed(actionEvent);
         }
         else if (e.getActionCommand().equals(
-                    PatientViewControllerActionEvent.
+                    EntityDescriptor.PatientViewControllerActionEvent.
                             PATIENT_VIEW_CLOSED.toString())){
                 ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
@@ -378,7 +376,7 @@ public class PatientViewController extends ViewController {
                 getMyController().actionPerformed(actionEvent);
         }
         else if (e.getActionCommand().equals(
-            PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString())){
+            EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString())){
             patient = deserialisePatientFromEDRequest();
             if (patient.getKey() == null){
                 try{
@@ -389,7 +387,7 @@ public class PatientViewController extends ViewController {
                     serialisePatientToEDPatient(patient);
                     
                     pcEvent = new PropertyChangeEvent(this,
-                            PatientViewControllerPropertyEvent.
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
                                 PATIENT_RECEIVED.toString(),
                             getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
@@ -399,7 +397,7 @@ public class PatientViewController extends ViewController {
                     initialiseNewEntityDescriptor();
                     serialisePatientsToEDCollection(patients);
                     pcEvent = new PropertyChangeEvent(this,
-                                PatientViewControllerPropertyEvent.
+                                EntityDescriptor.PatientViewControllerPropertyEvent.
                                         PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
                 }
@@ -413,7 +411,7 @@ public class PatientViewController extends ViewController {
             }
         }
         else if (e.getActionCommand().equals(
-                PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString())){
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString())){
             patient = deserialisePatientFromEDRequest();
             if (patient.getKey() != null){
                 try{
@@ -424,7 +422,7 @@ public class PatientViewController extends ViewController {
                     serialisePatientToEDPatient(patient);
                     
                     pcEvent = new PropertyChangeEvent(this,
-                            PatientViewControllerPropertyEvent.
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
                             PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
                     
@@ -438,7 +436,7 @@ public class PatientViewController extends ViewController {
             }
         }
         else if (e.getActionCommand().equals(
-                PatientViewControllerActionEvent.PATIENTS_REQUEST.toString())){
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENTS_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             patient = deserialisePatientFromEDRequest();
             
@@ -449,7 +447,7 @@ public class PatientViewController extends ViewController {
                     initialiseNewEntityDescriptor();
                     serialisePatientsToEDCollection(patients);
                     pcEvent = new PropertyChangeEvent(this,
-                                PatientViewControllerPropertyEvent.
+                                EntityDescriptor.PatientViewControllerPropertyEvent.
                                         PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);  
                 }
@@ -459,7 +457,7 @@ public class PatientViewController extends ViewController {
             }
         }
         else if (e.getActionCommand().equals(
-                PatientViewControllerActionEvent.NULL_PATIENT_REQUEST.toString())){
+                EntityDescriptor.PatientViewControllerActionEvent.NULL_PATIENT_REQUEST.toString())){
             //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             patient = new Patient();
@@ -467,7 +465,7 @@ public class PatientViewController extends ViewController {
                 serialisePatientToEDPatient(patient);
                 getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(false);
                 pcEvent = new PropertyChangeEvent(this,
-                            PatientViewControllerPropertyEvent.
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
                                     NULL_PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupportForView.firePropertyChange(pcEvent);  
             }
@@ -495,7 +493,7 @@ public class PatientViewController extends ViewController {
                     getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
                     //EntityDescriptor ed = getNewEntityDescriptor();
                     pcEvent = new PropertyChangeEvent(this,
-                            PatientViewControllerPropertyEvent.
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
                             PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
                 }
@@ -512,7 +510,7 @@ public class PatientViewController extends ViewController {
          * -- assumed the view's EntityDescriptor.Request.Patient provides details of patient to be fetched by the controller
          */
         else if (e.getActionCommand().equals(
-                PatientViewControllerActionEvent.PATIENT_REQUEST.toString())){
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString())){
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             patient = deserialisePatientFromEDRequest();
             //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
@@ -525,7 +523,7 @@ public class PatientViewController extends ViewController {
                     getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
                     //EntityDescriptor ed = getNewEntityDescriptor();
                     pcEvent = new PropertyChangeEvent(this,
-                            PatientViewControllerPropertyEvent.
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
                             PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
                 }

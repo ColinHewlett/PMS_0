@@ -12,7 +12,7 @@ import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysTable;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -112,12 +112,12 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
-    public void update(SurgeryDaysValues value){
+    public void update(SurgeryDaysAssignment value){
 
     }
 
     @Override
-    public SurgeryDaysValues read(SurgeryDaysValues value) throws StoreException{
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException{
         return null;
     }
     
@@ -259,12 +259,12 @@ public class SQLExpressStore extends Store {
     }
     
     /**
-     * Populates the surgery days table in the migration store from the specified SurgeryDaysValues collection of values
-     * @param data:SurgeryDaysValues
+     * Populates the surgery days table in the migration store from the specified SurgeryDaysAssignment collection of values
+     * @param data:SurgeryDaysAssignment
      * @throws StoreException 
      */
     @Override
-    public void populate(SurgeryDaysValues data)throws StoreException{
+    public void populate(SurgeryDaysAssignment data)throws StoreException{
         
     }
     

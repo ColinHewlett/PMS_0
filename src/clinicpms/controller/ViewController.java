@@ -10,6 +10,7 @@ import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.Point;
 import javax.swing.JInternalFrame;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.JOptionPane;
 
@@ -20,79 +21,10 @@ import javax.swing.JOptionPane;
  */
 public abstract class ViewController implements ActionListener{
 
-    public static enum AppointmentField {ID,
-                                KEY,
-                                APPOINTMENT_PATIENT,
-                                START,
-                                DURATION,
-                                NOTES}
     public static enum Status{BOOKED,UNBOOKED};
-    public enum AppointmentViewControllerActionEvent {
-                                            APPOINTMENT_CANCEL_REQUEST,/*of selected appt*/
-                                            APPOINTMENT_CREATE_VIEW_REQUEST,
-                                            APPOINTMENT_UPDATE_VIEW_REQUEST,/*of selected appt*/
-                                            APPOINTMENTS_VIEW_CLOSED,
-                                            APPOINTMENTS_FOR_DAY_REQUEST,/*triggered by day selection*/
-                                            APPOINTMENT_SLOTS_FROM_DATE_REQUEST,
-                                            EMPTY_SLOT_SCANNER_DIALOG_REQUEST,
-                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
-                                            NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST,
-                                            NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST,
-                                            SURGERY_DAYS_EDIT_REQUEST,
-                                            SURGERY_DAYS_EDITOR_VIEW_REQUEST
-                                            }
-    public enum AppointmentViewDialogActionEvent {
-                                            APPOINTMENT_VIEW_CLOSE_REQUEST,
-                                            APPOINTMENT_VIEW_CREATE_REQUEST,
-                                            APPOINTMENT_VIEW_UPDATE_REQUEST,
-                                            }
-    public enum AppointmentViewDialogPropertyEvent {
-                                            APPOINTMENT_RECEIVED,
-                                            APPOINTMENT_VIEW_ERROR
-                                            }
-    public enum AppointmentViewControllerPropertyEvent {
-                                            APPOINTMENT_CANCEL_COMPLETE,
-                                            APPOINTMENTS_FOR_DAY_RECEIVED,
-                                            APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
-                                            APPOINTMENT_FOR_DAY_ERROR,
-                                            SURGERY_DAYS_UPDATE_RECEIVED,
-                                            NON_SURGERY_DAY_EDIT_RECEIVED
-                                            }
     
-    public enum DesktopViewControllerActionEvent {
-                                            APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
-                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST,
-                                            DISABLE_DESKTOP_CONTROLS_REQUEST,
-                                            DISABLE_DESKTOP_DATA_CONTROL_REQUEST,
-                                            DISABLE_DESKTOP_VIEW_CONTROL_REQUEST,
-                                            ENABLE_DESKTOP_CONTROLS_REQUEST,
-                                            ENABLE_DESKTOP_DATA_CONTROL_REQUEST,
-                                            ENABLE_DESKTOP_VIEW_CONTROL_REQUEST,
-                                            MIGRATION_VIEW_CONTROLLER_REQUEST,
-                                            PATIENT_VIEW_CONTROLLER_REQUEST,
-                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
-                                            DATABASE_LOCATOR_REQUEST,
-                                            SET_MIGRATION_DATABASE_LOCATION_REQUEST,
-                                            SET_PMS_DATABASE_LOCATION_REQUEST,
-                                            SURGERY_DATES_EDITOR_VIEW_CONTROLLER_REQUEST,
-                                            VIEW_CLOSE_REQUEST,//raised by Desktop view
-                                            VIEW_CLOSED_NOTIFICATION//raised by internal frame views
-                                            }
     
-    public enum DatabaseLocatorViewControllerActionEvent{DATABASE_LOCATION_REQUEST,
-                                                         DATABASE_LOCATOR_VIEW_CLOSED}
-    
-    public enum DatabaseLocatorViewPropertyEvent{DATABASE_LOCATION_RECEIVED}
-    
-    public enum DesktopViewControllerPropertyEvent{
-                                            
-    }
-    
-    public enum EmptySlotSearchCriteriaDialogActionEvent {EMPTY_SLOT_SCANNER_CLOSE_REQUEST,
-                                                          EMPTY_SLOT_SCANNER_SETTINGS_REQUEST}
-    
-    public enum EmptySlotSearchCriteriaDialogPropertyEvent {EMPTY_SLOT_SCANNER_SETTINGS_RECEIVED}
-    
+
     public enum MigrationViewRequest{  MIGRATE_APPOINTMENTS_TO_DATABASE,
                                         MIGRATE_PATIENTS_TO_DATABASE,
                                         REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
@@ -103,59 +35,21 @@ public abstract class ViewController implements ActionListener{
 
     public enum MigratorViewControllerActionEvent{  APPOINTMENT_MIGRATOR_REQUEST, 
                                                     PATIENT_MIGRATOR_REQUEST};
-    public enum MigratorViewControllerPropertyChangeEventEvent{APPOINTMENT_MIGRATOR_RECEIVED, PATIENT_MIGRATOR_RECEIVED};
-    public enum PatientField {
-                              KEY,
-                              TITLE,
-                              FORENAMES,
-                              SURNAME,
-                              LINE1,
-                              LINE2,
-                              TOWN,
-                              COUNTY,
-                              POSTCODE,
-                              PHONE1,
-                              PHONE2,
-                              GENDER,
-                              DOB,
-                              IS_GUARDIAN_A_PATIENT,
-                              GUARDIAN,
-                              NOTES,
-                              DENTAL_RECALL_DATE,
-                              HYGIENE_RECALL_DATE,
-                              DENTAL_RECALL_FREQUENCY,
-                              HYGIENE_RECALL_FREQUENCY,
-                              DENTAL_APPOINTMENT_HISTORY,
-                              HYGIENE_APPOINTMENT_HISTORY}
+   
     
     public static enum PatientAppointmentContactListViewControllerActionEvent {
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_CLOSED,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST
                                             }
     
-    public static enum PatientViewControllerActionEvent {
-                                            NULL_PATIENT_REQUEST,
-                                            PATIENT_REQUEST,
-                                            PATIENTS_REQUEST,
-                                            PATIENT_VIEW_CLOSED,
-                                            PATIENT_VIEW_CREATE_REQUEST,
-                                            PATIENT_VIEW_UPDATE_REQUEST,
-                                            PATIENT_GUARDIAN_REQUEST,
-                                            PATIENT_GUARDIANS_REQUEST,
-                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST
-                                            }
-    public static enum PatientViewControllerPropertyEvent {
-                                            NULL_PATIENT_RECEIVED,
-                                            PATIENT_RECEIVED,
-                                            PATIENTS_RECEIVED,
-                                            PATIENT_GUARDIANS_RECEIVED}
     
-    public static enum SurgeryDaysEditorViewControllerActionEvents  {
-                                            SURGERY_DATES_EDITOR_REQUEST}
     
 
     public enum ViewMode {CREATE,
                           UPDATE} 
+    
+    public static final LocalTime FIRST_APPOINTMENT_SLOT = LocalTime.of(9,0);
+    public static final LocalTime LAST_APPOINTMENT_SLOT = LocalTime.of(17,0);
     
     public DateTimeFormatter dmyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");

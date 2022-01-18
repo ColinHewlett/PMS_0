@@ -71,7 +71,7 @@ public class PatientNotificationEditorModalViewer extends View{
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+            EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
@@ -161,12 +161,12 @@ public class PatientNotificationEditorModalViewer extends View{
     @Override
     public void propertyChange(PropertyChangeEvent e){
         if (e.getPropertyName().equals(
-                ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
+                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromED();
         }
         else if (e.getPropertyName().equals(
-            ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+            EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             ViewController.displayErrorMessage(ed.getError(),
                                                "Appointment editor dialog error",

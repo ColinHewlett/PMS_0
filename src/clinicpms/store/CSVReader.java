@@ -174,7 +174,7 @@ public class CSVReader implements ICSVReader{
                                 A_144
     }
     
-    private enum PatientField {KEY,
+    private enum DenPatField {KEY,
                               TITLE,
                               FORENAMES,
                               SURNAME,
@@ -495,7 +495,7 @@ public class CSVReader implements ICSVReader{
             String[] dbfPatientRow = dbfPatientsIt.next();
             if (count>0){
                 Patient patient = new Patient();
-                for (PatientField pf: PatientField.values()){
+                for (DenPatField pf: DenPatField.values()){
                     switch (pf){
                         case KEY:
                             patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));

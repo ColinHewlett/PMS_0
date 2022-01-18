@@ -84,7 +84,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
@@ -167,12 +167,12 @@ public class AppointmentCreatorEditorModalViewer extends View {
     @Override
     public void propertyChange(PropertyChangeEvent e){
         if (e.getPropertyName().equals(
-                ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
+                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromED();
         }
         else if (e.getPropertyName().equals(
-            ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+            EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             ViewController.displayErrorMessage(ed.getError(),
                                                "Appointment editor dialog error",
@@ -182,11 +182,11 @@ public class AppointmentCreatorEditorModalViewer extends View {
     
     private void populateSelectStartTime(LocalDate day){
         DefaultComboBoxModel<LocalDateTime> model = new DefaultComboBoxModel<>();
-        LocalDateTime value = day.atTime(ClinicPMS.FIRST_APPOINTMENT_SLOT);
+        LocalDateTime value = day.atTime(ViewController.FIRST_APPOINTMENT_SLOT);
         do{
             model.addElement(value);
             value = value.plusMinutes(5);   
-        }while(!value.isAfter(day.atTime(ClinicPMS.LAST_APPOINTMENT_SLOT)));
+        }while(!value.isAfter(day.atTime(ViewController.LAST_APPOINTMENT_SLOT)));
         this.cmbSelectStartTime.setModel(model);
     }
     
@@ -555,14 +555,14 @@ public class AppointmentCreatorEditorModalViewer extends View {
                     case CREATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
-                            ViewController.AppointmentViewDialogActionEvent.
+                            EntityDescriptor.AppointmentViewDialogActionEvent.
                             APPOINTMENT_VIEW_CREATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
                         break;
                     case UPDATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
-                            ViewController.AppointmentViewDialogActionEvent.
+                            EntityDescriptor.AppointmentViewDialogActionEvent.
                             APPOINTMENT_VIEW_UPDATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
                         break;

@@ -29,7 +29,7 @@ public class SurgeryDaysTable implements ITable{
     }
     
     public void populate() throws StoreException{
-        SurgeryDaysValues surgeryDaysValues = new SurgeryDaysValues();
+        SurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
         //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
         surgeryDaysValues.put(DayOfWeek.MONDAY, Boolean.TRUE);
         surgeryDaysValues.put(DayOfWeek.TUESDAY, Boolean.TRUE);

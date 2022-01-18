@@ -30,12 +30,12 @@ import javax.swing.JOptionPane;
  * @author colin
  */
 public class MigrationManagerViewController extends ViewController {
-    private MigrationDescriptor migrationDescriptorFromView = null;
+    //private MigrationDescriptorx migrationDescriptorFromView = null;
     private ActionListener myController = null;
     private View view = null;
     private JFrame owningFrame = null;
     private PropertyChangeSupport pcSupport = null;
-    private MigrationDescriptor newMigrationDescriptor = null;
+    //private MigrationDescriptorx newMigrationDescriptor = null;
     private EntityDescriptor entityDescriptorFromView = null;
     private EntityDescriptor newEntityDescriptor = null;
     private EntityDescriptor oldEntityDescriptor = null;
@@ -73,7 +73,7 @@ public class MigrationManagerViewController extends ViewController {
          */
         ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
         this.myController.actionPerformed(actionEvent);
     }
     
@@ -83,18 +83,18 @@ public class MigrationManagerViewController extends ViewController {
         File file = null;
         BufferedWriter bw = null;
         if (e.getActionCommand().equals(
-                AppointmentViewControllerActionEvent.
+                EntityDescriptor.AppointmentViewControllerActionEvent.
                         APPOINTMENTS_VIEW_CLOSED.toString())){
             /**
              * APPOINTMENTS_VIEW_CLOSED
              */
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
             this.myController.actionPerformed(actionEvent);   
         }
         else if (e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString())){
+               DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
         
         }
         else if (e.getActionCommand().equals(
@@ -115,18 +115,6 @@ public class MigrationManagerViewController extends ViewController {
                 this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
                 storeManager.setPatientCSVPath(
                 this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
-                 
-                /*
-                Store.setAppointmentCSVPath(
-                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
-                Store.setPatientCSVPath(
-                        this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
-               */
-                /**
-                 * Store factory returns the database driver  selected by a command line value
-                 */
-                //IStore store = Store.factory(); 
-                //IMigrationManager  manager = store.getMigrationManager();
                 doSelectedDataMigrationAction(
                         getEntityDescriptorFromView().getMigrationDescriptor().getMigrationViewRequest());
                 
@@ -172,19 +160,24 @@ public class MigrationManagerViewController extends ViewController {
         return this.entityDescriptorFromView;
     }
     
-    public MigrationDescriptor getMigrationDescriptorFromView(){
+    /*
+    public MigrationDescriptorx getMigrationDescriptorFromView(){
         return this.migrationDescriptorFromView;
     }
+    */
+    
     private void setEntityDescriptorFromView(EntityDescriptor e){
         this.entityDescriptorFromView = e;
     }
     
-    public MigrationDescriptor getNewMigrationDescriptor(){
+    /*
+    public MigrationDescriptorx getNewMigrationDescriptor(){
         return this.newMigrationDescriptor;
     }
-    private void setNewMigrationDescriptor(MigrationDescriptor e){
+    private void setNewMigrationDescriptor(MigrationDescriptorx e){
         this.newMigrationDescriptor = e;
     }
+    */
     
     public View getView( ){
         return view;

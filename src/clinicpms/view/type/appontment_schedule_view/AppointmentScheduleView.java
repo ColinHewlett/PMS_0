@@ -8,8 +8,6 @@ import clinicpms.view.AppointmentDateVetoPolicy;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.type.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.controller.ViewController;
-import clinicpms.controller.ViewController.AppointmentViewControllerActionEvent;
 import clinicpms.view.View;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
@@ -71,22 +69,22 @@ public class AppointmentScheduleView extends View{
     @Override
     public void propertyChange(PropertyChangeEvent e){
         String propertyName = e.getPropertyName();
-        if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString())){
+        if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromEDCollection();
         }
-        else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
-            this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDays());
+            this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
             DatePickerSettings dps = dayDatePicker.getSettings();
             dps.setVetoPolicy(vetoPolicy);
         }
-        else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             setEntityDescriptor(ed);
             temporarilySuspendDatePickerDateVetoPolicy(getEntityDescriptor().getRequest().getDay());
         }
-        else if (propertyName.equals(ViewController.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
             
@@ -96,7 +94,7 @@ public class AppointmentScheduleView extends View{
             getEntityDescriptor().getRequest().setDay(dayDatePicker.getDate());
             refreshAppointmentTableWithCurrentlySelectedDate();
         } 
-        else if (propertyName.equals(ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
         }
@@ -120,7 +118,7 @@ public class AppointmentScheduleView extends View{
     @Override
     public void initialiseView(){
         //following action invokes call to controller via DateChange\Listener
-        this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDays());
+        this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
         DatePickerSettings dps = dayDatePicker.getSettings();
         dps.setVetoPolicy(vetoPolicy);
        
@@ -212,7 +210,7 @@ public class AppointmentScheduleView extends View{
     private void mniSurgeryDaysEditorActionPerformed(ActionEvent e){
         ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
-                    ViewController.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString());
+                    EntityDescriptor.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDITOR_VIEW_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }
     
@@ -221,14 +219,14 @@ public class AppointmentScheduleView extends View{
         getEntityDescriptor().getRequest().setDay(day);
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                ViewController.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }
     
     private void mniSelectNonSurgeryDayActionPerformed(ActionEvent e){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                ViewController.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }
     private void setEmptySlotAvailabilityTableListener(){
@@ -270,7 +268,7 @@ public class AppointmentScheduleView extends View{
     private void refreshAppointmentTableWithCurrentlySelectedDate(){
         ActionEvent actionEvent = new ActionEvent(AppointmentScheduleView.this, 
                 ActionEvent.ACTION_PERFORMED,
-                AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
         AppointmentScheduleView.this.getMyController().actionPerformed(actionEvent);
         SwingUtilities.invokeLater(new Runnable() 
         {
@@ -376,7 +374,7 @@ public class AppointmentScheduleView extends View{
             public void internalFrameClosing(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
                         AppointmentScheduleView.this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
+                        EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENTS_VIEW_CLOSED.toString());
                 getMyController().actionPerformed(actionEvent);
             }
         };
@@ -552,7 +550,7 @@ public class AppointmentScheduleView extends View{
             .addGroup(pnlControlsLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(pnlControlsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
@@ -652,6 +650,11 @@ public class AppointmentScheduleView extends View{
         mnuSurgeryDayEdit.setText("Edit");
 
         mniSurgeryDaysEditor.setText("Define which days are surgery days");
+        mniSurgeryDaysEditor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniSurgeryDaysEditorActionPerformed(evt);
+            }
+        });
         mnuSurgeryDayEdit.add(mniSurgeryDaysEditor);
 
         mniSelectNonSurgeryDay.setText("Open schedule on a non-surgery day");
@@ -692,7 +695,7 @@ public class AppointmentScheduleView extends View{
         //27/10/21 18:12 bug fix by commenting out this code line initialiseEDRequestFromView(-1);
         ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
-                AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_CREATE_VIEW_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
@@ -708,7 +711,7 @@ public class AppointmentScheduleView extends View{
             initialiseEDRequestFromView(row);
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
-                    AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString());
+                    EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_UPDATE_VIEW_REQUEST.toString());
             this.getMyController().actionPerformed(actionEvent);
         }
     }//GEN-LAST:event_btnUpdateAppointmentActionPerformed
@@ -743,7 +746,7 @@ public class AppointmentScheduleView extends View{
         getEntityDescriptor().getRequest().setDay(searchStartDate);
         ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
-                    AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString());
+                    EntityDescriptor.AppointmentViewControllerActionEvent.EMPTY_SLOT_SCANNER_DIALOG_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }//GEN-LAST:event_btnScanForEmptySlotsActionPerformed
 
@@ -803,7 +806,7 @@ public class AppointmentScheduleView extends View{
             if (OKToCancelAppointment==JOptionPane.YES_OPTION){
                 ActionEvent actionEvent = new ActionEvent(this, 
                         ActionEvent.ACTION_PERFORMED,
-                        AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString());
+                        EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_CANCEL_REQUEST.toString());
                 this.getMyController().actionPerformed(actionEvent);
             }
         }
@@ -814,7 +817,11 @@ public class AppointmentScheduleView extends View{
         LocalDate day = this.vetoPolicy.getNowDateOrClosestAvailableAfterNow();
         dayDatePicker.setDate(day);
     }//GEN-LAST:event_btnNowDayActionPerformed
-
+/*
+    private void mniSurgeryDaysEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSurgeryDaysEditorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mniSurgeryDaysEditorActionPerformed
+*/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancelSelectedAppointment;
@@ -854,7 +861,7 @@ public class AppointmentScheduleView extends View{
             getEntityDescriptor().getRequest().setDay(AppointmentScheduleView.this.dayDatePicker.getDate());
             ActionEvent actionEvent = new ActionEvent(AppointmentScheduleView.this, 
                     ActionEvent.ACTION_PERFORMED,
-                    AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
+                    EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENTS_FOR_DAY_REQUEST.toString());
             AppointmentScheduleView.this.getMyController().actionPerformed(actionEvent);
             SwingUtilities.invokeLater(new Runnable() 
             {

@@ -85,7 +85,9 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
 
     protected enum SelectedTargetStore{
                                 MIGRATION_DB,
-                                PMS_DB}
+                                PMS_DB,
+                                CSV_APPOINTMENT_FILE,
+                                CSV_PATIENT_FILE}
     
     private static Storage STORAGE = null;
     private  static String databaseLocatorPath = null;

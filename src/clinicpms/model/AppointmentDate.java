@@ -29,7 +29,7 @@ public class AppointmentDate implements IEntityType{
     }
     
     @Override
-    public boolean isSurgeryDaysValues(){
+    public boolean isSurgeryDaysAssignment(){
         return false;
     }
     

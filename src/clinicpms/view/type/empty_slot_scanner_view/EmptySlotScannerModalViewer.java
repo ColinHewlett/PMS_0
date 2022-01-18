@@ -81,7 +81,7 @@ public class EmptySlotScannerModalViewer extends View {
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+            EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
@@ -378,7 +378,7 @@ cmbSelectSlotDuration.addActionListener(new java.awt.event.ActionListener() {
             getEntityDescriptor().getRequest().setDuration(duration);
             ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
-                ViewController.AppointmentViewControllerActionEvent.
+                EntityDescriptor.AppointmentViewControllerActionEvent.
                 APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString());
             this.getMyController().actionPerformed(actionEvent);
         }

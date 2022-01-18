@@ -5,7 +5,7 @@
  */
 package clinicpms.controller;
 
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -19,6 +19,7 @@ import java.util.HashMap;
  * @author colin
  */
 public class EntityDescriptor {
+    
     private EntityDescriptor.Appointment appointment = null;
     private EntityDescriptor.Patient patient = null;
     private EntityDescriptor.Patient patientGuardian = null;
@@ -28,6 +29,90 @@ public class EntityDescriptor {
     private EntityDescriptor.Patients patients = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
+    
+    public static enum AppointmentField {ID,
+                                KEY,
+                                APPOINTMENT_PATIENT,
+                                START,
+                                DURATION,
+                                NOTES}
+    
+    public static enum AppointmentViewControllerPropertyEvent {
+                                            APPOINTMENT_CANCEL_COMPLETE,
+                                            APPOINTMENTS_FOR_DAY_RECEIVED,
+                                            APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
+                                            APPOINTMENT_FOR_DAY_ERROR,
+                                            SURGERY_DAYS_UPDATE_RECEIVED,
+                                            NON_SURGERY_DAY_EDIT_RECEIVED
+                                            }
+    
+    public static enum AppointmentViewControllerActionEvent {
+                                            APPOINTMENT_CANCEL_REQUEST,/*of selected appt*/
+                                            APPOINTMENT_CREATE_VIEW_REQUEST,
+                                            APPOINTMENT_UPDATE_VIEW_REQUEST,/*of selected appt*/
+                                            APPOINTMENTS_VIEW_CLOSED,
+                                            APPOINTMENTS_FOR_DAY_REQUEST,/*triggered by day selection*/
+                                            APPOINTMENT_SLOTS_FROM_DATE_REQUEST,
+                                            EMPTY_SLOT_SCANNER_DIALOG_REQUEST,
+                                            MODAL_VIEWER_ACTIVATED,
+                                            MODAL_VIEWER_CLOSED,
+                                            PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST,
+                                            NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST,
+                                            SURGERY_DAYS_EDIT_REQUEST,
+                                            SURGERY_DAYS_EDITOR_VIEW_REQUEST
+                                            }
+    
+    public static enum AppointmentViewDialogActionEvent {
+                                            APPOINTMENT_VIEW_CLOSE_REQUEST,
+                                            APPOINTMENT_VIEW_CREATE_REQUEST,
+                                            APPOINTMENT_VIEW_UPDATE_REQUEST,
+                                            }
+    public static enum AppointmentViewDialogPropertyEvent {
+                                            APPOINTMENT_RECEIVED,
+                                            APPOINTMENT_VIEW_ERROR
+                                            }
+    
+    public static enum PatientField {
+                              KEY,
+                              TITLE,
+                              FORENAMES,
+                              SURNAME,
+                              LINE1,
+                              LINE2,
+                              TOWN,
+                              COUNTY,
+                              POSTCODE,
+                              PHONE1,
+                              PHONE2,
+                              GENDER,
+                              DOB,
+                              IS_GUARDIAN_A_PATIENT,
+                              GUARDIAN,
+                              NOTES,
+                              DENTAL_RECALL_DATE,
+                              HYGIENE_RECALL_DATE,
+                              DENTAL_RECALL_FREQUENCY,
+                              HYGIENE_RECALL_FREQUENCY,
+                              DENTAL_APPOINTMENT_HISTORY,
+                              HYGIENE_APPOINTMENT_HISTORY}
+    
+    public static enum PatientViewControllerActionEvent {
+                                            NULL_PATIENT_REQUEST,
+                                            PATIENT_REQUEST,
+                                            PATIENTS_REQUEST,
+                                            PATIENT_VIEW_CLOSED,
+                                            PATIENT_VIEW_CREATE_REQUEST,
+                                            PATIENT_VIEW_UPDATE_REQUEST,
+                                            PATIENT_GUARDIAN_REQUEST,
+                                            PATIENT_GUARDIANS_REQUEST,
+                                            APPOINTMENT_VIEW_CONTROLLER_REQUEST
+                                            }
+    public static enum PatientViewControllerPropertyEvent {
+                                            NULL_PATIENT_RECEIVED,
+                                            PATIENT_RECEIVED,
+                                            PATIENTS_RECEIVED,
+                                            PATIENT_GUARDIANS_RECEIVED}
 
     protected EntityDescriptor() {
         appointment = new EntityDescriptor.Appointment();
@@ -463,7 +548,7 @@ public class EntityDescriptor {
         private Duration duration = null;
         private String databaseLocation = null;
         
-        private HashMap<DayOfWeek,Boolean> surgeryDays = null;
+        private HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = null;
         
 
         protected Request() {
@@ -479,12 +564,12 @@ public class EntityDescriptor {
             return patient;
         }
         
-        public void setSurgeryDays(HashMap<DayOfWeek,Boolean> value){
-            surgeryDays = value;
+        public void setSurgeryDaysAssignmentValue(HashMap<DayOfWeek,Boolean> value){
+            surgeryDaysAssignmentValue = value;
         }
         
-        public HashMap<DayOfWeek,Boolean> getSurgeryDays(){
-            return surgeryDays;
+        public HashMap<DayOfWeek,Boolean> getSurgeryDaysAssignmentValue(){
+            return surgeryDaysAssignmentValue;
         }
         
         public void setDatabaseLocation(String value){

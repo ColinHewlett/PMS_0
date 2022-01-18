@@ -76,7 +76,7 @@ public class NonSurgeryDayEditorModalViewer extends View {
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+            EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
@@ -228,7 +228,7 @@ public class NonSurgeryDayEditorModalViewer extends View {
             getEntityDescriptor().getRequest().setDay(dayDatePicker.getDate());
             ActionEvent actionEvent = new ActionEvent(this, 
                     ActionEvent.ACTION_PERFORMED,
-                    ViewController.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST.toString());
+                    EntityDescriptor.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST.toString());
             this.getMyController().actionPerformed(actionEvent);
         }
         else{
@@ -258,7 +258,7 @@ public class NonSurgeryDayEditorModalViewer extends View {
      * -- the new (toggled) version of the settings is then used to initialise the DatePickerSettings
      */
     public void initialiseView(){
-        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue();
         HashMap<DayOfWeek,Boolean> nonSurgeryDays = new HashMap<DayOfWeek,Boolean>();
         for(Map.Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
             if (entry.getValue()) nonSurgeryDays.put(entry.getKey(), Boolean.FALSE);

@@ -8,7 +8,7 @@ package clinicpms.store;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysTable;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 
 /**
  *
@@ -27,5 +27,5 @@ public interface IMigrationStoreAction {
     public void drop(SurgeryDaysTable table)throws StoreException;
     public void populate(AppointmentTable table)throws StoreException;
     public void populate(PatientTable table)throws StoreException;
-    public void populate(SurgeryDaysValues data)throws StoreException;//SurgeryDays table contents at start of migration
+    public void populate(SurgeryDaysAssignment data)throws StoreException;//SurgeryDays table contents at start of migration
 }

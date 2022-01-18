@@ -7,7 +7,7 @@ package clinicpms.store;
 
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysTable;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointment.Category;
@@ -42,7 +42,7 @@ public interface IPMSStoreAction {
     public void insert(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;
     public void delete(Patient p) throws StoreException;
-    public SurgeryDaysValues read(SurgeryDaysValues value) throws StoreException;
+    public HashMap<DayOfWeek,Boolean> read(SurgeryDaysAssignment value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
     public String read(Store.SelectedTargetStore db)throws StoreException;
@@ -54,7 +54,7 @@ public interface IPMSStoreAction {
     public String readPatientCSVPath();
     public ArrayList<Patient> readPatients() throws StoreException;
     public void update(Appointment a) throws StoreException;
-    public void update(SurgeryDaysValues value) throws StoreException;
+    public void update(SurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
     public void updateAppointmentCSVPath(String path);

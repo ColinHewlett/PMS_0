@@ -5,15 +5,18 @@
  */
 package clinicpms.view;
 
-import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
+//import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.controller.DesktopViewController;
 import clinicpms.controller.ViewController;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.Image;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import java.io.File;
 import javax.swing.event.InternalFrameAdapter;
@@ -26,9 +29,9 @@ import javax.swing.JSeparator;
  *
  * @author colin
  */
-public class DesktopView extends javax.swing.JFrame{
+public class DesktopView extends javax.swing.JFrame implements PropertyChangeListener{
     
-    private DesktopViewController controller = null;
+    private ActionListener controller = null;
     private JMenuItem mniPatientView = null;
     private JMenuItem mniAppointmentView = null;
     
@@ -66,10 +69,10 @@ public class DesktopView extends javax.swing.JFrame{
                      * When an attempt to close the view (user clicking "X")
                      * the view's controller is notified and will decide whether
                      * to call the view's dispose() method
-                     */
+                     */                   
                     ActionEvent actionEvent = new ActionEvent(DesktopView.this, 
                             ActionEvent.ACTION_PERFORMED,
-                            DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+                            DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
                     DesktopView.this.getController().actionPerformed(actionEvent);
                 }
             }
@@ -85,7 +88,7 @@ public class DesktopView extends javax.swing.JFrame{
      * 
      * @param controller 
      */
-    public DesktopView(DesktopViewController controller, Boolean isDataMigrationEnabled) { 
+    public DesktopView(ActionListener controller, Boolean isDataMigrationEnabled) { 
         this.controller = controller;       
         initComponents();
         /**
@@ -112,6 +115,23 @@ public class DesktopView extends javax.swing.JFrame{
         mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
         setContentPaneForInternalFrame();
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent e){
+        String propertyName = e.getPropertyName();
+        if (propertyName.equals(DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_DATA_CONTROL.toString())){
+            this.disableDataControl();
+        }
+        else if (propertyName.equals(DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_VIEW_CONTROL.toString())){
+            this.disableViewControl();
+        }
+        else if (propertyName.equals(DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_DATA_CONTROL.toString())){
+            this.enableDataControl();
+        }
+        else if (propertyName.equals(DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString())){
+            this.enableViewControl();
+        }
     }
     
     private void addMigrationManagerMenu(){
@@ -177,7 +197,7 @@ public class DesktopView extends javax.swing.JFrame{
         setContentPane(deskTop);
     }
     
-    public DesktopViewController getController(){
+    public ActionListener getController(){
         return controller;
     }
     public void setController(DesktopViewController value){
@@ -254,7 +274,7 @@ public class DesktopView extends javax.swing.JFrame{
     private void mniAppointmentViewActionPerformed() {                                        
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
         String s;
         s = actionEvent.getSource().getClass().getSimpleName();
         this.getController().actionPerformed(actionEvent);
@@ -263,35 +283,35 @@ public class DesktopView extends javax.swing.JFrame{
     private void mniPatientViewActionPerformed() {                                                      
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.PATIENT_VIEW_CONTROLLER_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.PATIENT_VIEW_CONTROLLER_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniMigrationManagerViewActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniMigrationDatabaseActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniPMSDatabaseActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniDatabaseLocatorActionPerformed() {                                                      
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
 
@@ -301,7 +321,7 @@ public class DesktopView extends javax.swing.JFrame{
          */
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
         DesktopView.this.getController().actionPerformed(actionEvent);
     }
 

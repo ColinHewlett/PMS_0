@@ -43,7 +43,7 @@ public class Appointment  implements IEntity, IEntityType{
     }
     
     @Override
-    public boolean isSurgeryDaysValues(){
+    public boolean isSurgeryDaysAssignment(){
         return false;
     }
 

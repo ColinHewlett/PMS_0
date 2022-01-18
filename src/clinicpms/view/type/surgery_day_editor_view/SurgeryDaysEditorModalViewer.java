@@ -73,7 +73,7 @@ public class SurgeryDaysEditorModalViewer extends View {
         
         ActionEvent actionEvent = new ActionEvent(this,
             ActionEvent.ACTION_PERFORMED,
-            ViewController.DesktopViewControllerActionEvent.DISABLE_DESKTOP_CONTROLS_REQUEST.toString());
+            EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
         this.getMyController().actionPerformed(actionEvent);
         
         startModal(this);
@@ -142,7 +142,7 @@ public class SurgeryDaysEditorModalViewer extends View {
     @Override
     public void initialiseView(){
         setTitle("Surgery days editor");
-        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDays();
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue();
         for(Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
             switch(entry.getKey()){
                 case MONDAY:
@@ -181,11 +181,11 @@ public class SurgeryDaysEditorModalViewer extends View {
         setEntityDescriptor((EntityDescriptor)e.getNewValue());
         
         if (e.getPropertyName().equals(
-                ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
+                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
             //initialiseViewFromED();
         }
         else if (e.getPropertyName().equals(
-            ViewController.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+            EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             ViewController.displayErrorMessage(getEntityDescriptor().getError(),
                                                "Appointment editor dialog error",
                                                JOptionPane.ERROR_MESSAGE);
@@ -326,18 +326,18 @@ public class SurgeryDaysEditorModalViewer extends View {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        HashMap<DayOfWeek,Boolean> surgeryDays = new HashMap<DayOfWeek,Boolean>();
-        surgeryDays.put(DayOfWeek.MONDAY, this.chkMonday.isSelected());
-        surgeryDays.put(DayOfWeek.TUESDAY, this.chkTuesday.isSelected());
-        surgeryDays.put(DayOfWeek.WEDNESDAY, this.chkWednesday.isSelected());
-        surgeryDays.put(DayOfWeek.THURSDAY, this.chkThursday.isSelected());
-        surgeryDays.put(DayOfWeek.FRIDAY, this.chkFriday.isSelected());
-        surgeryDays.put(DayOfWeek.SATURDAY, this.chkSaturday.isSelected()); 
-        surgeryDays.put(DayOfWeek.SUNDAY, this.chkSunday.isSelected());
-        getEntityDescriptor().getRequest().setSurgeryDays(surgeryDays);
+        HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = new HashMap<DayOfWeek,Boolean>();
+        surgeryDaysAssignmentValue.put(DayOfWeek.MONDAY, this.chkMonday.isSelected());
+        surgeryDaysAssignmentValue.put(DayOfWeek.TUESDAY, this.chkTuesday.isSelected());
+        surgeryDaysAssignmentValue.put(DayOfWeek.WEDNESDAY, this.chkWednesday.isSelected());
+        surgeryDaysAssignmentValue.put(DayOfWeek.THURSDAY, this.chkThursday.isSelected());
+        surgeryDaysAssignmentValue.put(DayOfWeek.FRIDAY, this.chkFriday.isSelected());
+        surgeryDaysAssignmentValue.put(DayOfWeek.SATURDAY, this.chkSaturday.isSelected()); 
+        surgeryDaysAssignmentValue.put(DayOfWeek.SUNDAY, this.chkSunday.isSelected());
+        getEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(surgeryDaysAssignmentValue);
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                ViewController.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString());
+                EntityDescriptor.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
     }//GEN-LAST:event_btnSaveActionPerformed
 

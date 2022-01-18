@@ -8,7 +8,7 @@ package clinicpms.store;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysTable;
 import clinicpms.model.AppointmentTable;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.Store.SelectedTargetStore;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointments;
@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Iterator;
 import clinicpms.model.IEntityType;
@@ -733,12 +734,12 @@ public class AccessStore extends Store {
      * @param q:SurgeryDaysSQL signifying the SQL statement to be processed, and which include
      * -- READ_SURGERY_DAYS
      * -- UPDATE_SURGERY_DAYS
-     * @param map:SurgeryDaysValues which contains the values of rows updated in the SurgeryDays table
-     * @return SurgeryDaysValues; values read back from table which will be null if update of values executed
+     * @param map:SurgeryDaysAssignment which contains the values of rows updated in the SurgeryDays table
+     * @return SurgeryDaysAssignment; values read back from table which will be null if update of values executed
      * @throws StoreException wraps the SQLException that can be thrown 
      */
-    private SurgeryDaysValues runSQL(SurgeryDaysSQL q, SurgeryDaysValues map)throws StoreException{
-        SurgeryDaysValues result = null;
+    private SurgeryDaysAssignment runSQL(SurgeryDaysSQL q, SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException{
+        SurgeryDaysAssignment result = null;
         String sql;
         switch (q){
             case READ_SURGERY_DAYS:
@@ -761,6 +762,7 @@ public class AccessStore extends Store {
                 }
                 break;
             case UPDATE_SURGERY_DAYS:
+                HashMap<DayOfWeek, Boolean> map = surgeryDaysAssignment.getValue();
                 for (Entry<DayOfWeek,Boolean> entry: map.entrySet()){
                     sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?";
                     try{
@@ -804,19 +806,25 @@ public class AccessStore extends Store {
     /**
      * One of a collection of overloaded methods requesting a migration connection-based SQL statement to be executed
      * @param q:MigrationSQL signifying the SQL statement to be processed
-     * @param map:HashMap<DayOfWeek,Boolean> which contains the values of rows appended to or updated in the SurgeryDays table
-     * @return
+     * @param value:IEntityType; which is checked for being either an Appointment, Patient, or SurgeryDaysAssignment object
+ -- value parameter could also be null, when an IEntityype is not specified
+     * @return Integer, which could be null if the selected SL statement never returns a value (e.g a DROP)
      * @throws StoreException 
      */
     private Integer runSQL(MigrationSQL q,IEntityType value)throws StoreException{
         Integer result = null;
         Appointment appointment = null;
         Patient patient = null;
-        SurgeryDaysValues surgeryDaysValues = null;
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         
-        if (value.isAppointment())appointment = (Appointment)value;
-        else if (value.isPatient()) patient = (Patient)value;
-        else if (value.isSurgeryDaysValues()) surgeryDaysValues = (SurgeryDaysValues)value;
+        /**
+         * check value type but only if value is not null
+         */
+        if (value!=null){
+            if (value.isAppointment())appointment = (Appointment)value;
+            else if (value.isPatient()) patient = (Patient)value;
+            else if (value.isSurgeryDaysAssignment()) surgeryDaysAssignment = (SurgeryDaysAssignment)value;
+        }
        
         String sql = null;
                 switch(q){
@@ -899,8 +907,8 @@ public class AccessStore extends Store {
         
         switch (q){
             case SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION:{
-                if (surgeryDaysValues!=null){
-                    for(Entry<DayOfWeek,Boolean> entry: surgeryDaysValues.entrySet()){
+                if (surgeryDaysAssignment!=null){
+                    for(Entry<DayOfWeek,Boolean> entry: surgeryDaysAssignment.getValue().entrySet()){
                         try{
                             PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                             switch (entry.getKey()){
@@ -1136,8 +1144,8 @@ public class AccessStore extends Store {
      * @param value:HashMap<SayOfWeek, Boolean> the new set of surgery days used to update currently stored values 
      * @throws StoreException 
      */
-    private SurgeryDaysValues getSurgeryDaysFromRS(ResultSet rs)throws SQLException{
-        SurgeryDaysValues result = new SurgeryDaysValues();
+    private SurgeryDaysAssignment getSurgeryDaysFromRS(ResultSet rs)throws SQLException{
+        SurgeryDaysAssignment result = new SurgeryDaysAssignment();
         if (!rs.wasNull()){
             while (rs.next()){
                 switch (rs.getString("Day")){
@@ -1748,9 +1756,9 @@ public class AccessStore extends Store {
     }
     
     @Override
-    public SurgeryDaysValues read(SurgeryDaysValues value)throws StoreException{
+    public HashMap<DayOfWeek, Boolean> read(SurgeryDaysAssignment value)throws StoreException{
         boolean result = false;
-        SurgeryDaysValues surgeryDaysValues;
+        SurgeryDaysAssignment surgeryDaysValues;
         //HashMap<DayOfWeek,Boolean> surgeryDays = null;
         try{
             if (getPMSConnection().getAutoCommit()) getPMSConnection().setAutoCommit(false);
@@ -2171,13 +2179,13 @@ public class AccessStore extends Store {
      * @param value:HashMap<SayOfWeek, Boolean> the new set of surgery days used to update currently stored values 
      * @throws StoreException 
      */
-    public void update(SurgeryDaysValues value)throws StoreException{
+    public void update(SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException{
         boolean result = false;
         try{
             if (getPMSConnection().getAutoCommit()){
                 getPMSConnection().setAutoCommit(false);
             }
-            runSQL(SurgeryDaysSQL.UPDATE_SURGERY_DAYS, value);
+            runSQL(SurgeryDaysSQL.UPDATE_SURGERY_DAYS, surgeryDaysAssignment);
             result = true;
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
@@ -2520,7 +2528,7 @@ public class AccessStore extends Store {
     }
     
     @Override
-    public void populate(SurgeryDaysValues surgeryDays)throws StoreException{
+    public void populate(SurgeryDaysAssignment surgeryDays)throws StoreException{
         boolean result = false;
         try{
             if (getMigrationConnection().getAutoCommit()){

@@ -10,10 +10,6 @@ import clinicpms.view.type.appontment_schedule_view.AppointmentsTableLocalDateTi
 import clinicpms.view.type.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.RenderedPatient;
-import clinicpms.controller.ViewController;
-import clinicpms.controller.ViewController.PatientField;
-import clinicpms.controller.ViewController.PatientViewControllerActionEvent;
-import clinicpms.controller.ViewController.PatientViewControllerPropertyEvent;
 import clinicpms.view.View;
 import clinicpms.view.type.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.view.exceptions.CrossCheckErrorException;
@@ -142,7 +138,7 @@ public class PatientView extends View{
     public void initialiseView(){
         ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
-                PatientViewControllerActionEvent.NULL_PATIENT_REQUEST.toString());
+                EntityDescriptor.PatientViewControllerActionEvent.NULL_PATIENT_REQUEST.toString());
         this.getMyController().actionPerformed(actionEvent);
         this.cmbSelectPatient.setSelectedIndex(-1);
         this.pnlGuardianDetails.setEnabled(false);
@@ -165,7 +161,7 @@ public class PatientView extends View{
             public void internalFrameClosed(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
                         PatientView.this,ActionEvent.ACTION_PERFORMED,
-                        ViewController.PatientViewControllerActionEvent.PATIENT_VIEW_CLOSED.toString());
+                        EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_CLOSED.toString());
                 getMyController().actionPerformed(actionEvent);
             }
         };
@@ -195,7 +191,7 @@ public class PatientView extends View{
                     getEntityDescriptor().getRequest().setDay(day);
                     ActionEvent actionEvent = new ActionEvent(
                             this,ActionEvent.ACTION_PERFORMED,
-                            PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                            EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
                     getMyController().actionPerformed(actionEvent);
                 }
             }
@@ -277,7 +273,7 @@ public class PatientView extends View{
     public void propertyChange(PropertyChangeEvent e){
 
         if (e.getPropertyName().equals(
-                PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
+                EntityDescriptor.PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(PatientView.ViewMode.Update_patient_details);
@@ -293,7 +289,7 @@ public class PatientView extends View{
             setViewStatus(false);
         }
         else if (e.getPropertyName().equals(
-                PatientViewControllerPropertyEvent.NULL_PATIENT_RECEIVED.toString())){
+                EntityDescriptor.PatientViewControllerPropertyEvent.NULL_PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(PatientView.ViewMode.Create_new_patient);
@@ -308,7 +304,7 @@ public class PatientView extends View{
             setViewStatus(false);
         }
         else if (e.getPropertyName().equals(
-                PatientViewControllerPropertyEvent.PATIENTS_RECEIVED.toString())){
+                EntityDescriptor.PatientViewControllerPropertyEvent.PATIENTS_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populatePatientSelector(this.cmbSelectPatient);
             populatePatientSelector(this.cmbSelectGuardian);
@@ -321,7 +317,7 @@ public class PatientView extends View{
          * back from the controller 
          */
         else if (e.getPropertyName().equals(
-                PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
+                EntityDescriptor.PatientViewControllerPropertyEvent.PATIENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor oldEntity = (EntityDescriptor)e.getOldValue();
             try{
@@ -362,7 +358,7 @@ public class PatientView extends View{
         boolean isNextHygieneAppointment = false;
          
         for (int index = 0; index < 2; index ++){
-            for (PatientField pf: PatientField.values()){
+            for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
                 switch (pf){
                     case TITLE:
                         if (newPatientValues.getData().getTitle().equals(
@@ -1639,13 +1635,13 @@ public class PatientView extends View{
                 case Create_new_patient:
                     actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
-                        PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
+                        EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString());
                     this.getMyController().actionPerformed(actionEvent);
                     break;
                 case Update_patient_details:
                     actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
-                        PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
+                        EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString());
                     this.getMyController().actionPerformed(actionEvent);
                     break;
             }
@@ -1712,7 +1708,7 @@ public class PatientView extends View{
             getEntityDescriptor().getRequest().setDay(day);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+                    EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
             this.getMyController().actionPerformed(actionEvent);
         }
     }//GEN-LAST:event_btnFetchScheduleForSelectedAppointmentActionPerformed
@@ -1825,7 +1821,7 @@ public class PatientView extends View{
             getEntityDescriptor().getRequest().setPatient(patient);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
+                    EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
             this.getMyController().actionPerformed(actionEvent);
         }
     }

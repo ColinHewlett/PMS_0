@@ -12,7 +12,7 @@ import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysTable;
-import clinicpms.model.SurgeryDaysValues;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -119,16 +119,16 @@ public class PostgreSQLStore extends Store {
     }
     
     @Override
-    public void update(SurgeryDaysValues value){
+    public void update(SurgeryDaysAssignment value){
 
     }
 
     @Override
-    public SurgeryDaysValues read(SurgeryDaysValues value) throws StoreException{
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException{
         return null;
     }
     
-    public SurgeryDaysValues readSurgeryDays() throws StoreException{
+    public SurgeryDaysAssignment readSurgeryDays() throws StoreException{
         return null;
     }
 
@@ -271,7 +271,7 @@ public class PostgreSQLStore extends Store {
      * @throws StoreException 
      */
     @Override
-    public void populate(SurgeryDaysValues data)throws StoreException{
+    public void populate(SurgeryDaysAssignment data)throws StoreException{
         
     }
     
