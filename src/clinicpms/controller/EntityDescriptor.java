@@ -549,7 +549,7 @@ public class EntityDescriptor {
         private String databaseLocation = null;
         
         private HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = null;
-        
+        //private SurgeryDaysAssignment surgeryDaysAssignmentValue = null;
 
         protected Request() {
             appointment = new EntityDescriptor.Appointment();

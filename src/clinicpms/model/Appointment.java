@@ -15,7 +15,7 @@ import clinicpms.store.IPMSStoreAction;
  *
  * @author colin
  */
-public class Appointment  implements IEntity, IEntityType{
+public class Appointment  implements IEntity, IEntityStoreType{
     public static enum Status{BOOKED,UNBOOKED};
     private Integer key = null;
     private LocalDateTime start = null;

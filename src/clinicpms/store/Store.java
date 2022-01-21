@@ -342,5 +342,15 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
     public static ITargetsStoreAction FACTORY(IStoreManager manager)throws StoreException{
         return FACTORY_FOR_TARGETS_STORE();
     }
+    
+    /*
+    public static IAppointmentsStoreAction Factory(IAppointments appointments) throws StoreException{
+        return Factory_FOR_APPOINTMENTS_STORE;
+    }
+    
+    public static IPatientsStoreAction Factory(IPatients patients) throws StoreException{
+        return Factory_FOR_PaTIENTS_STORE;
+    }
+*/
 }
 

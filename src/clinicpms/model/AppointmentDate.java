@@ -10,26 +10,26 @@ import java.time.LocalDate;
  *
  * @author colin
  */
-public class AppointmentDate implements IEntityType{
+public class AppointmentDate implements IEntityStoreType{
     private LocalDate value = null;
     
     @Override
-    public boolean isAppointment(){
+    public final boolean isAppointment(){
         return false;
     }
     
     @Override
-    public boolean isAppointmentDate(){
+    public final boolean isAppointmentDate(){
         return true;
     }
     
     @Override
-    public boolean isPatient(){
+    public final boolean isPatient(){
         return false;
     }
     
     @Override
-    public boolean isSurgeryDaysAssignment(){
+    public final boolean isSurgeryDaysAssignment(){
         return false;
     }
     

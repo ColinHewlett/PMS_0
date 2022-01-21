@@ -15,16 +15,15 @@ import java.util.HashMap;
  *
  * @author colin
  */
-public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements IEntity, IEntityType{
+public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements IEntity, IEntityStoreType{
     private IPMSStoreAction store = null;
-    private HashMap<DayOfWeek,Boolean> value = null;
     
     public SurgeryDaysAssignment(){
     
     }
     
     public SurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
-        setValue(value);
+        putAll(value);
     }
     
     @Override
@@ -72,12 +71,5 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
         store = Store.FACTORY(this); 
         store.update(this);
     }
-    
-    public HashMap<DayOfWeek, Boolean> getValue(){
-        return value;
-    }
-    
-    public void setValue(HashMap<DayOfWeek, Boolean> value){
-        this.value = value;
-    }
+
 }

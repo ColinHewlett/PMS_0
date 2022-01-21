@@ -13,19 +13,19 @@ import java.util.HashMap;
  * @author colin
  */
 public class AppointmentDateVetoPolicy implements DateVetoPolicy{
-    private HashMap<DayOfWeek,Boolean> surgeryDays = null;
+    private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
+
+    public AppointmentDateVetoPolicy(HashMap<DayOfWeek,Boolean> surgeryDaysAssignment){
+        setSurgeryDays(surgeryDaysAssignment);
+    }
+    
+    @Override
     /**
     * isDateAllowed, Return true if a date should be allowed, or false if a date should be
     * vetoed.
     * @param date, LocalDate which represents date to be validated or not
     * @return boolean
     */
-    
-    public AppointmentDateVetoPolicy(HashMap<DayOfWeek,Boolean> surgeryDays){
-        setSurgeryDays(surgeryDays);
-    }
-    
-    @Override
     public boolean isDateAllowed(LocalDate date) {
         boolean result = getSurgeryDays().get(date.getDayOfWeek());
         return result;
@@ -54,10 +54,10 @@ public class AppointmentDateVetoPolicy implements DateVetoPolicy{
     }
     
     public void setSurgeryDays(HashMap<DayOfWeek,Boolean> value) {
-        this.surgeryDays = value;
+        this.surgeryDaysAssignment = value;
     }
     
     public HashMap<DayOfWeek,Boolean> getSurgeryDays(){
-        return this.surgeryDays;
+        return this.surgeryDaysAssignment;
     }
 }

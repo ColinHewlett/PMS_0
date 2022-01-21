@@ -9,7 +9,7 @@ package clinicpms.store;
  *
  * @author colin
  */
-public interface ITargetsStoreAction {
+public interface  ITargetsStoreAction {
     public String getStoreType();
     public String readAppointmentCSVPath() throws StoreException;
     public String readMigrationTargetStorePath()throws StoreException;

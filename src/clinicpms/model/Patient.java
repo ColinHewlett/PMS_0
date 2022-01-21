@@ -17,7 +17,7 @@ import clinicpms.store.IPMSStoreAction;
  *
  * @author colin
  */
-public class Patient implements IEntity, IEntityType{
+public class Patient implements IEntity, IEntityStoreType{
     
     private LocalDate dob = null;
     private Patient guardian = null;

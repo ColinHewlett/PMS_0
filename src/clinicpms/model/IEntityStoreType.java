@@ -9,7 +9,7 @@ package clinicpms.model;
  *
  * @author colin
  */
-public interface IEntityType {
+public interface IEntityStoreType {
     public boolean isAppointment();
     public boolean isPatient();
     public boolean isSurgeryDaysAssignment();

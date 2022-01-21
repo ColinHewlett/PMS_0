@@ -27,5 +27,5 @@ public interface IMigrationStoreAction {
     public void drop(SurgeryDaysTable table)throws StoreException;
     public void populate(AppointmentTable table)throws StoreException;
     public void populate(PatientTable table)throws StoreException;
-    public void populate(SurgeryDaysAssignment data)throws StoreException;//SurgeryDays table contents at start of migration
+    public void populate(SurgeryDaysAssignment data)throws StoreException;
 }
