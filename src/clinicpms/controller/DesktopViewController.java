@@ -89,7 +89,7 @@ public class DesktopViewController extends ViewController{
          * -- object reference to view controller (this)
          * -- Boolean signifying whether view enables data migration functions
          */
-        view = new DesktopView(this, isDataMigrationOptionEnabled );
+        view = new DesktopView(this, isDataMigrationOptionEnabled, new EntityDescriptor() );
         view.setSize(1020, 650);
         view.setVisible(true);
         setView(view);
@@ -571,7 +571,18 @@ public class DesktopViewController extends ViewController{
                  */
                 StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
                 String targetPath = storeManager.getPMSTargetStorePath();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Access database files", "accdb");
+                String storageType = storeManager.getStorageType();
+                FileNameExtensionFilter filter = null;
+                switch (storageType){
+                    case "ACCESS":
+                        filter = new FileNameExtensionFilter("Access database files", "accdb");
+                        break;
+                    case "POSTGRESQL":
+                        break;
+                    case "SQL_EXPRESS":
+                        filter = new FileNameExtensionFilter("SQL Express database files", "mdf");
+                }
+                
                 File path = new File(targetPath);
                 JFileChooser chooser = new JFileChooser(path);
                 chooser.setFileFilter(filter);
@@ -586,6 +597,68 @@ public class DesktopViewController extends ViewController{
                     JOptionPane.showMessageDialog(getView(),
                             storeManager.getPMSTargetStorePath(),
                             "Current PMS database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                
+                JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+            }
+        }
+        
+        else if(e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.SET_CSV_APPOINTMENT_FILE_REQUEST.toString())){
+
+            try{
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+                String targetPath = storeManager.getAppointmentCSVPath();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
+                
+                File path = new File(targetPath);
+                JFileChooser chooser = new JFileChooser(path);
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(path);
+                int returnVal = chooser.showOpenDialog(getView());
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    String updatedAppointmentCSVFlePath = chooser.getSelectedFile().getPath();
+                    /**
+                     * 07/12/2021 19:17
+                     */
+                    storeManager.setAppointmentCSVPath(updatedAppointmentCSVFlePath);
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getAppointmentCSVPath(),
+                            "Current appointment source CSV file path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                
+                JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+            }
+        }
+        
+        else if(e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.SET_CSV_PATIENT_FILE_REQUEST.toString())){
+
+            try{
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+                String targetPath = storeManager.getPatientCSVPath();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
+                File path = new File(targetPath);
+                JFileChooser chooser = new JFileChooser(path);
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(path);
+                int returnVal = chooser.showOpenDialog(getView());
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    String updatedPatientCSVFilePath = chooser.getSelectedFile().getPath();
+                    storeManager.setPatientCSVPath(updatedPatientCSVFilePath);
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPatientCSVPath(),
+                            "Current patient source CSV file path", 
                             JOptionPane.INFORMATION_MESSAGE);
                 }
             }

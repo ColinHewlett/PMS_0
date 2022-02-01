@@ -11,7 +11,12 @@ package clinicpms.model;
  */
 public interface IEntityStoreType {
     public boolean isAppointment();
-    public boolean isPatient();
-    public boolean isSurgeryDaysAssignment();
+    public boolean isAppointments();
     public boolean isAppointmentDate();
+    public boolean isAppointmentTableRowValue();
+    public boolean isPatient();
+    public boolean isPatients();
+    public boolean isPatientTableRowValue();
+    public boolean isSurgeryDaysAssignment();
+
 }

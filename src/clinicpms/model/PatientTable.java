@@ -36,6 +36,6 @@ public class PatientTable implements ITable{
     
     public int count() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
-        return store.countRowsInTable(this);
+        return store.countRowsIn(this);
     }
 }

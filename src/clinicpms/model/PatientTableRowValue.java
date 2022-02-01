@@ -5,20 +5,24 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.Store;
-import clinicpms.store.StoreException;
-import java.util.ArrayList;
-import clinicpms.store.IPatientsStoreAction;
-
 /**
  *
  * @author colin
  */
-public class Patients extends ArrayList<Patient> implements IPatients, IEntityStoreType{
+public class PatientTableRowValue implements IEntityStoreType {
+    private Integer value = null;
+    
+    public PatientTableRowValue(int value){
+        this.value = value;
+    }
+    
+    public Integer getValue(){
+        return this.value;
+    }
     
     @Override
     public boolean isAppointment(){
-        return false;
+        return true;
     }
     
     @Override
@@ -35,7 +39,7 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
     public final boolean isAppointmentTableRowValue(){
         return false;
     }
-    
+
     @Override
     public boolean isPatient(){
         return false;
@@ -43,27 +47,16 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
     
     @Override
     public boolean isPatients(){
-        return true;
+        return false;
     }
     
     @Override
     public final boolean isPatientTableRowValue(){
-        return false;
+        return true;
     }
     
     @Override
     public boolean isSurgeryDaysAssignment(){
         return false;
-    }
-    
-    @Override
-    public void read() throws StoreException{
-        IPatientsStoreAction store = Store.FACTORY(new Patients());
-        clear();
-        addAll(store.readPatients());
-    }
-    
-    public int count(){
-        return size();
     }
 }

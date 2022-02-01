@@ -15,7 +15,7 @@ import clinicpms.store.IMigrationStoreAction;
  *
  * @author colin
  */
-public class SurgeryDaysTable implements ITable{
+public class SurgeryDaysAssignmentTable implements ITable{
   
     
     public void create() throws StoreException{
@@ -42,9 +42,10 @@ public class SurgeryDaysTable implements ITable{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.populate(surgeryDaysValues);
     }
-    
+    /*
     public int count()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
-        return store.countRowsInTable(this);
+        return store.countRowsIn(this);
     }
+*/
 }

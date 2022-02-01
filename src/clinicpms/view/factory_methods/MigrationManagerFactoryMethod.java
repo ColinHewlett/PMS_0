@@ -6,7 +6,7 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.view.type.migration_manager_view.MigrationManagerModalViewer;
+import clinicpms.view.type.migration_manager_view.MigrationManagerModelViewer;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
 import java.awt.event.ActionListener;
@@ -23,7 +23,7 @@ public class MigrationManagerFactoryMethod extends ViewFactoryMethod{
     
     @Override
     public View makeView(View.Viewer myViewType){
-        return new MigrationManagerModalViewer(myViewType, this.getViewController(), 
+        return new MigrationManagerModelViewer(myViewType, this.getViewController(), 
                 this.getEntityDescriptor(), getDesktopView().getContentPane());
         
     }

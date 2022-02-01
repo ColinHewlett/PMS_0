@@ -113,6 +113,17 @@ public class EntityDescriptor {
                                             PATIENT_RECEIVED,
                                             PATIENTS_RECEIVED,
                                             PATIENT_GUARDIANS_RECEIVED}
+    
+    public enum MigrationViewRequest{   MIGRATE_APPOINTMENTS_TO_DATABASE,
+                                            MIGRATE_PATIENTS_TO_DATABASE,
+                                            REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
+                                            TIDY_PATIENT_DATA_IN_DATABASE,
+                                            APPOINTMENT_TABLE_INTEGITY_CHECK}
+    
+    public enum MigrationViewPropertyChangeEvents{MIGRATION_ACTION_COMPLETE}
+
+    public enum MigratorViewControllerActionEvent{ APPOINTMENT_MIGRATOR_REQUEST, 
+                                                   PATIENT_MIGRATOR_REQUEST};
 
     protected EntityDescriptor() {
         appointment = new EntityDescriptor.Appointment();
@@ -623,20 +634,51 @@ public class EntityDescriptor {
         private Target target = null;
         private Integer appointmentsCount = null;
         private Integer patientsCount = null;
-        private ViewController.MigrationViewRequest migrationViewRequest = null;
+        private MigrationViewRequest migrationViewRequest = null;
         private Duration durationOfMigrationAction = null;
+        private String appointmentCSVFilePath = null;
+        private String patientCSVFilePath = null;
+        private String targetMigrationDatabaseURL = null;
+        
 
         public MigrationDescriptor(){
             appointment = new Appointment();
             patient = new Patient();
             target = new Target();
         }
+        
+        public String getAppointmentCSVFilePath(){
+            return appointmentCSVFilePath;
+        }
+        
+        public String getPatientCSVFilePath(){
+            return patientCSVFilePath;
+        }
+        
+        public String getTargetMigrationDatabaseURL(){
+            return targetMigrationDatabaseURL;
+        }
+        
+        public void setTargetMigrationDatabaseURL(String value){
+            targetMigrationDatabaseURL = value;
+        }
+        
+        public void setAppointmentCSVFilePath(String value){
+            appointmentCSVFilePath = value;
+        }
+        
+        public void setPatientCSVFilePath(String value){
+            patientCSVFilePath = value;
+        }
+        
+        
+        
 
-        public ViewController.MigrationViewRequest getMigrationViewRequest(){
+        public MigrationViewRequest getMigrationViewRequest(){
             return migrationViewRequest;
         }
 
-        public void setMigrationViewRequest(ViewController.MigrationViewRequest  value){
+        public void setMigrationViewRequest(MigrationViewRequest  value){
             migrationViewRequest = value;
         }
 

@@ -6,16 +6,21 @@
 package clinicpms.store;
 
 import clinicpms.store.Store.SelectedTargetStore;
+import clinicpms.model.IAppointments;
 import clinicpms.model.IEntity;
+import clinicpms.model.IPatients;
 import clinicpms.model.IStoreManager;
 import clinicpms.model.ITable;
-import clinicpms.model.IEntityCollecton;
 
 /**
  *
  * @author colin
  */
-public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, ITargetsStoreAction {
+public abstract class Store implements IAppointmentsStoreAction, 
+                                       IPatientsStoreAction, 
+                                       IPMSStoreAction, 
+                                       IMigrationStoreAction, 
+                                       ITargetsStoreAction {
     
     protected enum ConnectionMode{ AUTO_COMMIT_OFF, AUTO_COMMIT_ON}
     protected enum ExceptionType {  APPOINTEE_NOT_FOUND_EXCEPTION,
@@ -28,6 +33,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                                  KEY_NOT_FOUND_EXCEPTION,
                                  SQL_EXCEPTION,
                                  STORE_EXCEPTION,
+                                 UNEXPECTED_DATA_TYPE_ENCOUNTERED,
                                  UNDEFINED_DATABASE}
     
     protected enum SurgeryDaysSQL {
@@ -40,7 +46,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                         SQL_EXPRESS,
                         UNDEFINED_DATABASE}
     
-    protected enum AppointmentSQL   {
+    protected enum PatientManagementSystemSQL   {
                             APPOINTMENTS_COUNT,
                             DELETE_APPOINTMENT_WITH_KEY,
                             DELETE_APPOINTMENTS_WITH_PATIENT_KEY,
@@ -50,23 +56,37 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                             READ_APPOINTMENTS_FOR_PATIENT,
                             READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENT_WITH_KEY,
-                            READ_HIGHEST_KEY,
-                            UPDATE_APPOINTMENT}
+                            READ_APPOINTMENT_HIGHEST_KEY,
+                            UPDATE_APPOINTMENT,
+                            INSERT_PATIENT,
+                            PATIENTS_COUNT,
+                            READ_ALL_PATIENTS,
+                            READ_PATIENT_HIGHEST_KEY,
+                            READ_PATIENT_WITH_KEY,
+                            UPDATE_PATIENT,
+                            READ_SURGERY_DAYS,
+                            UPDATE_SURGERY_DAYS}
     
     protected enum MigrationSQL {
                             APPOINTMENT_TABLE_CREATE,
+                            APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY,
                             APPOINTMENT_TABLE_DROP,
                             APPOINTMENT_TABLE_INSERT_ROW,
                             APPOINTMENT_TABLE_HIGHEST_KEY,
+                            APPOINTMENT_TABLE_READ,
                             APPOINTMENT_TABLE_ROW_COUNT,
                             APPOINTMENT_TABLE_START_TIME_NORMALISED,
                             PATIENT_TABLE_CREATE,
                             PATIENT_TABLE_DROP,
                             PATIENT_TABLE_INSERT_ROW,
+                            PATIENT_TABLE_READ,
+                            PATIENT_TABLE_READ_PATIENT,
                             PATIENT_TABLE_ROW_COUNT,
+                            PATIENT_TABLE_UPDATE,
                             SURGERY_DAYS_TABLE_CREATE,
                             SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION,
                             SURGERY_DAYS_TABLE_DROP,
+                            SURGERY_DAYS_TABLE_READ,
                             SURGERY_DAYS_TABLE_ROW_COUNT
                             }
 
@@ -98,19 +118,41 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
     protected  String migrationDatabasePath = null;
     protected  String pmsDatabasePath = null;
     //store_package_updates_05_12_21_09_17_devDEBUG
-    private  String appointmentCSVPath = null;
-    private  String patientCSVPath = null;
+    protected  String appointmentCSVPath = null;
+    protected  String patientCSVPath = null;
     private  SelectedTargetStore selectedTargetStore = null;
     protected static Store INSTANCE = null;
     private static boolean IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
     private static boolean IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
     private static boolean IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION = false;
+    protected static boolean IS_APPOINTMENTS_STORE_ACTION = false;
     protected static boolean IS_MIGRATION_STORE_ACTION = false;
+    protected static boolean IS_PATIENTS_STORE_ACTION = false;
     protected static boolean IS_PMS_STORE_ACTION = false;
     protected static boolean IS_TARGETS_STORE_ACTION = false;
     
     
-    
+    private static IAppointmentsStoreAction FACTORY_FOR_APPOINTMENTS_STORE()throws StoreException{
+        INITIALISE_DATABASE_LOCATOR_PATH();
+        INITIALISE_STORAGE_TYPE();
+        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
+        IAppointmentsStoreAction result = null;
+        switch (STORAGE){
+            case ACCESS: 
+                result = AccessStore.getInstance();
+                break;
+            case POSTGRES:
+                result = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                result = SQLExpressStore.getInstance();
+                break;
+                
+        }
+        SET_PMS_STORE_ACTION_STATE(true);
+        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
+        return result;
+    }
     /**
      * Selects the STORAGE class to use (Access, PostgresSQL etc)
  -- ensures STORAGE type and database locator path have been initialised
@@ -136,8 +178,30 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                 break;
                 
         }
-        SET_MIGRATION_STORE_KIND(true);
+        SET_MIGRATION_STORE_ACTION_STATE(true);
         IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
+        return result;
+    }
+    
+    private static IPatientsStoreAction FACTORY_FOR_PATIENTS_STORE()throws StoreException{
+        INITIALISE_DATABASE_LOCATOR_PATH();
+        INITIALISE_STORAGE_TYPE();
+        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
+        IPatientsStoreAction result = null;
+        switch (STORAGE){
+            case ACCESS: 
+                result = AccessStore.getInstance();
+                break;
+            case POSTGRES:
+                result = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                result = SQLExpressStore.getInstance();
+                break;
+                
+        }
+        SET_PMS_STORE_ACTION_STATE(true);
+        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
         return result;
     }
     
@@ -166,7 +230,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                 break;
                 
         }
-        SET_PMS_STORE_KIND(true);
+        SET_PMS_STORE_ACTION_STATE(true);
         IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
         return result;
     }
@@ -196,20 +260,20 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                 break;
                 
         }
-        SET_TARGETS_STORE_KIND(true);
+        SET_TARGETS_STORE_ACTION_STATE(true);
         IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION = false;
         return result;
     }
     
-    private static void SET_MIGRATION_STORE_KIND(boolean value){
+    private static void SET_MIGRATION_STORE_ACTION_STATE(boolean value){
         IS_MIGRATION_STORE_ACTION = value;
         if (value){
             IS_PMS_STORE_ACTION = false;
             IS_TARGETS_STORE_ACTION = false;
         }
     }
-    
-    private static void SET_PMS_STORE_KIND(boolean value){
+
+    private static void SET_PMS_STORE_ACTION_STATE(boolean value){
         IS_PMS_STORE_ACTION = value;
         if (value){
             IS_TARGETS_STORE_ACTION = false;
@@ -217,7 +281,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
         }
     }
     
-    private static void SET_TARGETS_STORE_KIND(boolean value){
+    private static void SET_TARGETS_STORE_ACTION_STATE(boolean value){
         IS_TARGETS_STORE_ACTION = value;
         if (value){
             IS_PMS_STORE_ACTION = false;
@@ -281,7 +345,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                 !IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
                 !IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION){
             if (INSTANCE != null) INSTANCE = null;
-            FACTORY_FOR_MIGRATION_STORE();
+            FACTORY_FOR_TARGETS_STORE();
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
     
@@ -305,7 +369,7 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
                 !IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
                 !IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION){
             if (INSTANCE != null) INSTANCE = null;
-            FACTORY_FOR_PMS_STORE();
+            FACTORY_FOR_TARGETS_STORE();
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
    
@@ -327,30 +391,25 @@ public abstract class Store implements IPMSStoreAction, IMigrationStoreAction, I
         patientCSVPath = value;
     }
     
+    public static IAppointmentsStoreAction FACTORY(IAppointments appointments) throws StoreException{
+        return FACTORY_FOR_APPOINTMENTS_STORE();
+    }
+    
     public static IMigrationStoreAction FACTORY(ITable table)throws StoreException{
         return FACTORY_FOR_MIGRATION_STORE();
+    }
+    
+    public static IPatientsStoreAction FACTORY(IPatients patients) throws StoreException{
+        return FACTORY_FOR_PATIENTS_STORE();
     }
     
     public static IPMSStoreAction FACTORY(IEntity entity)throws StoreException{
         return FACTORY_FOR_PMS_STORE();
     }
     
-    public static IPMSStoreAction FACTORY(IEntityCollecton collection)throws StoreException{
-        return FACTORY_FOR_PMS_STORE();
-    }
-    
     public static ITargetsStoreAction FACTORY(IStoreManager manager)throws StoreException{
         return FACTORY_FOR_TARGETS_STORE();
     }
-    
-    /*
-    public static IAppointmentsStoreAction Factory(IAppointments appointments) throws StoreException{
-        return Factory_FOR_APPOINTMENTS_STORE;
-    }
-    
-    public static IPatientsStoreAction Factory(IPatients patients) throws StoreException{
-        return Factory_FOR_PaTIENTS_STORE;
-    }
-*/
+
 }
 

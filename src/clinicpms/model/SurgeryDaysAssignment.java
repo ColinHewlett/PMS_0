@@ -32,12 +32,32 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
     }
     
     @Override
+    public boolean isAppointments(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }
     
     @Override
+    public final boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    @Override
     public boolean isPatient(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatients(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isPatientTableRowValue(){
         return false;
     }
     
@@ -62,7 +82,7 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
         //not currently implemented
     }
     
-    public HashMap<DayOfWeek, Boolean> read() throws StoreException{
+    public SurgeryDaysAssignment read() throws StoreException{
         store = Store.FACTORY(this); 
         return store.read(this);
     }

@@ -5,49 +5,98 @@
  */
 package clinicpms.model;
 
+import clinicpms.store.IAppointmentsStoreAction;
 import clinicpms.model.Appointment.Category;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class Appointments implements IEntityCollecton{
+public class Appointments extends ArrayList<Appointment> implements IAppointments, 
+                                                                    IEntityStoreType{
 
+    @Override
+    public boolean isAppointment(){
+        return false;
+    }
+    
+    @Override
+    public boolean isAppointments(){
+        return true;
+    }
+    
+    @Override
+    public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatient(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatients(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isPatientTableRowValue(){
+        return false;
+    }
+    
+    @Override
+    public boolean isSurgeryDaysAssignment(){
+        return false;
+    }
     /**
      * 
      * @param p Patient object
      * @param t Category enumeration constant
-     * @return ArrayList of Appointment objects
      * @throws StoreException 
      */
-    public ArrayList<Appointment> getAppointmentsFor(Patient p, Category t) throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(new Appointment());
-        return store.readAppointments(p, t);
+    @Override
+    public void readForPatient(Patient p, Category t) throws StoreException{
+        IAppointmentsStoreAction store = Store.FACTORY(new Appointments());
+        clear();
+        addAll(store.readAppointments(p, t));
     }
     
     /**
      * 
      * @param day LocalDate object
-     * @return ArrayList of Appointment objects
      * @throws StoreException 
      */
-    public ArrayList<Appointment> getAppointmentsFor(LocalDate day) throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(new Appointment());
-        return store.readAppointmentsFor(day);
+    @Override
+    public void readForDay(LocalDate day) throws StoreException{
+        IAppointmentsStoreAction store = Store.FACTORY(new Appointments());
+        clear();
+        addAll(store.readAppointmentsFor(day));
     }
     
-    public ArrayList<Appointment>getAppointmentsFrom(LocalDate day) throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(new Appointment());
-        return store.readAppointmentsFrom(day);
+    @Override
+    public void readFromDay(LocalDate day) throws StoreException{
+        IAppointmentsStoreAction store = Store.FACTORY(new Appointments());
+        clear();
+        addAll(store.readAppointmentsFrom(day));
     }
     
-    public int count()throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(new Appointment());
-        return store.countRowsIn(this);
+    @Override
+    public void read()throws StoreException{
+        
+    }
+    
+    @Override
+    public int count(){
+        return size();
     }
 }

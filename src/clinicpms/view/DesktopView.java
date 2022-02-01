@@ -7,7 +7,7 @@ package clinicpms.view;
 
 //import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.controller.DesktopViewController;
-import clinicpms.controller.ViewController;
+import clinicpms.controller.EntityDescriptor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Image;
@@ -47,6 +47,14 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private JMenuItem mniMigrationDatabase = null;
     private JMenuItem mniPMSDatabase = null;
     private boolean closeIsEnabled = true;
+    
+    private JMenu mnuDataExtra = null;
+    private JMenu mnuTargets = null;
+    private JMenu mnuSource = null;
+    private JMenuItem mniMigrationTarget = null;
+    private JMenuItem mniPMSTarget = null;
+    private JMenuItem mniAppointmentCSVFile = null;
+    private JMenuItem mniPatientCSVFile = null;
     
     
     /**
@@ -88,7 +96,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
      * 
      * @param controller 
      */
-    public DesktopView(ActionListener controller, Boolean isDataMigrationEnabled) { 
+    public DesktopView(ActionListener controller, Boolean isDataMigrationEnabled, EntityDescriptor ed) { 
         this.controller = controller;       
         initComponents();
         /**
@@ -106,7 +114,9 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         this.mnuView.add(mniAppointmentView);
         //this.mnuView.add(new JSeparator());
         //this.mnuView.add(mniDatabaseLocator);
-        if (isDataMigrationEnabled)addMigrationManagerMenu();
+        if (isDataMigrationEnabled){
+            addDataExtraMenu();
+        }
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
         
@@ -134,27 +144,30 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         }
     }
     
-    private void addMigrationManagerMenu(){
+    private void addDataExtraMenu(){
+        if (mnuData==null) mnuData = new JMenu("Data management");
+        mnuTargets = new JMenu("Target databases");
+        this.mnuSource = new JMenu("Source CSV files");
+        mniAppointmentCSVFile = new JMenuItem("Appointment CSV file");
+        mniPatientCSVFile = new JMenuItem("Patient CSV file");
         mniMigrationManagerView = new JMenuItem("Run migration manager");
         mniMigrationDatabase = new JMenuItem("Select migration database");
         this.mniPMSDatabase = new JMenuItem("Select PMS database");
-        //this.mnuView.add(new JSeparator());
-        if (mnuData == null) mnuData = new JMenu("Data");
-        this.mnuData.add(mniMigrationManagerView);
+        mnuTargets.add(mniMigrationDatabase);
+        mnuTargets.add(mniPMSDatabase);
+        mnuSource.add(mniAppointmentCSVFile);
+        mnuSource.add(mniPatientCSVFile);
+        mnuData.add(mnuTargets);
+        mnuData.add(mnuSource);
         this.mnuData.add(new JSeparator());
-        this.mnuData.add(mniMigrationDatabase);
-        this.mnuData.add(mniPMSDatabase);
+        this.mnuData.add(mniMigrationManagerView);
         this.mnbDesktop.add(mnuData);
         mniMigrationManagerView.addActionListener((ActionEvent e) -> mniMigrationManagerViewActionPerformed());
         mniMigrationDatabase.addActionListener((ActionEvent e) -> mniMigrationDatabaseActionPerformed());
         mniPMSDatabase.addActionListener((ActionEvent e) -> mniPMSDatabaseActionPerformed());
+        mniAppointmentCSVFile.addActionListener((ActionEvent e) -> mniAppointmentCSVFileActionPerformed());
+        mniPatientCSVFile.addActionListener((ActionEvent e) -> mniPatientCSVFileActionPerformed());
     }
-    /*
-    @Override
-    public javax.swing.JDesktopPane getContentPane(){
-        return deskTop;
-    }
-    */
     
     public void enableWindowCloseControl(){
         this.closeIsEnabled = true;
@@ -279,6 +292,21 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         s = actionEvent.getSource().getClass().getSimpleName();
         this.getController().actionPerformed(actionEvent);
     }
+    
+    private void mniAppointmentCSVFileActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.SET_CSV_APPOINTMENT_FILE_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniPatientCSVFileActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.SET_CSV_PATIENT_FILE_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
     
     private void mniPatientViewActionPerformed() {                                                      
         ActionEvent actionEvent = new ActionEvent(this, 

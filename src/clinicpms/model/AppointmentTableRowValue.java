@@ -5,14 +5,21 @@
  */
 package clinicpms.model;
 
-import java.time.LocalDate;
 /**
  *
  * @author colin
  */
-public class AppointmentDate implements IEntityStoreType{
-    private LocalDate value = null;
+public class AppointmentTableRowValue implements IEntityStoreType {
+    private Integer value = null;
     
+    public Integer getValue(){
+        return this.value;
+    }
+    
+    public AppointmentTableRowValue(Integer value){
+        this.value = value;
+    }
+
     @Override
     public final boolean isAppointment(){
         return false;
@@ -25,17 +32,12 @@ public class AppointmentDate implements IEntityStoreType{
     
     @Override
     public final boolean isAppointmentTableRowValue(){
-        return false;
-    }
-    
-    @Override
-    public final boolean isPatientTableRowValue(){
-        return false;
+        return true;
     }
     
     @Override
     public final boolean isAppointmentDate(){
-        return true;
+        return false;
     }
     
     @Override
@@ -49,15 +51,12 @@ public class AppointmentDate implements IEntityStoreType{
     }
     
     @Override
-    public final boolean isSurgeryDaysAssignment(){
+    public final boolean isPatientTableRowValue(){
         return false;
     }
     
-    public AppointmentDate(LocalDate date){
-        value = date;
-    }
-    
-    public LocalDate getValue(){
-        return value;
+    @Override
+    public final boolean isSurgeryDaysAssignment(){
+        return false;
     }
 }

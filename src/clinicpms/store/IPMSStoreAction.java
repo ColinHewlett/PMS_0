@@ -6,7 +6,7 @@
 package clinicpms.store;
 
 import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointment;
@@ -34,33 +34,19 @@ import java.util.HashMap;
  * @author colin
  */
 public interface IPMSStoreAction {
-
-    public void checkIntegrity()throws StoreException;
-    public int countRowsIn(Appointments table)throws StoreException;
-    public int countRowsIn(Patients table)throws StoreException;
     public void insert(Appointment a) throws StoreException;
     public void insert(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;
     public void delete(Patient p) throws StoreException;
-    public HashMap<DayOfWeek,Boolean> read(SurgeryDaysAssignment value) throws StoreException;
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
     public String read(Store.SelectedTargetStore db)throws StoreException;
-    public String readAppointmentCSVPath();
-    public ArrayList<Appointment> readAppointments() throws StoreException;
-    public ArrayList<Appointment> readAppointments(Patient p, Category c) throws StoreException;
-    public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException;
-    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException;
-    public String readPatientCSVPath();
-    public ArrayList<Patient> readPatients() throws StoreException;
     public void update(Appointment a) throws StoreException;
     public void update(SurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
-    public void updateAppointmentCSVPath(String path);
-    public void updateMigrationTargetStorePath(String path)throws StoreException;
-    public void updatePatientCSVPath(String path);
-    public void updatePMSTargetStorePath(String path)throws StoreException;
+    
     
     
     

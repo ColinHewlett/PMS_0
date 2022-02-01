@@ -120,26 +120,5 @@ public class StoreManager implements IStoreManager{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.readPatientCSVPath();
     }
-    
-    /**
-     * request the number of rows in the specified AppointmentTable
-     * @param table:AppointmentTable
-     * @return int
-     * @throws StoreException 
-     */
-    public int countRowsInx(AppointmentTable table)throws StoreException{
-        //return store.countRowsInTable(table);
-        return 0;
-    }
-    
-    /**
-     * request the number of rows in the specified PatientTable
-     * @param table:PatientTable
-     * @return int
-     * @throws StoreException 
-     */
-    public int countRowsInx(PatientTable table)throws StoreException{
-        //return store.countRowsIn(table);
-        return 0;
-    }   
+  
 }

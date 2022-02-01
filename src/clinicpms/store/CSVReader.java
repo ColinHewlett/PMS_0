@@ -276,7 +276,7 @@ public class CSVReader implements ICSVReader{
         }
         catch (Exception e){
             String message = "Exception message -> " + e.getMessage() + "\n" +
-                    "StoreException message -> Error encountered in migrateAppointments()()";
+                    "StoreException message -> Error encountered in migrateAppointments()";
             throw new StoreException(message, Store.ExceptionType.IO_EXCEPTION);
         }
 

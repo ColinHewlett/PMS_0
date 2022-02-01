@@ -6,12 +6,12 @@
 package clinicpms.model;
 
 import clinicpms.store.StoreException;
+
 /**
  *
  * @author colin
  */
-public interface ITable {
-    public void create()throws StoreException;;
-    public void drop()throws StoreException;;
-    public void populate()throws StoreException;
+public interface IPatients {
+    public void read() throws StoreException;
+            
 }

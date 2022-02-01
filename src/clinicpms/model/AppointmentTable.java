@@ -8,6 +8,7 @@ import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import clinicpms.store.IMigrationStoreAction;
 import clinicpms.store.IPMSStoreAction;
+import clinicpms.model.IEntityStoreType;
 
 /**
  *
@@ -17,8 +18,10 @@ public class AppointmentTable implements ITable{
     private int count;
     
     public int count() throws StoreException{
+        IEntityStoreType entity = null;
+        Integer rowcount = null;
         IMigrationStoreAction store = Store.FACTORY(this);
-        return store.countRowsInTable(this);
+        return store.countRowsIn(this); 
     }
     
     public void create() throws StoreException{

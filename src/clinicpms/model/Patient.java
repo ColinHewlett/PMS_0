@@ -68,13 +68,33 @@ public class Patient implements IEntity, IEntityStoreType{
     }
     
     @Override
+    public boolean isAppointments(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isAppointmentTableRowValue(){
         return false;
     }
     
     @Override
     public boolean isPatient(){
         return true;
+    }
+    
+    @Override
+    public boolean isPatients(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isPatientTableRowValue(){
+        return false;
     }
     
     @Override
@@ -100,21 +120,25 @@ public class Patient implements IEntity, IEntityStoreType{
             this.key = key;
     } 
     
+    @Override
     public void insert() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.insert(this);    
     }
     
+    @Override
     public void delete() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.delete(this);
     }
     
+    @Override
     public Patient read() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         return store.read(this); 
     }
     
+    @Override
     public void update() throws StoreException{ 
         IPMSStoreAction store = Store.FACTORY(this);
         store.update(this);
@@ -245,14 +269,21 @@ public class Patient implements IEntity, IEntityStoreType{
     public class AppointmentHistory{
 
         public ArrayList<Appointment> getDentalAppointments()throws StoreException{
-            if (Patient.this.getKey()!=null) return new Appointments().getAppointmentsFor(
+            if (Patient.this.getKey()!=null) {
+                Appointments appointments = new Appointments();
+                appointments.readForPatient(
                     Patient.this,Appointment.Category.DENTAL);
+                return appointments;
+            }
             else return null;
         }
         
         public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
-            if (Patient.this.getKey()!=null) return new Appointments().getAppointmentsFor(
-                    Patient.this,Appointment.Category.HYGIENE);
+            if (Patient.this.getKey()!=null){ 
+                Appointments appointments = new Appointments();
+                appointments.readForPatient(Patient.this, Appointment.Category.HYGIENE);
+                return appointments;
+            }
             else return null;
         }
     }

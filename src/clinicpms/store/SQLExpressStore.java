@@ -11,7 +11,7 @@ import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -135,21 +135,11 @@ public class SQLExpressStore extends Store {
     
     /**
      * 
-     * @param a:Appointments
-     * @return 
-     */
-    @Override
-    public int countRowsIn(Appointments a){
-        return 0;
-    }
-    
-    /**
-     * 
      * @param table:AppointmenTable 
     * @return 
      */
     @Override
-    public int countRowsInTable(AppointmentTable table){
+    public int countRowsIn(AppointmentTable table){
         return 0;
     }
     
@@ -159,22 +149,7 @@ public class SQLExpressStore extends Store {
      * @return 
      */
     @Override
-    public int countRowsIn(Patients p){
-        return 0;
-    }
-    
-    /**
-     * 
-     * @param table:PatientTable
-     * @return 
-     */
-    @Override
-    public int countRowsInTable(PatientTable table){
-        return 0;
-    }
-    
-    @Override
-    public int countRowsInTable(SurgeryDaysTable table){
+    public int countRowsIn(PatientTable p){
         return 0;
     }
     
@@ -200,11 +175,11 @@ public class SQLExpressStore extends Store {
     
     /**
      * Creates a SurgeryDays table in the migration store
-     * @param table:SurgeryDaysTable
+     * @param table:SurgeryDaysAssignmentTable
      * @throws StoreException 
      */
     @Override
-    public void create(SurgeryDaysTable table)throws StoreException{
+    public void create(SurgeryDaysAssignmentTable table)throws StoreException{
         
     }
     
@@ -229,12 +204,12 @@ public class SQLExpressStore extends Store {
     }
     
     /**
-     * Drops the current SurgeryDaysTable (if any) in the migration store
+     * Drops the current SurgeryDaysAssignmentTable (if any) in the migration store
      * @param table:SurgeyDaysTable
      * @throws StoreException 
      */
     @Override
-    public void drop(SurgeryDaysTable table)throws StoreException{
+    public void drop(SurgeryDaysAssignmentTable table)throws StoreException{
         
     }
     
@@ -354,5 +329,18 @@ public class SQLExpressStore extends Store {
         return null;
     }
     
-
+    @Override
+    public SurgeryDaysAssignment read(SurgeryDaysAssignmentTable table){
+        return null;
+    }
+    
+    @Override
+    public Appointments read(AppointmentTable table){
+        return null;
+    }
+    
+    @Override
+    public Patients read(PatientTable table){
+        return null;
+    }
 }

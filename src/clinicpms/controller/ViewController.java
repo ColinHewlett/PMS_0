@@ -25,16 +25,7 @@ public abstract class ViewController implements ActionListener{
     
     
 
-    public enum MigrationViewRequest{  MIGRATE_APPOINTMENTS_TO_DATABASE,
-                                        MIGRATE_PATIENTS_TO_DATABASE,
-                                        REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
-                                        TIDY_PATIENT_DATA_IN_DATABASE,
-                                        APPOINTMENT_TABLE_INTEGITY_CHECK}
     
-    public enum MigrationViewPropertyChangeEvents{MIGRATION_ACTION_COMPLETE}
-
-    public enum MigratorViewControllerActionEvent{  APPOINTMENT_MIGRATOR_REQUEST, 
-                                                    PATIENT_MIGRATOR_REQUEST};
    
     
     public static enum PatientAppointmentContactListViewControllerActionEvent {

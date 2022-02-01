@@ -33,12 +33,32 @@ public class Appointment  implements IEntity, IEntityStoreType{
     }
     
     @Override
+    public boolean isAppointments(){
+        return true;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }
     
     @Override
+    public final boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    @Override
+    public final boolean isPatientTableRowValue(){
+        return false;
+    }
+
+    @Override
     public boolean isPatient(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatients(){
         return false;
     }
     

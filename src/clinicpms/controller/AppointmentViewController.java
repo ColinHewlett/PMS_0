@@ -272,16 +272,17 @@ public class AppointmentViewController extends ViewController{
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
             Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
+            Appointments appointments = null;
             try{
-                this.appointments =
-                    new Appointments().getAppointmentsFrom(day);
-                if (this.appointments.isEmpty()){
+                appointments = new Appointments();
+                appointments.readFromDay(day);
+                if (appointments.isEmpty()){
                     JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
                 }
                 else{
                     ArrayList<Appointment> availableSlotsOfDuration =  
                             getAvailableSlotsOfDuration(
-                                    this.appointments,duration,day);
+                                    appointments,duration,day);
                     serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
                     /**
                      * fire event over to APPOINTMENT_SCHEDULE view
@@ -365,6 +366,7 @@ public class AppointmentViewController extends ViewController{
              * ------ fire a blank list of appointment slots to APPOINTMENT_SCHEDULE view as a property change APPOINTMENTS_FOR_DAY_RECEIVED event
              * ---- else fire error message to APPOINTMENT_CREATOR_EDITOR_VIEW to report APPOINTMENT_VIEW_ERROR as a property change event
              */
+            Appointments appointments = null;
             if (!e.getActionCommand().equals(
                 EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
                 if (result!=null){
@@ -392,10 +394,10 @@ public class AppointmentViewController extends ViewController{
                      * -- with new list of appointments and available slots for the day
                      * -- as well as the fully instanciated appointment that's been created or updated
                      */
-                    this.appointments =
-                        new Appointments().getAppointmentsFor(day);
-                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                    serialiseAppointmentsToEDCollection(this.appointments);
+                    appointments = new Appointments();
+                    appointments.readForDay(day);
+                    appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
+                    serialiseAppointmentsToEDCollection(appointments);
                     /**
                      * Added request to update ED with serialised new or updated appointment
                      */
@@ -522,10 +524,11 @@ public class AppointmentViewController extends ViewController{
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            Appointments appointments = null;
             try{
-                this.appointments =
-                    new Appointments().getAppointmentsFor(day);
-                serialiseAppointmentsToEDCollection(this.appointments);
+                this.appointments = new Appointments();
+                appointments.readForDay(day);
+                serialiseAppointmentsToEDCollection(appointments);
                 View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
                 this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
                 this.desktopView.add(pacView);
@@ -564,11 +567,12 @@ public class AppointmentViewController extends ViewController{
             setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
             initialiseNewEntityDescriptor();
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+            Appointments appointments = null;
             try{
-                this.appointments =
-                    new Appointments().getAppointmentsFor(day);
-                this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                serialiseAppointmentsToEDCollection(this.appointments);
+                appointments = new Appointments();
+                appointments.readForDay(day);
+                appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
+                serialiseAppointmentsToEDCollection(appointments);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
@@ -596,6 +600,7 @@ public class AppointmentViewController extends ViewController{
              * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
              * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
              */
+            Patients patients = null;
             if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
                 try{
                     
@@ -603,7 +608,8 @@ public class AppointmentViewController extends ViewController{
                             getEntityDescriptorFromView().getRequest().
                                     getAppointment().getData().getKey()).read();
                     
-                    ArrayList<Patient> patients = new Patients().getPatients();
+                    patients = new Patients();
+                    patients.read();
                     initialiseNewEntityDescriptor();
                     serialiseAppointmentToEDAppointment(appointment);
                     serialisePatientsToEDCollection(patients);
@@ -631,9 +637,11 @@ public class AppointmentViewController extends ViewController{
              * -- initialises NewEntityDescriptor with the collection of all patients on the system
              * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
              */
+            Patients patients = null;
             initialiseNewEntityDescriptor();
             try{
-                ArrayList<Patient> patients = new Patients().getPatients();
+                patients = new Patients();
+                patients.read();
                 serialisePatientsToEDCollection(patients);
                 //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
@@ -677,13 +685,14 @@ public class AppointmentViewController extends ViewController{
                      * -- serialise appointments derived from appointments and empty slots for the day
                      * -- serialise the appointment which has just been delete (required for post processing by DesktopViewController)
                      */
+                    Appointments appointments = null;
                     LocalDate day = getEntityDescriptorFromView().
                             getRequest().getAppointment().getData().getStart().toLocalDate();
                     initialiseNewEntityDescriptor();
-                    this.appointments =
-                        new Appointments().getAppointmentsFor(day);
-                    this.appointments = getAppointmentsForSelectedDayIncludingEmptySlots(this.appointments,day);
-                    serialiseAppointmentsToEDCollection(this.appointments);
+                    appointments = new Appointments();
+                    appointments.readForDay(day);
+                    appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
+                    serialiseAppointmentsToEDCollection(appointments);
                     /**
                      * appointment serialisation to ED ensures appointee key is accessible by the desktop view controller
                      */
@@ -886,7 +895,8 @@ public class AppointmentViewController extends ViewController{
         LocalDate day = rSlot.getStart().toLocalDate();
         
         //NOTE: changed "appointments" to "appts" because former hid a previous definition of "appointments"
-        ArrayList<Appointment> appts = new Appointments().getAppointmentsFor(day);
+        Appointments appts = new Appointments();
+        appts.readForDay(day);
         if (appts.isEmpty()){
             /**
              * no appointments for selected day so go head and CREATE appointment (no appointment to UPGRADE)

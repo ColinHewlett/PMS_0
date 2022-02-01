@@ -6,7 +6,7 @@
 package clinicpms.controller;
 
 import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysTable;
+import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.AppointmentTable;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
@@ -56,12 +56,17 @@ public class MigrationManagerViewController extends ViewController {
          * -- replace "AccessStore.getInstance().getTargetsDatabase()" with Store.getTargetsDatabase()
          */
         StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+        String migrationTargetPath = storeManager.getMigrationTargetStorePath();
         String targetPath = storeManager.getMigrationTargetStorePath();
+        String appointmentCSVFilePath = storeManager.getAppointmentCSVPath();
+        String patientCSVFilePath = storeManager.getPatientCSVPath();
         targetPath = targetPath + ";" + storeManager.getStorageType().toString(); //20/11/2021 07:55 update
         //String targetPath = AccessStore.getInstance().getDbLocationStore().read();
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getMigrationDescriptor().getTarget().setData(targetPath);
-        
+        getNewEntityDescriptor().getMigrationDescriptor().setAppointmentCSVFilePath(appointmentCSVFilePath);
+        getNewEntityDescriptor().getMigrationDescriptor().setPatientCSVFilePath(patientCSVFilePath);
+        getNewEntityDescriptor().getMigrationDescriptor().setTargetMigrationDatabaseURL(migrationTargetPath);
         
         View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
@@ -98,7 +103,7 @@ public class MigrationManagerViewController extends ViewController {
         
         }
         else if (e.getActionCommand().equals(
-                ViewController.MigratorViewControllerActionEvent.
+                EntityDescriptor.MigratorViewControllerActionEvent.
                         APPOINTMENT_MIGRATOR_REQUEST.toString())){
             
             /**
@@ -112,9 +117,9 @@ public class MigrationManagerViewController extends ViewController {
                 StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
                 //initialiseMigrationSettings();
                 storeManager.setAppointmentCSVPath(
-                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointmentCSVFilePath());
                 storeManager.setPatientCSVPath(
-                this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
+                this.getEntityDescriptorFromView().getMigrationDescriptor().getPatientCSVFilePath());
                 doSelectedDataMigrationAction(
                         getEntityDescriptorFromView().getMigrationDescriptor().getMigrationViewRequest());
                 
@@ -125,7 +130,7 @@ public class MigrationManagerViewController extends ViewController {
                 pcSupport.removePropertyChangeListener(this.view);
                 pcSupport.addPropertyChangeListener(this.view);
                 PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
-                    MigrationViewPropertyChangeEvents.MIGRATION_ACTION_COMPLETE.toString(),
+                    EntityDescriptor.MigrationViewPropertyChangeEvents.MIGRATION_ACTION_COMPLETE.toString(),
                     null,getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
             }
@@ -190,13 +195,14 @@ public class MigrationManagerViewController extends ViewController {
         this.myController = myController;
     }
     
-    private void doSelectedDataMigrationAction(ViewController.MigrationViewRequest mvr){
+    private void doSelectedDataMigrationAction(EntityDescriptor.MigrationViewRequest mvr){
         Instant start;
         Instant end;
         Duration duration;
         AppointmentTable appointmentTable = null;
         PatientTable patientTable = null;
-        SurgeryDaysTable surgeryDaysTable = null;
+        SurgeryDaysAssignmentTable surgeryDaysTable = null;
+        ;
         try{
             switch(mvr){
                 case MIGRATE_APPOINTMENTS_TO_DATABASE:{

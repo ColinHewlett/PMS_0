@@ -15,12 +15,10 @@ import java.time.LocalDate;
  * @author colin
  */
 public interface IAppointments {
-
-    public ArrayList<Appointment> getAppointmentsFor(LocalDate day) throws StoreException;
-    public ArrayList<Appointment> getAppointmentsFor(Patient p,Category c ) throws StoreException;
-    public Appointment getLastDentalAppointmentFor(Patient p) throws StoreException;
-    public Appointment getNextDentalAppointmentFor(Patient p) throws StoreException;
-    public Appointment getLastHygieneAppointmentFor(Patient p) throws StoreException;
-    public Appointment getNextHygieneAppointmentFor(Patient p) throws StoreException;
+    public int count();
+    public void read() throws StoreException;
+    public void readForDay(LocalDate day) throws StoreException;
+    public void readForPatient(Patient p,Category c ) throws StoreException;
+    public void readFromDay(LocalDate day) throws StoreException;
     
 }

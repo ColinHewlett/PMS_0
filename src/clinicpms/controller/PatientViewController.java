@@ -332,7 +332,8 @@ public class PatientViewController extends ViewController {
         pcSupportForView = new PropertyChangeSupport(this);
         this.newEntityDescriptor = new EntityDescriptor();
         this.oldEntityDescriptor = new EntityDescriptor();
-        ArrayList<Patient> patients = new Patients().getPatients();
+        Patients patients = new Patients();
+        patients.read();
         serialisePatientsToEDCollection(patients);
         View.setViewer(View.Viewer.PATIENT_VIEW);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
@@ -392,7 +393,8 @@ public class PatientViewController extends ViewController {
                             getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupportForView.firePropertyChange(pcEvent);
                     
-                    ArrayList<Patient> patients = new Patients().getPatients();
+                    Patients patients = new Patients();
+                    patients.read();
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     initialiseNewEntityDescriptor();
                     serialisePatientsToEDCollection(patients);
@@ -442,7 +444,8 @@ public class PatientViewController extends ViewController {
             
             if (patient.getKey() != null){
                 try{
-                    ArrayList<Patient> patients = new Patients().getPatients();
+                    Patients patients = new Patients();
+                    patients.read();
                     //setOldEntityDescriptor(getNewEntityDescriptor());
                     initialiseNewEntityDescriptor();
                     serialisePatientsToEDCollection(patients);
