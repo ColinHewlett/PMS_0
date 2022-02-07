@@ -33,7 +33,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="mniEnsureNoOrphanedAppointments">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Ensure no appointment orphans"/>
+                <Property name="text" type="java.lang.String" value="Ensure referential integrity"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mniEnsureNoOrphanedAppointmentsActionPerformed"/>
@@ -44,10 +44,23 @@
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="mniExportMigrationToPMS">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Export migrated data to PMS database"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mniExportMigrationToPMSActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="mniCloseMigrationManager">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Close migration manager"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mniCloseMigrationManagerActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>

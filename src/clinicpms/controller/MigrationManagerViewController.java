@@ -11,6 +11,11 @@ import clinicpms.model.AppointmentTable;
 import clinicpms.view.View;
 import clinicpms.view.DesktopView;
 import clinicpms.model.StoreManager;
+import clinicpms.model.Appointment;
+import clinicpms.model.Appointments;
+import clinicpms.model.Patients;
+import clinicpms.model.Patient;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +74,10 @@ public class MigrationManagerViewController extends ViewController {
         getNewEntityDescriptor().getMigrationDescriptor().setTargetMigrationDatabaseURL(migrationTargetPath);
         
         View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
+        getNewEntityDescriptor().getMigrationDescriptor().
+                setAppointmentTableCount(new AppointmentTable().count());
+        getNewEntityDescriptor().getMigrationDescriptor().
+                setPatientTableCount(new PatientTable().count());
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
         
         /**
@@ -101,6 +110,26 @@ public class MigrationManagerViewController extends ViewController {
         else if (e.getActionCommand().equals(
                DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
         
+        }
+        else if (e.getActionCommand().equals(
+            EntityDescriptor.MigratorViewControllerActionEvent.
+                    EXPORT_MIGRATED_DATA_TO_PMS_REQUEST.toString())){
+            /**
+             * EXPORT_MIGRATED_DATA_TO_PMS_REQUEST store action
+             * -- table dropped if it already exists in pms database
+             * -- because jackaccess driver s'ware does not replace existing table
+             * -- instead creates another similarly named table with the suffix '2'
+             */
+            try{
+                new Appointment().drop();
+                new AppointmentTable().exportToPMS();
+                new Patient().drop();
+                new PatientTable().exportToPMS();
+                new SurgeryDaysAssignment().drop();
+                new SurgeryDaysAssignmentTable().exportToPMS();
+            }catch (StoreException ex){
+                displayErrorMessage(ex.getMessage(),"MigrationManagerViewController error",JOptionPane.WARNING_MESSAGE);
+            }
         }
         else if (e.getActionCommand().equals(
                 EntityDescriptor.MigratorViewControllerActionEvent.
@@ -205,7 +234,7 @@ public class MigrationManagerViewController extends ViewController {
         ;
         try{
             switch(mvr){
-                case MIGRATE_APPOINTMENTS_TO_DATABASE:{
+                case POPULATE_APPOINTMENT_TABLE:{
                     start = Instant.now();
 
                     appointmentTable = new AppointmentTable();
@@ -217,10 +246,10 @@ public class MigrationManagerViewController extends ViewController {
                     duration = Duration.between(start, end);
                     getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
                     //setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new AppointmentTable().count());
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
                     break;
                 }
-                case MIGRATE_PATIENTS_TO_DATABASE:{
+                case POPULATE_PATIENT_TABLE:{
                     start = Instant.now();
                     
                     patientTable = new PatientTable();
@@ -231,7 +260,7 @@ public class MigrationManagerViewController extends ViewController {
                     end = Instant.now();
                     duration = Duration.between(start, end);
                     getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
-                    getNewEntityDescriptor().getMigrationDescriptor().setPatientsCount(new PatientTable().count());
+                    getNewEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
                     break;
                 }
                 case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:{
@@ -242,7 +271,7 @@ public class MigrationManagerViewController extends ViewController {
                     end = Instant.now();
                     duration = Duration.between(start, end);
                     getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
-                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new AppointmentTable().count());
+                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
                     break;
                 }        
             }
@@ -277,7 +306,7 @@ public class MigrationManagerViewController extends ViewController {
         Duration duration;
         try{
             switch(mvr){
-                case MIGRATE_APPOINTMENTS_TO_DATABASE:{
+                case POPULATE_APPOINTMENT_TABLE:{
                     //ArrayList<Appointment> appointments = CSVStore.migrateAppointments();
                     //manager.setAppointments(appointments);
                     manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_DROP);
@@ -291,7 +320,7 @@ public class MigrationManagerViewController extends ViewController {
                     getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
                     break;
                 }
-                case MIGRATE_PATIENTS_TO_DATABASE:{
+                case POPULATE_PATIENT_TABLE:{
                     start = Instant.now();
 
                     //ArrayList<Patient> patients = CSVStore.migratePatients();

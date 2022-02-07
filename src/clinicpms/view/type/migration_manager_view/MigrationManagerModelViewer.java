@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import javax.swing.JDesktopPane;
@@ -42,9 +43,10 @@ public class MigrationManagerModelViewer extends View {
     private InternalFrameAdapter internalFrameAdapter = null;
     private View.Viewer myViewType = null;
 
-    public final String ENSURE_NO_ORPHANED_APPOINTMENTS = "Remove orphaned appointment records";
-    public final String MIGRATE_APPOINTMENT_CSV_FILE_HEADER = "Import appointment CSV file";
-    public final String MIGRATE_PATIENT_CSV_FILE_HEADER = "Import patient CSV file";
+    public final String ENSURE_NO_ORPHANED_APPOINTMENTS = "Referential integrity check";
+    public final String MIGRATE_APPOINTMENT_CSV_FILE_HEADER = "Populate appointment from CSV file";
+    public final String EXPORT_MIGRATED_DATA_TO_PMS = "Export migrated data to PMS database";
+    public final String MIGRATE_PATIENT_CSV_FILE_HEADER = "Populate patient from CSV file";
     public final String SELECTED_APPOINTMENT_CSV_FILE_HEADER = "Selected appointments CSV file -> ";
     public final String SELECTED_PATIENT_CSV_FILE_HEADER = "Selected patients CSV file -> ";
     public final String SELECTED_MIGRATION_DATABASE_HEADER = "Selected target migration database -> ";
@@ -84,19 +86,19 @@ public class MigrationManagerModelViewer extends View {
         String report = "";
         if (this.txaResults.getText().length()>0) report = "\n";
         switch(getEntityDescriptor().getMigrationDescriptor().getMigrationViewRequest()){
-            case MIGRATE_APPOINTMENTS_TO_DATABASE:
+            case POPULATE_APPOINTMENT_TABLE:
                 report = "MIGRATE APPOINTMENTS TO DATABASE \n"
-                + "Total number of appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount() + "\n"
+                + "Total number of appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount() + "\n"
                 + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
-            case MIGRATE_PATIENTS_TO_DATABASE:
+            case POPULATE_PATIENT_TABLE:
                 report = "MIGRATE PATIENTS TO DATABASE \n"
-                + "Total number of patients = " + getEntityDescriptor().getMigrationDescriptor().getPatientsCount() + "\n"
+                + "Total number of patients = " + getEntityDescriptor().getMigrationDescriptor().getPatientTableCount() + "\n"
                 + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
             case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:
                 report = "REMOVAL OF BAD APPOINTMENTS FROM DATABASE \n"
-                + "Total number of remaining appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount() + "\n"
+                + "Total number of remaining appointments = " + getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount() + "\n"
                 + "Operation duration = " + normaliseDuration(getEntityDescriptor().getMigrationDescriptor().getMigrationActionDuration()) + "\n";
                 break;
             case TIDY_PATIENT_DATA_IN_DATABASE:
@@ -127,6 +129,8 @@ public class MigrationManagerModelViewer extends View {
         mniMigrateFromPatientsCSV = new javax.swing.JMenuItem();
         mniEnsureNoOrphanedAppointments = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        mniExportMigrationToPMS = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mniCloseMigrationManager = new javax.swing.JMenuItem();
         mnuCSVSourceFiles = new javax.swing.JMenu();
         mniSelectedAppointmentsCSVFilePath = new javax.swing.JMenuItem();
@@ -160,7 +164,7 @@ public class MigrationManagerModelViewer extends View {
         });
         mnuMigrationActions.add(mniMigrateFromPatientsCSV);
 
-        mniEnsureNoOrphanedAppointments.setText("Ensure no appointment orphans");
+        mniEnsureNoOrphanedAppointments.setText("Ensure referential integrity");
         mniEnsureNoOrphanedAppointments.setText(ENSURE_NO_ORPHANED_APPOINTMENTS);
         mniEnsureNoOrphanedAppointments.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,7 +174,21 @@ public class MigrationManagerModelViewer extends View {
         mnuMigrationActions.add(mniEnsureNoOrphanedAppointments);
         mnuMigrationActions.add(jSeparator2);
 
+        mniExportMigrationToPMS.setText("Export migrated data to PMS database");
+        mniExportMigrationToPMS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniExportMigrationToPMSActionPerformed(evt);
+            }
+        });
+        mnuMigrationActions.add(mniExportMigrationToPMS);
+        mnuMigrationActions.add(jSeparator3);
+
         mniCloseMigrationManager.setText("Close migration manager");
+        mniCloseMigrationManager.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniCloseMigrationManagerActionPerformed(evt);
+            }
+        });
         mnuMigrationActions.add(mniCloseMigrationManager);
 
         mnbMigrationManagement.add(mnuMigrationActions);
@@ -249,7 +267,7 @@ public class MigrationManagerModelViewer extends View {
     }//GEN-LAST:event_mniSelectedTargetMigrationDatabaseActionPerformed
 
     private void mniMigrateAppointmentsCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMigrateAppointmentsCSVActionPerformed
-        getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(EntityDescriptor.MigrationViewRequest.MIGRATE_APPOINTMENTS_TO_DATABASE);
+        getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(EntityDescriptor.MigrationViewRequest.POPULATE_APPOINTMENT_TABLE);
             ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
                 EntityDescriptor.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -257,7 +275,7 @@ public class MigrationManagerModelViewer extends View {
     }//GEN-LAST:event_mniMigrateAppointmentsCSVActionPerformed
 
     private void mniMigrateFromPatientsCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMigrateFromPatientsCSVActionPerformed
-        getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(EntityDescriptor.MigrationViewRequest.MIGRATE_PATIENTS_TO_DATABASE);
+        getEntityDescriptor().getMigrationDescriptor().setMigrationViewRequest(EntityDescriptor.MigrationViewRequest.POPULATE_PATIENT_TABLE);
             ActionEvent actionEvent = new ActionEvent(this,
                 ActionEvent.ACTION_PERFORMED,
                 EntityDescriptor.MigratorViewControllerActionEvent.APPOINTMENT_MIGRATOR_REQUEST.toString());
@@ -272,6 +290,22 @@ public class MigrationManagerModelViewer extends View {
         this.getMyController().actionPerformed(actionEvent);
     }//GEN-LAST:event_mniEnsureNoOrphanedAppointmentsActionPerformed
 
+    private void mniExportMigrationToPMSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniExportMigrationToPMSActionPerformed
+        ActionEvent actionEvent = new ActionEvent(this,
+            ActionEvent.ACTION_PERFORMED,
+            EntityDescriptor.MigratorViewControllerActionEvent.EXPORT_MIGRATED_DATA_TO_PMS_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
+    }//GEN-LAST:event_mniExportMigrationToPMSActionPerformed
+
+    private void mniCloseMigrationManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCloseMigrationManagerActionPerformed
+        // TODO add your handling code here:
+        try{
+            this.setClosed(true);
+        }catch (PropertyVetoException ex){
+
+        }
+    }//GEN-LAST:event_mniCloseMigrationManagerActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFileChooser jFileChooser1;
@@ -279,9 +313,11 @@ public class MigrationManagerModelViewer extends View {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JMenuBar mnbMigrationManagement;
     private javax.swing.JMenuItem mniCloseMigrationManager;
     private javax.swing.JMenuItem mniEnsureNoOrphanedAppointments;
+    private javax.swing.JMenuItem mniExportMigrationToPMS;
     private javax.swing.JMenuItem mniMigrateAppointmentsCSV;
     private javax.swing.JMenuItem mniMigrateFromPatientsCSV;
     private javax.swing.JMenuItem mniSelectedAppointmentsCSVFilePath;
@@ -374,6 +410,7 @@ public class MigrationManagerModelViewer extends View {
         this.setLayer(JLayeredPane.MODAL_LAYER);
         centreViewOnDesktop(x.getParent(),this);
         this.initialiseView();
+        initialiseRecordCounts();
         this.setVisible(true);
 
         startModal(this);
@@ -406,6 +443,7 @@ public class MigrationManagerModelViewer extends View {
                 + getEntityDescriptor().getMigrationDescriptor().getPatientCSVFilePath());
         this.mniSelectedTargetMigrationDatabase.setText(this.SELECTED_MIGRATION_DATABASE_HEADER 
                 + getEntityDescriptor().getMigrationDescriptor().getTargetMigrationDatabaseURL());
+        this.mniExportMigrationToPMS.setText(this.EXPORT_MIGRATED_DATA_TO_PMS);
     }
     
     @Override 
@@ -420,12 +458,26 @@ public class MigrationManagerModelViewer extends View {
     
     @Override
     public void propertyChange(PropertyChangeEvent e){
+        int count;
         String propertyName = e.getPropertyName();
         
         if (propertyName.equals(EntityDescriptor.MigrationViewPropertyChangeEvents.MIGRATION_ACTION_COMPLETE.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
-            initialiseStatsDisplay();  
+            initialiseStatsDisplay(); 
+            initialiseRecordCounts();
         }
     }
   
+    private void initialiseRecordCounts(){
+        int count;
+        count = getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount();
+        this.mniMigrateAppointmentsCSV.setText(
+                this.MIGRATE_APPOINTMENT_CSV_FILE_HEADER + " ("
+                        + String.valueOf(count) + " records)");
+
+        count = getEntityDescriptor().getMigrationDescriptor().getPatientTableCount();
+        this.mniMigrateFromPatientsCSV.setText(
+                this.MIGRATE_PATIENT_CSV_FILE_HEADER + " ("
+                        + String.valueOf(count) + " records)");
+    }
 }

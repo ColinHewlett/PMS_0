@@ -46,8 +46,9 @@ public abstract class Store implements IAppointmentsStoreAction,
                         SQL_EXPRESS,
                         UNDEFINED_DATABASE}
     
-    protected enum PatientManagementSystemSQL   {
+    protected enum PracticeManagementSystemSQL   {
                             APPOINTMENTS_COUNT,
+                            APPOINTMENT_TABLE_DROP,
                             DELETE_APPOINTMENT_WITH_KEY,
                             DELETE_APPOINTMENTS_WITH_PATIENT_KEY,
                             INSERT_APPOINTMENT,
@@ -60,12 +61,14 @@ public abstract class Store implements IAppointmentsStoreAction,
                             UPDATE_APPOINTMENT,
                             INSERT_PATIENT,
                             PATIENTS_COUNT,
+                            PATIENT_TABLE_DROP,
                             READ_ALL_PATIENTS,
                             READ_PATIENT_HIGHEST_KEY,
                             READ_PATIENT_WITH_KEY,
                             UPDATE_PATIENT,
                             READ_SURGERY_DAYS,
-                            UPDATE_SURGERY_DAYS}
+                            UPDATE_SURGERY_DAYS,
+                            SURGERY_DAYS_TABLE_DROP}
     
     protected enum MigrationSQL {
                             APPOINTMENT_TABLE_CREATE,
@@ -87,7 +90,8 @@ public abstract class Store implements IAppointmentsStoreAction,
                             SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION,
                             SURGERY_DAYS_TABLE_DROP,
                             SURGERY_DAYS_TABLE_READ,
-                            SURGERY_DAYS_TABLE_ROW_COUNT
+                            SURGERY_DAYS_TABLE_ROW_COUNT,
+                            EXPORT_MIGRATED_DATA_TO_PMS
                             }
 
     protected enum PatientSQL   {INSERT_PATIENT,

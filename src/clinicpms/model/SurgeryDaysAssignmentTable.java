@@ -28,6 +28,12 @@ public class SurgeryDaysAssignmentTable implements ITable{
         store.drop(this);
     }
     
+    @Override
+    public void exportToPMS() throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this); 
+        store.exportToPMS(new SurgeryDaysAssignment());
+    }
+    
     public void populate() throws StoreException{
         SurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
         //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
@@ -41,6 +47,11 @@ public class SurgeryDaysAssignmentTable implements ITable{
         
         IMigrationStoreAction store = Store.FACTORY(this);
         store.populate(surgeryDaysValues);
+    }
+    
+    public IEntityStoreType read()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        return store.read(this);
     }
     /*
     public int count()throws StoreException{

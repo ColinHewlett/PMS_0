@@ -58,6 +58,13 @@ public class Appointments extends ArrayList<Appointment> implements IAppointment
     public boolean isSurgeryDaysAssignment(){
         return false;
     }
+    
+    @Override
+    public void insert() throws StoreException{
+        IAppointmentsStoreAction store = Store.FACTORY(this);
+        store.insert(this);
+    }
+    
     /**
      * 
      * @param p Patient object

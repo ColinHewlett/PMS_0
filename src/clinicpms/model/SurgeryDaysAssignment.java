@@ -74,6 +74,11 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
         //not currently implemented
     }
     
+    public void drop() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.drop(this);        
+    }
+    
     @Override
     /**
      * not currently implemented

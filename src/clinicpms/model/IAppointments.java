@@ -20,5 +20,6 @@ public interface IAppointments {
     public void readForDay(LocalDate day) throws StoreException;
     public void readForPatient(Patient p,Category c ) throws StoreException;
     public void readFromDay(LocalDate day) throws StoreException;
+    public void insert() throws StoreException;
     
 }

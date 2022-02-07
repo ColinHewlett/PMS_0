@@ -114,16 +114,19 @@ public class EntityDescriptor {
                                             PATIENTS_RECEIVED,
                                             PATIENT_GUARDIANS_RECEIVED}
     
-    public enum MigrationViewRequest{   MIGRATE_APPOINTMENTS_TO_DATABASE,
-                                            MIGRATE_PATIENTS_TO_DATABASE,
-                                            REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
-                                            TIDY_PATIENT_DATA_IN_DATABASE,
-                                            APPOINTMENT_TABLE_INTEGITY_CHECK}
+    public enum MigrationViewRequest{   POPULATE_APPOINTMENT_TABLE,
+                                        COUNT_APPOINTMENT_TABLE,
+                                        POPULATE_PATIENT_TABLE,
+                                        COUNT_PATIENT_TABLE,
+                                        REMOVE_BAD_APPOINTMENTS_FROM_DATABASE,
+                                        TIDY_PATIENT_DATA_IN_DATABASE,
+                                        APPOINTMENT_TABLE_INTEGITY_CHECK}
     
     public enum MigrationViewPropertyChangeEvents{MIGRATION_ACTION_COMPLETE}
 
-    public enum MigratorViewControllerActionEvent{ APPOINTMENT_MIGRATOR_REQUEST, 
-                                                   PATIENT_MIGRATOR_REQUEST};
+    public enum MigratorViewControllerActionEvent{  APPOINTMENT_MIGRATOR_REQUEST, 
+                                                    PATIENT_MIGRATOR_REQUEST,
+                                                    EXPORT_MIGRATED_DATA_TO_PMS_REQUEST};
 
     protected EntityDescriptor() {
         appointment = new EntityDescriptor.Appointment();
@@ -689,19 +692,19 @@ public class EntityDescriptor {
             durationOfMigrationAction = value;
         }
 
-        public  Integer  getAppointmentsCount(){
+        public  Integer  getAppointmentTableCount(){
             return appointmentsCount;
         }
 
-        public void setAppointmentsCount(Integer value){
+        protected void setAppointmentTableCount(Integer value){
             appointmentsCount = value;
         }
 
-        public Integer getPatientsCount(){
+        public Integer getPatientTableCount(){
             return patientsCount;
         }
 
-        public void setPatientsCount(Integer value){
+        protected void setPatientTableCount(Integer value){
             patientsCount = value;
         }
 

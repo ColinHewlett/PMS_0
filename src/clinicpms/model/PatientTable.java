@@ -29,10 +29,22 @@ public class PatientTable implements ITable{
     }
     
     @Override
+    public void exportToPMS() throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this); 
+        store.exportToPMS(new Patients());
+    }
+    
+    @Override
     public void populate() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
         store.populate(this);
     }  
+    
+    @Override
+    public IEntityStoreType read()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        return store.read(this);
+    }
     
     public int count() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 

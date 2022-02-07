@@ -78,6 +78,8 @@ public class Appointment  implements IEntity, IEntityStoreType{
         this.key = key;
     }
     
+    
+    
     @Override
     public void insert() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
@@ -88,6 +90,11 @@ public class Appointment  implements IEntity, IEntityStoreType{
     public void delete() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.delete(this);
+    }
+    
+    public void drop() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.drop(this);        
     }
     
     public Appointment read() throws StoreException{

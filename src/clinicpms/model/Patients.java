@@ -57,6 +57,12 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
     }
     
     @Override
+    public void insert() throws StoreException{
+        IPatientsStoreAction store = Store.FACTORY(this);
+        store.insert(this);
+    }
+    
+    @Override
     public void read() throws StoreException{
         IPatientsStoreAction store = Store.FACTORY(new Patients());
         clear();

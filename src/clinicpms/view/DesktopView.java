@@ -42,14 +42,21 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private Image img = null;
     
     private JMenu mnuData = null;
-    private JMenuItem mniDatabaseLocator = null;
+    //private JMenuItem mniDatabaseLocator = null;
     private JMenuItem mniMigrationManagerView = null;
     private JMenuItem mniMigrationDatabase = null;
+    private JMenuItem mniMigrationDatabaseSelect = null;
+    private JMenuItem mniMigrationDatabaseCreate = null;
+    private JMenuItem mniMigrationDatabaseDelete = null;
     private JMenuItem mniPMSDatabase = null;
+    private JMenuItem mniPMSDatabaseSelect = null;
+    private JMenuItem mniPMSDatabaseCreate = null;
+    private JMenuItem mniPMSDatabaseDelete = null;
     private boolean closeIsEnabled = true;
     
     private JMenu mnuDataExtra = null;
-    private JMenu mnuTargets = null;
+    private JMenu mnuMigrationDatabase = null;
+    private JMenu mnuPMSDatabase = null;
     private JMenu mnuSource = null;
     private JMenuItem mniMigrationTarget = null;
     private JMenuItem mniPMSTarget = null;
@@ -108,7 +115,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
          */
         mniPatientView = new JMenuItem("Patient");
         mniAppointmentView = new JMenuItem("Appointments");
-        mniDatabaseLocator = new JMenuItem("Database locator");
+        //mniDatabaseLocator = new JMenuItem("Database locator");
         mniExitView = new JMenuItem("Exit The Clinic practice management system");
         this.mnuView.add(mniPatientView);
         this.mnuView.add(mniAppointmentView);
@@ -122,7 +129,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         
         mniPatientView.addActionListener((ActionEvent e) -> mniPatientViewActionPerformed());
         mniAppointmentView.addActionListener((ActionEvent e) -> mniAppointmentViewActionPerformed());
-        mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
+        //mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
         setContentPaneForInternalFrame();
     }
@@ -146,27 +153,50 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     
     private void addDataExtraMenu(){
         if (mnuData==null) mnuData = new JMenu("Data management");
-        mnuTargets = new JMenu("Target databases");
-        this.mnuSource = new JMenu("Source CSV files");
+        
+        mnuMigrationDatabase = new JMenu("Migration database");
+        mniMigrationDatabaseSelect = new JMenuItem("Select migration database foruse");
+        mniMigrationDatabaseCreate = new JMenuItem("Create new migration database");
+        mniMigrationDatabaseDelete = new JMenuItem("Delete existing migration database");
+        mnuMigrationDatabase.add(this.mniMigrationDatabaseSelect);
+        mnuMigrationDatabase.add(mniMigrationDatabaseCreate);
+        mnuMigrationDatabase.add(mniMigrationDatabaseDelete);
+        
+        mnuPMSDatabase = new JMenu("PMS database");
+        mniPMSDatabaseSelect = new JMenuItem("Select PMS database for use");
+        mniPMSDatabaseCreate = new JMenuItem("Create new PMS database");
+        mniPMSDatabaseDelete = new JMenuItem("Delete existing PMS database");
+        mnuPMSDatabase.add(mniPMSDatabaseSelect);
+        mnuPMSDatabase.add(mniPMSDatabaseCreate);
+        mnuPMSDatabase.add(this.mniPMSDatabaseDelete);
+        
+        mnuSource = new JMenu("Source CSV files");
         mniAppointmentCSVFile = new JMenuItem("Appointment CSV file");
         mniPatientCSVFile = new JMenuItem("Patient CSV file");
-        mniMigrationManagerView = new JMenuItem("Run migration manager");
-        mniMigrationDatabase = new JMenuItem("Select migration database");
-        this.mniPMSDatabase = new JMenuItem("Select PMS database");
-        mnuTargets.add(mniMigrationDatabase);
-        mnuTargets.add(mniPMSDatabase);
         mnuSource.add(mniAppointmentCSVFile);
         mnuSource.add(mniPatientCSVFile);
-        mnuData.add(mnuTargets);
+        
+        mniMigrationManagerView = new JMenuItem("Run migration manager");
+        
+        mnuData.add(mnuMigrationDatabase);
+        mnuData.add(mnuPMSDatabase);
         mnuData.add(mnuSource);
         this.mnuData.add(new JSeparator());
         this.mnuData.add(mniMigrationManagerView);
+        
         this.mnbDesktop.add(mnuData);
+        
         mniMigrationManagerView.addActionListener((ActionEvent e) -> mniMigrationManagerViewActionPerformed());
-        mniMigrationDatabase.addActionListener((ActionEvent e) -> mniMigrationDatabaseActionPerformed());
-        mniPMSDatabase.addActionListener((ActionEvent e) -> mniPMSDatabaseActionPerformed());
+        mniMigrationDatabaseSelect.addActionListener((ActionEvent e) -> mniMigrationDatabaseSelectActionPerformed());
+        mniMigrationDatabaseCreate.addActionListener((ActionEvent e) -> mniMigrationDatabaseCreateActionPerformed());
+        mniMigrationDatabaseDelete.addActionListener((ActionEvent e) -> mniMigrationDatabaseDeleteActionPerformed());
+        mniPMSDatabaseSelect.addActionListener((ActionEvent e) -> mniPMSDatabaseSelectActionPerformed());
+        mniPMSDatabaseCreate.addActionListener((ActionEvent e) -> mniPMSDatabaseCreateActionPerformed());
+        mniPMSDatabaseDelete.addActionListener((ActionEvent e) -> mniPMSDatabaseDeleteActionPerformed());
+        //mniPMSDatabase.addActionListener((ActionEvent e) -> mniPMSDatabaseActionPerformed());
         mniAppointmentCSVFile.addActionListener((ActionEvent e) -> mniAppointmentCSVFileActionPerformed());
         mniPatientCSVFile.addActionListener((ActionEvent e) -> mniPatientCSVFileActionPerformed());
+        
     }
     
     public void enableWindowCloseControl(){
@@ -322,17 +352,45 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniMigrationDatabaseActionPerformed(){
+    private void mniMigrationDatabaseSelectActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.SET_MIGRATION_DATABASE_LOCATION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_SELECTION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniPMSDatabaseActionPerformed(){
+    private void mniMigrationDatabaseCreateActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.SET_PMS_DATABASE_LOCATION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniMigrationDatabaseDeleteActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_DELETION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniPMSDatabaseSelectActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_DATABASE_SELECTION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniPMSDatabaseCreateActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_DATABASE_CREATION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniPMSDatabaseDeleteActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_DATABASE_DELETION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     

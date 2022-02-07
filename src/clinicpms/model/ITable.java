@@ -11,7 +11,9 @@ import clinicpms.store.StoreException;
  * @author colin
  */
 public interface ITable {
-    public void create()throws StoreException;;
-    public void drop()throws StoreException;;
+    public void create()throws StoreException;
+    public void drop()throws StoreException;
+    public void exportToPMS() throws StoreException;
     public void populate()throws StoreException;
+    public IEntityStoreType read() throws StoreException;
 }

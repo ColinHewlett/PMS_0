@@ -132,6 +132,11 @@ public class Patient implements IEntity, IEntityStoreType{
         store.delete(this);
     }
     
+    public void drop() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.drop(this);        
+    }
+    
     @Override
     public Patient read() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);

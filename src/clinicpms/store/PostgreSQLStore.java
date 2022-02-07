@@ -79,27 +79,27 @@ public class PostgreSQLStore extends Store {
      * @return ArrayList<Appointment>
      * @throws StoreException 
      */
-    public ArrayList<Appointment> readAppointments() throws StoreException{
+    public Appointments readAppointments() throws StoreException{
         return null;
     }
     
     @Override
-    public ArrayList<Appointment> readAppointmentsFor(LocalDate day) throws StoreException{
+    public Appointments readAppointmentsFor(LocalDate day) throws StoreException{
         return null;
     }
     
     @Override
-    public ArrayList<Appointment> readAppointments(Patient p, Appointment.Category c) throws StoreException{
+    public Appointments readAppointments(Patient p, Appointment.Category c) throws StoreException{
         return null;
     }
     
     @Override
-    public ArrayList<Appointment> readAppointmentsFrom(LocalDate day) throws StoreException{
+    public Appointments readAppointmentsFrom(LocalDate day) throws StoreException{
         return null;
     }
     
     @Override
-    public ArrayList<Patient> readPatients() throws StoreException{
+    public Patients readPatients() throws StoreException{
         return null;
     }
     
@@ -352,4 +352,40 @@ public class PostgreSQLStore extends Store {
         return null;
     }
     
+    @Override
+    public void exportToPMS(Appointments appointments) throws StoreException{
+        
+    }
+    
+    @Override
+    public void exportToPMS(Patients patients) throws StoreException{
+        
+    }
+    
+    @Override
+    public void exportToPMS(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException{
+        
+    }
+    
+    public void insert(Appointments appointments) throws StoreException{
+        
+    }
+    
+    public void insert(Patients patients) throws StoreException{
+        
+    }
+    
+    public void insert(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException{
+        
+    }
+    
+    public void drop(Appointment a)throws StoreException{
+        
+    }
+    public void drop(Patient p)throws StoreException{
+        
+    }
+    public void drop(SurgeryDaysAssignment s)throws StoreException{
+        
+    }
 }

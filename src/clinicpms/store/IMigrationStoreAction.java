@@ -29,12 +29,14 @@ public interface IMigrationStoreAction {
     public void drop(AppointmentTable table)throws StoreException;
     public void drop(PatientTable table)throws StoreException;
     public void drop(SurgeryDaysAssignmentTable table)throws StoreException;
+    public void exportToPMS(Appointments table)throws StoreException;
+    public void exportToPMS(Patients table)throws StoreException;
+    public void exportToPMS(SurgeryDaysAssignment table)throws StoreException;
     public void populate(AppointmentTable table)throws StoreException;
     public void populate(PatientTable table)throws StoreException;
     public void populate(SurgeryDaysAssignment data)throws StoreException;
     public Appointments read(AppointmentTable table)throws StoreException;
     public Patients read(PatientTable table)throws StoreException;
     public SurgeryDaysAssignment read(SurgeryDaysAssignmentTable table)throws StoreException;
-
 
 }

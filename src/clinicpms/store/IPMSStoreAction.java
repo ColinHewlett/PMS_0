@@ -46,7 +46,9 @@ public interface IPMSStoreAction {
     public void update(SurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
-    
+    public void drop(Appointment a)throws StoreException;
+    public void drop(Patient p)throws StoreException;
+    public void drop(SurgeryDaysAssignment s)throws StoreException;
     
     
     

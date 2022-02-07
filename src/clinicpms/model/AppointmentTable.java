@@ -39,6 +39,16 @@ public class AppointmentTable implements ITable{
         store.populate(this);
     }
     
+    public IEntityStoreType read() throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        return store.read(this);
+    }
+    
+    public void exportToPMS() throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        store.exportToPMS(new Appointments());
+    }
+    
     public void checkIntegrity()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.checkIntegrity();

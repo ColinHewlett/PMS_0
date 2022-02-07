@@ -6,6 +6,7 @@
 package clinicpms.store;
 
 import clinicpms.model.Patient;
+import clinicpms.model.Patients;
 import java.util.ArrayList;
 
 /**
@@ -13,5 +14,6 @@ import java.util.ArrayList;
  * @author colin
  */
 public interface IPatientsStoreAction {
-    public ArrayList<Patient> readPatients() throws StoreException;
+    public Patients readPatients() throws StoreException;
+    public void insert(Patients patients) throws StoreException;
 }

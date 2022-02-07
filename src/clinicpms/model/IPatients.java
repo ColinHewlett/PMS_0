@@ -13,5 +13,6 @@ import clinicpms.store.StoreException;
  */
 public interface IPatients {
     public void read() throws StoreException;
+    public void insert() throws StoreException;
             
 }
