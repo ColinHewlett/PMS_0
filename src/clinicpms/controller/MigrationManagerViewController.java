@@ -122,10 +122,10 @@ public class MigrationManagerViewController extends ViewController {
              */
             try{
                 new Appointment().drop();
-                new AppointmentTable().exportToPMS();
                 new Patient().drop();
-                new PatientTable().exportToPMS();
                 new SurgeryDaysAssignment().drop();
+                new AppointmentTable().exportToPMS();
+                new PatientTable().exportToPMS();
                 new SurgeryDaysAssignmentTable().exportToPMS();
             }catch (StoreException ex){
                 displayErrorMessage(ex.getMessage(),"MigrationManagerViewController error",JOptionPane.WARNING_MESSAGE);
