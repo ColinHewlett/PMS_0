@@ -17,7 +17,8 @@ import clinicpms.model.IEntityStoreType;
 public class AppointmentTable implements ITable{
     private int count;
     
-    public int count() throws StoreException{
+    public Integer count() throws StoreException{
+        int result = 0;
         IEntityStoreType entity = null;
         Integer rowcount = null;
         IMigrationStoreAction store = Store.FACTORY(this);
