@@ -1081,7 +1081,11 @@ public class DesktopViewController extends ViewController{
                         migrationViewControllers.get(migrationViewControllers.size()-1);
         }
         catch(StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                displayErrorMessage(ex.getMessage() + "\nUnable to create MigrationManagerViewController","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+        finally{
+            getView().enableDataControl();
+            getView().enableWindowCloseControl();
         }
     }
     
