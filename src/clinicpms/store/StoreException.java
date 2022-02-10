@@ -5,7 +5,6 @@
  */
 package clinicpms.store;
 
-import clinicpms.store.Store.ExceptionType;
 
 /**
  * Wrapper for all exceptions thrown by the store, the cause of which is
@@ -13,7 +12,26 @@ import clinicpms.store.Store.ExceptionType;
  * @author colin
  */
 public class StoreException extends Exception{
+    
+    
     private ExceptionType  exceptionType = null;
+    
+    public static enum ExceptionType {  
+                                 APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE,
+                                 INTEGRITY_CONSTRAINT_VIOLATION,
+                                 PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE,
+                                 APPOINTEE_NOT_FOUND_EXCEPTION,
+                                 IO_EXCEPTION,
+                                 CSV_EXCEPTION,
+                                 NULL_KEY_EXPECTED_EXCEPTION,
+                                 NULL_KEY_EXCEPTION,
+                                 INVALID_KEY_VALUE_EXCEPTION,
+                                 KEY_FOUND_EXCEPTION,
+                                 KEY_NOT_FOUND_EXCEPTION,
+                                 SQL_EXCEPTION,
+                                 STORE_EXCEPTION,
+                                 UNEXPECTED_DATA_TYPE_ENCOUNTERED,
+                                 UNDEFINED_DATABASE}
     
     public StoreException(String s, ExceptionType e){
         super(s);
