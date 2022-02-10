@@ -5,6 +5,7 @@
  */
 package clinicpms.controller;
 
+import static clinicpms.controller.ViewController.displayErrorMessage;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.AppointmentTable;
@@ -76,8 +77,9 @@ public class MigrationManagerViewController extends ViewController {
         View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
         getNewEntityDescriptor().getMigrationDescriptor().
                 setAppointmentTableCount(new AppointmentTable().count());
+        Integer rows = new PatientTable().count();
         getNewEntityDescriptor().getMigrationDescriptor().
-                setPatientTableCount(new PatientTable().count());
+        setPatientTableCount(rows);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
         
         /**
@@ -163,13 +165,6 @@ public class MigrationManagerViewController extends ViewController {
                     null,getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
             }
-            /*
-            catch (IOException ex){
-               JOptionPane.showMessageDialog(null,
-                                          new ErrorMessagePanel(ex.getMessage())); 
-
-            }
-            */
             catch (StoreException ex){
                     JOptionPane.showMessageDialog(null,
                                               new ErrorMessagePanel(ex.getMessage()));
@@ -277,112 +272,14 @@ public class MigrationManagerViewController extends ViewController {
             }
         }
         catch (StoreException ex){
-            JOptionPane.showMessageDialog(null,
-                                      new ErrorMessagePanel(ex.getMessage()));
+            //displayErrorMessage(ex.getMessage(),"MigrationManagerViewController error",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }
+        
        
     }
-    /**
-     * method performs execution of one of the following actions selected by the received MigrationViewRequest
-     * -- MIGRATE_APPOINTMENTS_TO_DATABASE -> creates new Appointment table in selected database, populated by Appointment records derived from the specified appointments CSV file
-     * -- MIGRATE_PATIENTS_TO_DATABASE -> creates new Patient table in selected database, populated by Patient records derived from the specified patients CSV file
-     * -- REMOVE_BAD_APPOINTMENTS_FROM_DATABASE -> removes from Appointment table records which refer to a patient record (appointee) which does not exist in the Patient table
-     * -- TIDY_PATIENT_DATA_IN_DATABASE -> tidies up existing data in Patient table (appropriate upper/lower case conversions, normalised gender labels etc)
-     * each action(s) is timed and resulting records from operation (patient or appointment records) counted
-     * a new migration descriptor is initialised with the following values for reference by the view
-     * -- the path of the appointment CSV source file
-     * -- the path of the patient CSV source file
-     * -- the path of the target database
-     * -- the currently selected MigrationViewRequest value 
-     * -- the duration of the requested operation (action)
-     * -- the number of records counted after the operation (action); either appointment or patient records in database
-     * @param mvr, MigrationViewRequest switch expression which selects action(s) to perform by the configured MigrationManager 
-     * @param manager, IMigrationManager responsible for execution of selected migration action(s)
-     */
-    /*
-    private void doSelectedDataMigrationActionOld(ViewController.MigrationViewRequest mvr, IMigrationManager manager){
-        Instant start;
-        Instant end;
-        Duration duration;
-        try{
-            switch(mvr){
-                case POPULATE_APPOINTMENT_TABLE:{
-                    //ArrayList<Appointment> appointments = CSVStore.migrateAppointments();
-                    //manager.setAppointments(appointments);
-                    manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_DROP);
-                    manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_CREATE);
-                    manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_POPULATE); 
-                    manager.action(Store.MigrationMethod.APPOINTMENT_START_TIMES_NORMALISED);
-                    end = Instant.now();
-                    duration = Duration.between(start, end);
-                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
-                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
-                    break;
-                }
-                case POPULATE_PATIENT_TABLE:{
-                    start = Instant.now();
-
-                    //ArrayList<Patient> patients = CSVStore.migratePatients();
-                   //manager.setPatients(patients);
-                    manager.action(Store.MigrationMethod.PATIENT_TABLE_DROP);
-                    manager.action(Store.MigrationMethod.PATIENT_TABLE_CREATE);
-                    manager.action(Store.MigrationMethod.PATIENT_TABLE_POPULATE);
-                    end = Instant.now();
-                    duration = Duration.between(start, end);
-                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration);
-                    getNewEntityDescriptor().getMigrationDescriptor().setPatientsCount(manager.getPatientCount());
-                    break;
-                }
-                case REMOVE_BAD_APPOINTMENTS_FROM_DATABASE:{
-                    start = Instant.now();
-                    manager.action(Store.MigrationMethod.APPOINTMENT_TABLE_INTEGRITY_CHECK);
-                    end = Instant.now();
-                    duration = Duration.between(start, end);
-                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
-                    getNewEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(manager.getAppointmentCount());
-
-                    break;
-                }
-                case TIDY_PATIENT_DATA_IN_DATABASE:{
-                    start = Instant.now();
-                    manager.action(Store.MigrationMethod.PATIENT_TABLE_TIDY);
-                    end = Instant.now();
-                    duration = Duration.between(start, end);
-                    //setNewMigrationDescriptor(createNewMigrationDescriptor());
-                    getNewEntityDescriptor().getMigrationDescriptor().setMigrationActionDuration(duration); 
-                    break;
-                }
-            }
-        }
-        catch (StoreException ex){
-            JOptionPane.showMessageDialog(null,
-                                      new ErrorMessagePanel(ex.getMessage()));
-        }
-       
-    }
-    */
-    /**
-     * initialiseMigrationSettings() fetchs from the view's migration descriptor 
-     * -- the appointment source csv file path; this is sent to the CSVStore class responsible for the conversion to appointment objects from the CSV file
-     * -- the patient source csv file; this is sent to the CSVStore class responsible for handling the conversion to patient objects from the CSV file
-     * -- the target database file path; this is used to create a new file containing the path in a defined location local to the compiled program
-     * 
-     * @throws IOException from an abortive attempt to create a file which defines the database path
-     */
-    /*
-    private void initialiseMigrationSettings()throws IOException{
-        File file;
-        BufferedWriter bw;
-        Store.setAppointmentCSVPath(
-                this.getEntityDescriptorFromView().getMigrationDescriptor().getAppointment().getData());
-        Store.setPatientCSVPath(
-                this.getEntityDescriptorFromView().getMigrationDescriptor().getPatient().getData());
-
-    }
-*/
+    
+    
 
 }
  

@@ -23,18 +23,7 @@ public abstract class Store implements IAppointmentsStoreAction,
                                        ITargetsStoreAction {
     
     protected enum ConnectionMode{ AUTO_COMMIT_OFF, AUTO_COMMIT_ON}
-    protected enum ExceptionType {  APPOINTEE_NOT_FOUND_EXCEPTION,
-                                 IO_EXCEPTION,
-                                 CSV_EXCEPTION,
-                                 NULL_KEY_EXPECTED_EXCEPTION,
-                                 NULL_KEY_EXCEPTION,
-                                 INVALID_KEY_VALUE_EXCEPTION,
-                                 KEY_FOUND_EXCEPTION,
-                                 KEY_NOT_FOUND_EXCEPTION,
-                                 SQL_EXCEPTION,
-                                 STORE_EXCEPTION,
-                                 UNEXPECTED_DATA_TYPE_ENCOUNTERED,
-                                 UNDEFINED_DATABASE}
+    
     
     protected enum SurgeryDaysSQL {
                                 READ_SURGERY_DAYS,
@@ -47,6 +36,7 @@ public abstract class Store implements IAppointmentsStoreAction,
                         UNDEFINED_DATABASE}
     
     protected enum PracticeManagementSystemSQL   {
+                            CREATE_PRIMARY_KEY,
                             APPOINTMENTS_COUNT,
                             APPOINTMENT_TABLE_DROP,
                             DELETE_APPOINTMENT_WITH_KEY,

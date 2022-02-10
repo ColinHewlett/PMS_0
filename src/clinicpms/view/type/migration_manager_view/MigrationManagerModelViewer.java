@@ -345,6 +345,7 @@ public class MigrationManagerModelViewer extends View {
         // We need to explicitly dispatch events when we are blocking the event
         // dispatch thread.
         EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+        String message;
         try {
             while (! f.isClosed())       {
                 if (EventQueue.isDispatchThread())    {
@@ -367,6 +368,7 @@ public class MigrationManagerModelViewer extends View {
         }
         catch (InterruptedException ex) {
             // If we get interrupted, then leave the modal state.
+            //message = ex.getMessage();
         }
         finally {
             // Clean up the modal interceptor.
@@ -469,15 +471,24 @@ public class MigrationManagerModelViewer extends View {
     }
   
     private void initialiseRecordCounts(){
-        int count;
+        Integer count;
         count = getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount();
-        this.mniMigrateAppointmentsCSV.setText(
+        if (count!=null)
+            this.mniMigrateAppointmentsCSV.setText(
                 this.MIGRATE_APPOINTMENT_CSV_FILE_HEADER + " ("
                         + String.valueOf(count) + " records)");
-
+        else
+            this.mniMigrateAppointmentsCSV.setText(
+                this.MIGRATE_APPOINTMENT_CSV_FILE_HEADER + " (table not yet created)");
+        
         count = getEntityDescriptor().getMigrationDescriptor().getPatientTableCount();
-        this.mniMigrateFromPatientsCSV.setText(
+        if (count!=null)
+            this.mniMigrateFromPatientsCSV.setText(
                 this.MIGRATE_PATIENT_CSV_FILE_HEADER + " ("
                         + String.valueOf(count) + " records)");
+        else
+            this.mniMigrateFromPatientsCSV.setText(
+                this.MIGRATE_PATIENT_CSV_FILE_HEADER + " (table not yet created)");
+        
     }
 }

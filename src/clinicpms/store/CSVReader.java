@@ -233,13 +233,13 @@ public class CSVReader implements ICSVReader{
             message = "MalformedInputException message -> " + e.getMessage() + "\n" +
                     "StoreException message -> Error encountered in CSVStore constructor " +
                     "on initialisation of appointmentReader or patientReader File object";
-            throw new StoreException(message, Store.ExceptionType.IO_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.IO_EXCEPTION);
         }
         catch (IOException e){
             message = "IOException message -> " + e.getMessage() + "\n" +
                     "StoreException message -> Error encountered in CSVStore constructor " +
                     "on initialisation of appointmentReader or patientReader File object";
-            throw new StoreException(message, Store.ExceptionType.IO_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.IO_EXCEPTION);
         }
         catch (CsvException e){
             message = "CSVException " + e.getMessage();
@@ -248,7 +248,7 @@ public class CSVReader implements ICSVReader{
             message = "CSVException "  + e.getMessage() + "\n" +
             "StoreException message -> Error encountered in CSVStore::migratePatients " +
                     "on call to CSVStore::csvDBFPatientsReader";
-            throw new StoreException(message, Store.ExceptionType.CSV_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.CSV_EXCEPTION);
         }    
         return getPatientRecords();
     }
@@ -267,17 +267,17 @@ public class CSVReader implements ICSVReader{
         catch (IOException e){
             String message = "IOException message -> " + e.getMessage() + "\n" +
                     "StoreException message -> Error encountered in appointmentfileconverter()";
-            throw new StoreException(message, Store.ExceptionType.IO_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.IO_EXCEPTION);
         }
         catch (CsvException e){
             String message = "CsvException message -> + e.getMessage()" + "\n" +
                     "StoreException message -> Error encountered in appointmentfileconverter()";
-            throw new StoreException(message, Store.ExceptionType.CSV_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.CSV_EXCEPTION);
         }
         catch (Exception e){
             String message = "Exception message -> " + e.getMessage() + "\n" +
                     "StoreException message -> Error encountered in migrateAppointments()";
-            throw new StoreException(message, Store.ExceptionType.IO_EXCEPTION);
+            throw new StoreException(message, StoreException.ExceptionType.IO_EXCEPTION);
         }
 
     }
@@ -418,7 +418,7 @@ public class CSVReader implements ICSVReader{
                 result = Integer.parseInt(s.substring(0,index));
             }
             catch (NumberFormatException e){
-                throw new StoreException(s, Store.ExceptionType.IO_EXCEPTION);
+                throw new StoreException(s, StoreException.ExceptionType.IO_EXCEPTION);
             }
         }
         return result;

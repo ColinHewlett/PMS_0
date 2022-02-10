@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Iterator;
 import clinicpms.model.IEntityStoreType;
+import javax.swing.JOptionPane;
 /**
  *
  * @author colin
@@ -69,7 +70,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){//message handling added
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::getMigrationConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         return migrationConnection;
     }//store_package_updates_05_12_21_09_17_devDEBUG
@@ -95,7 +96,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){//message handling added
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::getPMSConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         
         return pmsConnection;
@@ -114,7 +115,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closeMigrationConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
     
@@ -131,7 +132,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closePMSConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
     
@@ -148,7 +149,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::closeTargetConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
     
@@ -165,7 +166,7 @@ public class AccessStore extends Store {
         if (getDatabaseLocatorPath() == null){
             throw new StoreException(
                     "Unretrievable error: no path specified for the DatabaseLocator store", 
-                    ExceptionType.UNDEFINED_DATABASE);
+                    StoreException.ExceptionType.UNDEFINED_DATABASE);
         }
         if (this.targetConnection==null){
             url = "jdbc:ucanaccess://" + getDatabaseLocatorPath() + ";showSchema=true"; 
@@ -176,7 +177,7 @@ public class AccessStore extends Store {
             }catch (SQLException ex){
                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in AccessStore::getTargetConnection() method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
             } 
         }
         return targetConnection;
@@ -255,7 +256,7 @@ public class AccessStore extends Store {
                 sql = "DROP TABLE Appointment;";
                 break;
             case PATIENT_TABLE_DROP:
-                sql = "DROP TABLE Appointment;";
+                sql = "DROP TABLE Patient;";
                 break;
             case SURGERY_DAYS_TABLE_DROP:
                 sql = "DROP TABLE SurgeryDays;";
@@ -269,35 +270,35 @@ public class AccessStore extends Store {
                 + "FROM Appointment;";
                 break;
             case DELETE_APPOINTMENT_WITH_KEY:
-                sql = "DELETE FROM Appointment WHERE Key = ?;";
+                sql = "DELETE FROM Appointment WHERE pid = ?;";
                 break;
             case DELETE_APPOINTMENTS_WITH_PATIENT_KEY:
                 sql = "DELETE FROM Appointment a WHERE a.patientKey = ?;";
                 break;
             case INSERT_APPOINTMENT:
                 sql = "INSERT INTO Appointment "
-                + "(PatientKey, Start, Duration, Notes,Key) "
+                + "(PatientKey, Start, Duration, Notes,pid) "
                 + "VALUES (?,?,?,?,?);";
                 break;
             case READ_APPOINTMENT_WITH_KEY:
-                sql = "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes "
+                sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes "
                 + "FROM Appointment AS a "
-                + "WHERE a.Key = ?;";
+                + "WHERE a.pid = ?;";
                 break;
             case READ_APPOINTMENTS_FROM_DAY:
-                sql = "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
+                sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.Start >= ? "
                 + "ORDER BY a.Start ASC;";
                 break;
             case READ_APPOINTMENTS_FOR_PATIENT:
-                sql = "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
+                sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a " +
                 "WHERE a.PatientKey = ? " +
                 "ORDER BY a.Start DESC"; 
                 break;
             case READ_APPOINTMENTS:
-                sql = "SELECT a.Key, a.Start, a.PatientKey, a.Duration, a.Notes " +
+                sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes " +
                 "FROM Appointment AS a; ";
                 break;
             case READ_APPOINTMENTS_FOR_DAY:
@@ -366,6 +367,32 @@ public class AccessStore extends Store {
                 break;
         }
         switch (q){
+            case CREATE_PRIMARY_KEY:{
+                String table = null;
+                if (entity!=null){
+                    if (entity.isAppointments()){
+                        table = "Appointment";
+                        sql = "ALTER TABLE AppointmentTable "
+                                + "ADD PRIMARY KEY (pid);";
+                    }
+                    else if (entity.isPatients()){
+                        table = "Patient";
+                        sql = "ALTER TABLE Patient "
+                                + "ADD PRIMARY KEY (pid);";
+                    }
+                    try{
+                        PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                        preparedStatement.execute();
+
+                    }catch(SQLException ex){
+                        throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException -> exception raised during a PracticeManagementSystem.CREATE_PRIMARY_KEY (",
+                           StoreException.ExceptionType.SQL_EXCEPTION);
+                    }
+                         
+                }
+                break;
+            }
             case APPOINTMENT_TABLE_DROP:{
                 /**
                  * Update to fix problem when trying to drop a non-existent appointment table
@@ -382,7 +409,7 @@ public class AccessStore extends Store {
                     /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                     */
                 }
                 break;
@@ -403,7 +430,7 @@ public class AccessStore extends Store {
                     /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                     */
                 }
                 break;
@@ -424,7 +451,7 @@ public class AccessStore extends Store {
                     /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                     */
                 }
                 break;
@@ -443,7 +470,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(AppointmentSQL..) during execution of an APPOINTMENTS_COUNT statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case READ_APPOINTMENT_HIGHEST_KEY:{
@@ -460,7 +487,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(AppointmentSQL..) during execution of an READ_HIGHEST_KEY statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -477,17 +504,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL..) during execution of an DELETE_APPOINTMENT_WITH_KEY statemente",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.DELETE_APPOINTMENT_WITH_KEY query";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.DELETE_APPOINTMENT_WITH_KEY query";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -507,17 +534,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.DELETE_APPOINTMENTS_WITH_PATIENT_KEY) query",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.DELETE_APPOINTMENTS_WITH_PATIENT_KEY query";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.DELETE_APPOINTMENTS_WITH_PATIENT_KEY query";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -538,17 +565,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.INSERT_APPOINTMENT) ",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         } 
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.INSERT_APPOINTMENT";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.INSERT_APPOINTMENT";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -566,17 +593,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                     + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -589,7 +616,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                             + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_APPOINTMENTS)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case READ_APPOINTMENTS_FROM_DAY:{
@@ -606,17 +633,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                     + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_APPOINTMENTS_FROM_DAY)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FROM_DAY";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FROM_DAY";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -634,17 +661,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                     + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_PATIENT)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_PATIENT";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_PATIENT";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -664,17 +691,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                     + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_DAY)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_DAY";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENTS_FOR_DAY";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -696,17 +723,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.UPDATE_APPOINTMENT)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.UPDATE_APPOINTMENT";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.UPDATE_APPOINTMENT";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -724,7 +751,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_PATIENT_HIGHEST_KEY)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case INSERT_PATIENT:{
@@ -759,17 +786,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.INSERT_PATIENT)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.INSERT_PATIENT";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.INSERT_PATIENT";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -787,17 +814,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_PATIENT_WITH_KEY)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_PATIENT_WITH_KEY";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_PATIENT_WITH_KEY";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -810,7 +837,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL..) during a READ_ALL_PATIENTS statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case UPDATE_PATIENT:{
@@ -849,17 +876,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.UPDATE_PATIENT)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.UPDATE_PATIENT";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.UPDATE_PATIENT";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
@@ -877,7 +904,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL..) during a PATIENTS_COUNT statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case READ_SURGERY_DAYS:{
@@ -893,7 +920,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.READ_SURGERY_DAYS)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -935,18 +962,18 @@ public class AccessStore extends Store {
                             catch (SQLException ex){
                                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                  + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL,HashMap<>) during execution of UPDATE_SURGERY_DAYS statement",
-                                ExceptionType.SQL_EXCEPTION);
+                                StoreException.ExceptionType.SQL_EXCEPTION);
                             }
                         }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_SURGERY_DAYS";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_SURGERY_DAYS";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
             }
         }
@@ -1035,7 +1062,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a READ_HIGHEST_KEY statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case INSERT_PATIENT:
@@ -1071,7 +1098,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a INSERT_PATIENT statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case READ_PATIENT_WITH_KEY:
@@ -1087,7 +1114,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a READ_PATIENT_WITH_KEY statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case READ_ALL_PATIENTS:
@@ -1099,7 +1126,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a READ_ALL_PATIENTS statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case UPDATE_PATIENT:
@@ -1134,7 +1161,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a UPDATE_PATIENT statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case PATIENTS_COUNT:
@@ -1151,7 +1178,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(PatientSQL..) during a PATIENTS_COUNT statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
         }
@@ -1181,13 +1208,13 @@ public class AccessStore extends Store {
                         result = getSurgeryDaysFromRS(rs);
                     else{
                         message = "Unexpected error: could not locate record of surgery days";
-                        throw new StoreException(message, ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                        throw new StoreException(message, StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
                     } 
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(SurgeryDaysSQL,HashMap<>) during execution of READ_SURGERY_DAYS statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case UPDATE_SURGERY_DAYS:
@@ -1225,7 +1252,7 @@ public class AccessStore extends Store {
                     catch (SQLException ex){
                         throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                          + "StoreException message -> exception raised in AccessStore::runSQL(SurgeryDaysSQL,HashMap<>) during execution of UPDATE_SURGERY_DAYS statement",
-                        ExceptionType.SQL_EXCEPTION);
+                        StoreException.ExceptionType.SQL_EXCEPTION);
                     }
                 }
         }
@@ -1255,7 +1282,7 @@ public class AccessStore extends Store {
                         break;
                     case APPOINTMENT_TABLE_CREATE:
                         sql = "CREATE TABLE AppointmentTable ("
-                        + "pid LONG, "
+                        + "pid LONG PRIMARY KEY, "
                         + "patientKey LONG, "
                         + "start DateTime, "
                         + "duration LONG, "
@@ -1289,7 +1316,7 @@ public class AccessStore extends Store {
                         break;
                     case PATIENT_TABLE_CREATE:
                         sql = "CREATE TABLE PatientTable ("
-                        + "pid Long,"
+                        + "pid Long PRIMARY KEY,"
                         + "title Char(10),"
                         + "forenames Char(25), "
                         + "surname Char(25), "
@@ -1360,7 +1387,7 @@ public class AccessStore extends Store {
 
                 }
         
-        switch (q){
+        switch (q){    
             case EXPORT_MIGRATED_DATA_TO_PMS:{
                 String table = null;
                 String selectedPMSDatabase = getPMSDatabasePath();;
@@ -1369,11 +1396,11 @@ public class AccessStore extends Store {
                 if (entity!=null){
                     if (entity.isAppointments()){
                         sql = "SELECT * FROM AppointmentTable;";
-                        table = "Appointments";
+                        table = "Appointment";
                     }
                     else if (entity.isPatients()){
                         sql = "SELECT * FROM PatientTable;";
-                        table = "Patients";
+                        table = "Patient";
                     }
                     else if (entity.isSurgeryDaysAssignment()){
                         sql = "SELECT * FROM SurgeryDaysTable;";
@@ -1383,15 +1410,15 @@ public class AccessStore extends Store {
                         statement = getMigrationConnection().createStatement();
                         rs = statement.executeQuery(sql);
                         Database db = DatabaseBuilder.open(new File(selectedPMSDatabase)); 
-                        ImportUtil.importResultSet(rs, db, table); 
+                        ImportUtil.importResultSet(rs, db, table);             
                     }catch (IOException ex){
                         String message = ex.getMessage() + "\n";
                         throw new StoreException(message + "StoreException -> raised during runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS)",
-                            ExceptionType.IO_EXCEPTION);
+                            StoreException.ExceptionType.IO_EXCEPTION);
                     }catch (SQLException ex){
                         String message = ex.getMessage() + "\n";
                         throw new StoreException(message + "StoreException -> raised during runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                     }
                 }
                 break;
@@ -1441,34 +1468,35 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> surgeryDaysAssignment undefined in MigrationQL.SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION";
-                        throw new StoreException(message , ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> appointment undefined in MigrationQL.SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION ";
-                    throw new StoreException(message , ExceptionType.NULL_KEY_EXCEPTION);
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
                 break;
             }
 
                 
             case APPOINTMENT_TABLE_ROW_COUNT:{
+                int count = 0;
                 try{
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
                     if (rs.next()){
-                        int count = rs.getInt("row_count");
+                        count = rs.getInt("row_count");
                         result = new AppointmentTableRowValue(count);
                     }
                 }catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                     + "StoreException message -> exception raised during a APPOINTMENT_TABLE_ROW_COUNT data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                     + "StoreException message -> exception raised during an APPOINTMENT_TABLE_ROW_COUNT data migration operation",
+                    StoreException.ExceptionType.APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE);
                 }
                 break;
             }
@@ -1480,7 +1508,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) method during execution of APPOINTMENT_TABLE_CREATE statement",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1501,17 +1529,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> entity incorrectly defined in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> entity undefined in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW";
-                    throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 break;
             case APPOINTMENT_TABLE_DROP:{
@@ -1530,7 +1558,7 @@ public class AccessStore extends Store {
                     /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                     */
                 }
                 break;
@@ -1548,7 +1576,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a READ_HIGHEST_KEY from Appointment table",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             case APPOINTMENT_TABLE_START_TIME_NORMALISED:{
@@ -1559,7 +1587,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1573,7 +1601,7 @@ public class AccessStore extends Store {
                 }catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1589,17 +1617,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(MigratiionSQL.APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> incorrectly defined patient key in Access::runSQL(MigrationSQL.APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY";
-                    throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 break;
             case PATIENT_TABLE_ROW_COUNT:{
@@ -1613,7 +1641,7 @@ public class AccessStore extends Store {
                 }catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a PATIENT_TABLE_ROW_COUNT data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE);
                 }
                 break;
             }
@@ -1625,7 +1653,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1659,19 +1687,25 @@ public class AccessStore extends Store {
                             preparedStatement.executeUpdate();
                         }
                         catch (SQLException ex){
-                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                             + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) during execution of PATIENT_TABLE_INSERT_ROW statement",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType errorType;       
+                            if (ex.getMessage().contains("integrity constraint violation"))
+                                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) during execution of PATIENT_TABLE_INSERT_ROW statement.\nPatient key = " + String.valueOf(patient.getKey()),
+                                StoreException.ExceptionType.INTEGRITY_CONSTRAINT_VIOLATION);
+                            else
+                                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) during execution of PATIENT_TABLE_INSERT_ROW statement.\nPatient key = " + String.valueOf(patient.getKey()),
+                                StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_INSERT_ROW";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_INSERT_ROW";
-                    throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 break;
             }
@@ -1684,7 +1718,7 @@ public class AccessStore extends Store {
                     /*
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                     */
                 }
                 break;
@@ -1699,7 +1733,7 @@ public class AccessStore extends Store {
                 }catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1716,17 +1750,17 @@ public class AccessStore extends Store {
                         }catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.PATIENT_TABLE_READ_TABLE)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_READ_TABLE";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_READ_TABLE";
-                    throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 break;
             }     
@@ -1738,7 +1772,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1778,17 +1812,17 @@ public class AccessStore extends Store {
                         catch (SQLException ex){
                             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                              + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.PATIENT_TABLE_UPDATE)",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
                         String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_UPDATE";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 else{
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_UPDATE";
-                    throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }   
                 break;
             }
@@ -1800,7 +1834,7 @@ public class AccessStore extends Store {
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             } 
@@ -1814,7 +1848,7 @@ public class AccessStore extends Store {
                 }catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -1937,7 +1971,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(Appointments,ResultSet)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
     
@@ -1966,7 +2000,7 @@ public class AccessStore extends Store {
         catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(Appointments,ResultSet)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
     
@@ -2069,7 +2103,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(SurgeryDaysAssignment,ResultSet)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
     
@@ -2086,7 +2120,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(Patient,ResultSet)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
             
@@ -2118,7 +2152,7 @@ public class AccessStore extends Store {
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n",
-                            ExceptionType.SQL_EXCEPTION);
+                            StoreException.ExceptionType.SQL_EXCEPTION);
                 }
             }
             else if (value.isPatient()){
@@ -2154,7 +2188,7 @@ public class AccessStore extends Store {
         }
         catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         return result;
     }
@@ -2319,7 +2353,7 @@ public class AccessStore extends Store {
             }
             else{
                 throw new StoreException("Unexpected data type returned from call to runSQL(MigrationSQL.APPOINTMENT_TABLE_HIGHEST_KEY) during execution AccessStore::insertMigratedAppointments()", 
-                        ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
             }     
         }
     }
@@ -2378,11 +2412,11 @@ public class AccessStore extends Store {
                 patientCount++;
             }
             catch (StoreException ex){
-                if (ex.getErrorType().equals(ExceptionType.KEY_NOT_FOUND_EXCEPTION)){
+                if (ex.getErrorType().equals(StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION)){
                     nonExistingPatientsReferencedbyAppointments.add(key);
                 }
                 else{//if not a KEY_NOT_FOUND_EXCEPTION pass StoreException on
-                    throw new StoreException(ex.getMessage(),ExceptionType.STORE_EXCEPTION);
+                    throw new StoreException(ex.getMessage(),StoreException.ExceptionType.STORE_EXCEPTION);
                 }
             }
         }
@@ -2507,7 +2541,7 @@ public class AccessStore extends Store {
                     message = "StoreException raised in method AccessStore::create(Appointment a)\n"
                                 + "Reason -> newly created appointment record could not be found";
                     result = false;
-                    throw new StoreException(message,ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                    throw new StoreException(message,StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
                 }
                 result = true;
             }
@@ -2516,7 +2550,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                 message + "StoreException raised in method AccessStore::insert(Appointment a)\n"
                         + "Cause -> unexpected effect when transaction/auto commit statement executed",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2526,7 +2560,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.create(Appointment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -2555,7 +2589,7 @@ public class AccessStore extends Store {
             if (value==null){
                 message = "StoreException raised in method AccessStore::create(Patient p)\n"
                                 + "Reason -> newly created patient record could not be found";
-                throw new StoreException(message,ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                throw new StoreException(message,StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
             }
             else {
                 result = true;
@@ -2565,7 +2599,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                 message + "StoreException raised in method AccessStore::create(Patient a)\n"
                         + "Cause -> unexpected effect when transaction/auto commit statement executed",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2575,7 +2609,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.create(Patient))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -2603,7 +2637,7 @@ public class AccessStore extends Store {
                 message = 
                         "Unsuccesful attempt to delete appointment record (key = "
                         + String.valueOf(a.getKey()) + ")";
-                throw new StoreException(message, ExceptionType.KEY_FOUND_EXCEPTION);
+                throw new StoreException(message, StoreException.ExceptionType.KEY_FOUND_EXCEPTION);
             }
             */
         }catch (SQLException ex){
@@ -2611,7 +2645,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                 message + "StoreException raised in method AccessStore::delete(Appointment a)\n"
                         + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
         
         finally{
@@ -2622,7 +2656,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.delete(Appointment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
         
@@ -2656,7 +2690,7 @@ public class AccessStore extends Store {
                throw new StoreException(
                    message + "StoreException raised in method AccessStore::read(DurgeryDaysAssignment)\n"
                            + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
-                   ExceptionType.SQL_EXCEPTION);
+                   StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2666,7 +2700,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore::read(SurgeryDaysAssignment)\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -2698,7 +2732,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::read(Appointment)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2709,7 +2743,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.read(Appointment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -2736,7 +2770,7 @@ public class AccessStore extends Store {
             //if (patients.isEmpty()){//patient with this key not found
                 throw new StoreException(
                         "Could not find patient with key = " + String.valueOf(p.getKey() + " in AccessStore::read(Patient)"), 
-                        ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                        StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
             }
             else{
                 Patient g = null;
@@ -2756,7 +2790,7 @@ public class AccessStore extends Store {
         catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::read(Patient p)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2767,7 +2801,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.read(Patient))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -2798,14 +2832,14 @@ public class AccessStore extends Store {
             catch (SQLException ex){
                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                  + "StoreException message -> exception raised during DbLocationStore::read() query",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised AccessStore.read(SelectedTargetStore))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2819,7 +2853,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.read(SelectedTargetStore))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
 
             }
         }
@@ -2847,12 +2881,12 @@ public class AccessStore extends Store {
             }catch (SQLException ex){
                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                  + "StoreException message -> exception raised in AccessStore::::update(SelectedTargetStore,path) statement",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in getTargetConnection() based autoCommit access in AccessStore::update(SelectedTargetStore,path) method",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2863,7 +2897,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.updaye(SelectedTargetStore, path))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
 
             }
         }
@@ -2897,7 +2931,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
              + "StoreException message -> exception raised in Access::readAppointments() arising from call to setConnectionMode()",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2908,7 +2942,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore::readAppointments()\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }
     }
@@ -2941,7 +2975,7 @@ public class AccessStore extends Store {
                 }
                 else{
                     throw new StoreException("Exception raised in Access::readAppointmentsFrom()",
-                                ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 result = true;
                 return appointments;
@@ -2953,7 +2987,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readAppointmentsFrom(LocalDate d)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -2963,7 +2997,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore::readAppointmentsFrom()\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }
     }
@@ -2995,7 +3029,7 @@ public class AccessStore extends Store {
                 }
                 else{
                     throw new StoreException("Exception raised in Access::readAppointmentsFrom()",
-                                ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 result = true;
                 return appointments;
@@ -3007,7 +3041,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing setConnectionMode(AUTO_COMMIT_ON) in AccessStore::readAppointmentsFor(LocalDate d)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3017,7 +3051,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore::readAppointmentsFrom()\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }
     }
@@ -3050,7 +3084,7 @@ public class AccessStore extends Store {
                 }
                 else{
                     throw new StoreException("Exception raised in Access::readAppointments(Patient, Category)",
-                                ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
                 result = true;
                 return appointments;
@@ -3062,7 +3096,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readAppointments(Patient, Category)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
             
         }
         finally{
@@ -3073,7 +3107,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore::readAppointments(Patient, Category)\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }
     }
@@ -3093,7 +3127,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readPatients()",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
     } //store_package_updates_05_12_21_09_17_devDEBUG
 
@@ -3115,7 +3149,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::update(Patient)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3126,7 +3160,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.update(Patient))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -3149,7 +3183,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::readAppointments(LocalDate d)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3160,7 +3194,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.delete(Appointment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }
     }
@@ -3183,7 +3217,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::update(HashMap<DayOfWeek,Boolean>)",
-            ExceptionType.SQL_EXCEPTION);
+            StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3194,7 +3228,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.update(HashMap<DayOfWeek,Boolean>))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);    
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         }    
     }
@@ -3250,7 +3284,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.create(AppointmentTable))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3261,7 +3295,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.create(AppointmentTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3274,9 +3308,12 @@ public class AccessStore extends Store {
     public void create(PatientTable table)throws StoreException{
         boolean result = false;
         try{
+            /*
             if (getMigrationConnection().getAutoCommit()){
                 getMigrationConnection().setAutoCommit(false);
             }
+            */
+            getMigrationConnection().setAutoCommit(false);
             IEntityStoreType value = null;
             runSQL(MigrationSQL.PATIENT_TABLE_CREATE, value);
             result = true;
@@ -3285,8 +3322,9 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.create(PatientTable))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3296,10 +3334,11 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.create(PatentTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
+        */
     }
     
     @Override
@@ -3320,7 +3359,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.create(SurgeryDaysTable))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3331,7 +3370,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.create(SurgeryDaysTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3341,7 +3380,7 @@ public class AccessStore extends Store {
         boolean result = false;
         try{
             if (getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(false);
+                getPMSConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PracticeManagementSystemSQL.APPOINTMENT_TABLE_DROP, value);
@@ -3351,8 +3390,9 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.drop(Appointment)\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3362,17 +3402,18 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(Appointment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
+        */
     }
     
     public void drop(Patient table)throws StoreException{
         boolean result = false;
         try{
             if (getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(false);
+                getPMSConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PracticeManagementSystemSQL.PATIENT_TABLE_DROP, value);
@@ -3382,8 +3423,9 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.drop(Patient)\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3393,17 +3435,18 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(Patient))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
+        */
     }
     
     public void drop(SurgeryDaysAssignment table)throws StoreException{
         boolean result = false;
         try{
             if (getPMSConnection().getAutoCommit()){
-                getPMSConnection().setAutoCommit(false);
+                getPMSConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PracticeManagementSystemSQL.SURGERY_DAYS_TABLE_DROP, value);
@@ -3413,8 +3456,9 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.drop(SurgeryDaysAssignment)\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3424,10 +3468,11 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(SurgeryDaysAssignment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
+        */
     }
     
     @Override
@@ -3448,7 +3493,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised AccessStore.drop(AppointmentTable)\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3459,7 +3504,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(AppointmentTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3483,7 +3528,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised in AccessStore.MigrationManager::drop(PatientTable))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3494,7 +3539,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(PatientTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3518,7 +3563,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised in AccessStore.drop(SurgeryDaysTable))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3529,7 +3574,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.drop(SurgeryDaysTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3557,7 +3602,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised in AccessStore.populate(AppointmentTable) method\n"
                             + "Reason -> unexpected effect on attempt to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3568,7 +3613,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.populate(AppointmentTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3583,9 +3628,12 @@ public class AccessStore extends Store {
         boolean result = false;
         int count;
         try{
+            /*
             if (getMigrationConnection().getAutoCommit()){
                 getMigrationConnection().setAutoCommit(false);
             }
+            */
+            getMigrationConnection().setAutoCommit(true);
             insertMigratedPatients(new CSVReader().getPatients(getPatientCSVPath())); //03/12/2021 08:51 update
             count = getPatientTableCount();
             setPatientCount(count);
@@ -3596,8 +3644,9 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3607,10 +3656,11 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.populate(PatientsTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
+        */
     }
     
     @Override
@@ -3627,7 +3677,7 @@ public class AccessStore extends Store {
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.populate(HashMap<DayOfWeek,Boolean> surgeryDays)\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3638,7 +3688,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.populate(SurgeryDaysAssignment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3671,7 +3721,7 @@ public class AccessStore extends Store {
                     if (entity==null) nonExistingPatientsReferencedbyAppointments.add(key);
                     else if (!entity.isPatient()){
                         String message = "StoreException -> entity incorrectly defined in AccessStore::checkIntegrity, while executing MigrationSQL.PATIENT_TABLE_READ_PATIENT";
-                        throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                        throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
                 /**
@@ -3688,14 +3738,14 @@ public class AccessStore extends Store {
             }
             else{
                 String message = "StoreException -> appointments undefined in AccessStore::checkIntegrity, while executing MigrationSQL.APPOINTMENT_TABLE_READ";
-                throw new StoreException(message, ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
             }
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.checkIntegrity()\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3706,7 +3756,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.populate(SurgeryDaysAssignment))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }   
@@ -3778,17 +3828,24 @@ public class AccessStore extends Store {
     @Override
     public int countRowsIn(AppointmentTable table)throws StoreException{
         boolean result = false;
-        Integer count = null;
+        int count;
         try{
             setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
             count = ((AppointmentTableRowValue)runSQL(MigrationSQL.APPOINTMENT_TABLE_ROW_COUNT,null)).getValue();
             result = true;
+            return count;
         }
         catch (SQLException e){
             String text = "SQLException message -> " + e.getMessage() + "\n";
             throw new StoreException(text + "Exception encountered in AccessStore::countRowsIn(AppointmentTable)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
+        catch (StoreException ex){
+            JOptionPane.showMessageDialog(null,"test " + ex.getMessage());
+        }
+        */
+        /*
         finally{
             try{
                 setConnectionState(result);
@@ -3797,26 +3854,28 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore::countRowsIn(AppointmentTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);   
+                    StoreException.ExceptionType.SQL_EXCEPTION);   
             }
-            return count;
+            return 0;
         }
+        */
+        
     }
     
     @Override
     public int countRowsIn(PatientTable table)throws StoreException{
-        boolean result = false;
         Integer count = null;
         try{
             setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
             count = ((PatientTableRowValue)runSQL(MigrationSQL.PATIENT_TABLE_ROW_COUNT,null)).getValue();
-            result = true;
+            return count;
         }
         catch (SQLException e){
             String text = "SQLException message -> " + e.getMessage() + "\n";
             throw new StoreException(text + "Exception encountered in AccessStore::countRowsIn(PatientTable)",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 setConnectionState(result);
@@ -3825,10 +3884,11 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore::countRowsIn(PatientTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);   
+                    StoreException.ExceptionType.SQL_EXCEPTION);   
             }
             return count;
         }
+        */
     }
     
     
@@ -3893,14 +3953,14 @@ public class AccessStore extends Store {
             }
             else{
                 throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.APPOINT_TABLE_READ while executing Access::read(AppointmentTable)()",
-                                            ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                            StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
             }
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3910,7 +3970,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3931,14 +3991,14 @@ public class AccessStore extends Store {
             }
             else{
                 throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.SURGERY_DAYS_TABLE_READ while executing Access::read(PatientTable)()",
-                                            ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                            StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
             }
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3948,7 +4008,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
             }
         }
     }
@@ -3968,14 +4028,14 @@ public class AccessStore extends Store {
             }
             else{
                 throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.SURGERY_DAYS_TABLE_READ while executing Access::read(SurgeryDaysAssignmentTable)()",
-                                            ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                                            StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
             }
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
                             + "Reason -> unexpected effect when trying to change the auto commit state",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
         }
         finally{
             try{
@@ -3985,7 +4045,7 @@ public class AccessStore extends Store {
                 throw new StoreException(
                     message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
-                    ExceptionType.SQL_EXCEPTION);
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 
             }
         }
@@ -3995,13 +4055,17 @@ public class AccessStore extends Store {
     public void exportToPMS(Appointments table)throws StoreException{
         boolean result = false;
         try{
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            getMigrationConnection().setAutoCommit(true);
+            //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS,table);
+            //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            //getPMSConnection().setAutoCommit(true);
+            //runSQL(PracticeManagementSystemSQL.CREATE_PRIMARY_KEY,table);
             result = true;
         }catch (SQLException ex){
             String message = ex.getMessage() + "\n";
             throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(Appointments)",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
     
@@ -4015,7 +4079,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             String message = ex.getMessage() + "\n";
             throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(Patients)",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
     
@@ -4029,7 +4093,7 @@ public class AccessStore extends Store {
         }catch (SQLException ex){
             String message = ex.getMessage() + "\n";
             throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(SurgeryDaysAssignment)",
-                ExceptionType.SQL_EXCEPTION);
+                StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
      
@@ -4044,7 +4108,7 @@ public class AccessStore extends Store {
             }catch (StoreException ex){
                 String message = "StoreException raised in AccessStore::insert(Appointment)\n";
                 throw new StoreException(message + "AccessStore.insert(Appointments) had completed "
-                + String.valueOf(count) + " record insertions before the exception arose", ExceptionType.STORE_EXCEPTION);
+                + String.valueOf(count) + " record insertions before the exception arose", StoreException.ExceptionType.STORE_EXCEPTION);
             }
         }     
     }
@@ -4060,7 +4124,7 @@ public class AccessStore extends Store {
             }catch (StoreException ex){
                 String message = "StoreException raised in AccessStore::insert(Patient)\n";
                 throw new StoreException(message + "AccessStore.insert(Patients) had completed "
-                + String.valueOf(count) + " record insertions before the exception arose", ExceptionType.STORE_EXCEPTION);
+                + String.valueOf(count) + " record insertions before the exception arose", StoreException.ExceptionType.STORE_EXCEPTION);
             }
         } 
     }

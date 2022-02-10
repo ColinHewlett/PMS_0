@@ -18,11 +18,24 @@ public class AppointmentTable implements ITable{
     private int count;
     
     public Integer count() throws StoreException{
-        int result = 0;
+        Integer result = null;
         IEntityStoreType entity = null;
         Integer rowcount = null;
-        IMigrationStoreAction store = Store.FACTORY(this);
-        return store.countRowsIn(this); 
+        try{
+            IMigrationStoreAction store = Store.FACTORY(this);
+            return store.countRowsIn(this);
+        }catch (StoreException ex){
+            /**
+             * if MigrationSQL.APPOINTMENT_TABLE_ROW_COUNT is source of exception
+             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
+             */
+            if (!ex.getErrorType().equals(StoreException.ExceptionType.APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
+                //throw new StoreException(ex.getMessage(), ex.getErrorType());
+                result = null;
+            }
+        }
+        return result;
+         
     }
     
     public void create() throws StoreException{

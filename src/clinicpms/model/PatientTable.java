@@ -46,8 +46,23 @@ public class PatientTable implements ITable{
         return store.read(this);
     }
     
-    public int count() throws StoreException{
-        IMigrationStoreAction store = Store.FACTORY(this); 
-        return store.countRowsIn(this);
+    public Integer count() {
+        Integer result = null;
+        IEntityStoreType entity = null;
+        Integer rowcount = null;
+        try{
+            IMigrationStoreAction store = Store.FACTORY(this);
+            result = store.countRowsIn(this);
+        }catch (StoreException ex){
+            /**
+             * if MigrationSQL.PATIENT_TABLE_ROW_COUNT is source of exception
+             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
+             */
+            if (!ex.getErrorType().equals(StoreException.ExceptionType.PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
+                //throw new StoreException(ex.getMessage(), ex.getErrorType());
+                result = null;
+            }
+        }
+        return result;
     }
 }
