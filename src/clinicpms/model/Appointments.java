@@ -99,7 +99,9 @@ public class Appointments extends ArrayList<Appointment> implements IAppointment
     
     @Override
     public void read()throws StoreException{
-        
+        IAppointmentsStoreAction store = Store.FACTORY(new Appointments());
+        clear();
+        addAll(store.readAppointments());
     }
     
     @Override

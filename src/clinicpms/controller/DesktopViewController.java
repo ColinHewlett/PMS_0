@@ -457,35 +457,7 @@ public class DesktopViewController extends ViewController{
                 */
             }
         } 
-        /*
-        else if (e.getActionCommand().equals(
-                ViewController.DesktopViewControllerActionEvent.DATABASE_LOCATOR_REQUEST.toString())){
-            if (!databaseLocatorViewControllers.isEmpty()){
-                JOptionPane.showInternalMessageDialog(view.getContentPane(), "Only one Database Locator can be active");
-            }
-            else{
-                try{
-                    databaseLocatorViewControllers.add(
-                                            new DatabaseLocatorViewController(this, getView()));
-                    DatabaseLocatorViewController dvc = databaseLocatorViewControllers.get(0);
-
-                    this.getView().getDeskTop().add(dvc.getView());
-                    dvc.getView().setVisible(true);
-                    dvc.getView().setClosable(false);
-                    dvc.getView().setMaximizable(false);
-                    dvc.getView().setIconifiable(true);
-                    dvc.getView().setResizable(false);
-                    dvc.getView().setSelected(true);
-                    dvc.getView().setSize(600,250);
-                }
-
-                catch (PropertyVetoException ex){
-                    displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-                }
-            }
-
-        }*/
+        
         /**
          * user has attempted to close the desktop view
          */
@@ -531,11 +503,11 @@ public class DesktopViewController extends ViewController{
                         file = setExtensionFor(file, ".accdb");
                         DatabaseBuilder.create(Database.FileFormat.V2016, file);
                         storeManager.setMigrationTargetStorePath(file.getPath());
-                        
-                        AppointmentTable appointmentTable = new AppointmentTable();
-                        appointmentTable.create();
                         PatientTable patientTable = new PatientTable();
                         patientTable.create();
+                        AppointmentTable appointmentTable = new AppointmentTable();
+                        appointmentTable.create();
+                        
                         SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
                         surgeryDaysAssignmentTable.create();
                         surgeryDaysAssignmentTable.populate();

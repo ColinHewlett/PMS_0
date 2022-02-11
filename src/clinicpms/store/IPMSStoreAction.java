@@ -34,6 +34,8 @@ import java.util.HashMap;
  * @author colin
  */
 public interface IPMSStoreAction {
+    public void create(Appointment a) throws StoreException;
+    public void create(Patient p) throws StoreException;
     public void insert(Appointment a) throws StoreException;
     public void insert(Patient p) throws StoreException;
     public void delete(Appointment a) throws StoreException;

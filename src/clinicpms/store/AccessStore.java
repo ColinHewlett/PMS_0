@@ -1283,10 +1283,17 @@ public class AccessStore extends Store {
                     case APPOINTMENT_TABLE_CREATE:
                         sql = "CREATE TABLE AppointmentTable ("
                         + "pid LONG PRIMARY KEY, "
-                        + "patientKey LONG, "
+                        + "patientKey LONG NOT NULL REFERENCES PatientTable(pid), "
                         + "start DateTime, "
                         + "duration LONG, "
                         + "notes char);";
+                        break;
+                    case APPOINTMENT_TABLE_ADD_FOREIGN_KEY:
+                        sql = "ALTER TABLE AppointmentTable "
+                                + "ADD CONSTRAINT [x]  "
+                                + "FOREIGN KEY(patientKey) "
+                                + "REFERENCES PatientTable(pid) "
+                                + "ON DELETE CASCADE";
                         break;
                     case APPOINTMENT_TABLE_INSERT_ROW:
                         sql = "INSERT INTO AppointmentTable "
@@ -1500,20 +1507,36 @@ public class AccessStore extends Store {
                 }
                 break;
             }
+            case APPOINTMENT_TABLE_ADD_FOREIGN_KEY:
+                try{
+                    /*
+                    PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
+                    preparedStatement.execute();
+                    */
+                    Statement statement = getMigrationConnection().createStatement();
+                    statement.execute(sql);
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_ADD_FOREIGN_KEY)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+                }
             case APPOINTMENT_TABLE_CREATE:{
                 try{
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.execute();
+                    
                 }
                 catch (SQLException ex){
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                     + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) method during execution of APPOINTMENT_TABLE_CREATE statement",
+                     + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_CREATE) ",
                     StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
             case APPOINTMENT_TABLE_INSERT_ROW:
                 Appointment appointment = null;
+                int test;
                 if (entity!=null){
                     if (entity.isAppointment()){
                         appointment = (Appointment)entity;
@@ -1527,9 +1550,11 @@ public class AccessStore extends Store {
                             preparedStatement.executeUpdate();
                         }
                         catch (SQLException ex){
-                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                             + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW)",
-                            StoreException.ExceptionType.SQL_EXCEPTION);
+                            if (!(ex.getMessage().contains("foreign key no parent"))&&
+                                    !(ex.getMessage().contains("Missing columns in relationship")))
+                                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                    + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW)",
+                                    StoreException.ExceptionType.SQL_EXCEPTION);
                         }
                     }
                     else{
@@ -1688,11 +1713,13 @@ public class AccessStore extends Store {
                         }
                         catch (SQLException ex){
                             StoreException.ExceptionType errorType;       
-                            if (ex.getMessage().contains("integrity constraint violation"))
+                            if (!ex.getMessage().contains("integrity constraint violation"))
+                                /*
                                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                 + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) during execution of PATIENT_TABLE_INSERT_ROW statement.\nPatient key = " + String.valueOf(patient.getKey()),
                                 StoreException.ExceptionType.INTEGRITY_CONSTRAINT_VIOLATION);
                             else
+                                */
                                 throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                                 + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL) during execution of PATIENT_TABLE_INSERT_ROW statement.\nPatient key = " + String.valueOf(patient.getKey()),
                                 StoreException.ExceptionType.SQL_EXCEPTION);
@@ -1955,6 +1982,7 @@ public class AccessStore extends Store {
     private Appointment get(Appointment appointment, ResultSet rs)throws StoreException{
         try{
             if (!rs.wasNull()){
+                rs.next();
                 int key = rs.getInt("pid");
                 LocalDateTime start = rs.getObject("Start", LocalDateTime.class);
                 Duration duration = Duration.ofMinutes(rs.getLong("Duration"));
@@ -3273,12 +3301,19 @@ public class AccessStore extends Store {
     public void create(AppointmentTable table)throws StoreException{
         boolean result = false;
         try{
+            getMigrationConnection().setAutoCommit(true);
+            /*
             if (getMigrationConnection().getAutoCommit()){
                 getMigrationConnection().setAutoCommit(false);
             }
+            */
             IEntityStoreType value = null;
             runSQL(MigrationSQL.APPOINTMENT_TABLE_CREATE, value);
-            result = true;
+            /**
+             * log entry 10/02/2022 19:01 fir further info
+             * runSQL(MigrationSQL.APPOINTMENT_TABLE_ADD_FOREIGN_KEY, value);
+             */
+            
         }catch (SQLException ex){
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
@@ -3286,6 +3321,7 @@ public class AccessStore extends Store {
                             + "Reason -> unexpected effect when auto commit state disabled",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        /*
         finally{
             try{
                 if (result) getMigrationConnection().commit();
@@ -3299,6 +3335,7 @@ public class AccessStore extends Store {
                 
             }
         }
+        */
     }
     
     @Override
@@ -3590,9 +3627,12 @@ public class AccessStore extends Store {
         boolean result = false;
 
         try{
+            /*
             if (getMigrationConnection().getAutoCommit()){
                 getMigrationConnection().setAutoCommit(false);
             }
+            */
+            getMigrationConnection().setAutoCommit(true);
             insertMigratedAppointments(new CSVReader().getAppointments(getAppointmentCSVPath()));//03/12/2021 08:51 update
             IEntityStoreType value = null;
             runSQL(Store.MigrationSQL.APPOINTMENT_TABLE_START_TIME_NORMALISED,value);

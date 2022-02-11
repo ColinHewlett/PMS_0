@@ -78,7 +78,10 @@ public class Appointment  implements IEntity, IEntityStoreType{
         this.key = key;
     }
     
-    
+    public void create()throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.create(this);
+    }
     
     @Override
     public void insert() throws StoreException{

@@ -247,6 +247,12 @@ public class MigrationManagerViewController extends ViewController {
                 case POPULATE_PATIENT_TABLE:{
                     start = Instant.now();
                     
+                    /**
+                     * PatientTable cannot be dropped if AppointmentTable exists
+                     * -- because of the one to many relationship between the two
+                     */
+                    appointmentTable = new AppointmentTable();
+                    appointmentTable.drop();
                     patientTable = new PatientTable();
                     patientTable.drop();
                     patientTable.create();

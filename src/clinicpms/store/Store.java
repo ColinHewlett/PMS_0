@@ -62,6 +62,7 @@ public abstract class Store implements IAppointmentsStoreAction,
     
     protected enum MigrationSQL {
                             APPOINTMENT_TABLE_CREATE,
+                            APPOINTMENT_TABLE_ADD_FOREIGN_KEY,
                             APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY,
                             APPOINTMENT_TABLE_DROP,
                             APPOINTMENT_TABLE_INSERT_ROW,
