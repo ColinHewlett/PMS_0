@@ -637,11 +637,14 @@ public class EntityDescriptor {
         private Target target = null;
         private Integer appointmentsCount = null;
         private Integer patientsCount = null;
+        private Integer appointmentsTableCount = null;
+        private Integer patientsTableCount = null;
         private MigrationViewRequest migrationViewRequest = null;
         private Duration durationOfMigrationAction = null;
         private String appointmentCSVFilePath = null;
         private String patientCSVFilePath = null;
-        private String targetMigrationDatabaseURL = null;
+        private String migrationDatabaseSelection = null;
+        private String PMSDatabaseSelection = null;
         
 
         public MigrationDescriptor(){
@@ -658,12 +661,20 @@ public class EntityDescriptor {
             return patientCSVFilePath;
         }
         
-        public String getTargetMigrationDatabaseURL(){
-            return targetMigrationDatabaseURL;
+        public String getMigrationDatabaseSelection(){
+            return migrationDatabaseSelection;
         }
         
-        public void setTargetMigrationDatabaseURL(String value){
-            targetMigrationDatabaseURL = value;
+        public void setMigrationDatabaseSelection(String value){
+            migrationDatabaseSelection = value;
+        }
+        
+        public String getPMSDatabaseSelection(){
+            return PMSDatabaseSelection;
+        }
+        
+        public void setPMSDatabaseSelection(String value){
+            PMSDatabaseSelection = value;
         }
         
         public void setAppointmentCSVFilePath(String value){
@@ -693,18 +704,34 @@ public class EntityDescriptor {
         }
 
         public  Integer  getAppointmentTableCount(){
-            return appointmentsCount;
+            return appointmentsTableCount;
         }
 
         protected void setAppointmentTableCount(Integer value){
+            appointmentsTableCount = value;
+        }
+        
+        public  Integer  getAppointmentsCount(){
+            return appointmentsCount;
+        }
+
+        protected void setAppointmentsCount(Integer value){
             appointmentsCount = value;
         }
 
         public Integer getPatientTableCount(){
-            return patientsCount;
+            return patientsTableCount;
         }
 
         protected void setPatientTableCount(Integer value){
+            patientsTableCount = value;
+        }
+        
+        public Integer getPatientsCount(){
+            return patientsCount;
+        }
+
+        protected void setPatientsCount(Integer value){
             patientsCount = value;
         }
 

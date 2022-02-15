@@ -72,7 +72,7 @@ public class MigrationManagerViewController extends ViewController {
         getNewEntityDescriptor().getMigrationDescriptor().getTarget().setData(targetPath);
         getNewEntityDescriptor().getMigrationDescriptor().setAppointmentCSVFilePath(appointmentCSVFilePath);
         getNewEntityDescriptor().getMigrationDescriptor().setPatientCSVFilePath(patientCSVFilePath);
-        getNewEntityDescriptor().getMigrationDescriptor().setTargetMigrationDatabaseURL(migrationTargetPath);
+        getNewEntityDescriptor().getMigrationDescriptor().setMigrationDatabaseSelection(migrationTargetPath);
         
         View.setViewer(View.Viewer.MIGRATION_MANAGER_VIEW);
         getNewEntityDescriptor().getMigrationDescriptor().

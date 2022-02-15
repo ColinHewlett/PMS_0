@@ -42,6 +42,8 @@ public class DesktopViewController extends ViewController{
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
     private PropertyChangeSupport pcSupport = null;
+    private EntityDescriptor entityDescriptor = null;
+    private EntityDescriptor entityDescriptorFromView = null;
    
     //private HashMap<ViewControllers,ArrayList<ViewController>> viewControllers = null;    
     enum ViewControllers {
@@ -78,12 +80,25 @@ public class DesktopViewController extends ViewController{
                                             ENABLE_DESKTOP_DATA_CONTROL,
                                             ENABLE_DESKTOP_VIEW_CONTROL,
                                             DISABLE_DESKTOP_WINDOW_CONTROL,
-                                            ENABLE_DESKTOP_WINDOW_CONTROL
+                                            ENABLE_DESKTOP_WINDOW_CONTROL,
+                                            MIGRATION_ACTION_COMPLETE
                                             }
     
     @Override
     public EntityDescriptor getEntityDescriptorFromView(){
-        return null;
+        return this.entityDescriptorFromView;
+    }
+    
+    private void setEntityDescriptorFromView(EntityDescriptor value){
+        this.entityDescriptorFromView =  value;
+    }
+    
+    public EntityDescriptor getEntityDescriptor(){
+        return this.entityDescriptor;
+    }
+    
+    private void setEntityDescriptor(EntityDescriptor value){
+        this.entityDescriptor =  value;
     }
     
     private Boolean getDataMigrationOption(){
@@ -901,6 +916,7 @@ public class DesktopViewController extends ViewController{
                                           new ErrorMessagePanel(ex.getMessage()));
             }
         }
+        this.doMigrationActionCompleteResponse();
         /*
         else if(e.getActionCommand().equals(
                 ViewController.DesktopViewControllerActionEvent.MIGRATE_APPOINTMENT_DBF_TO_CSV.toString())){
@@ -1134,5 +1150,24 @@ public class DesktopViewController extends ViewController{
         File result = new File(file);
         if (FilenameUtils.getBaseName(file).isEmpty()) result = new File(file + direction);
         return result;
+    }
+    
+    private void doMigrationActionCompleteResponse(){
+        try{
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            setEntityDescriptor(new EntityDescriptor());
+            getEntityDescriptor().getMigrationDescriptor().setAppointmentCSVFilePath(storeManager.getAppointmentCSVPath());
+            getEntityDescriptor().getMigrationDescriptor().setPatientCSVFilePath(storeManager.getPatientCSVPath());
+            getEntityDescriptor().getMigrationDescriptor().setMigrationDatabaseSelection(storeManager.getMigrationTargetStorePath());
+            getEntityDescriptor().getMigrationDescriptor().setPMSDatabaseSelection(storeManager.getPMSTargetStorePath());
+
+            getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
+            getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
+            getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
+            getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
+
+        }catch (StoreException ex){
+                
+        }     
     }
 }

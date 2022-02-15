@@ -255,9 +255,38 @@ public class AccessStore extends Store {
             case APPOINTMENT_TABLE_DROP:
                 sql = "DROP TABLE Appointment;";
                 break;
+            case APPOINTMENT_TABLE_CREATE:
+                        sql = "CREATE TABLE Appointment ("
+                        + "pid LONG PRIMARY KEY, "
+                        + "patientKey LONG NOT NULL REFERENCES PatientTable(pid), "
+                        + "start DateTime, "
+                        + "duration LONG, "
+                        + "notes char);";
+                        break;
             case PATIENT_TABLE_DROP:
                 sql = "DROP TABLE Patient;";
                 break;
+            case PATIENT_TABLE_CREATE:
+                        sql = "CREATE TABLE Patient ("
+                        + "pid Long PRIMARY KEY,"
+                        + "title Char(10),"
+                        + "forenames Char(25), "
+                        + "surname Char(25), "
+                        + "line1 Char(30), "
+                        + "line2 Char(30), "
+                        + "town Char(25), "
+                        + "county Char(25), "
+                        + "postcode Char(15), "
+                        + "phone1 Char(30), "
+                        + "phone2 Char(30), "
+                        + "gender Char(10), "
+                        + "dob DateTime,"
+                        + "isGuardianAPatient YesNo,"
+                        + "recallFrequency Byte, "
+                        + "recallDate DateTime, "
+                        + "notes Char(255), "
+                        + "guardianKey Long);";
+                        break;
             case SURGERY_DAYS_TABLE_DROP:
                 sql = "DROP TABLE SurgeryDays;";
                 break;
@@ -414,6 +443,19 @@ public class AccessStore extends Store {
                 }
                 break;
             }
+            case APPOINTMENT_TABLE_CREATE:{
+                try{
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.execute();
+                    
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised in AccessStore::runSQL(PracticeManagementSystemSQL.APPOINTMENT_CREATE) ",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+                break;
+            }
             case PATIENT_TABLE_DROP:{
                 /**
                  * Update to fix problem when trying to drop a non-existent appointment table
@@ -432,6 +474,18 @@ public class AccessStore extends Store {
                      + "StoreException message -> exception raised during a APPOINTMENT_TABLE_DROP data migration operation",
                     StoreException.ExceptionType.SQL_EXCEPTION);
                     */
+                }
+                break;
+            }
+            case PATIENT_TABLE_CREATE:{
+                try{
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.executeUpdate();
+                }
+                catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                     + "StoreException message -> exception raised during a runSQL(PracticeManagementSystemSQL.PATIENT_TABLE_CREATE)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
                 }
                 break;
             }
@@ -563,10 +617,12 @@ public class AccessStore extends Store {
                             preparedStatement.executeUpdate();
                         }
                         catch (SQLException ex){
-                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                             + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL.INSERT_APPOINTMENT) ",
-                            StoreException.ExceptionType.SQL_EXCEPTION);
-                        } 
+                            if (!(ex.getMessage().contains("foreign key no parent"))&&
+                                    !(ex.getMessage().contains("Missing columns in relationship")))
+                                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                    + "StoreException message -> exception raised in AccessStore::runSQL(PracticeManagementSystemSQL.INSERT_APPOINTMENT)",
+                                    StoreException.ExceptionType.SQL_EXCEPTION);
+                        }
                     }
                     else{
                         String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.INSERT_APPOINTMENT";
@@ -3339,6 +3395,43 @@ public class AccessStore extends Store {
     }
     
     @Override
+    public void create(Appointment table)throws StoreException{
+        boolean result = false;
+        try{
+            getPMSConnection().setAutoCommit(true);
+            /*
+            if (getMigrationConnection().getAutoCommit()){
+                getMigrationConnection().setAutoCommit(false);
+            }
+            */
+            IEntityStoreType value = null;
+            runSQL(PracticeManagementSystemSQL.APPOINTMENT_TABLE_CREATE, value);
+            
+        }catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised AccessStore.create(Appointment))\n"
+                            + "Reason -> unexpected effect when auto commit state disabled",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+        /*
+        finally{
+            try{
+                if (result) getMigrationConnection().commit();
+                else getMigrationConnection().rollback();
+            }catch (SQLException ex){
+                message = "SQLException message -> " + ex.getMessage() +"\n";
+                throw new StoreException(
+                    message + "StoreException raised in finally clause of method AccessStore.create(AppointmentTable))\n"
+                            + "Reason -> unexpected effect when terminating the current transaction",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+                
+            }
+        }
+        */
+    }
+    
+    @Override
     /**
      * Explicit transaction processing enabled for attempt to drop the Patient migration table 
      */
@@ -3358,6 +3451,46 @@ public class AccessStore extends Store {
             message = "SQLException message -> " + ex.getMessage() +"\n";
             throw new StoreException(
                     message + "StoreException raised AccessStore.create(PatientTable))\n"
+                            + "Reason -> unexpected effect when auto commit state disabled",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+        /*
+        finally{
+            try{
+                if (result) getMigrationConnection().commit();
+                else getMigrationConnection().rollback();
+            }catch (SQLException ex){
+                message = "SQLException message -> " + ex.getMessage() +"\n";
+                throw new StoreException(
+                    message + "StoreException raised in finally clause of method AccessStore.create(PatentTable))\n"
+                            + "Reason -> unexpected effect when terminating the current transaction",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+                
+            }
+        }
+        */
+    }
+    
+    @Override
+    /**
+     * Explicit transaction processing enabled for attempt to drop the Patient migration table 
+     */
+    public void create(Patient table)throws StoreException{
+        boolean result = false;
+        try{
+            /*
+            if (getMigrationConnection().getAutoCommit()){
+                getMigrationConnection().setAutoCommit(false);
+            }
+            */
+            getPMSConnection().setAutoCommit(false);
+            IEntityStoreType value = null;
+            runSQL(PracticeManagementSystemSQL.PATIENT_TABLE_CREATE, value);
+            result = true;
+        }catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised AccessStore.create(Patient))\n"
                             + "Reason -> unexpected effect when auto commit state disabled",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }

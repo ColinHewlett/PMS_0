@@ -444,7 +444,7 @@ public class MigrationManagerModelViewer extends View {
         this.mniSelectedPatientsCSVFilePath.setText(this.SELECTED_PATIENT_CSV_FILE_HEADER 
                 + getEntityDescriptor().getMigrationDescriptor().getPatientCSVFilePath());
         this.mniSelectedTargetMigrationDatabase.setText(this.SELECTED_MIGRATION_DATABASE_HEADER 
-                + getEntityDescriptor().getMigrationDescriptor().getTargetMigrationDatabaseURL());
+                + getEntityDescriptor().getMigrationDescriptor().getMigrationDatabaseSelection());
         this.mniExportMigrationToPMS.setText(this.EXPORT_MIGRATED_DATA_TO_PMS);
     }
     

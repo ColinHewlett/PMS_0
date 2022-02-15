@@ -388,4 +388,10 @@ public class PostgreSQLStore extends Store {
     public void drop(SurgeryDaysAssignment s)throws StoreException{
         
     }
+    public void create(Appointment a)throws StoreException{
+        
+    }
+    public void create(Patient p)throws StoreException{
+        
+    }
 }
