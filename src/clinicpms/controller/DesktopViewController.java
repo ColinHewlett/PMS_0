@@ -53,6 +53,8 @@ public class DesktopViewController extends ViewController{
                          }
     
     public enum DesktopViewControllerActionEvent {
+                                            IMPORT_DATA_FROM_SOURCE,
+                                            EXPORT_MIGRATED_DATA,
                                             APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
@@ -71,7 +73,8 @@ public class DesktopViewController extends ViewController{
                                             PMS_DATABASE_SELECTION_REQUEST,
                                             SURGERY_DATES_EDITOR_VIEW_CONTROLLER_REQUEST,
                                             VIEW_CLOSE_REQUEST,//raised by Desktop view
-                                            VIEW_CLOSED_NOTIFICATION//raised by internal frame views
+                                            VIEW_CLOSED_NOTIFICATION,//raised by internal frame views
+                                            DESKTOP_VIEW_INCLUDES_MIGRATION_MANAGEMENT
                                             }
     
     public enum DesktopViewControllerPropertyChangeEvent {
@@ -126,6 +129,8 @@ public class DesktopViewController extends ViewController{
         patientViewControllers = new ArrayList<>();
         //databaseLocatorViewControllers = new ArrayList<>();
         migrationViewControllers = new ArrayList<>();
+        
+        if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
     }
     
     @Override
@@ -201,22 +206,24 @@ public class DesktopViewController extends ViewController{
                     /**
                      * re-enable view's data menu, if it exists
                      */
+                    
                     pcSupport.addPropertyChangeListener(view);
                     PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                         DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
-                        Color.BLACK,Color.BLUE);
+                        null,new EntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
                     
                     pcSupport.addPropertyChangeListener(view);
                     pcEvent = new PropertyChangeEvent(this,
                         DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
-                        Color.BLACK,Color.BLUE);
+                        null,new EntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
-                    /*getView().enableDataControl();
+                    
+                    getView().enableDataControl();
                     getView().enableWindowCloseControl();
-                    */
+                    
                 }
             }
             
@@ -274,6 +281,7 @@ public class DesktopViewController extends ViewController{
             getView().enableWindowCloseControl();
             */
         }
+        /*
         else if (e.getActionCommand().equals(
             DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
             
@@ -290,6 +298,7 @@ public class DesktopViewController extends ViewController{
                 Color.BLACK,Color.BLUE);
             pcSupport.firePropertyChange(pcEvent);
             pcSupport.removePropertyChangeListener(view);
+        */
             /**
              * on receipt of DISABLE_DESKTOP_CONTROLS_REQUEST
              * -- sends desktop view controller sends message to its view to disable VIEW and DATA controls as well as its window closing control
@@ -298,7 +307,7 @@ public class DesktopViewController extends ViewController{
             getView().disableViewControl();
             getView().disableWindowClosedControl();
             */
-        }
+        //}
     }
     private void doPatientViewControllerAction(ActionEvent e){
         PatientViewController pvc = null;
@@ -377,546 +386,73 @@ public class DesktopViewController extends ViewController{
      * 
      * @param e source of event is DesktopView object
      */
-    private void doDesktopViewAction(ActionEvent e){  
-        if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
-            String[] options = {"Yes", "No"};
-            String message;
-            if (!appointmentViewControllers.isEmpty()||!patientViewControllers.isEmpty()){
-                message = "At least one patient or appointment view is active. Close application anyway?";
+    private void doDesktopViewAction(ActionEvent e){ 
+        DesktopViewControllerActionEvent actionCommand =
+                DesktopViewController.DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
+        switch (actionCommand){
+            case VIEW_CLOSE_REQUEST:{
+                doViewCloseRequest();
+                break;
             }
-            else {message = "Close The Clinic practice management system?";}
-            int close = JOptionPane.showOptionDialog(getView(),
-                            message,null,
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.INFORMATION_MESSAGE,
-                            null,
-                            options,
-                            null);
-            if (close == JOptionPane.YES_OPTION){
-                this.isDesktopPendingClosure = true;
-                if (this.appointmentViewControllers.isEmpty()||this.patientViewControllers.isEmpty()){
-                    requestViewControllersToCloseViews();
+            case APPOINTMENT_VIEW_CONTROLLER_REQUEST:{
+                doAppointmentViewControllerRequest();
+                break;
+            }
+            case PATIENT_VIEW_CONTROLLER_REQUEST:{
+                doPatientViewControllerRequest();
+                break;
+            }
+            case VIEW_CLOSED_NOTIFICATION:{/* user has attempted to close Desktop view*/
+                doViewNotificationRequest();
+                break;
+            }
+            case IMPORT_DATA_FROM_SOURCE:{
+                doImportDataFromSource();
+                break;
+            }    
+            case MIGRATION_DATABASE_CREATION_REQUEST:{
+                doMigrationDatabaseCreationRequest();
+                break;
+            }
+            case MIGRATION_DATABASE_DELETION_REQUEST:{
+                doMigrationDatabaseDeletionRequest();
+                break;
+            }
+            case MIGRATION_DATABASE_SELECTION_REQUEST:{
+                doMigrationDatabaseSelectionRequest();
+                break;
+            }
+            case PMS_DATABASE_CREATION_REQUEST:{
+                doPMSDatabaseCreationRequest();
+                break;
+            } 
+            case PMS_DATABASE_DELETION_REQUEST:{
+                doPMSDatabaseDeletionRequest();
+                break;
+            }
+            case PMS_DATABASE_SELECTION_REQUEST:{
+                doPMSDatabaseSelectionRequest();
+                break;
+            }
+            case SET_CSV_APPOINTMENT_FILE_REQUEST:{
+                doCSVAppointmentFileRequest();
+                break;
+            }
+            case SET_CSV_PATIENT_FILE_REQUEST:{
+                doCSVPatientFileRequest();
+                break;
+            }
+            case EXPORT_MIGRATED_DATA:{
+                try{
+                    doExportMigratedData();
+                }catch (StoreException ex){
+                    displayErrorMessage(ex.getMessage() + "\nRaised in doExportMigratedData()","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
                 }
-                else {
-                    getView().dispose();
-                    System.exit(0);
-                }    
-            }
-        }
-        /**
-         * MIGRATION_VIEW_CONTROLLER_REQUEST -> 
-         * -- on receipt of this request the menu option to raise the request in the view must be enabled
-         * ---- therefore neither appointment or patient view controllers can be active either
-         * ---- nor can there be an active migration view controller, else the view's "data menu would be disabled
-         * -- after constructing a MigrationViewController the "View" menu option in the view is disabled
-         * -- as is the "Data" option in the view which prevents multiple copies of the migration view controller
-         */
-        else if (e.getActionCommand().equals(
-            DesktopViewControllerActionEvent.MIGRATION_VIEW_CONTROLLER_REQUEST.toString())){
-            getView().disableDataControl();
-            getView().disableViewControl();
-            createNewMigrationViewController();
-            
-            
-        }
-        /**
-         * APPOINTMENT_VIEW_CONTROLLER_REQUEST -> allowed
-         * -- if migration view controller active this request would never have been made (menu option disabled)
-         * -- action posted to migration view controller to disable its "data" menu
-         */
-        else if (e.getActionCommand().equals(
-            DesktopViewControllerActionEvent.
-                    APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
-            createNewAppointmentViewController(Optional.ofNullable(null));
-            /**
-             * disable data menu in the desktop view, if it exists
-             */
-            getView().disableDataControl();
-            
-        }
-        else if (e.getActionCommand().equals(
-            DesktopViewControllerActionEvent.
-                    PATIENT_VIEW_CONTROLLER_REQUEST.toString())){
-            try{
-                patientViewControllers.add(
-                                        new PatientViewController(this, getView()));
-                PatientViewController pvc = patientViewControllers.get(patientViewControllers.size()-1);
-
-                this.getView().getDeskTop().add(pvc.getView());
-                pvc.getView().setVisible(true);
-                pvc.getView().setClosable(false);
-                pvc.getView().setMaximizable(false);
-                pvc.getView().setIconifiable(true);
-                pvc.getView().setResizable(false);
-                pvc.getView().setSelected(true);
-                pvc.getView().setSize(700
-                        ,585);
-                /**
-                 * disable data menu in the desktop view
-                 */
-                getView().disableDataControl();
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-            catch (PropertyVetoException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-        } 
-        
-        /**
-         * user has attempted to close the desktop view
-         */
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
-            System.exit(0);
-        }
-        /**
-         * MIGRATION_DATABASE_CREATION_REQUEST raised by user in the desktop view
-         * -- if file for creation already exists
-         * ---- error displayed and selected migration database location unchanged
-         * -- else 
-         * ---- new migration database created with specified name
-         * ---- and the new database is selected as the current migration database
-         * 
-         */
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST.toString())){
-            try{
-                /**
-                 * 07/12/2021 19:17 updates
-                 */
-                FileNameExtensionFilter filter = null;
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getMigrationTargetStorePath();
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-                
-                /**
-                 * display contents of currently selected folder
-                 * but do not display the currently selected file (if NY)
-                 */
-                
-                targetPath = removeFilenameFrom(targetPath);
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Create migration database");
-                chooser.setApproveButtonText("Create database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of migration database to create"));
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    if (!file.exists()){
-                        file = setExtensionFor(file, ".accdb");
-                        DatabaseBuilder.create(Database.FileFormat.V2016, file);
-                        storeManager.setMigrationTargetStorePath(file.getPath());
-                        PatientTable patientTable = new PatientTable();
-                        patientTable.create();
-                        AppointmentTable appointmentTable = new AppointmentTable();
-                        appointmentTable.create();
-                        
-                        SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
-                        surgeryDaysAssignmentTable.create();
-                        surgeryDaysAssignmentTable.populate();
-                        
-                       JOptionPane.showMessageDialog(getView(),
-                            storeManager.getMigrationTargetStorePath(),
-                            "Current migration database path", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                            
-                    }
-                    else{
-                        String filename = file.toPath().getName(file.toPath().getNameCount()-1).toString();
-                        displayErrorMessage("Migration database file -> " + 
-                                filename + " already exists","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        JOptionPane.showMessageDialog(getView(),
-                                storeManager.getMigrationTargetStorePath(),
-                                "Current migration database path", 
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                }
-                    
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-            catch (IOException ex){
-                String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-            }
-
-        }
-        
-        /**
-         * MIGRATION_DATABASE_DELETION_REQUEST raised by user in the desktop view
-         * -- if file for creation already exists
-         * ---- error displayed and selected migration database location unchanged
-         * -- else 
-         * ---- new migration database created with specified name
-         * ---- and the new database is selected as the current migration database
-         * 
-         */
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.MIGRATION_DATABASE_DELETION_REQUEST.toString())){
-            try{
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getMigrationTargetStorePath();
-                String storageType = storeManager.getStorageType();
-                FileNameExtensionFilter filter = null;
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-                       
-                targetPath = removeFilenameFrom(targetPath);
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Delete migration database");
-                chooser.setApproveButtonText("Delete database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Select migration database to delete"));
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    /**
-                     * if selected file for deletion exists
-                     * -- if this is the currently selected PMS database
-                     * ---- remove the file name of database from the stored PMS database location
-                     * -- display to user the currently selected PMS database location
-                     * else if selected file to delete dopes not exist display error message
-                     */
-                    if (file.exists()){
-                        targetPath = storeManager.getMigrationTargetStorePath();
-                        if (file.delete()){
-                            if (targetPath.equals(file.getPath())){
-                                
-                                targetPath = removeFilenameFrom(targetPath);
-                                storeManager.setMigrationTargetStorePath(targetPath);
-                            }
-                            /*
-                            JOptionPane.showMessageDialog(getView(),
-                                    storeManager.getPMSTargetStorePath(),
-                                    "Current PMS database path", 
-                                    JOptionPane.INFORMATION_MESSAGE);
-                            */
-                        }
-                        else{
-                            displayErrorMessage("Unable to delete the migration database file -> "  + 
-                                    file.getPath(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }
-                    else{
-                        displayErrorMessage("Migration database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        /*JOptionPane.showMessageDialog(getView(),
-                                                  new ErrorMessagePanel(ex.getMessage()));
-                        */
-                    }
-                }
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-            
-
-        }
-        
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.MIGRATION_DATABASE_SELECTION_REQUEST.toString())){
-            try{
-                /**
-                 * 07/12/2021 19:17 updates
-                 */
-                FileNameExtensionFilter filter = null;
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getMigrationTargetStorePath();
-                String storageType = storeManager.getStorageType();
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-                  
-                File path = addDirectionIfFilenameMissing(targetPath, "Select migration database to use");
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Select migration database to use");
-                chooser.setApproveButtonText("Select database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(path);
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    if (file.exists()){
-                        storeManager.setMigrationTargetStorePath(file.getPath());
-
-                        JOptionPane.showMessageDialog(getView(),
-                                storeManager.getMigrationTargetStorePath(),
-                                "Current migration database path", 
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    else{
-                        displayErrorMessage("Migration database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    }      
-                }
-                    
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-        }
-        /**
-         * PMS_DATABASE_CREATION_REQUEST raised by view
-         */
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.PMS_DATABASE_CREATION_REQUEST.toString())){
-            try{
-                /**
-                 * 07/12/2021 19:17 updates
-                 */
-                FileNameExtensionFilter filter = null;
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getPMSTargetStorePath();
-                String storageType = storeManager.getStorageType();
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-
-                /**
-                 * display contents of currently selected folder
-                 * but not the currently selected file
-                 */
-                targetPath = removeFilenameFrom(targetPath);
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Create PMS database");
-                chooser.setApproveButtonText("Create database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of PMS database to create"));
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    if (!file.exists()){
-                        file = setExtensionFor(file, ".accdb");
-                        Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
-                        storeManager.setPMSTargetStorePath(file.getPath());
-
-                        JOptionPane.showMessageDialog(getView(),
-                                storeManager.getPMSTargetStorePath(),
-                                "Current migration database path", 
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    else{
-                        displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be created because it already exists",
-                                "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        /*JOptionPane.showMessageDialog(getView(),
-                                                  new ErrorMessagePanel(ex.getMessage()));
-                        */
-                    }
-                }
-                    
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-            catch (IOException ex){
-                String message = "IOException -> raised when attempting to create a new PMS database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-            }
-
-        }
-        
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.PMS_DATABASE_DELETION_REQUEST.toString())){
-            
-            try{
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getPMSTargetStorePath();
-                String storageType = storeManager.getStorageType();
-                FileNameExtensionFilter filter = null;
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-                targetPath =  removeFilenameFrom(targetPath);    
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Delete PMS database");
-                chooser.setApproveButtonText("Delete database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Select PMS database to delete"));
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    /**
-                     * if selected file for deletion exists
-                     * -- if this is the currently selected PMS database
-                     * ---- remove the file name of database from the stored PMS database location
-                     * -- display to user the currently selected PMS database location
-                     * else if selected file to delete dopes not exist display error message
-                     */
-                    if (file.exists()){
-                        if (file.delete()){
-                            targetPath = storeManager.getPMSTargetStorePath();
-                            if (targetPath.equals(file.getPath())){
-                                targetPath = removeFilenameFrom(targetPath);
-                                storeManager.setPMSTargetStorePath(targetPath);
-                            }
-                            /*
-                            JOptionPane.showMessageDialog(getView(),
-                                    storeManager.getPMSTargetStorePath(),
-                                    "Current PMS database path", 
-                                    JOptionPane.INFORMATION_MESSAGE);
-                            */
-                        }
-                        else{
-                            displayErrorMessage("Unable to delete -> " + file.getPath() + " PMS database file","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }
-                    else{
-                        displayErrorMessage("PMS database file -> " + 
-                                file.getPath() + "cannot be deleted because it cannot be found", "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        /*JOptionPane.showMessageDialog(getView(),
-                                                  new ErrorMessagePanel(ex.getMessage()));
-                        */
-                    }
-                }
-                    
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
-            }
-
-        }
-        
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.PMS_DATABASE_SELECTION_REQUEST.toString())){
-            /**
-             * SET_PMS_DATABASE_LOCATION_REQUEST ->
-             * -- configure a file chooser to select the file and folder of the current migration database setting in the TARGETS_DATABASE
-             * -- use a standard dialog to inform the user of the results of the update
-             */
-            try{
-                File path;
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getPMSTargetStorePath();
-                String storageType = storeManager.getStorageType();
-                FileNameExtensionFilter filter = null;
-                filter = new FileNameExtensionFilter("Access database files", "accdb");
-                
-                JFileChooser chooser = new JFileChooser();
-                chooser.setDialogTitle("Select PMS database");
-                chooser.setApproveButtonText("Select database");
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath, "Select PMS database"));
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    if (file.exists()){
-                        storeManager.setPMSTargetStorePath(file.getPath());
-
-                        JOptionPane.showMessageDialog(getView(),
-                                storeManager.getPMSTargetStorePath(),
-                                "Current PMS database path", 
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    else{
-                        displayErrorMessage("PMS database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        /*JOptionPane.showMessageDialog(getView(),
-                                                  new ErrorMessagePanel(ex.getMessage()));
-                        */
-                    }
-                }
-                    
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                /*
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-                */
+                break;
             }
         }
         
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.SET_CSV_APPOINTMENT_FILE_REQUEST.toString())){
-
-            try{
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getAppointmentCSVPath();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
-                
-                File path = new File(targetPath);
-                JFileChooser chooser = new JFileChooser(path);
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(path);
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    String updatedAppointmentCSVFlePath = chooser.getSelectedFile().getPath();
-                    /**
-                     * 07/12/2021 19:17
-                     */
-                    storeManager.setAppointmentCSVPath(updatedAppointmentCSVFlePath);
-                    JOptionPane.showMessageDialog(getView(),
-                            storeManager.getAppointmentCSVPath(),
-                            "Current appointment source CSV file path", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
         
-        else if(e.getActionCommand().equals(
-                DesktopViewControllerActionEvent.SET_CSV_PATIENT_FILE_REQUEST.toString())){
-
-            try{
-                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-                String targetPath = storeManager.getPatientCSVPath();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
-                File path = new File(targetPath);
-                JFileChooser chooser = new JFileChooser(path);
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(path);
-                int returnVal = chooser.showOpenDialog(getView());
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    String updatedPatientCSVFilePath = chooser.getSelectedFile().getPath();
-                    storeManager.setPatientCSVPath(updatedPatientCSVFilePath);
-                    JOptionPane.showMessageDialog(getView(),
-                            storeManager.getPatientCSVPath(),
-                            "Current patient source CSV file path", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-            catch (StoreException ex){
-                displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                
-                JOptionPane.showMessageDialog(getView(),
-                                          new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
-        this.doMigrationActionCompleteResponse();
         /*
         else if(e.getActionCommand().equals(
                 ViewController.DesktopViewControllerActionEvent.MIGRATE_APPOINTMENT_DBF_TO_CSV.toString())){
@@ -1152,22 +688,733 @@ public class DesktopViewController extends ViewController{
         return result;
     }
     
-    private void doMigrationActionCompleteResponse(){
+    private void doMigrationActionCompleteResponse(boolean includeTableRowCounts){
+       setEntityDescriptor(new EntityDescriptor());
+       try{
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            this.
+            getEntityDescriptor().
+                    getMigrationDescriptor().
+                    setMigrationDatabaseSelection(MigrationDatabase.getPath());
+              
+            getEntityDescriptor().
+                    getMigrationDescriptor().
+                    setAppointmentCSVFilePath(storeManager.getAppointmentCSVPath());
+            getEntityDescriptor().
+                    getMigrationDescriptor().
+                    setPatientCSVFilePath(storeManager.getPatientCSVPath());
+            getEntityDescriptor().getMigrationDescriptor().setPMSDatabaseSelection(storeManager.getPMSTargetStorePath());
+            
+            if (MigrationDatabase.isSelected()){
+                    getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
+                    getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
+                    getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentTableCount(new SurgeryDaysAssignmentTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
+            }
+            
+            getEntityDescriptor().
+                    getMigrationDescriptor().
+                    setPMSDatabaseSelection(PMSDatabase.getPath());
+            if (PMSDatabase.isSelected()){
+                getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
+                getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
+                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new SurgeryDaysAssignment().count());
+                
+            }
+            pcSupport.addPropertyChangeListener(view);
+            PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
+                DesktopViewController.DesktopViewControllerPropertyChangeEvent.MIGRATION_ACTION_COMPLETE.toString(),
+                null,getEntityDescriptor());
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(view);
+            String test = storeManager.getPatientCSVPath();
+            if (test==null){}
+        }catch (StoreException ex){
+            displayErrorMessage("Migration database connection failure","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }  
+    }
+    
+    private void doViewCloseRequest(){
+        String[] options = {"Yes", "No"};
+        String message;
+        if (!appointmentViewControllers.isEmpty()||!patientViewControllers.isEmpty()){
+            message = "At least one patient or appointment view is active. Close application anyway?";
+        }
+        else {message = "Close The Clinic practice management system?";}
+        int close = JOptionPane.showOptionDialog(getView(),
+                        message,null,
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        options,
+                        null);
+        if (close == JOptionPane.YES_OPTION){
+            this.isDesktopPendingClosure = true;
+            if (this.appointmentViewControllers.isEmpty()||this.patientViewControllers.isEmpty()){
+                requestViewControllersToCloseViews();
+            }
+            else {
+                getView().dispose();
+                System.exit(0);
+            }    
+        }
+    }
+    
+    private void doAppointmentViewControllerRequest(){
+        createNewAppointmentViewController(Optional.ofNullable(null));
+        getView().disableDataControl();
+    }
+    
+    private void doPatientViewControllerRequest(){
+        try{
+            patientViewControllers.add(
+                                    new PatientViewController(this, getView()));
+            PatientViewController pvc = patientViewControllers.get(patientViewControllers.size()-1);
+
+            this.getView().getDeskTop().add(pvc.getView());
+            pvc.getView().setVisible(true);
+            pvc.getView().setClosable(false);
+            pvc.getView().setMaximizable(false);
+            pvc.getView().setIconifiable(true);
+            pvc.getView().setResizable(false);
+            pvc.getView().setSelected(true);
+            pvc.getView().setSize(700
+                    ,585);
+            /**
+             * disable data menu in the desktop view
+             */
+            getView().disableDataControl();
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+        catch (PropertyVetoException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+    }
+    
+    private void doViewNotificationRequest(){
+            System.exit(0);
+    }
+                
+    private void doMigrationDatabaseCreationRequest(){
+        try{
+            /**
+             * 07/12/2021 19:17 updates
+             */
+            FileNameExtensionFilter filter = null;
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getMigrationTargetStorePath();
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            /**
+             * display contents of currently selected folder
+             * but do not display the currently selected file (if NY)
+             */
+
+            targetPath = removeFilenameFrom(targetPath);
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Create migration database");
+            chooser.setApproveButtonText("Create database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of migration database to create"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (!file.exists()){
+                    file = setExtensionFor(file, ".accdb");
+                    DatabaseBuilder.create(Database.FileFormat.V2016, file);
+                    storeManager.setMigrationTargetStorePath(file.getPath());
+                    PatientTable patientTable = new PatientTable();
+                    patientTable.create();
+                    AppointmentTable appointmentTable = new AppointmentTable();
+                    appointmentTable.create();
+
+                    SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+                    surgeryDaysAssignmentTable.create();
+                    surgeryDaysAssignmentTable.populate();
+
+                   JOptionPane.showMessageDialog(getView(),
+                        storeManager.getMigrationTargetStorePath(),
+                        "Current migration database path", 
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                }
+                else{
+                    String filename = file.toPath().getName(file.toPath().getNameCount()-1).toString();
+                    displayErrorMessage("Migration database file -> " + 
+                            filename + " already exists","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getMigrationTargetStorePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                this.doMigrationActionCompleteResponse(true);
+            }
+               
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+        catch (IOException ex){
+            String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doMigrationDatabaseDeletionRequest(){
+        String migrationTargetDatabaseStorePath = null;
+        String filenameFromMigrationTargetDatabaseStorePath = null;
+        String migrationDatabaseStorePathWithoutFilename = null;
         try{
             StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-            setEntityDescriptor(new EntityDescriptor());
-            getEntityDescriptor().getMigrationDescriptor().setAppointmentCSVFilePath(storeManager.getAppointmentCSVPath());
-            getEntityDescriptor().getMigrationDescriptor().setPatientCSVFilePath(storeManager.getPatientCSVPath());
-            getEntityDescriptor().getMigrationDescriptor().setMigrationDatabaseSelection(storeManager.getMigrationTargetStorePath());
-            getEntityDescriptor().getMigrationDescriptor().setPMSDatabaseSelection(storeManager.getPMSTargetStorePath());
+            migrationTargetDatabaseStorePath = storeManager.getMigrationTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            FileNameExtensionFilter filter = null;
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
 
-            getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
-            getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
-            getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
-            getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
-
-        }catch (StoreException ex){
+            migrationDatabaseStorePathWithoutFilename = removeFilenameFrom(migrationTargetDatabaseStorePath);
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Delete migration database");
+            chooser.setApproveButtonText("Delete database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(migrationDatabaseStorePathWithoutFilename,"Select migration database to delete"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
                 
-        }     
+                if (file.exists()){
+                    /**
+                     * if the migration database to be deleted is also the selected migration database
+                     * -- remove the selected filename from the selected migration database path
+                     * Delete database file selected for deletion
+                     * if attempt to delete the database fails
+                     * -- restore the original selected migration database path
+                     */
+                    
+                    migrationTargetDatabaseStorePath = storeManager.getMigrationTargetStorePath();
+                    filenameFromMigrationTargetDatabaseStorePath = 
+                            FilenameUtils.getName(migrationTargetDatabaseStorePath);
+                    if (migrationTargetDatabaseStorePath.equals(file.getPath())){
+                            migrationDatabaseStorePathWithoutFilename = removeFilenameFrom(migrationTargetDatabaseStorePath);
+                            storeManager.setMigrationTargetStorePath(migrationDatabaseStorePathWithoutFilename);
+                    }
+                    if (!file.delete()){
+                        displayErrorMessage("Unable to delete the migration database file -> "  + 
+                                file.getPath(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        storeManager.setMigrationTargetStorePath(
+                                FilenameUtils.concat(migrationTargetDatabaseStorePath, filenameFromMigrationTargetDatabaseStorePath));   
+                    }
+                    this.doMigrationActionCompleteResponse(false);
+                }
+                else{
+                    displayErrorMessage("Migration database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    /*JOptionPane.showMessageDialog(getView(),
+                                              new ErrorMessagePanel(ex.getMessage()));
+                    */
+                }
+                
+            }
+            
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+    }
+    
+    private void doMigrationDatabaseSelectionRequest(){
+        try{
+            /**
+             * 07/12/2021 19:17 updates
+             */
+            FileNameExtensionFilter filter = null;
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getMigrationTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            File path = addDirectionIfFilenameMissing(targetPath, "Select migration database to use");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select migration database to use");
+            chooser.setApproveButtonText("Select database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(path);
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file.exists()){
+                    storeManager.setMigrationTargetStorePath(file.getPath());
+
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getMigrationTargetStorePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    displayErrorMessage("Migration database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                } 
+                this.doMigrationActionCompleteResponse(true);
+            }
+            
+
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+    }
+    
+    private void doPMSDatabaseCreationRequest(){
+        try{
+            /**
+             * 07/12/2021 19:17 updates
+             */
+            FileNameExtensionFilter filter = null;
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getPMSTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            /**
+             * display contents of currently selected folder
+             * but not the currently selected file
+             */
+            targetPath = removeFilenameFrom(targetPath);
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Create PMS database");
+            chooser.setApproveButtonText("Create database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of PMS database to create"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (!file.exists()){
+                    file = setExtensionFor(file, ".accdb");
+                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+                    storeManager.setPMSTargetStorePath(file.getPath());
+                    
+                    Patient patient = new Patient();
+                    patient.create();
+                    Appointment appointment = new Appointment();
+                    appointment.create();
+
+                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+                    surgeryDaysAssignment.create();
+                    
+
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPMSTargetStorePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be created because it already exists",
+                            "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    /*JOptionPane.showMessageDialog(getView(),
+                                              new ErrorMessagePanel(ex.getMessage()));
+                    */
+                }
+                this.doMigrationActionCompleteResponse(true);  
+            }
+              
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+        catch (IOException ex){
+            String message = "IOException -> raised when attempting to create a new PMS database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doPMSDatabaseDeletionRequest(){
+        String filenameFromPMSTargetDatabaseStorePath = null;
+        String pmsDatabaseStorePathWithoutFilename = null;
+        try{
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String pmsTargetDatabaseStorePath = storeManager.getPMSTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            FileNameExtensionFilter filter = null;
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+            pmsTargetDatabaseStorePath =  removeFilenameFrom(pmsTargetDatabaseStorePath);    
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Delete PMS database");
+            chooser.setApproveButtonText("Delete database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(pmsTargetDatabaseStorePath,"Select PMS database to delete"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                
+                if (file.exists()){
+                    /**
+                     * if the migration database to be deleted is also the selected migration database
+                     * -- remove the selected filename from the selected migration database path
+                     * Delete database file selected for deletion
+                     * if attempt to delete the database fails
+                     * -- restore the original selected migration database path
+                     */
+                    
+                    pmsTargetDatabaseStorePath = storeManager.getPMSTargetStorePath();
+                    filenameFromPMSTargetDatabaseStorePath = 
+                            FilenameUtils.getName(pmsTargetDatabaseStorePath);
+                    if (pmsTargetDatabaseStorePath.equals(file.getPath())){
+                            pmsDatabaseStorePathWithoutFilename = removeFilenameFrom(pmsTargetDatabaseStorePath);
+                            storeManager.setPMSTargetStorePath(pmsDatabaseStorePathWithoutFilename);
+                    }
+                    if (!file.delete()){
+                        displayErrorMessage("Unable to delete the PMS database file -> "  + 
+                                file.getPath(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        storeManager.setPMSTargetStorePath(
+                                FilenameUtils.concat(pmsTargetDatabaseStorePath, filenameFromPMSTargetDatabaseStorePath));   
+                    }
+                this.doMigrationActionCompleteResponse(false);
+                }
+                else{
+                    displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    /*JOptionPane.showMessageDialog(getView(),
+                                              new ErrorMessagePanel(ex.getMessage()));
+                    */
+                }
+                
+            }
+            
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+
+    }
+    
+    private void doPMSDatabaseSelectionRequest(){
+        try{
+            File path;
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getPMSTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            FileNameExtensionFilter filter = null;
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select PMS database");
+            chooser.setApproveButtonText("Select database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath, "Select PMS database"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file.exists()){
+                    storeManager.setPMSTargetStorePath(file.getPath());
+
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPMSTargetStorePath(),
+                            "Current PMS database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    displayErrorMessage("PMS database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    /*JOptionPane.showMessageDialog(getView(),
+                                              new ErrorMessagePanel(ex.getMessage()));
+                    */
+                }
+                this.doMigrationActionCompleteResponse(true);
+            }
+            
+
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            /*
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+            */
+        }
+    }
+     
+    private void doCSVAppointmentFileRequest(){
+        try{
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getAppointmentCSVPath();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
+
+            File path = new File(targetPath);
+            JFileChooser chooser = new JFileChooser(path);
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(path);
+            chooser.setDialogTitle("Select appointment CSV file");
+            chooser.setApproveButtonText("Select CSV file");
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Select appointment CSV file"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                String updatedAppointmentCSVFlePath = chooser.getSelectedFile().getPath();
+                /**
+                 * 07/12/2021 19:17
+                 */
+                storeManager.setAppointmentCSVPath(updatedAppointmentCSVFlePath);
+                JOptionPane.showMessageDialog(getView(),
+                        storeManager.getAppointmentCSVPath(),
+                        "Current appointment source CSV file path", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+            this.doMigrationActionCompleteResponse(true);
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+        }
+    }
+    
+    private void doCSVPatientFileRequest(){
+        try{
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getPatientCSVPath();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
+            File path = new File(targetPath);
+            JFileChooser chooser = new JFileChooser(path);
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(path);
+            chooser.setDialogTitle("Select appointment CSV file");
+            chooser.setApproveButtonText("Select CSV file");
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Select patoent CSV file"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                String updatedPatientCSVFilePath = chooser.getSelectedFile().getPath();
+                storeManager.setPatientCSVPath(updatedPatientCSVFilePath);
+                JOptionPane.showMessageDialog(getView(),
+                        storeManager.getPatientCSVPath(),
+                        "Current patient source CSV file path", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+            this.doMigrationActionCompleteResponse(true);
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+            JOptionPane.showMessageDialog(getView(),
+                                      new ErrorMessagePanel(ex.getMessage()));
+        }
+    }
+    
+    private void doExportMigratedData()throws StoreException{
+        boolean isError = false;
+        /**
+         * can only continue if both a migration and PMS database target has been selected 
+         */
+        try{
+            if (MigrationDatabase.isSelected()){
+                if (PMSDatabase.isSelected()){
+                    Patient patient = new Patient();
+                    Appointment appointment = new Appointment();
+                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+                    IEntityStoreType entity = null;
+                    
+                    /**
+                     * recreate the currently selected PMS target database
+                     * -- assumption if file already exists it will overwrite it with a new database
+                     */
+                    File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
+                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+                    
+                    /**
+                     * create a set of new tables
+                     * -- patient before appointment table because of dependency
+                     */
+                    patient.create();
+                    
+                    if (!isError){
+                        PatientTable patientTable = new PatientTable();
+                        entity = patientTable.read();
+                        if (entity!=null){
+                            if (entity.isPatients()){
+                                Patients patients = (Patients)entity;
+                                Iterator<Patient> itPatients = patients.iterator(); 
+                                while(itPatients.hasNext()) {
+                                    patient = (Patient)itPatients.next();
+                                    patient.insert();
+                                }
+                            }else{
+                                isError = true;
+                                displayErrorMessage("Patient entity expected but not encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                            }
+                        }else{
+                            isError = true;
+                            displayErrorMessage("Patient entity expected but null encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
+                    
+                    surgeryDaysAssignment.create();
+                    if (!isError){
+                        SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+                        entity = surgeryDaysAssignmentTable.read();
+                        if (entity!=null){
+                            if (entity.isSurgeryDaysAssignment()){
+                                surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
+                                surgeryDaysAssignment.update();
+                            }else{
+                                isError = true;
+                                displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                            }
+                        }else{
+                            isError = true;
+                            displayErrorMessage("SurgeryDaysAssignment entity expected but null encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
+                    
+                    appointment.create();
+                    if (!isError){
+                        AppointmentTable appointmentTable = new AppointmentTable();
+                        entity = appointmentTable.read();
+                        if (entity!=null){
+                            if (entity.isAppointments()){
+                                Appointments appointments = (Appointments)entity;
+                                Iterator<Appointment> itAppointments = appointments.iterator(); 
+                                while(itAppointments.hasNext()) {
+                                    appointment = (Appointment)itAppointments.next();
+                                    appointment.insert();
+                                }
+                            }else{
+                                displayErrorMessage("Appointment entity expected but not encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                            }
+                        }else{
+                            displayErrorMessage("Appointment entity expected but null encountered in AccessStore::doExportMigratedData()",
+                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
+                
+                }else{
+                    isError = true;
+                    displayErrorMessage("PMS database has not been selected",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                }  
+            }else{
+                isError = true;
+                displayErrorMessage("Migration database has not been selected",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE); 
+            }   
+            this.doMigrationActionCompleteResponse(true);
+            
+        }catch (StoreException ex){
+            displayErrorMessage("SQLException -> " + ex.getMessage() + "\nStoreException raised in AccessStore::doExportMigratedData",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }catch (IOException ex){
+            displayErrorMessage("IOException -> " + ex.getMessage() + "\nStoreException raised in AccessStore::doExportMigratedData",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+        
+    }
+    
+    private void doImportDataFromSource(){
+        AppointmentTable appointmentTable = new AppointmentTable();
+        PatientTable patientTable = new PatientTable();
+        SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+        
+
+        try{
+            appointmentTable.drop();
+            patientTable.drop();
+            surgeryDaysAssignmentTable.drop();
+
+            patientTable.create();
+            patientTable.populate();
+
+            appointmentTable.create();
+            appointmentTable.populate();
+
+            surgeryDaysAssignmentTable.create();
+            surgeryDaysAssignmentTable.populate();
+
+            this.doMigrationActionCompleteResponse(true);
+        }catch (StoreException ex){
+            //displayErrorMessage(ex.getMessage(),"MigrationManagerViewController error",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
+        }  
+    }
+    
+    private boolean isPMSDatabaseSelected(EntityDescriptor entityDescriptor){
+        boolean result = false;
+        if (FilenameUtils.getName(
+                    entityDescriptor.
+                            getMigrationDescriptor().
+                            getPMSDatabaseSelection())!=null) result = true;
+        return result;
+    }
+    
+    private boolean isMigrationDatabaseSelected(EntityDescriptor entityDescriptor){
+        boolean result = false;
+        if (FilenameUtils.getName(
+                    entityDescriptor.
+                            getMigrationDescriptor().
+                            getMigrationDatabaseSelection())!=null) result = true;
+        return result;
+    }
+    
+    static class MigrationDatabase {    
+        static String getPath()throws StoreException{ 
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String test = FilenameUtils.getName(storeManager.getMigrationTargetStorePath());
+            return storeManager.getMigrationTargetStorePath();
+        }
+        
+        static boolean isSelected()throws StoreException{
+            boolean result = false;
+            if (!FilenameUtils.getName(getPath()).isEmpty())result = true;
+            return result;
+        }  
+    }
+    
+    static class PMSDatabase {  
+
+        static String getPath()throws StoreException{ 
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();           
+            return storeManager.getPMSTargetStorePath();
+        }
+        
+        static boolean isSelected()throws StoreException{
+            boolean result = false;
+            String test = FilenameUtils.getName(getPath());
+            if (!FilenameUtils.getName(getPath()).isEmpty())result = true;
+            return result;
+        }  
     }
 }
