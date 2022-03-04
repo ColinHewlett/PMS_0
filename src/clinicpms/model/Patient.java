@@ -73,12 +73,22 @@ public class Patient implements IEntity, IEntityStoreType{
     }
     
     @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }
     
     @Override
     public final boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
         return false;
     }
     
@@ -121,6 +131,12 @@ public class Patient implements IEntity, IEntityStoreType{
     } 
     
     @Override
+    public void create()throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.create(this);
+    }
+    
+    @Override
     public void insert() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.insert(this);    
@@ -132,6 +148,7 @@ public class Patient implements IEntity, IEntityStoreType{
         store.delete(this);
     }
     
+    @Override
     public void drop() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.drop(this);        

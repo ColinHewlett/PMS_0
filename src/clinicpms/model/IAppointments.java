@@ -15,7 +15,7 @@ import java.time.LocalDate;
  * @author colin
  */
 public interface IAppointments {
-    public int count();
+    public Integer count()throws StoreException;
     public void read() throws StoreException;
     public void readForDay(LocalDate day) throws StoreException;
     public void readForPatient(Patient p,Category c ) throws StoreException;

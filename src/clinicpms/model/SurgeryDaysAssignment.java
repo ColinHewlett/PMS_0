@@ -15,8 +15,11 @@ import java.util.HashMap;
  *
  * @author colin
  */
-public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements IEntity, IEntityStoreType{
+public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements IEntity, 
+                                                                                 IEntityStoreType{
     private IPMSStoreAction store = null;
+    private String day = null;
+    private boolean isSurgery = false;
     
     public SurgeryDaysAssignment(){
     
@@ -67,6 +70,16 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
     }
     
     @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
+    
+    @Override
     /**
      * not currently implemented
      */
@@ -74,6 +87,14 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
         //not currently implemented
     }
     
+    
+    @Override
+    public void create() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.create(this);        
+    }
+    
+    @Override
     public void drop() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.drop(this);        
@@ -81,20 +102,47 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
     
     @Override
     /**
-     * not currently implemented
+     * implemented for migration purposes only
+     * -- 
      */
     public void insert() throws StoreException{
-        //not currently implemented
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.insert(this);
     }
     
+    @Override
     public SurgeryDaysAssignment read() throws StoreException{
-        store = Store.FACTORY(this); 
+        IPMSStoreAction store = Store.FACTORY(this);
         return store.read(this);
     }
-            
+      
+    @Override
     public void update() throws StoreException{
-        store = Store.FACTORY(this); 
+        IPMSStoreAction store = Store.FACTORY(this); 
         store.update(this);
     }
+    
+    
 
+    public Integer count()throws StoreException{
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
+        try{
+            surgeryDaysAssignment = this.read();
+            
+        }catch (StoreException ex){
+            if (!ex.getErrorType().equals(StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_PMS_DATABASE))
+                throw ex;
+        }
+        if (surgeryDaysAssignment==null) return null;
+        if (surgeryDaysAssignment.isEmpty()) return 0;
+        else return surgeryDaysAssignment.size();
+    }
+    
+    public String getDay(){
+        return this.day;
+    }
+    
+    public boolean getIsSurgery(){
+        return this.isSurgery;
+    }
 }

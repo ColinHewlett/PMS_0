@@ -10,11 +10,11 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
+import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Dictionary;
 
 /**
@@ -152,6 +152,21 @@ public class SQLExpressStore extends Store {
     public int countRowsIn(PatientTable p){
         return 0;
     }
+    
+    @Override
+    public int countRowsIn(SurgeryDaysAssignmentTable p){
+        return 0;
+    }
+    @Override
+    public int countRowsIn(Patients p){
+        return 0;
+    }
+    
+    @Override
+    public int countRowsIn(Appointments p){
+        return 0;
+    }
+    
     
     /**
      * Creates an appointment table in the migration store
@@ -385,5 +400,13 @@ public class SQLExpressStore extends Store {
     }
     public void create(Patient p)throws StoreException{
         
+    }
+    public void create(SurgeryDaysAssignment p)throws StoreException{
+        
+    }
+    
+    @Override
+    public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
+        return null;
     }
 }

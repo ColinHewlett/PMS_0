@@ -16,6 +16,7 @@ import java.time.LocalDate;
  * @author colin
  */
 public interface IAppointmentsStoreAction {
+    public int countRowsIn(Appointments a)throws StoreException;
     public Appointments readAppointments(Patient p, Category c) throws StoreException;
     public Appointments readAppointments() throws StoreException;
     public Appointments readAppointmentsFor(LocalDate day) throws StoreException;

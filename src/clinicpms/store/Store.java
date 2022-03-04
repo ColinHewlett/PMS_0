@@ -35,7 +35,7 @@ public abstract class Store implements IAppointmentsStoreAction,
                         SQL_EXPRESS,
                         UNDEFINED_DATABASE}
     
-    protected enum PracticeManagementSystemSQL   {
+    protected enum PMSSQL   {
                             CREATE_PRIMARY_KEY,
                             APPOINTMENTS_COUNT,
                             APPOINTMENT_TABLE_DROP,
@@ -60,6 +60,8 @@ public abstract class Store implements IAppointmentsStoreAction,
                             UPDATE_PATIENT,
                             READ_SURGERY_DAYS,
                             UPDATE_SURGERY_DAYS,
+                            SURGERY_DAYS_TABLE_CREATE,
+                            INSERT_SURGERY_DAYS_ASSIGNMENT,
                             SURGERY_DAYS_TABLE_DROP}
     
     protected enum MigrationSQL {
@@ -375,6 +377,7 @@ public abstract class Store implements IAppointmentsStoreAction,
      * -- note; controller access to any Store method is via the model
      * @return String representing the path to the input data source 
      */
+    /*
     protected String getAppointmentCSVPath(){
         return appointmentCSVPath;
     }
@@ -387,7 +390,7 @@ public abstract class Store implements IAppointmentsStoreAction,
     protected void setPatientCSVPath(String value){
         patientCSVPath = value;
     }
-    
+    */
     public static IAppointmentsStoreAction FACTORY(IAppointments appointments) throws StoreException{
         return FACTORY_FOR_APPOINTMENTS_STORE();
     }

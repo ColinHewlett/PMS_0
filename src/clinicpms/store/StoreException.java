@@ -17,9 +17,16 @@ public class StoreException extends Exception{
     private ExceptionType  exceptionType = null;
     
     public static enum ExceptionType {  
+                                 DROP_APPOINTMENT_TABLE_EXCEPTION,
+                                 DROP_PATIENT_TABLE_EXCEPTION,
                                  APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE,
+                                 APPOINTMENT_TABLE_MISSING_IN_PMS_DATABASE,
                                  INTEGRITY_CONSTRAINT_VIOLATION,
+                                 MIGRATION_CONNECTION_FAILURE,
                                  PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE,
+                                 PATIENT_TABLE_MISSING_IN_PMS_DATABASE,
+                                 SURGERY_DAYS_TABLE_MISSING_IN_MIGRATION_DATABASE,
+                                 SURGERY_DAYS_TABLE_MISSING_IN_PMS_DATABASE,
                                  APPOINTEE_NOT_FOUND_EXCEPTION,
                                  IO_EXCEPTION,
                                  CSV_EXCEPTION,

@@ -51,16 +51,16 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             private final String APPOINTMENT_TABLE_RECORD_COUNT_TITLE = "AppointmentTable ";
             private final String PATIENT_TABLE_RECORD_COUNT_TITLE = "PatientTable ";
             private final String SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE = "SurgeryDaysTable ";
-        private final String IMPORT_MIGRATED_DATA_REQUEST_TITLE = "Import data from migration database";    
+        private final String IMPORT_MIGRATED_DATA_REQUEST_TITLE = "Import data from CSV files";    
         
-        private final String PMS_DATABASE_TITLE = "Migration database";
+        private final String PMS_DATABASE_TITLE = "PMS database";
             private final String PMS_DATABASE_SELECTION_REQUEST_TITLE = "Select PMS database to use";
             private final String PMS_DATABASE_CREATION_REQUEST_TITLE = "Create a new PMS database";
             private final String PMS_DATABASE_DELETION_REQUEST_TITLE = "Delete PMS database";
         private final String PMS_DATABASE_CONTENTS_TITLE = "Database contents";
-            private final String APPOINTMENT_RECORD_COUNT_TITLE = "Appointment table ";
-            private final String PATIENT_RECORD_COUNT_TITLE = "Patient table ";
-            private final String SURGERY_DAYS_RECORD_COUNT_TITLE = "SurgeryDays table ";
+            private final String APPOINTMENT_RECORD_COUNT_TITLE = "Appointment ";
+            private final String PATIENT_RECORD_COUNT_TITLE = "Patient ";
+            private final String SURGERY_DAYS_RECORD_COUNT_TITLE = "SurgeryDays ";
         private final String EXPORT_MIGRATED_DATA_TO_PMS_REQUEST_TITLE = "Export migrated data to PMS";
     
     private JMenu mnuSelectView = null; 
@@ -91,7 +91,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             private JMenuItem mniAppointmentRecordCount = null;
             private JMenuItem mniPatientRecordCount = null;
             private JMenuItem mniSurgeryDaysRecordCount = null;
-        private JMenuItem mniExportMigratedDataToPMS = null;
+        private JMenuItem mniExportMigratedDataToPMSRequest = null;
         
     private JMenuBar mnbDesktopView = null;
     
@@ -130,7 +130,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         makePMSDatabasePopupMenu();
         mnuPMSDatabaseContents = new JMenu(PMS_DATABASE_CONTENTS_TITLE);
         makePMSDatabaseContentsPopupMenu();
-        mniExportMigratedDataToPMS = new JMenuItem(EXPORT_MIGRATED_DATA_TO_PMS_REQUEST_TITLE); 
+        mniExportMigratedDataToPMSRequest = new JMenuItem(EXPORT_MIGRATED_DATA_TO_PMS_REQUEST_TITLE); 
         mnuMigrationManagement.add(mnuMigrationDatabase2);
         mnuMigrationManagement.add(mnuCSVSourceFiles);
         mnuMigrationManagement.add(mnuMigrationDatabaseContents);
@@ -138,7 +138,10 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         mnuMigrationManagement.add(new JSeparator());
         mnuMigrationManagement.add(mnuPMSDatabase2);
         mnuMigrationManagement.add(mnuPMSDatabaseContents);
-        mnuMigrationManagement.add(mniExportMigratedDataToPMS);
+        mnuMigrationManagement.add(mniExportMigratedDataToPMSRequest);
+        
+        mniImportMigratedDataRequest.addActionListener((ActionEvent e) -> mniImportMigratedDataRequestActionPerformed());
+        mniExportMigratedDataToPMSRequest.addActionListener((ActionEvent e) -> mniExportMigratedDataToPMSRequestActionPerformed());
     }
     
     private void makePMSDatabasePopupMenu(){
@@ -282,7 +285,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         initFrameClosure();
         /**
          * MENU initialisation
-         */
+         
         mniPatientView = new JMenuItem("Patient");
         mniAppointmentView = new JMenuItem("Appointments");
         //mniDatabaseLocator = new JMenuItem("Database locator");
@@ -291,10 +294,13 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         this.mnuView.add(mniAppointmentView);
         //this.mnuView.add(new JSeparator());
         //this.mnuView.add(mniDatabaseLocator);
+        * */
         if (isDataMigrationEnabled){
-            addDataExtraMenu();
+           //addDataExtraMenu();
             addTestMenu();
+            
         }
+        /*
         this.mnuView.add(new JSeparator());
         this.mnuView.add(mniExitView);
         
@@ -302,6 +308,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         mniAppointmentView.addActionListener((ActionEvent e) -> mniAppointmentViewActionPerformed());
         //mniDatabaseLocator.addActionListener((ActionEvent e) -> mniDatabaseLocatorActionPerformed());
         mniExitView.addActionListener((ActionEvent e) -> mniExitViewActionPerformed());
+        */
         setContentPaneForInternalFrame();
     }
     
@@ -312,7 +319,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
                 DesktopViewController.DesktopViewControllerPropertyChangeEvent.valueOf(e.getPropertyName());
         switch (propertyType){
             case DISABLE_DESKTOP_DATA_CONTROL:
-                this.disableDataControl();
+                //this.disableDataControl();
                 break;
             case DISABLE_DESKTOP_VIEW_CONTROL:
                 this.disableViewControl();
@@ -324,6 +331,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
                 this.enableViewControl();
                 break;
             case MIGRATION_ACTION_COMPLETE:
+                setEntityDescriptor((EntityDescriptor)e.getNewValue());
                 doMigrationActionCompletePropertyChange();
                 break;     
         }
@@ -347,6 +355,10 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         return this.entityDescriptor;
     }
     
+    private void setEntityDescriptor(EntityDescriptor value){
+        this.entityDescriptor = value;
+    }
+    
     private void doMigrationActionCompletePropertyChange(){
         
         this.mniAppointmentCSVSelectionRequest.setText(this.APPOINTMENT_CSV_SELECTION_REQUEST_TITLE 
@@ -357,14 +369,55 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
                 + getEntityDescriptor().getMigrationDescriptor().getMigrationDatabaseSelection());
         this.mniPMSDatabaseSelectionRequest.setText(this.PMS_DATABASE_SELECTION_REQUEST_TITLE
                 + getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
-        this.mniAppointmentTableRecordCount.setText(this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
-                + getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount());
-        this.mniPatientTableRecordCount.setText(this.PATIENT_TABLE_RECORD_COUNT_TITLE
-                + getEntityDescriptor().getMigrationDescriptor().getPatientTableCount());
-        this.mniAppointmentRecordCount.setText(this.APPOINTMENT_RECORD_COUNT_TITLE
-                + getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount());
-        this.mniPatientRecordCount.setText(this.PATIENT_RECORD_COUNT_TITLE
-                + getEntityDescriptor().getMigrationDescriptor().getPatientsCount());
+        
+        Integer count = getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount();
+        if (count!=null)
+            this.mniAppointmentTableRecordCount.setText(this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniAppointmentTableRecordCount.setText(this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
+        count = getEntityDescriptor().getMigrationDescriptor().getPatientTableCount();
+        if (count!=null)
+            this.mniPatientTableRecordCount.setText(this.PATIENT_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniPatientTableRecordCount.setText(this.PATIENT_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
+        count = getEntityDescriptor().getMigrationDescriptor().getSurgeryDaysAssignmentTableCount();
+        if (count!=null)
+            this.mniSurgeryDaysTableRecordCount.setText(this.SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniSurgeryDaysTableRecordCount.setText(this.SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
+        count = getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount();
+        if (count!=null)
+            this.mniAppointmentRecordCount.setText(this.APPOINTMENT_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniAppointmentRecordCount.setText(this.APPOINTMENT_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
+        count = getEntityDescriptor().getMigrationDescriptor().getPatientsCount();
+        if (count!=null)
+            this.mniPatientRecordCount.setText(this.PATIENT_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniPatientRecordCount.setText(this.PATIENT_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
+        count = getEntityDescriptor().getMigrationDescriptor().getSurgeryDaysAssignmentCount();
+        if (count!=null)
+            this.mniSurgeryDaysRecordCount.setText(this.SURGERY_DAYS_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniSurgeryDaysRecordCount.setText(this.SURGERY_DAYS_RECORD_COUNT_TITLE
+                + "(missing table)");
+        
     }
     
     private void addMigrationManagementMenu(){
@@ -431,27 +484,27 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
      * enable the main View menu  
      */
     public void enableViewControl(){
-        this.mnuView.setEnabled(true);
+        this.mnuSelectView.setEnabled(true);
     }
     
     /**
      * disable the main View menu 
      */
     public void disableViewControl(){
-        this.mnuView.setEnabled(false);   
+        this.mnuSelectView.setEnabled(false);   
     }
     /**
      * enable the main Data menu
      */
     public void enableDataControl(){
-        this.mnuData.setEnabled(true);
+        this.mnuMigrationManagement.setEnabled(true);
     }
     
     /**
      * disable the main Data menu 
      */
     public void disableDataControl(){
-        this.mnuData.setEnabled(false);   
+        //this.mnuMigrationManagement.setEnabled(false);   
     }
     
     public javax.swing.JDesktopPane getDeskTop(){
@@ -489,7 +542,6 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
 
         };
         mnbDesktop = new javax.swing.JMenuBar();
-        mnuView = new javax.swing.JMenu();
 
         jMenuItem1.setText("jMenuItem1");
 
@@ -505,11 +557,8 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         );
         deskTopLayout.setVerticalGroup(
             deskTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 359, Short.MAX_VALUE)
+            .addGap(0, 378, Short.MAX_VALUE)
         );
-
-        mnuView.setText("View");
-        mnbDesktop.add(mnuView);
 
         setJMenuBar(mnbDesktop);
 
@@ -531,7 +580,6 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private javax.swing.JDesktopPane deskTop;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuBar mnbDesktop;
-    private javax.swing.JMenu mnuView;
     // End of variables declaration//GEN-END:variables
  
     private void mniAppointmentViewRequestActionPerformed() {                                        
@@ -709,6 +757,20 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
+        DesktopView.this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniImportMigratedDataRequestActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.IMPORT_DATA_FROM_SOURCE.toString());
+        DesktopView.this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniExportMigratedDataToPMSRequestActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.EXPORT_MIGRATED_DATA.toString());
         DesktopView.this.getController().actionPerformed(actionEvent);
     }
 

@@ -27,6 +27,7 @@ public class EntityDescriptor {
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
     private EntityDescriptor.Patients patients = null;
+    private SurgeryDaysAssignment surgeryDaysAssignment = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
     
@@ -96,6 +97,19 @@ public class EntityDescriptor {
                               HYGIENE_RECALL_FREQUENCY,
                               DENTAL_APPOINTMENT_HISTORY,
                               HYGIENE_APPOINTMENT_HISTORY}
+    
+    public static enum ExportProgressViewControllerActionEvent{
+                                EXPORT_START_REQUEST,
+                                READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
+                                READY_FOR_RECEIPT_OF_PATIENT_PROGRESS,
+                                EXPORT_PROGRESS_CLOSE_NOTIFICATION}
+    
+    public static enum ExportProgressViewControllerPropertyChangeEvent{
+                                progress,
+                                state,
+                                PREPARE_FOR_RECEIPT_OF_PATIENT_PROGRESS,
+                                PREPARE_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
+                                EXPORT_COMPLETED}
     
     public static enum PatientViewControllerActionEvent {
                                             NULL_PATIENT_REQUEST,
@@ -638,6 +652,8 @@ public class EntityDescriptor {
         private Integer appointmentsCount = null;
         private Integer patientsCount = null;
         private Integer appointmentsTableCount = null;
+        private Integer surgeryDaysAssignmentCount = null;
+        private Integer surgeryDaysAssignmentTableCount = null;
         private Integer patientsTableCount = null;
         private MigrationViewRequest migrationViewRequest = null;
         private Duration durationOfMigrationAction = null;
@@ -703,6 +719,14 @@ public class EntityDescriptor {
             durationOfMigrationAction = value;
         }
 
+        public Integer getSurgeryDaysAssignmentTableCount(){
+            return surgeryDaysAssignmentTableCount;
+        }
+        
+        public void setSurgeryDaysAssignmentTableCount(Integer value){
+            surgeryDaysAssignmentTableCount = value;
+        }
+        
         public  Integer  getAppointmentTableCount(){
             return appointmentsTableCount;
         }
@@ -733,6 +757,14 @@ public class EntityDescriptor {
 
         protected void setPatientsCount(Integer value){
             patientsCount = value;
+        }
+        
+        public Integer getSurgeryDaysAssignmentCount(){
+            return surgeryDaysAssignmentCount;
+        }
+
+        protected void setSurgeryDaysAssignmentCount(Integer value){
+            surgeryDaysAssignmentCount = value;
         }
 
         public Appointment getAppointment(){

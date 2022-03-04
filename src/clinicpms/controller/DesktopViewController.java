@@ -18,16 +18,20 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.File;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -38,7 +42,7 @@ public class DesktopViewController extends ViewController{
     private DesktopView view = null;
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
-    //private ArrayList<DatabaseLocatorViewController> databaseLocatorViewControllers = null;
+    private ArrayList<ExportProgressViewController> exportProgressViewControllers = null;
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
     private PropertyChangeSupport pcSupport = null;
@@ -53,8 +57,15 @@ public class DesktopViewController extends ViewController{
                          }
     
     public enum DesktopViewControllerActionEvent {
+                                            EXPORT_PROGRESS_VIEW_CONTROLLER_REQUEST,
                                             IMPORT_DATA_FROM_SOURCE,
                                             EXPORT_MIGRATED_DATA,
+                                            EXPORT_MIGRATED_PATIENTS_COMPLETED,
+                                            EXPORT_MIGRATED_APPOINTMENTS_COMPLETED,
+                                            EXPORT_MIGRATED_APPOINTMENTS,
+                                            EXPORT_MIGRATED_PATIENTS,
+                                            EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT,
+                                            EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT_COMPLETED,
                                             APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
@@ -127,7 +138,7 @@ public class DesktopViewController extends ViewController{
         pcSupport = new PropertyChangeSupport(this);
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
-        //databaseLocatorViewControllers = new ArrayList<>();
+        exportProgressViewControllers = new ArrayList<>();
         migrationViewControllers = new ArrayList<>();
         
         if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
@@ -147,11 +158,9 @@ public class DesktopViewController extends ViewController{
             case "PatientViewController":
                 doPatientViewControllerAction(e);
                 break;
-            /*
-            case "DatabaseLocatorViewController":
-                doDatabaseLocatorViewControllerAction(e);
+            case "ExportProgressViewController":
+                doExportProgressViewControllerAction(e);
                 break;
-            */
             case "MigrationManagerViewController":
                 doMigrationManagerViewControllerAction(e);
         }
@@ -354,6 +363,56 @@ public class DesktopViewController extends ViewController{
         }
     }
     
+    private void doExportProgressViewControllerAction(ActionEvent e){
+        DesktopViewControllerActionEvent actionCommand =
+                DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
+        
+        switch (actionCommand){
+            case VIEW_CLOSED_NOTIFICATION:
+                exportProgressViewControllers.clear();
+                break;
+                
+            case EXPORT_MIGRATED_PATIENTS:
+                try{
+                    if (MigrationDatabase.isSelected()){
+                        if(PMSDatabase.isSelected()){
+                           doExportMigratedPatients(); 
+                        }
+                    }
+                }catch (StoreException ex){
+                    displayErrorMessage(ex.getMessage() + "\nException handled"
+                            + " in case EXPORT_MIGRATED_PATIENTS inside "
+                            + "doExportProgressViewControllerAction()",
+                            "Desktop View Controller error",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+                break;
+                
+            case EXPORT_MIGRATED_APPOINTMENTS:
+                try{
+                    if (MigrationDatabase.isSelected()){
+                        if(PMSDatabase.isSelected()){
+                           doExportMigratedAppointments(); 
+                        }
+                    }
+                }catch (StoreException ex){
+                    displayErrorMessage(ex.getMessage() + "\nException handled"
+                            + " in case EXPORT_MIGRATED_APPOINTMENTS inside "
+                            + "doExportProgressViewControllerAction()",
+                            "Desktop View Controller error",
+                            JOptionPane.WARNING_MESSAGE);
+                    
+                }
+                break;
+                
+            case EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT:
+                doExportMigratedSurgeryDaysAssignment();
+                break;
+        }
+    }
+
+       
+    
     private void doMigrationManagerViewControllerAction(ActionEvent e){
         /**
          * VIEW_CLOSED_NOTIFICATION -> 
@@ -442,13 +501,16 @@ public class DesktopViewController extends ViewController{
                 doCSVPatientFileRequest();
                 break;
             }
+
             case EXPORT_MIGRATED_DATA:{
-                try{
-                    doExportMigratedData();
-                }catch (StoreException ex){
-                    displayErrorMessage(ex.getMessage() + "\nRaised in doExportMigratedData()","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                }
+               //try{
+                    doExportProgressViewControllerRequest();
+                    //doExportMigratedData();
+                //}catch (StoreException ex){
+                    //displayErrorMessage(ex.getMessage() + "\nRaised in doExportMigratedData()","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                //}
                 break;
+             
             }
         }
         
@@ -717,9 +779,10 @@ public class DesktopViewController extends ViewController{
                     getMigrationDescriptor().
                     setPMSDatabaseSelection(PMSDatabase.getPath());
             if (PMSDatabase.isSelected()){
+                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new SurgeryDaysAssignment().count());
                 getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
                 getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
-                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new SurgeryDaysAssignment().count());
+                
                 
             }
             pcSupport.addPropertyChangeListener(view);
@@ -731,7 +794,9 @@ public class DesktopViewController extends ViewController{
             String test = storeManager.getPatientCSVPath();
             if (test==null){}
         }catch (StoreException ex){
-            displayErrorMessage("Migration database connection failure","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            displayErrorMessage(ex.getMessage() + "\nMigration database "
+                    + "connection failure","DesktopViewController error",
+                    JOptionPane.WARNING_MESSAGE);
         }  
     }
     
@@ -759,6 +824,26 @@ public class DesktopViewController extends ViewController{
                 System.exit(0);
             }    
         }
+    }
+    
+    /**
+     * method does following
+     * -- constructs a new VC (ExportProgressViewControler)
+     */
+    private void doExportProgressViewControllerRequest(){
+        if (exportProgressViewControllers.isEmpty()){
+            exportProgressViewControllers.add(
+                                    new ExportProgressViewController(this, getView()));
+            ExportProgressViewController evc = exportProgressViewControllers.get(exportProgressViewControllers.size()-1);
+
+            this.getView().getDeskTop().add(evc.getView());
+        }else{
+            String message = "An export is currently in progress; hence "
+                    + "the request for a new export process to start is ignored.";
+            displayErrorMessage(message,"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+  
+        
     }
     
     private void doAppointmentViewControllerRequest(){
@@ -1231,7 +1316,361 @@ public class DesktopViewController extends ViewController{
         }
     }
     
+    private void startBackgroundThread(DesktopViewController desktopViewController){
+        
+    }
+    
+    /**
+     * Using the SwingWorker class facilitates communication between concurrent tasks
+     * -- the SwingWorker-based task runs on a thread in the background 
+     * -- which is designed to fire a property change event to a specified listener when a bound variable changes
+     * -- i.e. whenever the setProgress(0..100) changes the value of the bound variable
+     * -- the done() method is called when the doInBackground() method completes; and is executed on the Event Despatch 
+     * -- which is used to send an action event to the ExportProgressViewController to indicate the completion of the task
+     * @param entity:IEntityStoreType, which can be interrogated to determine if a collection of appointment or patient objects  have been specified
+     * @param desktopViewController references the DesktopViewController object which is referenced in the Action Event sent in the done90 method  
+     */
+    private void startBackgroundThread(IEntityStoreType entity, DesktopViewController desktopViewController){
+        SwingWorker sw1 = new SwingWorker(){
+            
+            @Override
+            protected String doInBackground() throws Exception 
+            {
+                String result = null;
+                int count = 0;
+                
+                if (entity.isPatients()){
+                    Patients patients = (Patients)entity;
+                    count = patients.size();
+                    Iterator patientsIt = patients.iterator();
+                    int recordCount = 0;
+                    while(patientsIt.hasNext()){
+                        Patient patient = (Patient)patientsIt.next();
+                        patient.insert();
+                        recordCount++;
+                        if (recordCount <= count){
+                            Integer percentage = recordCount*100/count;
+                            setProgress(percentage);
+                        }
+                        else break;
+                    }
+                }
+                else if (entity.isAppointments()){
+                    Appointments appointments = (Appointments)entity;
+                    count = appointments.size();
+                    Iterator appointmentsIt = appointments.iterator();
+                    int recordCount = 0;
+                    while(appointmentsIt.hasNext()){
+                        Appointment appointment = (Appointment)appointmentsIt.next();
+                        appointment.insert();
+                        recordCount++;
+                        if (recordCount <= count){
+                            Integer percentage = recordCount*100/count;
+                            //publish(percentage);
+                            setProgress(percentage);
+                        }
+                        else break;
+                    }
+                }
+                return result;
+            }
+            
+            /**
+             * Invoked when the doInBackground() method completes
+             * -- used to send an action event to the ExportProgressViewController signalling task completion
+             * -- uses also the specified IEntityStoreTYpe to determine the value of the event sent
+             * -- i.e. either EXPORT_MIGRATED_PATIENTS_COMPLETED event or EXPORT_MIGRATED_APPOINTMENTS_COMPLETED event
+             */
+            @Override
+            protected void done(){
+                DesktopViewControllerActionEvent event = null;
+                if (entity.isPatients())event = DesktopViewControllerActionEvent.EXPORT_MIGRATED_PATIENTS_COMPLETED;
+                if (entity.isAppointments())event = DesktopViewControllerActionEvent.EXPORT_MIGRATED_APPOINTMENTS_COMPLETED;
+                ExportProgressViewController evc = exportProgressViewControllers.get(0);
+                if (event!=null){
+                    ActionEvent actionEvent = new ActionEvent(
+                            desktopViewController,ActionEvent.ACTION_PERFORMED,
+                            event.toString());
+                    evc.actionPerformed(actionEvent);
+                }else{
+                    String message = "Unexpected null encountered for event in SwingWorker::done() method";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        };
+        
+        ExportProgressViewController evc = exportProgressViewControllers.get(0);
+        sw1.addPropertyChangeListener(evc.getView());
+        sw1.execute();
+    }
+    /*
+    private  void startBackgroundThread(ArrayList tables )throws StoreException{
+        String  statusMessage = null;
+        Patients patients = (Patients)tables.get(0);
+        Appointments appointments = (Appointments)tables.get(1);
+        SwingWorker sw1 = new SwingWorker(){
+            @Override
+            protected String doInBackground() throws Exception 
+            {
+                String result = null;
+                int count = patients.size();
+                Iterator patientsIt = patients.iterator();
+                int recordCount = 0;
+                while(patientsIt.hasNext()){
+                    Patient patient = (Patient)patientsIt.next();
+                    patient.insert();
+                    recordCount++;
+                    if (recordCount <= count){
+                        Integer percentage = recordCount*100/count;
+                        publish(percentage);
+                    }
+                    else break;
+                }
+                count = appointments.size();
+                Iterator appointmentsIt = appointments.iterator();
+                recordCount = 0;
+                while(appointmentsIt.hasNext()){
+                    Appointment appointment = (Appointment)appointmentsIt.next();
+                    appointment.insert();
+                    recordCount++;
+                    if (recordCount < count){
+                        Integer percentage = recordCount*100/count;
+                        publish(percentage);
+                    }
+                    else break;
+                }
+                result = "Export finished";
+                return result;
+            }
+            
+            @Override
+            protected void process(List chunks)
+            {
+                String table = null;
+                // define what the event dispatch thread 
+                // will do with the intermediate results received
+                // while the thread is executing
+                int val = (Integer)chunks.get(chunks.size()-1);
+                
+                //if (entity.isPatients()) table = "Patient";
+                //else if (entity.isAppointments()) table = "Appointment"; 
+                getView().setTitle(table +"Import completed = (" + String.valueOf(val) +"%)");
+            }
+            
+            @Override
+            protected void done() 
+            {
+                // this method is called when the background 
+                // thread finishes execution
+                try 
+                {
+                    String statusMsg = String.valueOf(get());
+                    System.out.println("Inside done function");
+                    getView().setTitle(statusMsg);
+                      
+                } 
+                catch (InterruptedException e) 
+                {
+                    e.printStackTrace();
+                } 
+                catch (ExecutionException e) 
+                {
+                    e.printStackTrace();
+                }
+            }
+            
+        };
+        sw1.execute();
+        
+    }
+    */
+    
+    private void doExportMigratedSurgeryDaysAssignment(){
+        IEntityStoreType entity = null;
+        SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+        try{
+            surgeryDaysAssignment.create();
+            SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+            entity = surgeryDaysAssignmentTable.read();
+            if (entity!=null){
+                if (entity.isSurgeryDaysAssignment()){
+                    surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
+                    surgeryDaysAssignment.update();
+                }else{
+                    displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                }
+            }else{
+                displayErrorMessage("SurgeryDaysAssignment entity expected but null encountered in AccessStore::doExportMigratedData()",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            }
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage() + "\nException handled in "
+                    + "doExportMigratedSurgeyDaysAssignment()",
+                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doExportMigratedAppointments(){
+        IEntityStoreType entity = null;
+        try{
+            Appointment appointment = new Appointment();
+            appointment.create();
+            AppointmentTable appointmentTable = new AppointmentTable();
+            entity = appointmentTable.read();
+            if (entity!=null){
+                if (entity.isAppointments()){
+                    Appointments appointments = (Appointments)entity;
+                    startBackgroundThread(appointments, this);
+                }
+                else{
+                    String message = "Unexpected null data type returned when "
+                            + "importing records from the appointment table in the "
+                            + "selected migration database";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            }else{
+                String message = "Unexpected data type returned when "
+                            + "importing records from the appointment table in the "
+                            + "selected migration database";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+            }
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage() + "\nException handled in "
+                    + "DesktopViewCpntroller::doExportMigratedAppointments()", 
+                    "Desktop View Controller error", 
+                    JOptionPane.WARNING_MESSAGE);
+        }
+            
+    }
+    
+    private void doExportMigratedPatients(){
+        IEntityStoreType entity = null;
+        try{
+            Patient patient = new Patient();
+            File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
+                        Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+            patient.create();
+            PatientTable patientTable = new PatientTable();
+            entity = patientTable.read();
+            if (entity!=null){
+                if (entity.isPatients()){
+                    Patients patients = (Patients)entity;
+                    startBackgroundThread(patients, this);
+                }
+                else{
+                    String message = "Unexpected null data type returned when "
+                            + "importing records from the patient table in the "
+                            + "selected migration database";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            }else{
+                String message = "Unexpected data type returned when "
+                            + "importing records from the patient table in the "
+                            + "selected migration database";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+            }
+        }catch (IOException io){
+            displayErrorMessage(io.getMessage() + "\nIOException handled in "
+                    + "DesktopViewCpntroller::doExportMigratedPatient()", 
+                    "Desktop View Controller error", 
+                    JOptionPane.WARNING_MESSAGE);
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage() + "\nException handled in "
+                    + "DesktopViewCpntroller::doExportMigratedPatient()", 
+                    "Desktop View Controller error", 
+                    JOptionPane.WARNING_MESSAGE);
+        }
+    
+    }
+    
     private void doExportMigratedData()throws StoreException{
+        try{
+            if (MigrationDatabase.isSelected()){
+                if (PMSDatabase.isSelected()){
+                    Patient patient = new Patient();
+                    Appointment appointment = new Appointment();
+                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+                    IEntityStoreType entity = null;
+                    
+                    /**
+                     * create VC to manager the export progress view
+                     */
+                    doExportProgressViewControllerRequest();
+
+                    /**
+                     * recreate the currently selected PMS target database
+                     * -- assumption if file already exists it will overwrite it with a new database
+                     */
+                    File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
+                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+
+                    surgeryDaysAssignment.create();
+                    SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+                    entity = surgeryDaysAssignmentTable.read();
+                    if (entity!=null){
+                        if (entity.isSurgeryDaysAssignment()){
+                            surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
+                            surgeryDaysAssignment.update();
+                        }else{
+                            displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
+                                "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        }
+                    }else{
+                        displayErrorMessage("SurgeryDaysAssignment entity expected but null encountered in AccessStore::doExportMigratedData()",
+                                "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    }
+
+                    Patients patients = null;
+                    Appointments appointments = null;
+                    /**
+                     * import patient data from selected migration database
+                     */
+                    patient.create();
+                    PatientTable patientTable = new PatientTable();
+                    entity = patientTable.read();
+                    if (entity!=null){
+                        if (entity.isPatients()){
+                            patients = (Patients)entity;
+                        }
+                        else{
+
+                        }
+                    }else{
+
+                    }
+                    appointment.create();
+                    AppointmentTable appointmentTable = new AppointmentTable();
+                    entity = appointmentTable.read();
+                    if (entity!=null){
+                        if (entity.isAppointments()){
+                            appointments = (Appointments)entity;
+                        }
+                        else{
+
+                        }
+                    }else{
+
+                    }
+                    /*
+                    ArrayList tables = new ArrayList();
+                    tables.add(patients);
+                    tables.add(appointments);
+                    startBackgroundThread(tables);
+                    */
+                }
+            }
+        }catch(IOException io){
+
+        }
+    }
+    
+    private void doExportMigratedData2()throws StoreException{
         boolean isError = false;
         /**
          * can only continue if both a migration and PMS database target has been selected 
@@ -1357,6 +1796,8 @@ public class DesktopViewController extends ViewController{
 
             patientTable.create();
             patientTable.populate();
+            //patientTable.importFromCSV();
+            //startBackgroundThread(patientTable, this);
 
             appointmentTable.create();
             appointmentTable.populate();
@@ -1417,4 +1858,6 @@ public class DesktopViewController extends ViewController{
             return result;
         }  
     }
+    
+    
 }

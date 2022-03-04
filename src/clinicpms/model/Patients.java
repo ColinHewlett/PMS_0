@@ -27,6 +27,16 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
     }
     
     @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }
@@ -69,7 +79,21 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
         addAll(store.readPatients());
     }
     
-    public int count(){
-        return size();
+    public Integer count()throws StoreException{
+    Integer result = null;
+        try{
+            IPatientsStoreAction store = Store.FACTORY(new Patients());
+            result = store.countRowsIn(this);
+        }catch (StoreException ex){
+            /**
+             * if MigrationSQL.PATIENT_TABLE_ROW_COUNT is source of exception
+             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
+             */
+            if (!ex.getErrorType().equals(StoreException.ExceptionType.PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
+                //throw new StoreException(ex.getMessage(), ex.getErrorType());
+                return null;
+            }
+        }
+        return result;
     }
 }

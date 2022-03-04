@@ -13,9 +13,11 @@ public interface IEntityStoreType {
     public boolean isAppointment();
     public boolean isAppointments();
     public boolean isAppointmentDate();
+    public boolean isAppointmentTable();
     public boolean isAppointmentTableRowValue();
     public boolean isPatient();
     public boolean isPatients();
+    public boolean isPatientTable();
     public boolean isPatientTableRowValue();
     public boolean isSurgeryDaysAssignment();
 

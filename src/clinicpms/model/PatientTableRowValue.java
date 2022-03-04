@@ -31,6 +31,16 @@ public class PatientTableRowValue implements IEntityStoreType {
     }
     
     @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }

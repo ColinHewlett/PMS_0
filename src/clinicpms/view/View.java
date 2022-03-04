@@ -33,6 +33,7 @@ public abstract class View extends JInternalFrame
                                 APPOINTMENT_CREATOR_EDITOR_VIEW,
                                 APPOINTMENT_EDITOR_VIEW,
                                 EMPTY_SLOT_SCANNER_VIEW,
+                                EXPORT_PROGRESS_VIEW,
                                 MIGRATION_MANAGER_VIEW,
                                 NON_SURGERY_DAY_EDITOR_VIEW,
                                 PATIENT_VIEW,
@@ -77,8 +78,11 @@ public abstract class View extends JInternalFrame
             case EMPTY_SLOT_SCANNER_VIEW:
                 result = new EmptySlotScannerFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
+            case EXPORT_PROGRESS_VIEW:
+                result = new ExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
+                break;
             case MIGRATION_MANAGER_VIEW:
-                result = new MigrationManagerFactoryMethod(controller, ed, dtView).makeView(viewer);
+                result = new ExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
             case PATIENT_VIEW:
                 result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;

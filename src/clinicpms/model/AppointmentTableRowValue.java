@@ -59,4 +59,14 @@ public class AppointmentTableRowValue implements IEntityStoreType {
     public final boolean isSurgeryDaysAssignment(){
         return false;
     }
+
+    @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
 }

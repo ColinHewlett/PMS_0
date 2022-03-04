@@ -9,14 +9,66 @@ import clinicpms.store.StoreException;
 import clinicpms.store.IMigrationStoreAction;
 import clinicpms.store.IPMSStoreAction;
 import clinicpms.model.IEntityStoreType;
+import java.util.ArrayList;
 
 /**
  *
  * @author colin
  */
-public class AppointmentTable implements ITable{
+public class AppointmentTable extends ArrayList<Appointment>implements ITable,
+                                                                        IEntityStoreType{
     private int count;
     
+    @Override
+    public boolean isAppointment(){
+        return false;
+    }
+    
+    @Override
+    public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    @Override
+    public boolean isAppointments(){
+        return false;
+    }
+    
+    @Override
+    public boolean isAppointmentTable(){
+        return true;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatient(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatients(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTableRowValue(){
+        return false;
+    }
+     
+    @Override
+    public boolean isSurgeryDaysAssignment(){
+        return false;
+    } 
+            
     public Integer count() throws StoreException{
         Integer result = null;
         IEntityStoreType entity = null;
@@ -46,6 +98,12 @@ public class AppointmentTable implements ITable{
     public void drop()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.drop(this);
+    }
+    
+    public void importFromCSV()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        this.clear();
+        this.addAll((AppointmentTable)store.importFromCSV((IEntityStoreType)this));
     }
 
     public void populate()throws StoreException{

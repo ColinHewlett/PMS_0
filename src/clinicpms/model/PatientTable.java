@@ -8,13 +8,55 @@ package clinicpms.model;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import clinicpms.store.IMigrationStoreAction;
+import java.util.ArrayList;
 
 /**
  *
  * @author colin
  */
-public class PatientTable implements ITable{
+public class PatientTable extends ArrayList<Patient> implements ITable,
+                                                                IEntityStoreType{
     private int count;
+    
+    public boolean isAppointment(){
+        return false;
+    }
+    
+    public boolean isAppointmentDate(){
+        return false;
+    }
+    
+    public boolean isAppointments(){
+        return false;
+    }
+    
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    public boolean isAppointmentTableRowValue(){
+        return false;
+    }
+    
+    public boolean isPatient(){
+        return false;
+    }
+    
+    public boolean isPatients(){
+        return false;
+    }
+    
+    public boolean isPatientTable(){
+        return true;
+    }
+    
+    public boolean isPatientTableRowValue(){
+        return false;
+    }
+     
+    public boolean isSurgeryDaysAssignment(){
+        return false;
+    }
     
     @Override
     public void create() throws StoreException{
@@ -32,6 +74,12 @@ public class PatientTable implements ITable{
     public void exportToPMS() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
         store.exportToPMS(new Patients());
+    }
+    
+    public void importFromCSV()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        this.clear();
+        this.addAll((PatientTable)store.importFromCSV(this));
     }
     
     @Override

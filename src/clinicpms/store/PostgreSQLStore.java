@@ -10,6 +10,7 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
+import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
@@ -158,6 +159,21 @@ public class PostgreSQLStore extends Store {
      */
     @Override
     public int countRowsIn(PatientTable p){
+        return 0;
+    }
+    
+    @Override
+    public int countRowsIn(SurgeryDaysAssignmentTable p){
+        return 0;
+    }
+    
+    @Override
+    public int countRowsIn(Appointments a){
+        return 0;
+    }
+    
+    @Override
+    public int countRowsIn(Patients p){
         return 0;
     }
  
@@ -393,5 +409,12 @@ public class PostgreSQLStore extends Store {
     }
     public void create(Patient p)throws StoreException{
         
+    }
+    public void create(SurgeryDaysAssignment s)throws StoreException{
+        
+    }
+    
+    public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
+        return null;
     }
 }

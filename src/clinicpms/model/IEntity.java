@@ -12,6 +12,8 @@ import clinicpms.store.StoreException;
  * @author colin
  */
 public interface IEntity {
+    public void create()throws StoreException;
+    public void drop() throws StoreException;
     public void delete() throws StoreException;
     public void insert() throws StoreException;
     public IEntityStoreType read() throws StoreException;

@@ -30,6 +30,16 @@ public class Appointments extends ArrayList<Appointment> implements IAppointment
     }
     
     @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
+    
+    @Override
     public boolean isAppointmentDate(){
         return false;
     }
@@ -105,7 +115,21 @@ public class Appointments extends ArrayList<Appointment> implements IAppointment
     }
     
     @Override
-    public int count(){
-        return size();
+    public Integer count(){
+        Integer result = null;
+        try{
+            IAppointmentsStoreAction store = Store.FACTORY(new Appointments());
+            result = store.countRowsIn(this);
+        }catch (StoreException ex){
+            /**
+             * if MigrationSQL.APPOINTMENT_TABLE_ROW_COUNT is source of exception
+             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
+             */
+            if (!ex.getErrorType().equals(StoreException.ExceptionType.APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
+                //throw new StoreException(ex.getMessage(), ex.getErrorType());
+                return null;
+            }
+        }
+        return result;
     }
 }

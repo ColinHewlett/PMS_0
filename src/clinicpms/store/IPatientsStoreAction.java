@@ -14,6 +14,7 @@ import java.util.ArrayList;
  * @author colin
  */
 public interface IPatientsStoreAction {
+    public int countRowsIn(Patients p) throws StoreException;
     public Patients readPatients() throws StoreException;
     public void insert(Patients patients) throws StoreException;
 }

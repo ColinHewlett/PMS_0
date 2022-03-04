@@ -66,6 +66,16 @@ public class Appointment  implements IEntity, IEntityStoreType{
     public boolean isSurgeryDaysAssignment(){
         return false;
     }
+    
+    @Override
+    public boolean isAppointmentTable(){
+        return false;
+    }
+    
+    @Override
+    public boolean isPatientTable(){
+        return false;
+    }
 
     public Appointment(){
     } //constructor creates a new Appointment record
@@ -95,11 +105,13 @@ public class Appointment  implements IEntity, IEntityStoreType{
         store.delete(this);
     }
     
+    @Override
     public void drop() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.drop(this);        
     }
     
+    @Override
     public Appointment read() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         return store.read(this);
