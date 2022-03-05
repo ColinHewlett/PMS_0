@@ -5,6 +5,8 @@
  */
 package clinicpms.store;
 
+import java.io.File;
+
 /**
  *
  * @author colin
@@ -19,4 +21,5 @@ public interface  ITargetsStoreAction {
     public void updatePMSTargetStorePath(String path)throws StoreException;
     public void updateAppointmentCSVPath(String path)throws StoreException;
     public void updatePatientCSVPath(String path)throws StoreException;
+    public File initialiseTargetStore(File path)throws StoreException;
 }
