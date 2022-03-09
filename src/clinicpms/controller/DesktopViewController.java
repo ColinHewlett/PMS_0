@@ -8,8 +8,8 @@ package clinicpms.controller;
 import org.apache.commons.io.FilenameUtils;
 
 import clinicpms.model.*;
-import com.healthmarketscience.jackcess.DatabaseBuilder;
-import com.healthmarketscience.jackcess.Database;
+//import com.healthmarketscience.jackcess.DatabaseBuilder;
+//import com.healthmarketscience.jackcess.Database;
 import clinicpms.model.StoreManager;
 import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
@@ -42,7 +42,7 @@ public class DesktopViewController extends ViewController{
     private DesktopView view = null;
     private ArrayList<AppointmentViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
-    private ArrayList<ExportProgressViewController> exportProgressViewControllers = null;
+    private ArrayList<ImportExportProgressViewController> importExportProgressViewControllers = null;
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
     private PropertyChangeSupport pcSupport = null;
@@ -60,10 +60,10 @@ public class DesktopViewController extends ViewController{
                                             EXPORT_PROGRESS_VIEW_CONTROLLER_REQUEST,
                                             IMPORT_DATA_FROM_SOURCE,
                                             EXPORT_MIGRATED_DATA,
-                                            EXPORT_MIGRATED_PATIENTS_COMPLETED,
-                                            EXPORT_MIGRATED_APPOINTMENTS_COMPLETED,
-                                            EXPORT_MIGRATED_APPOINTMENTS,
-                                            EXPORT_MIGRATED_PATIENTS,
+                                            IMPORT_EXPORT_PATIENT_DATA_COMPLETED,
+                                            IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED,
+                                            IMPORT_EXPORT_APPOINTMENT_DATA,
+                                            IMPORT_EXPORT_PATIENT_DATA,
                                             EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT,
                                             EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT_COMPLETED,
                                             APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
@@ -138,7 +138,7 @@ public class DesktopViewController extends ViewController{
         pcSupport = new PropertyChangeSupport(this);
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
-        exportProgressViewControllers = new ArrayList<>();
+        importExportProgressViewControllers = new ArrayList<>();
         migrationViewControllers = new ArrayList<>();
         
         if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
@@ -158,8 +158,8 @@ public class DesktopViewController extends ViewController{
             case "PatientViewController":
                 doPatientViewControllerAction(e);
                 break;
-            case "ExportProgressViewController":
-                doExportProgressViewControllerAction(e);
+            case "ImportExportProgressViewController":
+                doImportExportProgressViewControllerAction(e);
                 break;
             case "MigrationManagerViewController":
                 doMigrationManagerViewControllerAction(e);
@@ -363,20 +363,24 @@ public class DesktopViewController extends ViewController{
         }
     }
     
-    private void doExportProgressViewControllerAction(ActionEvent e){
+    private void doImportExportProgressViewControllerAction(ActionEvent e){
         DesktopViewControllerActionEvent actionCommand =
                 DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
         
         switch (actionCommand){
             case VIEW_CLOSED_NOTIFICATION:
-                exportProgressViewControllers.clear();
+                importExportProgressViewControllers.clear();
                 break;
                 
-            case EXPORT_MIGRATED_PATIENTS:
+            case IMPORT_EXPORT_PATIENT_DATA:
                 try{
                     if (MigrationDatabase.isSelected()){
                         if(PMSDatabase.isSelected()){
-                           doExportMigratedPatients(); 
+                            if (this.getEntityDescriptor().
+                                    getMigrationDescriptor().
+                                    getExportOperationStatus())
+                                doExportMigratedPatients(); 
+                            else doImportPatientsFromSource();       
                         }
                     }
                 }catch (StoreException ex){
@@ -388,17 +392,21 @@ public class DesktopViewController extends ViewController{
                 }
                 break;
                 
-            case EXPORT_MIGRATED_APPOINTMENTS:
+            case IMPORT_EXPORT_APPOINTMENT_DATA:
                 try{
                     if (MigrationDatabase.isSelected()){
                         if(PMSDatabase.isSelected()){
-                           doExportMigratedAppointments(); 
+                            if (this.getEntityDescriptor().
+                                    getMigrationDescriptor().
+                                    getExportOperationStatus())
+                                doExportMigratedAppointments(); 
+                            else doImportAppointmentsFromSource();
                         }
                     }
                 }catch (StoreException ex){
                     displayErrorMessage(ex.getMessage() + "\nException handled"
                             + " in case EXPORT_MIGRATED_APPOINTMENTS inside "
-                            + "doExportProgressViewControllerAction()",
+                            + "doImportExportProgressViewControllerAction()",
                             "Desktop View Controller error",
                             JOptionPane.WARNING_MESSAGE);
                     
@@ -464,10 +472,6 @@ public class DesktopViewController extends ViewController{
             case VIEW_CLOSED_NOTIFICATION:{/* user has attempted to close Desktop view*/
                 doViewNotificationRequest();
                 break;
-            }
-            case IMPORT_DATA_FROM_SOURCE:{
-                doImportDataFromSource();
-                break;
             }    
             case MIGRATION_DATABASE_CREATION_REQUEST:{
                 doMigrationDatabaseCreationRequest();
@@ -503,14 +507,16 @@ public class DesktopViewController extends ViewController{
             }
 
             case EXPORT_MIGRATED_DATA:{
-               //try{
-                    doExportProgressViewControllerRequest();
-                    //doExportMigratedData();
-                //}catch (StoreException ex){
-                    //displayErrorMessage(ex.getMessage() + "\nRaised in doExportMigratedData()","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                //}
+                getEntityDescriptor().getMigrationDescriptor().setExportOperationStatus(true);
+                doImportExportProgressViewControllerRequest();
                 break;
-             
+            }
+            
+            case IMPORT_DATA_FROM_SOURCE:{
+                getEntityDescriptor().getMigrationDescriptor().setImportOperationStatus(true);
+                doImportExportProgressViewControllerRequest();
+                //doImportDataFromSource();
+                break;
             }
         }
         
@@ -830,11 +836,11 @@ public class DesktopViewController extends ViewController{
      * method does following
      * -- constructs a new VC (ExportProgressViewControler)
      */
-    private void doExportProgressViewControllerRequest(){
-        if (exportProgressViewControllers.isEmpty()){
-            exportProgressViewControllers.add(
-                                    new ExportProgressViewController(this, getView()));
-            ExportProgressViewController evc = exportProgressViewControllers.get(exportProgressViewControllers.size()-1);
+    private void doImportExportProgressViewControllerRequest(){
+        if (importExportProgressViewControllers.isEmpty()){
+            importExportProgressViewControllers.add(
+                                    new ImportExportProgressViewController(this, getView(), getEntityDescriptor()));
+            ImportExportProgressViewController evc = importExportProgressViewControllers.get(importExportProgressViewControllers.size()-1);
 
             this.getView().getDeskTop().add(evc.getView());
         }else{
@@ -916,8 +922,7 @@ public class DesktopViewController extends ViewController{
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 if (!file.exists()){
-                    file = setExtensionFor(file, ".accdb");
-                    DatabaseBuilder.create(Database.FileFormat.V2016, file);
+                    file = storeManager.initialiseTargetDatabase(file);
                     storeManager.setMigrationTargetStorePath(file.getPath());
                     PatientTable patientTable = new PatientTable();
                     patientTable.create();
@@ -954,10 +959,6 @@ public class DesktopViewController extends ViewController{
             JOptionPane.showMessageDialog(getView(),
                                       new ErrorMessagePanel(ex.getMessage()));
             */
-        }
-        catch (IOException ex){
-            String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
-            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
         }
     }
     
@@ -1097,8 +1098,7 @@ public class DesktopViewController extends ViewController{
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 if (!file.exists()){
-                    file = setExtensionFor(file, ".accdb");
-                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+                    file = storeManager.initialiseTargetDatabase(file);
                     storeManager.setPMSTargetStorePath(file.getPath());
                     
                     Patient patient = new Patient();
@@ -1127,15 +1127,6 @@ public class DesktopViewController extends ViewController{
               
         }
         catch (StoreException ex){
-            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
-        }
-        catch (IOException ex){
-            String message = "IOException -> raised when attempting to create a new PMS database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -1384,9 +1375,9 @@ public class DesktopViewController extends ViewController{
             @Override
             protected void done(){
                 DesktopViewControllerActionEvent event = null;
-                if (entity.isPatients())event = DesktopViewControllerActionEvent.EXPORT_MIGRATED_PATIENTS_COMPLETED;
-                if (entity.isAppointments())event = DesktopViewControllerActionEvent.EXPORT_MIGRATED_APPOINTMENTS_COMPLETED;
-                ExportProgressViewController evc = exportProgressViewControllers.get(0);
+                if (entity.isPatients())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_PATIENT_DATA_COMPLETED;
+                if (entity.isAppointments())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
+                ImportExportProgressViewController evc = importExportProgressViewControllers.get(0);
                 if (event!=null){
                     ActionEvent actionEvent = new ActionEvent(
                             desktopViewController,ActionEvent.ACTION_PERFORMED,
@@ -1400,7 +1391,7 @@ public class DesktopViewController extends ViewController{
             }
         };
         
-        ExportProgressViewController evc = exportProgressViewControllers.get(0);
+        ImportExportProgressViewController evc = importExportProgressViewControllers.get(0);
         sw1.addPropertyChangeListener(evc.getView());
         sw1.execute();
     }
@@ -1551,8 +1542,9 @@ public class DesktopViewController extends ViewController{
         IEntityStoreType entity = null;
         try{
             Patient patient = new Patient();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
-                        Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
+            storeManager.initialiseTargetDatabase(file);
             patient.create();
             PatientTable patientTable = new PatientTable();
             entity = patientTable.read();
@@ -1575,11 +1567,6 @@ public class DesktopViewController extends ViewController{
                     displayErrorMessage(message, "Desktop View Controller error", 
                             JOptionPane.WARNING_MESSAGE);
             }
-        }catch (IOException io){
-            displayErrorMessage(io.getMessage() + "\nIOException handled in "
-                    + "DesktopViewCpntroller::doExportMigratedPatient()", 
-                    "Desktop View Controller error", 
-                    JOptionPane.WARNING_MESSAGE);
         }catch (StoreException ex){
             displayErrorMessage(ex.getMessage() + "\nException handled in "
                     + "DesktopViewCpntroller::doExportMigratedPatient()", 
@@ -1589,198 +1576,40 @@ public class DesktopViewController extends ViewController{
     
     }
     
-    private void doExportMigratedData()throws StoreException{
+    private void doImportPatientsFromSource(){
+        AppointmentTable appointmentTable = new AppointmentTable();
+        PatientTable patientTable = new PatientTable();
         try{
-            if (MigrationDatabase.isSelected()){
-                if (PMSDatabase.isSelected()){
-                    Patient patient = new Patient();
-                    Appointment appointment = new Appointment();
-                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
-                    IEntityStoreType entity = null;
-                    
-                    /**
-                     * create VC to manager the export progress view
-                     */
-                    doExportProgressViewControllerRequest();
-
-                    /**
-                     * recreate the currently selected PMS target database
-                     * -- assumption if file already exists it will overwrite it with a new database
-                     */
-                    File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
-                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
-
-                    surgeryDaysAssignment.create();
-                    SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
-                    entity = surgeryDaysAssignmentTable.read();
-                    if (entity!=null){
-                        if (entity.isSurgeryDaysAssignment()){
-                            surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
-                            surgeryDaysAssignment.update();
-                        }else{
-                            displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
-                                "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }else{
-                        displayErrorMessage("SurgeryDaysAssignment entity expected but null encountered in AccessStore::doExportMigratedData()",
-                                "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    }
-
-                    Patients patients = null;
-                    Appointments appointments = null;
-                    /**
-                     * import patient data from selected migration database
-                     */
-                    patient.create();
-                    PatientTable patientTable = new PatientTable();
-                    entity = patientTable.read();
-                    if (entity!=null){
-                        if (entity.isPatients()){
-                            patients = (Patients)entity;
-                        }
-                        else{
-
-                        }
-                    }else{
-
-                    }
-                    appointment.create();
-                    AppointmentTable appointmentTable = new AppointmentTable();
-                    entity = appointmentTable.read();
-                    if (entity!=null){
-                        if (entity.isAppointments()){
-                            appointments = (Appointments)entity;
-                        }
-                        else{
-
-                        }
-                    }else{
-
-                    }
-                    /*
-                    ArrayList tables = new ArrayList();
-                    tables.add(patients);
-                    tables.add(appointments);
-                    startBackgroundThread(tables);
-                    */
-                }
-            }
-        }catch(IOException io){
-
+            appointmentTable.drop(); //RI insists appointment table dropped before patient table
+            patientTable.drop();
+            patientTable.create();
+            patientTable.importFromCSV();
+            startBackgroundThread(patientTable, this);
+        }catch (StoreException ex){
+            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }
     }
     
-    private void doExportMigratedData2()throws StoreException{
-        boolean isError = false;
-        /**
-         * can only continue if both a migration and PMS database target has been selected 
-         */
+    private void doImportAppointmentsFromSource(){
+        AppointmentTable appointmentTable = new AppointmentTable();
         try{
-            if (MigrationDatabase.isSelected()){
-                if (PMSDatabase.isSelected()){
-                    Patient patient = new Patient();
-                    Appointment appointment = new Appointment();
-                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
-                    IEntityStoreType entity = null;
-                    
-                    /**
-                     * recreate the currently selected PMS target database
-                     * -- assumption if file already exists it will overwrite it with a new database
-                     */
-                    File file = new File(getEntityDescriptor().getMigrationDescriptor().getPMSDatabaseSelection());
-                    Database db = DatabaseBuilder.create(Database.FileFormat.V2016, file);
-                    
-                    /**
-                     * create a set of new tables
-                     * -- patient before appointment table because of dependency
-                     */
-                    patient.create();
-                    
-                    if (!isError){
-                        PatientTable patientTable = new PatientTable();
-                        entity = patientTable.read();
-                        if (entity!=null){
-                            if (entity.isPatients()){
-                                Patients patients = (Patients)entity;
-                                Iterator<Patient> itPatients = patients.iterator(); 
-                                while(itPatients.hasNext()) {
-                                    patient = (Patient)itPatients.next();
-                                    patient.insert();
-                                }
-                            }else{
-                                isError = true;
-                                displayErrorMessage("Patient entity expected but not encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                            }
-                        }else{
-                            isError = true;
-                            displayErrorMessage("Patient entity expected but null encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }
-                    
-                    surgeryDaysAssignment.create();
-                    if (!isError){
-                        SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
-                        entity = surgeryDaysAssignmentTable.read();
-                        if (entity!=null){
-                            if (entity.isSurgeryDaysAssignment()){
-                                surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
-                                surgeryDaysAssignment.update();
-                            }else{
-                                isError = true;
-                                displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                            }
-                        }else{
-                            isError = true;
-                            displayErrorMessage("SurgeryDaysAssignment entity expected but null encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }
-                    
-                    appointment.create();
-                    if (!isError){
-                        AppointmentTable appointmentTable = new AppointmentTable();
-                        entity = appointmentTable.read();
-                        if (entity!=null){
-                            if (entity.isAppointments()){
-                                Appointments appointments = (Appointments)entity;
-                                Iterator<Appointment> itAppointments = appointments.iterator(); 
-                                while(itAppointments.hasNext()) {
-                                    appointment = (Appointment)itAppointments.next();
-                                    appointment.insert();
-                                }
-                            }else{
-                                displayErrorMessage("Appointment entity expected but not encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                            }
-                        }else{
-                            displayErrorMessage("Appointment entity expected but null encountered in AccessStore::doExportMigratedData()",
-                                    "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                        }
-                    }
-                
-                }else{
-                    isError = true;
-                    displayErrorMessage("PMS database has not been selected",
-                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                }  
-            }else{
-                isError = true;
-                displayErrorMessage("Migration database has not been selected",
-                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE); 
-            }   
-            this.doMigrationActionCompleteResponse(true);
-            
+            appointmentTable.create();
+            appointmentTable.importFromCSV();
+            startBackgroundThread(appointmentTable, this);
         }catch (StoreException ex){
-            displayErrorMessage("SQLException -> " + ex.getMessage() + "\nStoreException raised in AccessStore::doExportMigratedData",
-                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-        }catch (IOException ex){
-            displayErrorMessage("IOException -> " + ex.getMessage() + "\nStoreException raised in AccessStore::doExportMigratedData",
-                        "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }
-        
+    }
+    
+    private void doImportSurgeryDaysAssignment(){
+         SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+         try{
+            surgeryDaysAssignmentTable.drop();
+            surgeryDaysAssignmentTable.create();
+            surgeryDaysAssignmentTable.populate();
+         }catch(StoreException ex){
+            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage())); 
+         }
     }
     
     private void doImportDataFromSource(){
@@ -1795,12 +1624,15 @@ public class DesktopViewController extends ViewController{
             surgeryDaysAssignmentTable.drop();
 
             patientTable.create();
-            patientTable.populate();
-            //patientTable.importFromCSV();
-            //startBackgroundThread(patientTable, this);
+            //05/03/2022 20:09
+            //patientTable.populate();
+            patientTable.importFromCSV();
+            startBackgroundThread(patientTable, this);
 
             appointmentTable.create();
-            appointmentTable.populate();
+            //05/03/2022 20:09
+            //appointmentTable.populate();
+            appointmentTable.importFromCSV();
 
             surgeryDaysAssignmentTable.create();
             surgeryDaysAssignmentTable.populate();

@@ -32,6 +32,8 @@ public interface IMigrationStoreAction {
     public void exportToPMS(Patients table)throws StoreException;
     public void exportToPMS(SurgeryDaysAssignment table)throws StoreException;
     public IEntityStoreType importFromCSV(IEntityStoreType entity) throws StoreException;
+    public void insert(AppointmentTable a)throws StoreException;
+    public void insert(PatientTable a)throws StoreException;
     public void populate(AppointmentTable table)throws StoreException;
     public void populate(PatientTable table)throws StoreException;
     public void populate(SurgeryDaysAssignment data)throws StoreException;

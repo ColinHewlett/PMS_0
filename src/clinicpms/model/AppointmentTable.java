@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class AppointmentTable extends ArrayList<Appointment>implements ITable,
                                                                         IEntityStoreType{
     private int count;
+    private Integer key = null;
     
     @Override
     public boolean isAppointment(){
@@ -100,16 +101,26 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         store.drop(this);
     }
     
+    public void insert()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        store.insert(this);  
+    }
+    
+    //05/03/2022 20:09
+    @Override
     public void importFromCSV()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         this.clear();
         this.addAll((AppointmentTable)store.importFromCSV((IEntityStoreType)this));
     }
-
+    /*
+    05/03/2022 20:09
+    
     public void populate()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.populate(this);
     }
+    */
     
     public IEntityStoreType read() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
@@ -124,5 +135,12 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
     public void checkIntegrity()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.checkIntegrity();
+    }
+    
+    public Integer getKey() {
+        return key;
+    }
+    public void setKey(Integer key) {
+        this.key = key;
     }
 }

@@ -5,7 +5,7 @@
  */
 package clinicpms.view.factory_methods;
 
-import clinicpms.view.type.appointment_creator_editor_view.AppointmentCreatorEditorModalViewer;
+import clinicpms.view.views.appointment_creator_editor_view.AppointmentCreatorEditorModalViewer;
 import clinicpms.view.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;

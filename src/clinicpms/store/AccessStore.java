@@ -1,4 +1,4 @@
-/*
+    /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -1267,6 +1267,11 @@ public class AccessStore extends Store {
                     case APPOINTMENT_TABLE_READ:
                         sql = "SELECT * FROM AppointmentTable;";
                         break;
+                    case APPOINTMENT_TABLE_READ_WITH_KEY:
+                        sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes "
+                        + "FROM Appointment AS a "
+                        + "WHERE a.pid = ?;";
+                        break;
                     case APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY:
                         sql = "DELETE FROM AppointmentTable a WHERE a.patientKey = ?;";
                         break;
@@ -1598,6 +1603,35 @@ public class AccessStore extends Store {
                 }
                 break;
             }
+            case APPOINTMENT_TABLE_READ_WITH_KEY:{
+                AppointmentTable appointmentTable = null;
+                if (entity!=null){
+                    if (entity.isAppointmentTable()){
+                        appointmentTable = (AppointmentTable)entity;
+                        try{
+                            PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
+                            preparedStatement.setLong(1, appointmentTable.getKey());
+                            ResultSet rs = preparedStatement.executeQuery();
+                            result = get(new AppointmentTable(), rs);
+                        }
+                        catch (SQLException ex){
+                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                    + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_READ_WITH_KEY)",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                        }
+                    }
+                    else{
+                        String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY";
+                        throw new StoreException(message , StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+                    }
+                }
+                else{
+                    String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY";
+                    throw new StoreException(message , StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+                }
+                break;
+            }
+                
             case APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY:
                 if (entity!=null){
                     if (entity.isPatientTableRowValue()){
@@ -1710,11 +1744,11 @@ public class AccessStore extends Store {
                     preparedStatement.executeUpdate();
                 }
                 catch (SQLException ex){
-                    /*
+                    
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                      + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
                     StoreException.ExceptionType.SQL_EXCEPTION);
-                    */
+                    
                 }
                 break;
             }
@@ -2522,6 +2556,7 @@ public class AccessStore extends Store {
             
         }
     }
+    
     @Override
     /**
      * Inserts specified Appointment object into store's collection of appointment records.
@@ -2550,6 +2585,49 @@ public class AccessStore extends Store {
                 value = runSQL(PMSSQL.READ_APPOINTMENT_WITH_KEY, a);
                 if (value==null){
                     message = "StoreException raised in method AccessStore::create(Appointment a)\n"
+                                + "Reason -> newly created appointment record could not be found";
+                    result = false;
+                    throw new StoreException(message,StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+                result = true;
+            }
+        }catch (SQLException ex){
+            message = message + "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                message + "StoreException raised in method AccessStore::insert(Appointment a)\n"
+                        + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                setConnectionState(result);
+            }catch (SQLException ex){
+                message = "SQLException message -> " + ex.getMessage() +"\n";
+                throw new StoreException(
+                    message + "StoreException raised in finally clause AccessStore.create(Appointment))\n"
+                            + "Reason -> unexpected effect when terminating the current transaction",
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
+            }
+        }
+    }
+    
+    public void insert(AppointmentTable table) throws StoreException{
+        boolean result = false;
+        IEntityStoreType value;
+        Appointment appointment;
+        Patient patient;
+        message = "";
+        
+        try{
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);      
+            value = runSQL(MigrationSQL.APPOINTMENT_TABLE_HIGHEST_KEY, 
+                    null);
+            if (value.isAppointmentTableRowValue()) {
+                table.setKey(((AppointmentTableRowValue)value).getValue() + 1);
+                runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW, table);
+                value = runSQL(MigrationSQL.APPOINTMENT_TABLE_READ_WITH_KEY, table);
+                if (value==null){
+                    message = "StoreException raised in method AccessStore::create(AppointmentTable)\n"
                                 + "Reason -> newly created appointment record could not be found";
                     result = false;
                     throw new StoreException(message,StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
@@ -2624,6 +2702,36 @@ public class AccessStore extends Store {
                 message = "SQLException message -> " + ex.getMessage() +"\n";
                 throw new StoreException(
                     message + "StoreException raised in finally clause AccessStore.create(Patient))\n"
+                            + "Reason -> unexpected effect when terminating the current transaction",
+                    StoreException.ExceptionType.SQL_EXCEPTION);    
+            }
+        }
+    }
+    
+    public void insert(PatientTable p) throws StoreException{
+        boolean result = false;
+        IEntityStoreType entity;
+        message = "";
+        try{//turn off jdbc driver's auto commit after each SQL statement
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);  
+
+            runSQL(MigrationSQL.PATIENT_TABLE_INSERT_ROW, p);
+            result = true;
+
+        }catch (SQLException ex){
+            message = message + "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                message + "StoreException raised in method AccessStore::insert(PatientTable)\n"
+                        + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                setConnectionState(result);
+            }catch (SQLException ex){
+                message = "SQLException message -> " + ex.getMessage() +"\n";
+                throw new StoreException(
+                    message + "StoreException raised in finally clause AccessStore.insert(PatientTable))\n"
                             + "Reason -> unexpected effect when terminating the current transaction",
                     StoreException.ExceptionType.SQL_EXCEPTION);    
             }
@@ -3782,6 +3890,36 @@ public class AccessStore extends Store {
         */
     }
     
+    public void populate(SurgeryDaysAssignmentTable surgeryDaysAssignmentTable)throws StoreException{ 
+        boolean result = false;
+        try{
+            if (getMigrationConnection().getAutoCommit()){
+                getMigrationConnection().setAutoCommit(false);
+            }
+            runSQL(MigrationSQL.SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION,null);
+            result = true;
+        }catch (SQLException ex){
+            message = "SQLException message -> " + ex.getMessage() +"\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore.populate(HashMap<DayOfWeek,Boolean> surgeryDays)\n"
+                            + "Reason -> unexpected effect when trying to change the auto commit state",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+        finally{
+            try{
+                if (result) getMigrationConnection().commit();
+                else getMigrationConnection().rollback();
+            }catch (SQLException ex){
+                message = "SQLException message -> " + ex.getMessage() +"\n";
+                throw new StoreException(
+                    message + "StoreException raised in finally clause of method AccessStore.populate(SurgeryDaysAssignment))\n"
+                            + "Reason -> unexpected effect when terminating the current transaction",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+                
+            }
+        }
+    }
+    
     @Override
     public void populate(SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException{
         boolean result = false;
@@ -4244,5 +4382,43 @@ public class AccessStore extends Store {
                 + String.valueOf(count) + " record insertions before the exception arose", StoreException.ExceptionType.STORE_EXCEPTION);
             }
         } 
+    }
+    
+    @Override
+    public File initialiseTargetStore(File file)throws StoreException{
+        try{
+            file = setExtensionFor(file, ".accdb");
+            DatabaseBuilder.create(Database.FileFormat.V2016, file);
+            return file;
+        }catch (IOException io){
+            String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
+            throw new StoreException(message + "\nStoreException raised in "
+                    + "initialiseTargetStore(file = " 
+                    + file.toString() + ")", StoreException.ExceptionType.IO_EXCEPTION);
+        }
+    }
+    
+    /**
+     * Ensures specified file has the specified extension
+     * -- extract the base name of specified file
+     * -- remove the specified filename from the specified file
+     * -- recreate the specified file with extracted base name specified extension
+     * @param file
+     * @param extension
+     * @return File modified (if required) file specification
+     */
+    private File setExtensionFor(File  file, String extension){
+        String p = file.getPath();
+        String name = FilenameUtils.getBaseName(p);
+        p = removeFilenameFrom(file.getPath());
+        return new File(p + name + extension);
+    }
+    
+    private String removeFilenameFrom(String file){
+        String result;
+        String filename = FilenameUtils.getName(file);
+        if (filename.isEmpty())result = file;
+        else result = file.substring(0,file.length()- filename.length());
+        return result;
     }
 }

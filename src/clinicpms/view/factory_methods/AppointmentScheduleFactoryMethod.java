@@ -7,7 +7,7 @@ package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.DesktopView;
-import clinicpms.view.type.appontment_schedule_view.AppointmentScheduleView;
+import clinicpms.view.views.appontment_schedule_view.AppointmentScheduleView;
 import clinicpms.view.View;
 import java.awt.event.ActionListener;
 

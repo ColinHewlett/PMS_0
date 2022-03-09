@@ -76,17 +76,26 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
         store.exportToPMS(new Patients());
     }
     
+    //05/03/2022 20:09
+    @Override
     public void importFromCSV()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         this.clear();
         this.addAll((PatientTable)store.importFromCSV(this));
     }
     
+    public void insert()throws StoreException{
+        IMigrationStoreAction store = Store.FACTORY(this);
+        store.insert(this);  
+    }
+    /*
+    05/03/2022 20:09
     @Override
     public void populate() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
         store.populate(this);
-    }  
+    } 
+    */
     
     @Override
     public IEntityStoreType read()throws StoreException{

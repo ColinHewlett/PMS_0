@@ -98,18 +98,21 @@ public class EntityDescriptor {
                               DENTAL_APPOINTMENT_HISTORY,
                               HYGIENE_APPOINTMENT_HISTORY}
     
-    public static enum ExportProgressViewControllerActionEvent{
-                                EXPORT_START_REQUEST,
+    public static enum ImportExportProgressViewControllerActionEvent{
+                                IMPORT_EXPORT_START_REQUEST,
+                                IMPORT_START_REQUEST,
                                 READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
                                 READY_FOR_RECEIPT_OF_PATIENT_PROGRESS,
-                                EXPORT_PROGRESS_CLOSE_NOTIFICATION}
+                                IMPORT_EXPORT_PROGRESS_CLOSE_NOTIFICATION}
     
-    public static enum ExportProgressViewControllerPropertyChangeEvent{
+    public static enum ImportExportProgressViewControllerPropertyChangeEvent{
                                 progress,
                                 state,
+                                PREPARE_FOR_EXPORT_OPERATION,
+                                PREPARE_FOR_IMPORT_OPERATION,
                                 PREPARE_FOR_RECEIPT_OF_PATIENT_PROGRESS,
                                 PREPARE_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
-                                EXPORT_COMPLETED}
+                                OPERATION_COMPLETED}
     
     public static enum PatientViewControllerActionEvent {
                                             NULL_PATIENT_REQUEST,
@@ -661,12 +664,31 @@ public class EntityDescriptor {
         private String patientCSVFilePath = null;
         private String migrationDatabaseSelection = null;
         private String PMSDatabaseSelection = null;
-        
+        private boolean importOperationStatus = false;
+        private boolean exportOperationStatus = true;
 
         public MigrationDescriptor(){
             appointment = new Appointment();
             patient = new Patient();
             target = new Target();
+        }
+        
+        public void setImportOperationStatus(boolean value){
+            this.importOperationStatus = value;
+            this.exportOperationStatus = !value;
+        }
+        
+        public void setExportOperationStatus(boolean value){
+            this.exportOperationStatus = value;
+            this.importOperationStatus = !value;
+        }
+        
+        public boolean getImportOperationStatus(){
+            return importOperationStatus;
+        }
+        
+        public boolean getExportOperationStatus(){
+            return exportOperationStatus;
         }
         
         public String getAppointmentCSVFilePath(){

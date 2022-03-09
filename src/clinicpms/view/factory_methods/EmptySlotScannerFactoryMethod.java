@@ -7,7 +7,7 @@ package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.DesktopView;
-import clinicpms.view.type.empty_slot_scanner_view.EmptySlotScannerModalViewer;
+import clinicpms.view.views.empty_slot_scanner_view.EmptySlotScannerModalViewer;
 import clinicpms.view.View;
 import java.awt.event.ActionListener;
 /**

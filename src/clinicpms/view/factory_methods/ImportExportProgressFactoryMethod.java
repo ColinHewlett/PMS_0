@@ -6,24 +6,25 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.import_export_progress_view.ImportExportProgressView;
 import clinicpms.view.View;
-import clinicpms.view.views.patient_notification_editor_view.PatientNotificationEditorModalViewer;
+import clinicpms.view.DesktopView;
 import java.awt.event.ActionListener;
 
 /**
  *
  * @author colin
  */
-public class PatientNotificationEditorFactoryMethod extends ViewFactoryMethod{
-    public PatientNotificationEditorFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+public class ImportExportProgressFactoryMethod extends ViewFactoryMethod{
+    
+    public ImportExportProgressFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
         initialiseView(controller, ed, dtView);
     }
     
     @Override
     public View makeView(View.Viewer myViewType){
-        return new PatientNotificationEditorModalViewer(myViewType, this.getViewController(), 
-                this.getEntityDescriptor(), getDesktopView().getContentPane());
+        return new ImportExportProgressView(myViewType, this.getViewController(), 
+                this.getEntityDescriptor());
         
     }
     
@@ -32,5 +33,5 @@ public class PatientNotificationEditorFactoryMethod extends ViewFactoryMethod{
         this.setEntityDescriptor(ed);
         this.setViewController(controller);
     }
-
+    
 }

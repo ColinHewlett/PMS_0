@@ -79,10 +79,10 @@ public abstract class View extends JInternalFrame
                 result = new EmptySlotScannerFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case EXPORT_PROGRESS_VIEW:
-                result = new ExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
+                result = new ImportExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case MIGRATION_MANAGER_VIEW:
-                result = new ExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
+                result = new ImportExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
             case PATIENT_VIEW:
                 result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;

@@ -8,6 +8,7 @@ package clinicpms.model;
 import clinicpms.store.StoreException;
 import clinicpms.store.Store;
 import clinicpms.store.ITargetsStoreAction;
+import java.io.File;
 
 /**
  * StoreManager responsibilities
@@ -120,5 +121,11 @@ public class StoreManager implements IStoreManager{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.readPatientCSVPath();
     }
+    
+    public File initialiseTargetDatabase(File file)throws StoreException{
+        ITargetsStoreAction store = Store.FACTORY(this);
+        return store.initialiseTargetStore(file);
+    }
+
   
 }

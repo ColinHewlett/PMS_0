@@ -14,6 +14,7 @@ import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
+import java.io.File;
 import java.time.LocalDate;
 import java.util.Dictionary;
 
@@ -30,6 +31,16 @@ public class SQLExpressStore extends Store {
         return result;
     }
 
+    @Override
+    public void insert(AppointmentTable a) throws StoreException{
+        
+    }
+    
+    @Override
+    public void insert(PatientTable p) throws StoreException{
+        
+    }
+    
     @Override
     public void insert(Appointment a) throws StoreException{
         
@@ -409,4 +420,10 @@ public class SQLExpressStore extends Store {
     public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
         return null;
     }
+    
+    @Override
+    public File initialiseTargetStore(File path)throws StoreException{
+        return null;
+    }
+
 }

@@ -235,7 +235,7 @@ public class MigrationManagerViewController extends ViewController {
                     appointmentTable = new AppointmentTable();
                     appointmentTable.drop();
                     appointmentTable.create();
-                    appointmentTable.populate();
+                    //appointmentTable.populate();
 
                     end = Instant.now();
                     duration = Duration.between(start, end);
@@ -256,7 +256,7 @@ public class MigrationManagerViewController extends ViewController {
                     patientTable = new PatientTable();
                     patientTable.drop();
                     patientTable.create();
-                    patientTable.populate();
+                    //patientTable.populate();
                     
                     end = Instant.now();
                     duration = Duration.between(start, end);
