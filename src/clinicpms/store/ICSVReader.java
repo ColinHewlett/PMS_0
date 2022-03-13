@@ -8,12 +8,13 @@ package clinicpms.store;
 import clinicpms.model.Appointment; 
 import java.util.ArrayList;
 import clinicpms.model.Patient;
+import clinicpms.model.IEntityStoreType;
 
 /**
  *
  * @author colin
  */
 public interface ICSVReader {
-    public ArrayList<Appointment> getAppointments(String path)throws StoreException;
-    public ArrayList<Patient> getPatients(String path) throws StoreException;
+    public IEntityStoreType getAppointments(String path)throws StoreException;
+    public IEntityStoreType getPatients(String path) throws StoreException;
 }

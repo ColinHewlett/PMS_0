@@ -109,9 +109,12 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
     //05/03/2022 20:09
     @Override
     public void importFromCSV()throws StoreException{
+        IEntityStoreType entity = null;
         IMigrationStoreAction store = Store.FACTORY(this);
         this.clear();
-        this.addAll((AppointmentTable)store.importFromCSV((IEntityStoreType)this));
+        entity = store.importFromCSV((IEntityStoreType)this);
+        if (entity.isAppointmentTable()) this.addAll((AppointmentTable)entity);
+        //this.addAll((AppointmentTable)store.importFromCSV((IEntityStoreType)this));
     }
     /*
     05/03/2022 20:09

@@ -3799,9 +3799,9 @@ public class AccessStore extends Store {
     public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
         IEntityStoreType result = null;
         if (entity.isAppointmentTable())
-            result = (IEntityStoreType)new CSVReader().getAppointments(readAppointmentCSVPath());
+            result = (AppointmentTable)new CSVReader().getAppointmentsOldVersion(readAppointmentCSVPath());
         if (entity.isPatientTable())
-            result = (IEntityStoreType)new CSVReader().getPatients(readAppointmentCSVPath());
+            result  =  (PatientTable)new CSVReader().getPatients(readAppointmentCSVPath());
         return result;
     }
     
@@ -3820,7 +3820,7 @@ public class AccessStore extends Store {
             }
             */
             getMigrationConnection().setAutoCommit(true);
-            insertMigratedAppointments(new CSVReader().getAppointments(readAppointmentCSVPath()));//03/12/2021 08:51 update
+            insertMigratedAppointments(new CSVReader().getAppointmentsOldVersion(readAppointmentCSVPath()));//03/12/2021 08:51 update
             IEntityStoreType value = null;
             runSQL(Store.MigrationSQL.APPOINTMENT_TABLE_START_TIME_NORMALISED,value);
             result = true;
@@ -3861,7 +3861,7 @@ public class AccessStore extends Store {
             }
             */
             getMigrationConnection().setAutoCommit(true);
-            insertMigratedPatients(new CSVReader().getPatients(readPatientCSVPath())); //03/12/2021 08:51 update
+            insertMigratedPatients(new CSVReader().getPatientsOldVersion(readPatientCSVPath())); //03/12/2021 08:51 update
             count = getPatientTableCount();
             setPatientCount(count);
             migratedPatientsTidied();

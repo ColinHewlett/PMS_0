@@ -79,9 +79,11 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
     //05/03/2022 20:09
     @Override
     public void importFromCSV()throws StoreException{
+        IEntityStoreType entity = null;
         IMigrationStoreAction store = Store.FACTORY(this);
         this.clear();
-        this.addAll((PatientTable)store.importFromCSV(this));
+        entity = store.importFromCSV(this);
+        if (entity.isPatientTable()) this.addAll((PatientTable)entity);
     }
     
     public void insert()throws StoreException{
