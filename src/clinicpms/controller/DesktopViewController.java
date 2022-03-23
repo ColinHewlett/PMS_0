@@ -124,13 +124,13 @@ public class DesktopViewController extends ViewController{
             
     
     private DesktopViewController(){
-        
+        setEntityDescriptor(new EntityDescriptor());
         /**
          * Constructor for DesktopView takes two arguments
          * -- object reference to view controller (this)
          * -- Boolean signifying whether view enables data migration functions
          */
-        view = new DesktopView(this, isDataMigrationOptionEnabled, new EntityDescriptor() );
+        view = new DesktopView(this, isDataMigrationOptionEnabled, getEntityDescriptor() );
         view.setSize(1020, 650);
         view.setVisible(true);
         setView(view);
@@ -219,14 +219,14 @@ public class DesktopViewController extends ViewController{
                     pcSupport.addPropertyChangeListener(view);
                     PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                         DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
-                        null,new EntityDescriptor());
+                        null,getEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
                     
                     pcSupport.addPropertyChangeListener(view);
                     pcEvent = new PropertyChangeEvent(this,
                         DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
-                        null,new EntityDescriptor());
+                        null,getEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(view);
                     
@@ -414,7 +414,18 @@ public class DesktopViewController extends ViewController{
                 break;
                 
             case EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT:
-                doExportMigratedSurgeryDaysAssignment();
+                try{
+                    if (MigrationDatabase.isSelected()){
+                        if(PMSDatabase.isSelected())
+                            if (this.getEntityDescriptor().
+                                    getMigrationDescriptor().
+                                    getExportOperationStatus())
+                                doExportMigratedSurgeryDaysAssignment();
+                            else doImportSurgeryDaysAssignment();
+                    }
+                }catch (StoreException ex){
+                    
+                }
                 break;
         }
     }
@@ -757,7 +768,7 @@ public class DesktopViewController extends ViewController{
     }
     
     private void doMigrationActionCompleteResponse(boolean includeTableRowCounts){
-       setEntityDescriptor(new EntityDescriptor());
+       //setEntityDescriptor(new EntityDescriptor());
        try{
             StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             this.
@@ -1306,11 +1317,7 @@ public class DesktopViewController extends ViewController{
                                       new ErrorMessagePanel(ex.getMessage()));
         }
     }
-    
-    private void startBackgroundThread(DesktopViewController desktopViewController){
-        
-    }
-    
+
     /**
      * Using the SwingWorker class facilitates communication between concurrent tasks
      * -- the SwingWorker-based task runs on a thread in the background 
@@ -1346,6 +1353,31 @@ public class DesktopViewController extends ViewController{
                         else break;
                     }
                 }
+         
+                else if (entity.isPatientTable()){
+                    PatientTable patientTable = (PatientTable)entity;
+                    patientTable.create();
+                    List<String[]>dbfRecords = patientTable.importFromCSV1();
+                    count = dbfRecords.size();
+                    Iterator dbfRecordsIt = dbfRecords.iterator();
+                    int recordCount = 0;
+                    while(dbfRecordsIt.hasNext()){
+                        Patient patient = patientTable.convertDBFToPatient((String[])dbfRecordsIt.next());
+                        patient.reformat();
+                        patientTable.insert(patient);
+                        recordCount++;
+                        if (recordCount <= count){
+                            Integer percentage = recordCount*100/count;
+                            setProgress(percentage);
+                        }
+                        else {
+                            break;
+                        }
+                        
+                    }
+                    dbfRecords.clear();
+                }
+                
                 else if (entity.isAppointments()){
                     Appointments appointments = (Appointments)entity;
                     count = appointments.size();
@@ -1362,8 +1394,56 @@ public class DesktopViewController extends ViewController{
                         }
                         else break;
                     }
+                } 
+                
+                else if (entity.isAppointmentTable()){
+                    ArrayList<Appointment> appointmentsForThisDBFRecord = new ArrayList<>();
+                    AppointmentTable appointmentTable = (AppointmentTable)entity;
+                    //appointmentTable.create();
+                    List<String[]> dbfRecords = appointmentTable.importFromCSV1();
+                    count = dbfRecords.size();
+                    Iterator dbfRecordsIt = dbfRecords.iterator();
+                    int recordCount = 0;
+                    while(dbfRecordsIt.hasNext()){
+                        recordCount++;
+                        appointmentsForThisDBFRecord = 
+                                appointmentTable.convertDBFRecordToAppointments((String[])dbfRecordsIt.next());
+                        Iterator appointmentsForThisDBFRecordIt = appointmentsForThisDBFRecord.iterator();
+                        while(appointmentsForThisDBFRecordIt.hasNext()){
+                            Appointment appointment = (Appointment)appointmentsForThisDBFRecordIt.next();
+                            appointmentTable.insert(appointment);
+                            if (recordCount <= count){
+                                Integer percentage = recordCount*100/count;
+                                setProgress(percentage);
+                            }
+                            else {
+                                break;
+                            }
+                            
+                        }//end of appointmentsForThisDBFRecord iteration
+                    }//end of dbfRecords iteration
+                    dbfRecords.clear();
                 }
-                return result;
+                /*
+                else if (entity.isAppointmentTable()){
+                    AppointmentTable appointments = (AppointmentTable)entity;
+                    count = appointments.size();
+                    Iterator appointmentsIt = appointments.iterator();
+                    int recordCount = 0;
+                    while(appointmentsIt.hasNext()){
+                        Appointment appointment = (Appointment)appointmentsIt.next();
+                        new AppointmentTable().insert(appointment);
+                        recordCount++;
+                        if (recordCount <= count){
+                            Integer percentage = recordCount*100/count;
+                            //publish(percentage);
+                            setProgress(percentage);
+                        }
+                        else break;
+                    }
+                }
+                */
+                return result;    
             }
             
             /**
@@ -1376,7 +1456,9 @@ public class DesktopViewController extends ViewController{
             protected void done(){
                 DesktopViewControllerActionEvent event = null;
                 if (entity.isPatients())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_PATIENT_DATA_COMPLETED;
+                if (entity.isPatientTable())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_PATIENT_DATA_COMPLETED;
                 if (entity.isAppointments())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
+                if (entity.isAppointmentTable())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
                 ImportExportProgressViewController evc = importExportProgressViewControllers.get(0);
                 if (event!=null){
                     ActionEvent actionEvent = new ActionEvent(
@@ -1395,87 +1477,6 @@ public class DesktopViewController extends ViewController{
         sw1.addPropertyChangeListener(evc.getView());
         sw1.execute();
     }
-    /*
-    private  void startBackgroundThread(ArrayList tables )throws StoreException{
-        String  statusMessage = null;
-        Patients patients = (Patients)tables.get(0);
-        Appointments appointments = (Appointments)tables.get(1);
-        SwingWorker sw1 = new SwingWorker(){
-            @Override
-            protected String doInBackground() throws Exception 
-            {
-                String result = null;
-                int count = patients.size();
-                Iterator patientsIt = patients.iterator();
-                int recordCount = 0;
-                while(patientsIt.hasNext()){
-                    Patient patient = (Patient)patientsIt.next();
-                    patient.insert();
-                    recordCount++;
-                    if (recordCount <= count){
-                        Integer percentage = recordCount*100/count;
-                        publish(percentage);
-                    }
-                    else break;
-                }
-                count = appointments.size();
-                Iterator appointmentsIt = appointments.iterator();
-                recordCount = 0;
-                while(appointmentsIt.hasNext()){
-                    Appointment appointment = (Appointment)appointmentsIt.next();
-                    appointment.insert();
-                    recordCount++;
-                    if (recordCount < count){
-                        Integer percentage = recordCount*100/count;
-                        publish(percentage);
-                    }
-                    else break;
-                }
-                result = "Export finished";
-                return result;
-            }
-            
-            @Override
-            protected void process(List chunks)
-            {
-                String table = null;
-                // define what the event dispatch thread 
-                // will do with the intermediate results received
-                // while the thread is executing
-                int val = (Integer)chunks.get(chunks.size()-1);
-                
-                //if (entity.isPatients()) table = "Patient";
-                //else if (entity.isAppointments()) table = "Appointment"; 
-                getView().setTitle(table +"Import completed = (" + String.valueOf(val) +"%)");
-            }
-            
-            @Override
-            protected void done() 
-            {
-                // this method is called when the background 
-                // thread finishes execution
-                try 
-                {
-                    String statusMsg = String.valueOf(get());
-                    System.out.println("Inside done function");
-                    getView().setTitle(statusMsg);
-                      
-                } 
-                catch (InterruptedException e) 
-                {
-                    e.printStackTrace();
-                } 
-                catch (ExecutionException e) 
-                {
-                    e.printStackTrace();
-                }
-            }
-            
-        };
-        sw1.execute();
-        
-    }
-    */
     
     private void doExportMigratedSurgeryDaysAssignment(){
         IEntityStoreType entity = null;
@@ -1577,28 +1578,31 @@ public class DesktopViewController extends ViewController{
     }
     
     private void doImportPatientsFromSource(){
-        AppointmentTable appointmentTable = new AppointmentTable();
         PatientTable patientTable = new PatientTable();
         try{
-            appointmentTable.drop(); //RI insists appointment table dropped before patient table
-            patientTable.drop();
-            patientTable.create();
-            patientTable.importFromCSV();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String migrationTargetDatabaseStorePath = storeManager.getMigrationTargetStorePath();
+            File file = new File(migrationTargetDatabaseStorePath);
+            file.delete();
+            file = storeManager.initialiseTargetDatabase(file);
+            //patientTable.create();
+            
             startBackgroundThread(patientTable, this);
         }catch (StoreException ex){
             JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }
+        this.doMigrationActionCompleteResponse(true);
     }
     
     private void doImportAppointmentsFromSource(){
         AppointmentTable appointmentTable = new AppointmentTable();
         try{
             appointmentTable.create();
-            appointmentTable.importFromCSV();
             startBackgroundThread(appointmentTable, this);
         }catch (StoreException ex){
             JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }
+        this.doMigrationActionCompleteResponse(true);
     }
     
     private void doImportSurgeryDaysAssignment(){
@@ -1610,8 +1614,9 @@ public class DesktopViewController extends ViewController{
          }catch(StoreException ex){
             JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage())); 
          }
+         this.doMigrationActionCompleteResponse(true);
     }
-    
+    /*
     private void doImportDataFromSource(){
         AppointmentTable appointmentTable = new AppointmentTable();
         PatientTable patientTable = new PatientTable();
@@ -1643,6 +1648,7 @@ public class DesktopViewController extends ViewController{
             JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
         }  
     }
+    */
     
     private boolean isPMSDatabaseSelected(EntityDescriptor entityDescriptor){
         boolean result = false;

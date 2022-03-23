@@ -303,6 +303,7 @@ public class ImportExportProgressView extends View {
                 
             case PREPARE_FOR_RECEIPT_OF_PATIENT_PROGRESS:
                 barPatients.setIndeterminate(true);
+                barAppointments.setValue(0);
                 setMode(Mode.PATIENT);
                 actionEvent = new ActionEvent(
                         ImportExportProgressView.this,ActionEvent.ACTION_PERFORMED,

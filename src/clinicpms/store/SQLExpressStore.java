@@ -17,6 +17,7 @@ import clinicpms.model.SurgeryDaysAssignment;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.Dictionary;
+import java.util.List;
 
 /**
  *
@@ -30,14 +31,14 @@ public class SQLExpressStore extends Store {
         else result = (SQLExpressStore)INSTANCE;
         return result;
     }
-
+    
     @Override
-    public void insert(AppointmentTable a) throws StoreException{
+    public void insert(AppointmentTable a, Appointment appointment) throws StoreException{
         
     }
     
     @Override
-    public void insert(PatientTable p) throws StoreException{
+    public void insert(PatientTable p, Patient patient) throws StoreException{
         
     }
     
@@ -239,25 +240,6 @@ public class SQLExpressStore extends Store {
         
     }
     
-    /**
-     * Populates the appointment table in the migration store with the imported Appointment objects 
-     * @param table:AppointmentTable
-     * @throws StoreException 
-     */
-    @Override
-    public void populate(AppointmentTable table)throws StoreException{
-        
-    }
-    
-    /**
-     * Populates the patient table in the migration store with the imported Patient objects 
-     * @param table:PatientTable
-     * @throws StoreException 
-     */
-    @Override
-    public void populate(PatientTable table)throws StoreException{
-        
-    }
     
     /**
      * Populates the surgery days table in the migration store from the specified SurgeryDaysAssignment collection of values
@@ -417,7 +399,7 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
-    public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
+    public List<String[]> importFromCSV1(IEntityStoreType entity)throws StoreException{
         return null;
     }
     

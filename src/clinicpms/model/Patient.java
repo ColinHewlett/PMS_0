@@ -394,5 +394,178 @@ public class Patient implements IEntity, IEntityStoreType{
         this.appointmentHistory = value;
     }
     
-
+    public void reformat(){
+        String cappedForenames = "";
+        String cappedSurname = "";
+        String cappedTitle = "";
+        String cappedLine1 = "";
+        String cappedLine2 = "";
+        String cappedTown = "";
+        String cappedCounty = "";
+        
+        if (getAddress().getLine1() == null) getAddress().setLine1("");
+        if (getAddress().getLine1().length()>0){
+            //cappedLine1 = getAddress().getLine1().strip();
+            cappedLine1 = getAddress().getLine1();
+            if (cappedLine1.contains("-")){ 
+                cappedLine1 = capitaliseFirstLetter(cappedLine1, "-");
+                if (cappedLine1.contains(" ")){
+                   cappedLine1 = capitaliseFirstLetter(cappedLine1, "\\s+"); 
+                }
+            }
+            else if (cappedLine1.contains(" ")) 
+                cappedLine1 = capitaliseFirstLetter(cappedLine1, "\\s+");
+            else
+                cappedLine1 = capitaliseFirstLetter(cappedLine1, "");
+        }
+        
+        if (getAddress().getLine2() == null) getAddress().setLine2("");
+        if (getAddress().getLine2().length()>0){
+            //cappedLine2 = getAddress().getLine2().strip();
+            cappedLine2 = getAddress().getLine2();
+            if (cappedLine2.contains("-")){ 
+                cappedLine2 = capitaliseFirstLetter(cappedLine2, "-");
+                if (cappedLine2.contains(" ")){
+                   cappedLine2 = capitaliseFirstLetter(cappedLine2, "\\s+"); 
+                }
+            }
+            else if (cappedLine2.contains(" ")) 
+                cappedLine2 = capitaliseFirstLetter(cappedLine2, "\\s+");
+            else
+                cappedLine2 = capitaliseFirstLetter(cappedLine2, "");
+        }
+        
+        if (getAddress().getTown() == null) getAddress().setTown("");
+        if (getAddress().getTown().length()>0){
+            //cappedTown = getAddress().getTown().strip();
+            cappedTown = getAddress().getTown();
+            if (cappedTown.contains("-")){ 
+                cappedTown = capitaliseFirstLetter(cappedTown, "-");
+                if (cappedTown.contains(" ")){
+                   cappedTown = capitaliseFirstLetter(cappedTown, "\\s+"); 
+                }
+            }
+            else if (cappedTown.contains(" ")) 
+                cappedTown = capitaliseFirstLetter(cappedTown, "\\s+");
+            else
+                cappedTown = capitaliseFirstLetter(cappedTown, "");
+        }
+        
+        if (getAddress().getCounty() == null) getAddress().setCounty("");
+        if (getAddress().getCounty().length()>0){
+            //cappedCounty = getAddress().getCounty().strip();
+            cappedCounty = getAddress().getCounty();
+            if (cappedCounty.contains("-")){ 
+                cappedCounty = capitaliseFirstLetter(cappedCounty, "-");
+                if (cappedCounty.contains(" ")){
+                   cappedCounty = capitaliseFirstLetter(cappedCounty, "\\s+"); 
+                }
+            }
+            else if (cappedCounty.contains(" ")) 
+                cappedCounty = capitaliseFirstLetter(cappedCounty, "\\s+");
+            else
+                cappedCounty = capitaliseFirstLetter(cappedCounty, "");
+        }
+        
+        if (getName().getSurname() == null) getName().setSurname("");
+        if (getName().getSurname().length()>0){
+            //cappedSurname = getName().getSurname().strip();
+            cappedSurname = getName().getSurname();
+            if (cappedSurname.contains("-")){ 
+                cappedSurname = capitaliseFirstLetter(cappedSurname, "-");
+                if (cappedSurname.contains(" ")){
+                   cappedSurname = capitaliseFirstLetter(cappedSurname, "\\s+"); 
+                }
+            }
+            else if (cappedSurname.contains(" ")) 
+                cappedSurname = capitaliseFirstLetter(cappedSurname, "\\s+");
+            else
+                cappedSurname = capitaliseFirstLetter(cappedSurname, "");
+        }
+        if (getName().getForenames() == null) getName().setForenames("");
+        if (getName().getForenames().length()>0){
+            //cappedForenames = getName().getForenames().strip();
+            cappedForenames = getName().getForenames();
+            if (cappedForenames.contains("-")){ 
+                cappedForenames = capitaliseFirstLetter(cappedForenames, "-");
+                if (cappedForenames.contains(" ")){
+                   cappedForenames = capitaliseFirstLetter(cappedForenames, "\\s+"); 
+                }
+            }
+            else if (cappedForenames.contains(" ")) 
+                cappedForenames = capitaliseFirstLetter(cappedForenames, "\\s+");
+            else
+                cappedForenames = capitaliseFirstLetter(cappedForenames, "");
+        }
+        if (getName().getTitle() == null) getName().setTitle("");
+        if (getName().getTitle().length()>0){
+            //cappedTitle = getName().getTitle().strip();
+            cappedTitle = getName().getTitle();
+            cappedTitle = capitaliseFirstLetter(cappedTitle, "");
+        }
+        getName().setSurname(cappedSurname);
+        getName().setForenames(cappedForenames);
+        getName().setTitle(cappedTitle);
+        getAddress().setLine1(cappedLine1);
+        getAddress().setLine2(cappedLine2);
+        getAddress().setTown(cappedTown);
+        getAddress().setCounty(cappedCounty);
+    }
+    
+    /**
+     * Utility method involved in the "tidy up" of the imported patient's contact details
+     * @param value:String
+     * @param delimiter:String representing the character used to delimit in the context of the patient's name
+     * @return Sting; the processed patient's contact details
+     */
+    private String capitaliseFirstLetter(String value, String delimiter){
+        ArrayList<String> parts = new ArrayList<>();
+        String result = null;
+        //value = value.strip();
+        if (!delimiter.equals("")){
+            String[] values = value.split(delimiter);
+            for (int index = 0; index < values.length; index++){
+                parts.add(capitalisePart(values[index]));
+            }
+            for (int index = 0;index < parts.size();index++){
+                if (index == 0){
+                    result = parts.get(index);
+                }
+                else if (delimiter.equals("\\s+")){
+                    result = result + " " + parts.get(index);
+                }
+                else{
+                    result = result + delimiter + parts.get(index);
+                }
+            }
+        }
+        else{
+            result = capitalisePart(value);
+        }
+        return result;
+    }
+    
+    /**
+     * Part of the convenience process used for tidying up the imported patient's contact details
+     * @param part:String; part of the string required to be processed
+     * @return String; processed part
+     */
+    private String capitalisePart(String part){
+        String firstLetter = part.substring(0,1).toUpperCase();
+        String otherLetters = part.substring(1).toLowerCase();
+        String result =  firstLetter + otherLetters;
+        return result;
+    }
+    
+    private Patient updateGender(Patient patient){
+        switch (patient.getGender()){
+            case "M":
+                patient.setGender("Male");
+                break;
+            case "F":
+                patient.setGender("Female");
+                break;
+        }
+        return patient;
+    }
 }

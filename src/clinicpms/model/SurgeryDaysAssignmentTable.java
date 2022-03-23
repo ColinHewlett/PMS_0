@@ -73,10 +73,5 @@ public class SurgeryDaysAssignmentTable implements ITable{
         return result;
          
     }
-    
-    @Override
-    public void importFromCSV()throws StoreException{
-        
-    }
 
 }
