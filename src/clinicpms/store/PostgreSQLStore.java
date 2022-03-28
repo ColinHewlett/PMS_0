@@ -419,4 +419,9 @@ public class PostgreSQLStore extends Store {
     public File initialiseTargetStore(File path)throws StoreException{
         return null;
     }
+    
+    @Override
+    public void closeMigrationConnection() throws StoreException{
+        
+    }
 }

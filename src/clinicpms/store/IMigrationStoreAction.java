@@ -22,6 +22,7 @@ import java.util.List;
  */
 public interface IMigrationStoreAction {
     public void checkIntegrity()throws StoreException;
+    //public void closeMigrationConnection() throws StoreException;
     public int countRowsIn(AppointmentTable table)throws StoreException;
     public int countRowsIn(PatientTable table)throws StoreException;
     public int countRowsIn(SurgeryDaysAssignmentTable table) throws StoreException;

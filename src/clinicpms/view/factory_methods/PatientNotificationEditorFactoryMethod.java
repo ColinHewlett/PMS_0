@@ -8,7 +8,7 @@ package clinicpms.view.factory_methods;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
-import clinicpms.view.views.patient_notification_editor_view.PatientNotificationEditorModalViewer;
+import clinicpms.view.views.patient_notification_editor_view.PatientNotificationEditorModalViewerx;
 import java.awt.event.ActionListener;
 
 /**
@@ -22,7 +22,7 @@ public class PatientNotificationEditorFactoryMethod extends ViewFactoryMethod{
     
     @Override
     public View makeView(View.Viewer myViewType){
-        return new PatientNotificationEditorModalViewer(myViewType, this.getViewController(), 
+        return new PatientNotificationEditorModalViewerx(myViewType, this.getViewController(), 
                 this.getEntityDescriptor(), getDesktopView().getContentPane());
         
     }

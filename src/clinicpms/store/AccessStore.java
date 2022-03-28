@@ -127,13 +127,14 @@ public class AccessStore extends Store {
      *
      * @throws StoreException
      */
-    private void closeMigrationConnection() throws StoreException {
+    public void closeMigrationConnection() throws StoreException {
         try {
             /**
              * DEBUG -- use of connection getter avoided to prevent stack
              * overflow (recursive reentry issue)
              */
             if (migrationConnection != null) {
+                migrationConnection.commit();
                 migrationConnection.close();
             }
         } catch (SQLException ex) {
@@ -2735,6 +2736,7 @@ public class AccessStore extends Store {
         IEntityStoreType entity;
         message = "";
         try {//turn off jdbc driver's auto commit after each SQL statement
+            //getMigrationConnection().setAutoCommit(false);
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
 
             runSQL(MigrationSQL.PATIENT_TABLE_INSERT_ROW, patient);
@@ -2764,12 +2766,15 @@ public class AccessStore extends Store {
         IEntityStoreType entity;
         message = "";
         try {//turn off jdbc driver's auto commit after each SQL statement
+           // setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             entity = runSQL(MigrationSQL.APPOINTMENT_TABLE_HIGHEST_KEY,
                     null);
             if (entity.isAppointmentTableRowValue()) {
                 appointment.setKey(((AppointmentTableRowValue) entity).getValue() + 1);
                 runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW, appointment);
+                //getMigrationConnection().setAutoCommit(false);
+                //getMigrationConnection().setAutoCommit(true);
                 result = true;
             }
 
@@ -3554,7 +3559,7 @@ public class AccessStore extends Store {
                 getMigrationConnection().setAutoCommit(false);
             }
              */
-            getMigrationConnection().setAutoCommit(false);
+            getMigrationConnection().setAutoCommit(true);
             IEntityStoreType value = null;
             runSQL(MigrationSQL.PATIENT_TABLE_CREATE, value);
             result = true;

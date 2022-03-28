@@ -126,6 +126,11 @@ public class StoreManager implements IStoreManager{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.initialiseTargetStore(file);
     }
+    
+    public void closeConnection()throws StoreException{
+        ITargetsStoreAction store = Store.FACTORY(this);
+        store.closeMigrationConnection();
+    }
 
   
 }

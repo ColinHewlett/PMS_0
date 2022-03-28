@@ -12,6 +12,7 @@ import java.io.File;
  * @author colin
  */
 public interface  ITargetsStoreAction {
+    public void closeMigrationConnection() throws StoreException;
     public String getStoreType();
     public String readAppointmentCSVPath() throws StoreException;
     public String readMigrationTargetStorePath()throws StoreException;
