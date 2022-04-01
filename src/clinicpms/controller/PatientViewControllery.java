@@ -25,11 +25,14 @@ import java.util.Optional;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+
+
 /**
  *
  * @author colin
  */
-public class PatientViewController extends ViewController {
+public class PatientViewControllery extends ViewController {
+    
     private ActionListener myController = null;
     private PropertyChangeSupport pcSupportForView = null;
     //private PropertyChangeSupport pcSupportForPatientSelector = null;
@@ -324,236 +327,7 @@ public class PatientViewController extends ViewController {
         this.entityDescriptorFromView = e;
     }
     
-    private void doDesktopViewControllerAction(ActionEvent e){
-        DesktopViewControllerActionEvent actionCommand =
-               DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
-        switch (actionCommand){
-            case APPOINTMENT_HISTORY_CHANGE_NOTIFICATION:
-                doAppointmentHistoryChangeNotification();
-                break;
-            case VIEW_CLOSE_REQUEST://prelude to the Desktop VC closing down the Patient VC
-                try{
-                    getView().setClosed(true);   
-                }catch (PropertyVetoException ex){
-                //UnspecifiedError action
-            }
-                break;
-        }
-    }
-    
-    /**
-     * The method handles a notification from the DesktopVC that a change has happened to the appointment history for the currently selected patient
-     * -- it re-initialisation the display of the current patient in order that the change to its appointment history will be displayed
-     */
-    private void doAppointmentHistoryChangeNotification(){
-        Patient patient = deserialisePatientFromEDRequest();
-        if (patient.getKey() != null){
-            try{
-                Patient p = patient.read();
-                this.initialiseNewEntityDescriptor();
-                serialisePatientToEDPatient(p);
-                getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
-                pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                        PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-            }
-            catch (StoreException ex){
-                JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
-
-    }
-    
-    /**
-     * appointment in Patient view's appointment history has been selected to request the appointment schedule for that day 
-     * -- Request is forwarded onto the Desktop VC
-     * -- the forwarded request references the Patient VC's EntityDescriptorFromView which contains details of the selected appointment for this patient; and thus the appointment schedule requested
-     */
-    private void doAppointmentViewControllerRequest(){  
-        setEntityDescriptorFromView(view.getEntityDescriptor());
-        ActionEvent actionEvent = new ActionEvent(
-            this,ActionEvent.ACTION_PERFORMED,
-            EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
-        getMyController().actionPerformed(actionEvent);
-    }
-    
-    /**
-     * notification from view it is closing down
-     * -- let DesktopVC know so it can close down the Patient VC
-     */
-    private void doPatientViewClosed(){
-        ActionEvent actionEvent = new ActionEvent(
-            this,ActionEvent.ACTION_PERFORMED,
-            DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
-        getMyController().actionPerformed(actionEvent); 
-    }
-    
-    /**
-     * method processes request to create a new patient
-     * -- details for new patient fetched from the view and stored in the VC's EntityDescriptorFromView object
-     * -- new patient stored in persistent store 
-     * -- details of the patient are returned as a PropertyCangeEvent fired to the view, as well as the updated collection of patients on  the system now
-     */
-    private void doPatientViewCreateRequest(){
-        setEntityDescriptorFromView(view.getEntityDescriptor());
-        Patient patient = deserialisePatientFromEDRequest();
-        if (patient.getKey() == null){
-            try{
-                patient.insert();//was patient.create()
-                patient = patient.read();
-                //setOldEntityDescriptor(getNewEntityDescriptor());
-                initialiseNewEntityDescriptor();
-                serialisePatientToEDPatient(patient);
-
-                pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                            PATIENT_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-
-                Patients patients = new Patients();
-                patients.read();
-                //setOldEntityDescriptor(getNewEntityDescriptor());
-                initialiseNewEntityDescriptor();
-                serialisePatientsToEDCollection(patients);
-                pcEvent = new PropertyChangeEvent(this,
-                            EntityDescriptor.PatientViewControllerPropertyEvent.
-                                    PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-            }
-            catch (StoreException ex){
-                JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
-        else {//throw null patient key expected, non null value received
-            //UnspecifiedErrorException
-        }
-    }
-    
-    /**
-     * method processes a view request to update the details of the currently selected patient
-     * -- update patient details are stored on the VC's EntityDescriptorFromView object
-     * -- updated patient details inserted in persistent store
-     * -- PropertyChangeEvent fired to let view know the updated patient has been processed
-     * -- could also send a further PropertyChangeEvent 
-     */
-    private void doPatientViewUpdateRequest(){
-        setEntityDescriptorFromView(view.getEntityDescriptor());
-        Patient patient = deserialisePatientFromEDRequest();
-        if (patient.getKey() != null){
-            try{
-                patient.update();
-                patient = patient.read();
-                //setOldEntityDescriptor(getNewEntityDescriptor());
-                initialiseNewEntityDescriptor();
-                serialisePatientToEDPatient(patient);
-
-                pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                        PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-
-            }
-            catch (StoreException ex){
-                //UnspecifiedError action
-            }
-        }
-        else {//display an error message in view that non null key expected
-            //UnspecifiedErrorException
-        }
-    }
-    
-    /**
-     * method handles a view request to display the details of a patient the details of which afre fetched from the view's EntityDescriptor object 
-     * @param e 
-     */
-    private void doPatientRequest(ActionEvent e){
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        Patient patient = deserialisePatientFromEDRequest();
-        //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
-        if (patient.getKey() != null){
-            try{
-                Patient p = patient.read();
-                //setOldEntityDescriptor(getNewEntityDescriptor());
-                this.initialiseNewEntityDescriptor();
-                serialisePatientToEDPatient(p);
-                getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
-                //EntityDescriptor ed = getNewEntityDescriptor();
-                pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                        PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-            }
-            catch (StoreException ex){
-                JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
-    }
-    
-    /**
-     * AS FAR AS A CAN TELL THIS REQUEST IS NEVER RAISED
-     */
-    private void doPatientsRequest(ActionEvent e){
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        Patient patient = deserialisePatientFromEDRequest();
-        //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
-        if (patient.getKey() != null){
-            try{
-                Patient p = patient.read();
-                //setOldEntityDescriptor(getNewEntityDescriptor());
-                this.initialiseNewEntityDescriptor();
-                serialisePatientToEDPatient(p);
-                getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
-                //EntityDescriptor ed = getNewEntityDescriptor();
-                pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                        PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-                pcSupportForView.firePropertyChange(pcEvent);
-            }
-            catch (StoreException ex){
-                JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            }
-        }
-    }
-    
-    private void doNullPatientRequest(){
-        initialiseNewEntityDescriptor();
-        Patient patient = new Patient();
-        try{
-            serialisePatientToEDPatient(patient);
-            getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(false);
-            pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.PatientViewControllerPropertyEvent.
-                                NULL_PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupportForView.firePropertyChange(pcEvent);  
-        }
-        catch (StoreException ex){
-            //UnspecifiedError action
-        }
-    }
-    
-    /**
-     * update old entity descriptor with previous new entity descriptor 
-     * re-initialise the new entity descriptor, but copy over the old selected day
-     */
-    private void initialiseNewEntityDescriptor(){
-        setOldEntityDescriptor(getNewEntityDescriptor());
-        setNewEntityDescriptor(new EntityDescriptor());
-        getNewEntityDescriptor().getRequest().setDay(getOldEntityDescriptor().getRequest().getDay());
-    }
-    private ActionListener getMyController(){
-        return this.myController;
-    }
-    private void setMyController(ActionListener myController){
-        this.myController = myController;
-    }
-    
-    public PatientViewController(DesktopViewController controller, DesktopView desktopView)throws StoreException{
+    public PatientViewControllery(DesktopViewController controller, DesktopView desktopView)throws StoreException{
         setMyController(controller);
         pcSupportForView = new PropertyChangeSupport(this);
         this.newEntityDescriptor = new EntityDescriptor();
@@ -581,46 +355,224 @@ public class PatientViewController extends ViewController {
     @Override
     public void actionPerformed(ActionEvent e) {
         //PropertyChangeListener[] pcls;
-        if (e.getSource() instanceof DesktopViewController){
-            doDesktopViewControllerAction(e);
-        }else{
-            EntityDescriptor.PatientViewControllerActionEvent actionCommand =
-               EntityDescriptor.PatientViewControllerActionEvent.valueOf(e.getActionCommand());
-            switch (actionCommand){
-                case APPOINTMENT_VIEW_CONTROLLER_REQUEST:
-                    /**
-                     *request from view to display an appointment schedule  
-                     * -- which the appointment selected in the view's appointment history 
-                     * -- request forwarded onto Desktop VC
-                     */
-                    doAppointmentViewControllerRequest();
-                    break;
-                case PATIENT_VIEW_CLOSED:
-                    /**
-                     * notification from view it is closing down
-                     */
-                    doPatientViewClosed();
-                    break;
-                case PATIENT_VIEW_CREATE_REQUEST:
-                    doPatientViewCreateRequest();
-                    break;
-                case PATIENT_VIEW_UPDATE_REQUEST:
-                    doPatientViewUpdateRequest();
-                    break;
-                case PATIENT_REQUEST:
-                    doPatientRequest(e);
-                    break;
-                case PATIENTS_REQUEST: //THIS NOT RAISED AS AN ACTION ANYWHERE
-                    doPatientsRequest(e);
-                    break;
-                case NULL_PATIENT_REQUEST:
-                    doNullPatientRequest();
-                    break;     
+        Patient patient;
+        setEntityDescriptorFromView(view.getEntityDescriptor());
+        if (e.getActionCommand().equals(
+                    EntityDescriptor.PatientViewControllerActionEvent.
+                            APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
+            /**
+             * request forwarded onto the DesktopViewController
+             */    
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
+            getMyController().actionPerformed(actionEvent);
+        }
+        else if (e.getActionCommand().equals(
+                    EntityDescriptor.PatientViewControllerActionEvent.
+                            PATIENT_VIEW_CLOSED.toString())){
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+                getMyController().actionPerformed(actionEvent);
+        }
+        else if (e.getActionCommand().equals(
+            EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_CREATE_REQUEST.toString())){
+            patient = deserialisePatientFromEDRequest();
+            if (patient.getKey() == null){
+                try{
+                    patient.insert();//was patient.create()
+                    patient = patient.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    initialiseNewEntityDescriptor();
+                    serialisePatientToEDPatient(patient);
+                    
+                    pcEvent = new PropertyChangeEvent(this,
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
+                                PATIENT_RECEIVED.toString(),
+                            getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                    
+                    Patients patients = new Patients();
+                    patients.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    initialiseNewEntityDescriptor();
+                    serialisePatientsToEDCollection(patients);
+                    pcEvent = new PropertyChangeEvent(this,
+                                EntityDescriptor.PatientViewControllerPropertyEvent.
+                                        PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                }
+                catch (StoreException ex){
+                    JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+                }
+            }
+            else {//throw null patient key expected, non null value received
+                //UnspecifiedErrorException
+            }
+        }
+        else if (e.getActionCommand().equals(
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENT_VIEW_UPDATE_REQUEST.toString())){
+            patient = deserialisePatientFromEDRequest();
+            if (patient.getKey() != null){
+                try{
+                    patient.update();
+                    patient = patient.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    initialiseNewEntityDescriptor();
+                    serialisePatientToEDPatient(patient);
+                    
+                    pcEvent = new PropertyChangeEvent(this,
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
+                            PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                    
+                }
+                catch (StoreException ex){
+                    //UnspecifiedError action
+                }
+            }
+            else {//display an error message in view that non null key expected
+                //UnspecifiedErrorException
+            }
+        }
+        else if (e.getActionCommand().equals(
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENTS_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            patient = deserialisePatientFromEDRequest();
+            
+            if (patient.getKey() != null){
+                try{
+                    Patients patients = new Patients();
+                    patients.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    initialiseNewEntityDescriptor();
+                    serialisePatientsToEDCollection(patients);
+                    pcEvent = new PropertyChangeEvent(this,
+                                EntityDescriptor.PatientViewControllerPropertyEvent.
+                                        PATIENTS_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);  
+                }
+                catch (StoreException ex){
+                    //UnspecifiedError action
+                }
+            }
+        }
+        else if (e.getActionCommand().equals(
+                EntityDescriptor.PatientViewControllerActionEvent.NULL_PATIENT_REQUEST.toString())){
+            //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            initialiseNewEntityDescriptor();
+            patient = new Patient();
+            try{
+                serialisePatientToEDPatient(patient);
+                getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(false);
+                pcEvent = new PropertyChangeEvent(this,
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
+                                    NULL_PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupportForView.firePropertyChange(pcEvent);  
+            }
+            catch (StoreException ex){
+                //UnspecifiedError action
+            }
+        }
+        /**
+         * on APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
+         * -- prompts the view controller to do a PATIENT_REQUEST action but because executing directly the PATIENT_REQUEST action is problematic an alternative ActionEvent message is required
+         * -- -- the problem arises because the source of the ActionEvent is the desktop view controller and not the patient view controller's view 
+         * -- -- the code in the PATIENT_REQUEST action breaks with a casting error because the desktop view controller object is incompatible with what is expected; an IView type
+         * -- -- note: an alternative solution would be to separate out desktop view controller actions from the rest using the same message (PATIENT_REQUEST) twice, depending on its source 
+         */
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
+            patient = deserialisePatientFromEDRequest();
+            //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
+            if (patient.getKey() != null){
+                try{
+                    Patient p = patient.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    this.initialiseNewEntityDescriptor();
+                    serialisePatientToEDPatient(p);
+                    getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
+                    //EntityDescriptor ed = getNewEntityDescriptor();
+                    pcEvent = new PropertyChangeEvent(this,
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
+                            PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                }
+                catch (StoreException ex){
+                    JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+                }
+            }
+            
+        }
+        
+        /**
+         * on PATIENT_REQUEST, view has requested a patient's data
+         * -- assumed the view's EntityDescriptor.Request.Patient provides details of patient to be fetched by the controller
+         */
+        else if (e.getActionCommand().equals(
+                EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString())){
+            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+            patient = deserialisePatientFromEDRequest();
+            //PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
+            if (patient.getKey() != null){
+                try{
+                    Patient p = patient.read();
+                    //setOldEntityDescriptor(getNewEntityDescriptor());
+                    this.initialiseNewEntityDescriptor();
+                    serialisePatientToEDPatient(p);
+                    getNewEntityDescriptor().getPatient().getData().setIsKeyDefined(true);
+                    //EntityDescriptor ed = getNewEntityDescriptor();
+                    pcEvent = new PropertyChangeEvent(this,
+                            EntityDescriptor.PatientViewControllerPropertyEvent.
+                            PATIENT_RECEIVED.toString(),getOldEntityDescriptor(),getNewEntityDescriptor());
+                    pcSupportForView.firePropertyChange(pcEvent);
+                }
+                catch (StoreException ex){
+                    JOptionPane.showMessageDialog(getView(),
+                                          new ErrorMessagePanel(ex.getMessage()));
+                }
+            }
+        }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString())){
+            
+        }
+        else if (e.getActionCommand().equals(
+                DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
+            try{
+                /**
+                 * view will message view controller when view is closed 
+                 */
+                
+                getView().setClosed(true);
+            }
+            catch (PropertyVetoException ex){
+                //UnspecifiedError action
             }
         }
     }
-    
+    /**
+     * update old entity descriptor with previous new entity descriptor 
+     * re-initialise the new entity descriptor, but copy over the old selected day
+     */
+    private void initialiseNewEntityDescriptor(){
+        setOldEntityDescriptor(getNewEntityDescriptor());
+        setNewEntityDescriptor(new EntityDescriptor());
+        getNewEntityDescriptor().getRequest().setDay(getOldEntityDescriptor().getRequest().getDay());
+    }
+    private ActionListener getMyController(){
+        return this.myController;
+    }
+    private void setMyController(ActionListener myController){
+        this.myController = myController;
+    }
     public View getView( ){
         return view;
     }
+
+    
+    
 }

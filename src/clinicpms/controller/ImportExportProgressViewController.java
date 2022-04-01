@@ -107,7 +107,7 @@ public class ImportExportProgressViewController extends ViewController{
             case IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED:
                 actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT.toString());
+                    DesktopViewController.DesktopViewControllerActionEvent.IMPORT_EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT.toString());
                 getMyController().actionPerformed(actionEvent);
                 
                 setOldEntity(getNewEntity());

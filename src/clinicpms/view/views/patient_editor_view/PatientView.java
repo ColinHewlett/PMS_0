@@ -1025,6 +1025,7 @@ public class PatientView extends View{
         btnFetchScheduleForSelectedAppointment = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         btnCreateUpdatePatient = new javax.swing.JButton();
+        btnRequestNotificationEditorForPatient = new javax.swing.JButton();
         btnCloseView = new javax.swing.JButton();
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
@@ -1427,7 +1428,7 @@ public class PatientView extends View{
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                 .addGap(9, 9, 9)
-                .addComponent(scpPatientNotes, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(scpPatientNotes, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1473,6 +1474,8 @@ public class PatientView extends View{
             }
         });
 
+        btnRequestNotificationEditorForPatient.setText("Edit notification for patient");
+
         btnCloseView.setText("Close view");
         btnCloseView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1485,11 +1488,13 @@ public class PatientView extends View{
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(154, 154, 154)
+                .addGap(60, 60, 60)
                 .addComponent(btnCreateUpdatePatient)
+                .addGap(113, 113, 113)
+                .addComponent(btnRequestNotificationEditorForPatient)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
                 .addComponent(btnCloseView)
-                .addGap(27, 27, 27))
+                .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1497,6 +1502,7 @@ public class PatientView extends View{
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCreateUpdatePatient)
+                    .addComponent(btnRequestNotificationEditorForPatient)
                     .addComponent(btnCloseView))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1524,9 +1530,8 @@ public class PatientView extends View{
                                         .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGap(22, 22, 22))))
                             .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pnlAppointmentHistory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(22, 22, 22))))
+                    .addComponent(pnlAppointmentHistory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1722,6 +1727,7 @@ public class PatientView extends View{
     private javax.swing.JButton btnCloseView;
     private javax.swing.JButton btnCreateUpdatePatient;
     private javax.swing.JButton btnFetchScheduleForSelectedAppointment;
+    private javax.swing.JButton btnRequestNotificationEditorForPatient;
     private javax.swing.JComboBox<GenderItem> cmbGender;
     private javax.swing.JComboBox<YesNoItem> cmbIsGuardianAPatient;
     private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectGuardian;

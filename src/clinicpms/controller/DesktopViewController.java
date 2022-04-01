@@ -66,7 +66,7 @@ public class DesktopViewController extends ViewController{
                                             IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED,
                                             IMPORT_EXPORT_APPOINTMENT_DATA,
                                             IMPORT_EXPORT_PATIENT_DATA,
-                                            EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT,
+                                            IMPORT_EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT,
                                             EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT_COMPLETED,
                                             APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
@@ -355,6 +355,12 @@ public class DesktopViewController extends ViewController{
                 }
             }
         }
+        
+        /**
+         * VC receives a request for a new AppointmentVC from a PatientVC
+         * -- the PatientVC view's EntityDescriptorFromView object defines an appointment for the selected patient
+         * -- the appointment date is used in the construction of a new AppointmentVC and associated appointment schedule view which includes the selected patient's appointment
+         */
         else if (e.getActionCommand().equals(
             EntityDescriptor.PatientViewControllerActionEvent.
                     APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString())){
@@ -415,7 +421,7 @@ public class DesktopViewController extends ViewController{
                 }
                 break;
                 
-            case EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT:
+            case IMPORT_EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT:
                 try{
                     if (MigrationDatabase.isSelected()){
                         if(PMSDatabase.isSelected())
