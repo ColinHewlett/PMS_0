@@ -37,7 +37,9 @@ public abstract class View extends JInternalFrame
                                 MIGRATION_MANAGER_VIEW,
                                 NON_SURGERY_DAY_EDITOR_VIEW,
                                 PATIENT_VIEW,
+                                PATIENT_NOTIFICATION_VIEW,
                                 PATIENT_NOTIFICATION_EDITOR_VIEW,
+                                UNACTIONED_PATIENT_NOTIFICATION_VIEW,
                                 SCHEDULE_CONTACT_DETAILS_VIEW,
                                 SURGERY_DAY_EDITOR_VIEW}
     
@@ -87,8 +89,12 @@ public abstract class View extends JInternalFrame
             case PATIENT_VIEW:
                 result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
+            case PATIENT_NOTIFICATION_VIEW:
+                result = new PatientNotificationFactoryMethod(controller, ed, dtView).makeView(viewer);
+                break;
             case PATIENT_NOTIFICATION_EDITOR_VIEW:
                 result = new PatientNotificationEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
+                break;
             case NON_SURGERY_DAY_EDITOR_VIEW:
                 result = new NonSurgeryDayEditorFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;

@@ -568,4 +568,52 @@ public class Patient implements IEntity, IEntityStoreType{
         }
         return patient;
     }
+    
+    @Override
+    /**
+     * re-defines default format patient name display
+     * -- basically: "surname, forename"
+     * -- first letter of surname and any subsequent part is capitalised
+     * -- first letter of forename and any subsequent part is capitalised 
+     * 
+     */
+    public String toString(){
+        String cappedName = null;
+        if (getName().getSurname().length()>0){
+            //if (getData().getSurname().strip().contains("-")) 
+            if (getName().getSurname().contains("-"))
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "-");
+            //else if (getData().getSurname().strip().contains(" "))
+            else if (getName().getSurname().contains(" "))
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "\\s+");
+            else
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "");
+        }
+        if (getName().getForenames().length()>0){
+            if (cappedName!=null){
+                //if (getData().getForenames().strip().contains("-")) 
+                if (getName().getForenames().contains("-"))
+                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "-");
+                //else if (getData().getForenames().strip().contains(" ")) 
+                else if (getName().getForenames().contains(" "))
+                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
+                else cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "");
+            }
+            else{
+                //if (getData().getForenames().strip().contains("-")) 
+                if (getName().getForenames().contains("-")) 
+                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "-");
+                //else if (getData().getForenames().strip().contains(" ")) 
+                else if (getName().getForenames().contains(" "))
+                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
+                else cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "");
+            }
+        }
+        if (getName().getTitle().length()>0){
+            if (cappedName!=null)
+                cappedName = cappedName + " (" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
+            else cappedName = "(" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
+        }
+        return cappedName;
+    }
 }

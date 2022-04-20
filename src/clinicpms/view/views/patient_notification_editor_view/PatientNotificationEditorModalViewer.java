@@ -7,9 +7,17 @@ package clinicpms.view.views.patient_notification_editor_view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import clinicpms.model.Patient;
+import clinicpms.model.PatientNotification;
+import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.View;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -23,11 +31,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -38,39 +53,20 @@ public class PatientNotificationEditorModalViewer extends View {
     private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
     private ViewController.ViewMode viewMode = null;
-    /**
-     * Creates new form PatientNotificationEditorModalViewer
-     */
-    public PatientNotificationEditorModalViewer(View.Viewer myViewType, ActionListener myController,
-            EntityDescriptor entityDescriptor, 
-            Component parent) {//ViewMode arg
-        //initialiseDialogClosing();
-        setEntityDescriptor(entityDescriptor);
-        setMyController(myController);
-        setMyViewType(myViewType);
-        initComponents();
-        initialiseViewMode();
-        // Try to find a JDesktopPane.
-        JLayeredPane toUse = JOptionPane.getDesktopPaneForComponent(parent);
-        // If we don't have a JDesktopPane, we try to find a JLayeredPane.
-        if (toUse == null)  toUse = JLayeredPane.getLayeredPaneAbove(parent);
-        // If this still fails, we throw a RuntimeException.
-        if (toUse == null) throw new RuntimeException   ("parentComponent does not have a valid parent");
-        this.setClosable(true);
-        JDesktopPane x = (JDesktopPane)toUse;
-        toUse.add(this);
-        this.setLayer(JLayeredPane.MODAL_LAYER);
-        centreViewOnDesktop(x.getParent(),this);
-        this.initialiseView();
-        this.setVisible(true);
+    
+    private void populatePatientSelector(JComboBox<Patient> selector){
+        DefaultComboBoxModel<Patient> model = 
+                new DefaultComboBoxModel<>();
+        ArrayList<Patient> patients = 
+                getEntityDescriptor().getThePatients();
+        Iterator<Patient> it = patients.iterator();
+        while (it.hasNext()){
+            Patient patient = it.next();
+            model.addElement(patient);
+        }
+        selector.setModel(model);
+        selector.setSelectedIndex(-1);
         
-        
-        ActionEvent actionEvent = new ActionEvent(this,
-            ActionEvent.ACTION_PERFORMED,
-            EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
-        this.getMyController().actionPerformed(actionEvent);
-        
-        startModal(this);
     }
     
     private void startModal(JInternalFrame f) {
@@ -144,6 +140,45 @@ public class PatientNotificationEditorModalViewer extends View {
         this.myViewType = value;
     }
     
+    /**
+     * Creates new form PatientNotificationEditorModalViewer
+     */
+    public PatientNotificationEditorModalViewer(View.Viewer myViewType, ActionListener myController,
+            EntityDescriptor entityDescriptor, 
+            Component parent) {//ViewMode arg
+        //initialiseDialogClosing();
+        setEntityDescriptor(entityDescriptor);
+        setMyController(myController);
+        setMyViewType(myViewType);
+        initComponents();
+        ViewController.setJTableColumnProperties(
+                tblPatientNotificationHistory, jScrollPane2.getPreferredSize().width, 10,90);
+        initialiseViewMode();
+        // Try to find a JDesktopPane.
+        JLayeredPane toUse = JOptionPane.getDesktopPaneForComponent(parent);
+        // If we don't have a JDesktopPane, we try to find a JLayeredPane.
+        if (toUse == null)  toUse = JLayeredPane.getLayeredPaneAbove(parent);
+        // If this still fails, we throw a RuntimeException.
+        if (toUse == null) throw new RuntimeException   ("parentComponent does not have a valid parent");
+        this.setClosable(true);
+        JDesktopPane x = (JDesktopPane)toUse;
+        toUse.add(this);
+        this.setLayer(JLayeredPane.MODAL_LAYER);
+        centreViewOnDesktop(x.getParent(),this);
+        this.initialiseView();
+        this.setVisible(true);
+        
+        
+        ActionEvent actionEvent = new ActionEvent(this,
+            ActionEvent.ACTION_PERFORMED,
+            EntityDescriptor.PatientViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
+        this.getMyController().actionPerformed(actionEvent);
+        
+        startModal(this);
+    }
+    
+    
+    
     @Override
     public View.Viewer getMyViewType(){
         return this.myViewType;
@@ -172,6 +207,22 @@ public class PatientNotificationEditorModalViewer extends View {
     
     @Override
     public void initialiseView(){
+        /**
+         * initialise patient selection control
+         */
+        PatientNotification patientNotification = getEntityDescriptor().getPatientNotification();
+        populatePatientSelector(this.cmbSelectPatient);
+        if (patientNotification==null) {
+            this.cmbSelectPatient.setSelectedIndex(-1);
+            setViewMode(ViewController.ViewMode.Create);
+        }
+        else {
+            cmbSelectPatient.setSelectedItem(patientNotification.getPatient());
+            dpNotificationDate.setDate(patientNotification.getNotificationDate());
+            txaNotificationText.setText(patientNotification.getNotificationText());
+            this.cmbSelectPatient.setEditable(false);
+            this.btnCreateUpdatePatientNotification.setText(ViewController.ViewMode.Update.toString());
+        } 
     }
     
     private ActionListener getMyController(){
@@ -194,10 +245,22 @@ public class PatientNotificationEditorModalViewer extends View {
     }
     private void setViewMode(ViewController.ViewMode value){
         this.viewMode = value;
+        switch (viewMode){
+            case Create:
+                btnCreateUpdatePatientNotification.
+                        setText(ViewController.ViewMode.Create.toString());
+                this.pnlRadioButtons.setVisible(false);
+                break;
+            case Update:
+                btnCreateUpdatePatientNotification.
+                        setText(ViewController.ViewMode.Update.toString());        
+        }
     }
     private void initialiseViewMode(){
         
     }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -208,130 +271,289 @@ public class PatientNotificationEditorModalViewer extends View {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmbSelectPatient = new javax.swing.JComboBox<Patient>();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        datePicker1 = new com.github.lgooddatepicker.components.DatePicker();
+        dpNotificationDate = new com.github.lgooddatepicker.components.DatePicker();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        txaNotificationText = new javax.swing.JTextArea();
+        pnlRadioButtons = new javax.swing.JPanel();
+        rdbNotificationUnactioned = new javax.swing.JRadioButton();
+        rdbNotificationActioned = new javax.swing.JRadioButton();
+        btnCreateUpdatePatientNotification = new javax.swing.JButton();
+        btnCloseView = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblPatientNotificationHistory = new javax.swing.JTable();
+        btnDeletePatientNotification = new javax.swing.JButton();
+
+        buttonGroup1.add(rdbNotificationUnactioned);
+        buttonGroup1.add(rdbNotificationActioned);
+
+        setTitle("Patient notification editor");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<Patient>());
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addGap(98, 98, 98)
+                .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(137, 137, 137))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(cmbSelectPatient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 24, Short.MAX_VALUE))
         );
+
+        cmbSelectPatient.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Notification details", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         jLabel2.setText("Notification date");
 
-        jLabel1.setText("Notification");
+        DatePickerSettings settings = new DatePickerSettings();
+        settings.setFormatForDatesCommonEra(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        settings.setAllowKeyboardEditing(false);
+        dpNotificationDate.setSettings(settings);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        jLabel1.setText("Notification text");
+
+        txaNotificationText.setColumns(20);
+        txaNotificationText.setRows(5);
+        txaNotificationText.setPreferredSize(new java.awt.Dimension(166, 74));
+        jScrollPane1.setViewportView(txaNotificationText);
+
+        pnlRadioButtons.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "patient has been notified", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        rdbNotificationUnactioned.setText("no");
+        rdbNotificationUnactioned.setSelected(true);
+
+        rdbNotificationActioned.setText("yes");
+
+        javax.swing.GroupLayout pnlRadioButtonsLayout = new javax.swing.GroupLayout(pnlRadioButtons);
+        pnlRadioButtons.setLayout(pnlRadioButtonsLayout);
+        pnlRadioButtonsLayout.setHorizontalGroup(
+            pnlRadioButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlRadioButtonsLayout.createSequentialGroup()
+                .addGap(92, 92, 92)
+                .addComponent(rdbNotificationUnactioned)
+                .addGap(65, 65, 65)
+                .addComponent(rdbNotificationActioned)
+                .addGap(79, 79, 79))
+        );
+        pnlRadioButtonsLayout.setVerticalGroup(
+            pnlRadioButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlRadioButtonsLayout.createSequentialGroup()
+                .addGroup(pnlRadioButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(rdbNotificationUnactioned)
+                    .addComponent(rdbNotificationActioned))
+                .addGap(0, 4, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pnlRadioButtons, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(datePicker1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel1))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(dpNotificationDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(4, 4, 4)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(datePicker1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                    .addComponent(dpNotificationDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7)
+                .addComponent(pnlRadioButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21))
         );
 
-        jButton1.setText("Save");
+        btnCreateUpdatePatientNotification.setText("Create/Update");
+        btnCreateUpdatePatientNotification.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateUpdatePatientNotificationActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Close view");
+        btnCloseView.setText("Close view");
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(48, 48, 48)
-                        .addComponent(jButton1)
-                        .addGap(31, 31, 31)
-                        .addComponent(jButton2)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Notification history", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        pack();
+        tblPatientNotificationHistory.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Date", "Notification"
+            }
+        )
+    );
+    TableColumnModel columnModel = tblPatientNotificationHistory.getColumnModel();
+    columnModel.getColumn(0).setPreferredWidth(10);
+    columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+    columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+    jScrollPane2.setViewportView(tblPatientNotificationHistory);
+
+    javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+    jPanel4.setLayout(jPanel4Layout);
+    jPanel4Layout.setHorizontalGroup(
+        jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel4Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addContainerGap())
+    );
+    jPanel4Layout.setVerticalGroup(
+        jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel4Layout.createSequentialGroup()
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(0, 11, Short.MAX_VALUE))
+    );
+
+    btnDeletePatientNotification.setText("Delete");
+
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(33, 33, 33)
+                    .addComponent(btnCreateUpdatePatientNotification)
+                    .addGap(31, 31, 31)
+                    .addComponent(btnDeletePatientNotification)
+                    .addGap(31, 31, 31)
+                    .addComponent(btnCloseView)))
+            .addGap(10, 10, 10))
+    );
+    layout.setVerticalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(btnCloseView)
+                .addComponent(btnCreateUpdatePatientNotification)
+                .addComponent(btnDeletePatientNotification))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+
+    pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnCreateUpdatePatientNotificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUpdatePatientNotificationActionPerformed
+        if (getViewMode().equals(ViewController.ViewMode.Create))
+            doRequestNewPatientNotification();
+        else doRequestUpdatePatientNotification();
+    }//GEN-LAST:event_btnCreateUpdatePatientNotificationActionPerformed
 
+    private void doRequestNewPatientNotification(){
+        if (doValidatePatientNotificationRequest()){
+            PatientNotification patientNotification = new PatientNotification();
+            if (this.cmbSelectPatient.getSelectedItem()!=null){
+                patientNotification.setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
+                getEntityDescriptor().getRequest().setPatientNotification(patientNotification);
+
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    EntityDescriptor.PatientNotificationViewControllerActionEvent.
+                            PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST.toString());
+                this.getMyController().actionPerformed(actionEvent);
+            }
+        }       
+    }
+    
+    private void doRequestUpdatePatientNotification(){
+        
+    }
+    
+    private boolean doValidatePatientNotificationRequest(){
+        boolean result = true;
+        if (this.cmbSelectPatient.getSelectedItem()==null){
+            result = false;
+            JOptionPane.showMessageDialog(
+                    this, "A patient has not been selected", 
+                    "Patient notification editor error",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+        if (result){
+            if (this.dpNotificationDate.getDate()==null){
+                result = false;
+                JOptionPane.showMessageDialog(
+                    this, "A valid notificaion date has not been defined", 
+                    "Patient notification editor error",
+                    JOptionPane.WARNING_MESSAGE);
+            }    
+        }
+        if (result){
+            if (this.txaNotificationText.getText().isEmpty()){
+                result = false;
+                JOptionPane.showMessageDialog(
+                    this, "No notificaion text has not been defined", 
+                    "Patient notification editor error",
+                    JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        return result;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.github.lgooddatepicker.components.DatePicker datePicker1;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton btnCloseView;
+    private javax.swing.JButton btnCreateUpdatePatientNotification;
+    private javax.swing.JButton btnDeletePatientNotification;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox<Patient> cmbSelectPatient;
+    private com.github.lgooddatepicker.components.DatePicker dpNotificationDate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel pnlRadioButtons;
+    private javax.swing.JRadioButton rdbNotificationActioned;
+    private javax.swing.JRadioButton rdbNotificationUnactioned;
+    private javax.swing.JTable tblPatientNotificationHistory;
+    private javax.swing.JTextArea txaNotificationText;
     // End of variables declaration//GEN-END:variables
 }

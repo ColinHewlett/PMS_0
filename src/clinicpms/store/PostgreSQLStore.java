@@ -11,6 +11,7 @@ import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.IEntityStoreType;
+import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
@@ -38,6 +39,11 @@ public class PostgreSQLStore extends Store {
         if (INSTANCE == null) result = new PostgreSQLStore();
         else result = (PostgreSQLStore)INSTANCE;
         return result;
+    }
+    
+    @Override
+    public void insert(PatientNotification pn)throws StoreException{
+
     }
     
     @Override
@@ -358,6 +364,16 @@ public class PostgreSQLStore extends Store {
     
     @Override
     public Patients read(PatientTable table){
+        return null;
+    }
+    
+    @Override
+    public PatientNotification read(PatientNotification value)throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException{
         return null;
     }
     

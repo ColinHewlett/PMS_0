@@ -41,7 +41,10 @@ public class ScheduleContactDetailsView extends View {
     private JTable tblPatientAppointmentContacts = null;
 
     /**
-     * Creates new form PatientAppointmentContactList
+     * 
+     * @param myViewType
+     * @param myController
+     * @param value 
      */
     public ScheduleContactDetailsView(View.Viewer myViewType, ActionListener myController, EntityDescriptor value) {
         this.setMyViewType(myViewType);

@@ -40,7 +40,8 @@ import javax.swing.SwingWorker;
 public class DesktopViewController extends ViewController{
     private boolean isDesktopPendingClosure = false;
     private DesktopView view = null;
-    private ArrayList<AppointmentViewController> appointmentViewControllers = null;
+    private ArrayList<PatientNotificationViewController> patientNotificationViewControllers = null;
+    private ArrayList<AppointmentScheduleViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
     private ArrayList<ImportExportProgressViewController> importExportProgressViewControllers = null;
     private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
@@ -76,6 +77,7 @@ public class DesktopViewController extends ViewController{
                                             MIGRATION_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
+                                            PATIENT_NOTIFICATION_VIEW_CONTROLLER_REQUEST,
                                             SET_CSV_APPOINTMENT_FILE_REQUEST,
                                             SET_CSV_PATIENT_FILE_REQUEST,
                                             MIGRATION_DATABASE_CREATION_REQUEST,
@@ -141,6 +143,7 @@ public class DesktopViewController extends ViewController{
         appointmentViewControllers = new ArrayList<>();
         patientViewControllers = new ArrayList<>();
         importExportProgressViewControllers = new ArrayList<>();
+        patientNotificationViewControllers = new ArrayList<>();
         migrationViewControllers = new ArrayList<>();
         
         if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
@@ -177,7 +180,7 @@ public class DesktopViewController extends ViewController{
      * @param e:ActionEvent received; indicates which ActionCommand from above list was sent
      */
     private void doAppointmentViewControllerAction(ActionEvent e){
-        AppointmentViewController avc = null;
+        AppointmentScheduleViewController avc = null;
         if (e.getActionCommand().equals(
             DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
             /**
@@ -185,7 +188,7 @@ public class DesktopViewController extends ViewController{
              * -- loops through the active appointment view controllers to find the ActionEvent sender
              * -- attempts to remove this controller from the collection of active controllers; displays error if unable to remove controller
              */
-            Iterator<AppointmentViewController> viewControllerIterator = 
+            Iterator<AppointmentScheduleViewController> viewControllerIterator = 
                     this.appointmentViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
                 avc = viewControllerIterator.next();
@@ -248,7 +251,7 @@ public class DesktopViewController extends ViewController{
              * -- desktop view controller can check if any active patient view controllers refer to the same appointee
              * -- if so: controller sends them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
              */
-            EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentViewController)e.getSource()).getEntityDescriptorFromView();
+            EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentScheduleViewController)e.getSource()).getEntityDescriptorFromView();
             int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
@@ -476,6 +479,9 @@ public class DesktopViewController extends ViewController{
         DesktopViewControllerActionEvent actionCommand =
                 DesktopViewController.DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
         switch (actionCommand){
+            case PATIENT_NOTIFICATION_VIEW_CONTROLLER_REQUEST:
+                doPatientNotificationViewControllerRequest();
+                break;
             case VIEW_CLOSE_REQUEST:{
                 doViewCloseRequest();
                 break;
@@ -664,9 +670,9 @@ public class DesktopViewController extends ViewController{
         }
         
         if (this.appointmentViewControllers.size() > 0){
-            Iterator<AppointmentViewController> avcIterator = appointmentViewControllers.iterator();
+            Iterator<AppointmentScheduleViewController> avcIterator = appointmentViewControllers.iterator();
             while(avcIterator.hasNext()){
-                AppointmentViewController avc = avcIterator.next();
+                AppointmentScheduleViewController avc = avcIterator.next();
                 ActionEvent actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
                         DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString());
@@ -703,8 +709,8 @@ public class DesktopViewController extends ViewController{
     private void createNewAppointmentViewController(Optional<EntityDescriptor> ed){
         try{
                 appointmentViewControllers.add(
-                                            new AppointmentViewController(this, getView(),ed));
-                AppointmentViewController avc = 
+                                            new AppointmentScheduleViewController(this, getView(),ed));
+                AppointmentScheduleViewController avc = 
                         appointmentViewControllers.get(appointmentViewControllers.size()-1);
                 
                 this.getView().getDeskTop().add(avc.getView());
@@ -876,6 +882,22 @@ public class DesktopViewController extends ViewController{
         getView().disableDataControl();
     }
     
+    private void doPatientNotificationViewControllerRequest(){
+        try{
+            patientNotificationViewControllers.add(
+                                        new PatientNotificationViewController(this,getView()));
+            PatientNotificationViewController pnvc = 
+                    patientNotificationViewControllers.get(patientNotificationViewControllers.size()-1);
+            
+            this.getView().getDeskTop().add(pnvc.getView());
+            pnvc.getView().initialiseView();
+            
+            
+        }catch (StoreException ex){
+            
+        }
+    }
+                
     private void doPatientViewControllerRequest(){
         try{
             patientViewControllers.add(

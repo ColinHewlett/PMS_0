@@ -10,6 +10,7 @@ import clinicpms.view.views.appontment_schedule_view.AppointmentsTableLocalDateT
 import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.RenderedPatient;
+import clinicpms.controller.ViewController;
 import clinicpms.view.View;
 import clinicpms.view.views.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.view.exceptions.CrossCheckErrorException;
@@ -105,7 +106,7 @@ public class PatientView extends View{
     private EntityDescriptor entityDescriptor = null;
     private ActionListener myController = null;
     //private JTable tblAppointmentsForDay = null;
-    private AppointmentsSingleColumnTableModel tableModel = null;
+    //private Appointments3ColumnTableModel tableModel = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private View.Viewer myViewType = null;
 
@@ -126,7 +127,11 @@ public class PatientView extends View{
         btnFetchScheduleForSelectedAppointment.setText(
                 "<html>Fetch schedule<br><center>for selected appointment</center></html>");
         //this.spnDentalRecallFrequency.setModel(new SpinnerNumberModel(6,0,12,3));
-
+        tblAppointmentHistory.setModel(new Appointments3ColumnTableModel());
+        ViewController.setJTableColumnProperties(
+                tblAppointmentHistory, 
+                scrAppointmentHistory.getPreferredSize().width, 
+                22,22,56);
         populatePatientSelector(this.cmbSelectPatient); 
         populatePatientSelector(this.cmbSelectGuardian);
         this.cmbSelectPatient.addActionListener((ActionEvent e) -> cmbSelectPatientActionPerformed());
@@ -577,49 +582,16 @@ public class PatientView extends View{
     
     
     private void populateAppointmentsHistoryTable(ArrayList<EntityDescriptor.Appointment> appointments, String header){
-        /*
-        AppointmentsSingleColumnTableModel.appointments = appointments;
-        int appointmentsCount = appointments.size();
-        switch (appointments.size()){
-            case 0:
-                appointments.add(null);
-                appointments.add(null);
-                appointments.add(null);
-                break;
-            case 1:
-                appointments.add(null);
-                appointments.add(null);
-                break;
-            case 2:
-                appointments.add(null);
-                break;
-        }
-        */
-        tableModel = new AppointmentsSingleColumnTableModel();
-        
-        //new
+        Appointments3ColumnTableModel tableModel = 
+                (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
         tableModel.removeAllElements();
         Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
         while (it.hasNext()){
             tableModel.addElement(it.next());
         }
-        
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
-        this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        this.tblAppointmentHistory.setModel(tableModel);
+        this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        TableColumnModel columnModel = this.tblAppointmentHistory.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(105);
-        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        columnModel.getColumn(1).setPreferredWidth(105);
-        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        columnModel.getColumn(2).setPreferredWidth(242);
-        columnModel.getColumn(2).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
-        
-        JTableHeader tableHeader = this.tblAppointmentHistory.getTableHeader();
-        tableHeader.setBackground(new Color(220,220,220));
-        tableHeader.setOpaque(true);
     }
     /**
      * The method initialises the patient view's appointment history view 

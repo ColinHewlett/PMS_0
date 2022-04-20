@@ -324,7 +324,49 @@ public class PatientViewController extends ViewController {
         this.entityDescriptorFromView = e;
     }
     
-    private void doDesktopViewControllerAction(ActionEvent e){
+    private void doPrimaryViewActionRequest(ActionEvent e){
+        EntityDescriptor.PatientViewControllerActionEvent actionCommand =
+               EntityDescriptor.PatientViewControllerActionEvent.valueOf(e.getActionCommand());
+        switch (actionCommand){
+            case APPOINTMENT_VIEW_CONTROLLER_REQUEST: //on selection of row in appointment history table
+                doAppointmentViewControllerRequest();
+                break;
+            case PATIENT_VIEW_CLOSED://notification from view uts shutting down
+                doPatientViewClosed();
+                break;
+            case PATIENT_VIEW_CREATE_REQUEST:
+                doPatientViewCreateRequest();
+                break;
+            case PATIENT_VIEW_UPDATE_REQUEST:
+                doPatientViewUpdateRequest();
+                break;
+            case PATIENT_REQUEST:
+                doPatientRequest(e);
+                break;
+            case PATIENTS_REQUEST: //THIS NOT RAISED AS AN ACTION ANYWHERE
+                doPatientsRequest(e);
+                break;
+            case NULL_PATIENT_REQUEST:
+                doNullPatientRequest();
+                break;     
+        }
+    }
+    
+    private void doSecondaryViewActionRequest(ActionEvent e){
+        View the_view = (View)e.getSource();
+        switch (the_view.getMyViewType()){
+            case PATIENT_NOTIFICATION_EDITOR_VIEW:
+                //do nothing
+                break;
+            default:
+                JOptionPane.showMessageDialog(getView(), 
+                        "Unrecognised view type specified in PatientViewController::doSecondaryViewActionRequest()",
+                        "Patient View Controller Error", 
+                        JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doDesktopViewControllerActionRequest(ActionEvent e){
         DesktopViewControllerActionEvent actionCommand =
                DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
         switch (actionCommand){
@@ -402,6 +444,7 @@ public class PatientViewController extends ViewController {
         if (patient.getKey() == null){
             try{
                 patient.insert();//was patient.create()
+                int test2 = patient.getKey();
                 patient = patient.read();
                 //setOldEntityDescriptor(getNewEntityDescriptor());
                 initialiseNewEntityDescriptor();
@@ -582,41 +625,17 @@ public class PatientViewController extends ViewController {
     public void actionPerformed(ActionEvent e) {
         //PropertyChangeListener[] pcls;
         if (e.getSource() instanceof DesktopViewController){
-            doDesktopViewControllerAction(e);
-        }else{
-            EntityDescriptor.PatientViewControllerActionEvent actionCommand =
-               EntityDescriptor.PatientViewControllerActionEvent.valueOf(e.getActionCommand());
-            switch (actionCommand){
-                case APPOINTMENT_VIEW_CONTROLLER_REQUEST:
-                    /**
-                     *request from view to display an appointment schedule  
-                     * -- which the appointment selected in the view's appointment history 
-                     * -- request forwarded onto Desktop VC
-                     */
-                    doAppointmentViewControllerRequest();
-                    break;
-                case PATIENT_VIEW_CLOSED:
-                    /**
-                     * notification from view it is closing down
-                     */
-                    doPatientViewClosed();
-                    break;
-                case PATIENT_VIEW_CREATE_REQUEST:
-                    doPatientViewCreateRequest();
-                    break;
-                case PATIENT_VIEW_UPDATE_REQUEST:
-                    doPatientViewUpdateRequest();
-                    break;
-                case PATIENT_REQUEST:
-                    doPatientRequest(e);
-                    break;
-                case PATIENTS_REQUEST: //THIS NOT RAISED AS AN ACTION ANYWHERE
-                    doPatientsRequest(e);
-                    break;
-                case NULL_PATIENT_REQUEST:
-                    doNullPatientRequest();
-                    break;     
-            }
+            doDesktopViewControllerActionRequest(e);
+        }
+
+        View the_view = (View)e.getSource();
+        switch (the_view.getMyViewType()){
+            case PATIENT_VIEW:
+                doPrimaryViewActionRequest(e);
+                break;
+            default:
+                doSecondaryViewActionRequest(e);
+                break;
         }
     }
     

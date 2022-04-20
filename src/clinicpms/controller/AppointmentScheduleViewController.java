@@ -37,7 +37,7 @@ import javax.swing.JOptionPane;
  *
  * @author colin
  */
-public class AppointmentViewController extends ViewController{
+public class AppointmentScheduleViewController extends ViewController{
 
     private enum RequestedAppointmentState{ STARTS_AFTER_PREVIOUS_SLOT,
                                             ENDS_AFTER_PREVIOUS_SLOT,
@@ -69,7 +69,7 @@ public class AppointmentViewController extends ViewController{
      * @param ed
      * @throws StoreException 
      */
-    public AppointmentViewController(ActionListener controller, DesktopView desktopView, Optional<EntityDescriptor> ed)throws StoreException{
+    public AppointmentScheduleViewController(ActionListener controller, DesktopView desktopView, Optional<EntityDescriptor> ed)throws StoreException{
         setMyController(controller);
         this.desktopView = desktopView;
         //this.owningFrame = desktopView;
@@ -526,7 +526,7 @@ public class AppointmentViewController extends ViewController{
             LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
             Appointments appointments = null;
             try{
-                this.appointments = new Appointments();
+                appointments = new Appointments();
                 appointments.readForDay(day);
                 serialiseAppointmentsToEDCollection(appointments);
                 View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
@@ -590,7 +590,7 @@ public class AppointmentViewController extends ViewController{
                 if (ex.getErrorType().toString().equals(Store.ExceptionType.UNDEFINED_DATABASE))
                     JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), message);
                 else 
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+                    displayErrorMessage(message,"AppointmentScheduleViewController error",JOptionPane.WARNING_MESSAGE);
                 */
             }
         }

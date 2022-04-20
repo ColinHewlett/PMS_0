@@ -5,6 +5,7 @@
  */
 package clinicpms.controller;
 
+import clinicpms.model.PatientNotification;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.util.ArrayList;
 import java.time.Duration;
@@ -20,6 +21,8 @@ import java.util.HashMap;
  */
 public class EntityDescriptor {
     
+    private ArrayList<PatientNotification> patientNotifications = null;
+    private PatientNotification patientNotification;
     private EntityDescriptor.Appointment appointment = null;
     private EntityDescriptor.Patient patient = null;
     private EntityDescriptor.Patient patientGuardian = null;
@@ -27,6 +30,7 @@ public class EntityDescriptor {
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
     private EntityDescriptor.Patients patients = null;
+    private clinicpms.model.Patients thePatients = null;
     private SurgeryDaysAssignment surgeryDaysAssignment = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
@@ -113,8 +117,22 @@ public class EntityDescriptor {
                                 PREPARE_FOR_RECEIPT_OF_PATIENT_PROGRESS,
                                 PREPARE_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
                                 OPERATION_COMPLETED}
-    
+    public static enum PatientNotificationViewControllerActionEvent{
+                                            ACTION_PATIENT_NOTIFICATION_REQUEST,
+                                            CREATE_PATIENT_NOTIFICATION_REQUEST,
+                                            UPDATE_PATIENT_NOTIFICATION_REQUEST,
+                                            PATIENT_NOTIFICATIONS_REQUEST,
+                                            PATIENT_NOTIFICATION_EDITOR_CLOSE_VIEW_REQUEST,
+                                            PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST,
+                                            PATIENT_NOTIFICATION_EDITOR_UPDATE_NOTIFICATION_REQUEST,
+                                            MODAL_VIEWER_ACTIVATED
+                                            }   
+    public static enum PatientNotificationViewControllerPropertyChangeEvent{
+                                            RECEIVED_ALL_PATIENT_NOTIFICATIONS,
+                                            RECEIVED_UNACTIONED_NOTIFICATIONS
+                                            }                                     
     public static enum PatientViewControllerActionEvent {
+                                            MODAL_VIEWER_ACTIVATED,
                                             NULL_PATIENT_REQUEST,
                                             PATIENT_REQUEST,
                                             PATIENTS_REQUEST,
@@ -154,7 +172,24 @@ public class EntityDescriptor {
         patients = new EntityDescriptor.Patients();  
         request = new EntityDescriptor.Request();
         migrationDescriptor = new EntityDescriptor.MigrationDescriptor();
+        patientNotifications = new ArrayList<PatientNotification>();
         error = null;
+    }
+    
+    public PatientNotification getPatientNotification(){
+        return patientNotification;
+    }
+    
+    public void setPatientNotification(PatientNotification value){
+        this.patientNotification = value;
+    }
+    
+    public ArrayList<PatientNotification> getPatientNotifications(){
+        return patientNotifications;
+    }
+    
+    public void setPatientNotifications(ArrayList<PatientNotification> patientNotifications){
+        this.patientNotifications = patientNotifications;
     }
     
     public String getError(){
@@ -212,12 +247,22 @@ public class EntityDescriptor {
         appointments = value;
     }
     
+    
+    
     public EntityDescriptor.Patients getPatients(){
         return patients;
     }
     
+    public clinicpms.model.Patients getThePatients(){
+        return thePatients;
+    }
+    
     public void setPatients (EntityDescriptor.Patients value){
         patients = value;
+    }
+    
+    public void setThePatients (clinicpms.model.Patients value){
+        thePatients = value;
     }
     
     public MigrationDescriptor getMigrationDescriptor(){
@@ -578,6 +623,8 @@ public class EntityDescriptor {
         private LocalDate day = null;
         private Duration duration = null;
         private String databaseLocation = null;
+        private ArrayList<PatientNotification> patientNotifications = null;
+        private PatientNotification patientNotification = null;
         
         private HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = null;
         //private SurgeryDaysAssignment surgeryDaysAssignmentValue = null;
@@ -589,6 +636,22 @@ public class EntityDescriptor {
             day = LocalDate.now();
             duration = Duration.ZERO; 
             
+        }
+        
+        public PatientNotification getPatientNotification(){
+            return patientNotification;
+        }
+        
+        public void setPatientNotification(PatientNotification value){
+            patientNotification = value;
+        }
+        
+        public ArrayList<PatientNotification> getPatientNotifications(){
+            return patientNotifications;
+        }
+        
+        public void setPatientNotifications(ArrayList<PatientNotification> value){
+            patientNotifications = value;
         }
         
         public EntityDescriptor.Patient getPatient() {

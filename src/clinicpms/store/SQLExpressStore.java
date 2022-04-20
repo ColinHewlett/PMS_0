@@ -11,6 +11,7 @@ import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.IEntityStoreType;
+import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
@@ -34,6 +35,11 @@ public class SQLExpressStore extends Store {
     
     @Override
     public void insert(AppointmentTable a, Appointment appointment) throws StoreException{
+        
+    }
+    
+    @Override
+    public void insert(PatientNotification pn)throws StoreException{
         
     }
     
@@ -74,6 +80,16 @@ public class SQLExpressStore extends Store {
     
     @Override
     public Patient read(Patient p) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public PatientNotification read(PatientNotification value)throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException{
         return null;
     }
 

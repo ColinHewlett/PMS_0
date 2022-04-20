@@ -19,7 +19,7 @@ import javax.swing.table.TableModel;
  * update to remove statically defined data structure
  * -- replaces extension  from DefaultTableModel to AbstractTableModel
  */
-public class AppointmentsSingleColumnTableModel extends AbstractTableModel{
+public class Appointments3ColumnTableModel extends AbstractTableModel{
     public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
     //public static ArrayList<EntityDescriptor.Appointment> appointments = null;
     private enum COLUMN{From,Duration,Notes};

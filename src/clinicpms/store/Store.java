@@ -11,6 +11,7 @@ import clinicpms.model.IEntity;
 import clinicpms.model.IPatients;
 import clinicpms.model.IStoreManager;
 import clinicpms.model.ITable;
+import clinicpms.model.EntityStoreType;
 
 /**
  *
@@ -35,7 +36,17 @@ public abstract class Store implements IAppointmentsStoreAction,
                         SQL_EXPRESS,
                         UNDEFINED_DATABASE}
     
+    protected enum EntitySQL {
+                            APPOINTMENT,
+                            APPOINTMENTS,
+                            PATIENT,
+                            PATIENTS,
+                            PATIENT_NOTIFICATION,
+                            PATIENT_NOTIFICATIONS,
+                            SURGERY_DAYS_ASSIGNMENT}
+
     protected enum PMSSQL   {
+                            READ_HIGHEST_KEY,
                             CREATE_PRIMARY_KEY,
                             APPOINTMENTS_COUNT,
                             APPOINTMENT_TABLE_DROP,
@@ -49,6 +60,15 @@ public abstract class Store implements IAppointmentsStoreAction,
                             READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENT_WITH_KEY,
                             READ_APPOINTMENT_HIGHEST_KEY,
+                            READ_ALL_PATIENT_NOTIFICATIONS,
+                            READ_UNACTIONED_PATIENT_NOTIFICATIONS,
+                            INSERT_PATIENT_NOTIFICATION,
+                            UPDATE_PATIENT_NOTIFICATION,
+                            READ_PATIENT_NOTIFICATION_HIGHEST_KEY,
+                            READ_PATIENT_NOTIFICATION_WITH_KEY,
+                            DELETE_PATIENT_NOTIFICATION,
+                            PATIENT_NOTIFICATION_CREATE, 
+                            PATIENT_NOTIFICATION_DROP,
                             UPDATE_APPOINTMENT,
                             INSERT_PATIENT,
                             PATIENTS_COUNT,
@@ -402,6 +422,10 @@ public abstract class Store implements IAppointmentsStoreAction,
     
     public static IPatientsStoreAction FACTORY(IPatients patients) throws StoreException{
         return FACTORY_FOR_PATIENTS_STORE();
+    }
+    
+    public static IPMSStoreAction FACTORY (EntityStoreType entity) throws StoreException{
+        return FACTORY_FOR_PMS_STORE();
     }
     
     public static IPMSStoreAction FACTORY(IEntity entity)throws StoreException{
