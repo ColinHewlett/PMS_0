@@ -26,7 +26,7 @@ public class PatientNotification extends EntityStoreType {
     private Scope scope = null;
     
     
-    public enum Scope{ALL,UNACTIONED};
+    public enum Scope{ALL,UNACTIONED,ALL_BY_KEY, UNACTIONED_BY_KEY};
     
     public Collection getCollection(){
         return collection;
@@ -114,6 +114,11 @@ public class PatientNotification extends EntityStoreType {
     public void insert() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
         store.insert(this);
+    }
+    
+    public PatientNotification read() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        return store.read(this);
     }
     
     public class Collection extends EntityStoreType{

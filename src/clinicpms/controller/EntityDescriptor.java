@@ -5,6 +5,7 @@
  */
 package clinicpms.controller;
 
+import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.util.ArrayList;
@@ -25,12 +26,14 @@ public class EntityDescriptor {
     private PatientNotification patientNotification;
     private EntityDescriptor.Appointment appointment = null;
     private EntityDescriptor.Patient patient = null;
+    private ThePatient thePatient = null;
     private EntityDescriptor.Patient patientGuardian = null;
     private EntityDescriptor.PatientAppointmentHistory patientAppointmentHistory = null;
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
     private EntityDescriptor.Patients patients = null;
-    private clinicpms.model.Patients thePatients = null;
+    //private clinicpms.model.Patients thePatients = null;
+    private ArrayList<ThePatient> thePatients = null;
     private SurgeryDaysAssignment surgeryDaysAssignment = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
@@ -129,7 +132,10 @@ public class EntityDescriptor {
                                             }   
     public static enum PatientNotificationViewControllerPropertyChangeEvent{
                                             RECEIVED_ALL_PATIENT_NOTIFICATIONS,
-                                            RECEIVED_UNACTIONED_NOTIFICATIONS
+                                            RECEIVED_UNACTIONED_NOTIFICATIONS,
+                                            RECEIVED_PATIENT_NOTIFICATION,
+                                            RECEIVED_PATIENT_NOTIFICATIONS,
+                                            RECEIVED_PATIENTS
                                             }                                     
     public static enum PatientViewControllerActionEvent {
                                             MODAL_VIEWER_ACTIVATED,
@@ -247,13 +253,19 @@ public class EntityDescriptor {
         appointments = value;
     }
     
+    public ThePatient getThePatient() {
+        return thePatient;
+    }
     
+    protected void setThePatient(ThePatient value){
+        thePatient = value;
+    }
     
     public EntityDescriptor.Patients getPatients(){
         return patients;
     }
     
-    public clinicpms.model.Patients getThePatients(){
+    public ArrayList<ThePatient> getThePatients(){
         return thePatients;
     }
     
@@ -261,7 +273,7 @@ public class EntityDescriptor {
         patients = value;
     }
     
-    public void setThePatients (clinicpms.model.Patients value){
+    public void setThePatients (ArrayList<ThePatient> value){
         thePatients = value;
     }
     

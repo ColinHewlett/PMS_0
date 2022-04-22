@@ -8,13 +8,14 @@ package clinicpms.view.views.patient_notification_editor_view;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.model.Patient;
+import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.View;
-import com.github.lgooddatepicker.components.DatePicker;
+//import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
-import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
-import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+//import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+//import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Color;
@@ -31,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,14 +54,56 @@ public class PatientNotificationEditorModalViewer extends View {
     private ActionListener myController = null;
     private ViewController.ViewMode viewMode = null;
     
-    private void populatePatientSelector(JComboBox<Patient> selector){
-        DefaultComboBoxModel<Patient> model = 
-                new DefaultComboBoxModel<>();
-        ArrayList<Patient> patients = 
-                getEntityDescriptor().getThePatients();
-        Iterator<Patient> it = patients.iterator();
+    private void populatePatientNotificationHistoryTable(ArrayList<PatientNotification> patientNotifications){
+        PatientNotificationView2ColumnTableModel model = 
+                (PatientNotificationView2ColumnTableModel)this.tblPatientNotificationHistory.getModel();
+        model.removeAllElements();
+//model.fireTableDataChanged();
+        Iterator<PatientNotification> it = patientNotifications.iterator();
         while (it.hasNext()){
-            Patient patient = it.next();
+            ((PatientNotificationView2ColumnTableModel)this.tblPatientNotificationHistory.getModel()).addElement(it.next());
+        }
+    }
+    
+    /**
+     * method initialises the patient notification history table with the values contained in the entity descriptor
+     */
+    private void doReceivedPatientNotifications(){
+        ArrayList<PatientNotification> patientNotifications =
+                getEntityDescriptor().getPatientNotifications();
+        populatePatientNotificationHistoryTable(patientNotifications);
+    }
+    
+    /**
+     * On entry method assumes the patient selector has been initialised
+     * -- the received patient notification is used to initialise the ui
+     * 
+     */
+    private void doReceivedPatientNotification(){
+        PatientNotification patientNotification = getEntityDescriptor().getPatientNotification();
+        if (patientNotification==null) {
+            this.cmbSelectPatient.setSelectedIndex(-1);
+            this.rdbNotificationUnactioned.setSelected(false);
+            setViewMode(ViewController.ViewMode.Create);
+        }
+        else {
+            setViewMode(ViewController.ViewMode.Update);
+            cmbSelectPatient.setSelectedItem(patientNotification.getPatient());
+            dpNotificationDate.setDate(patientNotification.getNotificationDate());
+            txaNotificationText.setText(patientNotification.getNotificationText());
+            this.cmbSelectPatient.setEditable(false);
+            this.btnCreateUpdatePatientNotification.setText(ViewController.ViewMode.Update.toString());
+        }
+    }
+    
+    private void populatePatientSelector(JComboBox<ThePatient> selector){
+        DefaultComboBoxModel<ThePatient> model = 
+                new DefaultComboBoxModel<>();
+        ArrayList<ThePatient> patients = 
+                getEntityDescriptor().getThePatients();
+        Iterator<ThePatient> it = patients.iterator();
+        while (it.hasNext()){
+            ThePatient patient = it.next();
             model.addElement(patient);
         }
         selector.setModel(model);
@@ -191,38 +233,25 @@ public class PatientNotificationEditorModalViewer extends View {
     
     @Override
     public void propertyChange(PropertyChangeEvent e){
-        if (e.getPropertyName().equals(
-                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
-            setEntityDescriptor((EntityDescriptor)e.getNewValue());
-            initialiseViewFromED();
-        }
-        else if (e.getPropertyName().equals(
-            EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
-            EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
-            ViewController.displayErrorMessage(ed.getError(),
-                                               "Appointment editor dialog error",
-                                               JOptionPane.ERROR_MESSAGE);
+        setEntityDescriptor((EntityDescriptor)e.getNewValue());
+        EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent propertyName =
+                EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent.valueOf(e.getPropertyName());
+        switch (propertyName){
+            case RECEIVED_PATIENT_NOTIFICATION:
+                doReceivedPatientNotification();
+                break;
+            case RECEIVED_PATIENT_NOTIFICATIONS:
+                doReceivedPatientNotifications();
+                break;
         }
     }
     
     @Override
     public void initialiseView(){
         /**
-         * initialise patient selection control
+         * initialise ui
          */
-        PatientNotification patientNotification = getEntityDescriptor().getPatientNotification();
-        populatePatientSelector(this.cmbSelectPatient);
-        if (patientNotification==null) {
-            this.cmbSelectPatient.setSelectedIndex(-1);
-            setViewMode(ViewController.ViewMode.Create);
-        }
-        else {
-            cmbSelectPatient.setSelectedItem(patientNotification.getPatient());
-            dpNotificationDate.setDate(patientNotification.getNotificationDate());
-            txaNotificationText.setText(patientNotification.getNotificationText());
-            this.cmbSelectPatient.setEditable(false);
-            this.btnCreateUpdatePatientNotification.setText(ViewController.ViewMode.Update.toString());
-        } 
+        doReceivedPatientNotification(); 
     }
     
     private ActionListener getMyController(){
@@ -490,16 +519,16 @@ public class PatientNotificationEditorModalViewer extends View {
     private void doRequestNewPatientNotification(){
         if (doValidatePatientNotificationRequest()){
             PatientNotification patientNotification = new PatientNotification();
-            if (this.cmbSelectPatient.getSelectedItem()!=null){
-                patientNotification.setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
-                getEntityDescriptor().getRequest().setPatientNotification(patientNotification);
+            patientNotification.setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
+            patientNotification.setNotificationDate(this.dpNotificationDate.getDate());
+            patientNotification.setNotificationText(this.txaNotificationText.getText());
+            getEntityDescriptor().getRequest().setPatientNotification(patientNotification);
 
-                ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    EntityDescriptor.PatientNotificationViewControllerActionEvent.
-                            PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST.toString());
-                this.getMyController().actionPerformed(actionEvent);
-            }
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                EntityDescriptor.PatientNotificationViewControllerActionEvent.
+                        PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
         }       
     }
     

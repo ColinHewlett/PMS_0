@@ -22,6 +22,7 @@ import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.Store.SelectedTargetStore;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
+import clinicpms.model.ThePatient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentDate;
 import clinicpms.model.Appointments;
@@ -2808,6 +2809,11 @@ public class AccessStore extends Store {
     }
     
     @Override
+    public void insert(ThePatient p) throws StoreException {
+        
+    }
+    
+    @Override
     /**
      * Inserts specified Patient object into store's collection of patient
      * records. -- the success of the insertion is checked by following
@@ -2986,6 +2992,14 @@ public class AccessStore extends Store {
         }
 
     }
+    
+    @Override
+    /**
+     * not currently implemented
+     */
+    public void delete(ThePatient p) throws StoreException {
+
+    }
 
     @Override
     /**
@@ -3098,7 +3112,17 @@ public class AccessStore extends Store {
             }
         }
     }
+    
+    @Override
+    public ThePatient read(ThePatient p) throws StoreException {
+        return null;
+    }
 
+    @Override
+    public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
+        return null;
+    }
+    
     @Override
     /**
      * Explicit manual transaction processing enabled -- reads the patient
@@ -3499,6 +3523,11 @@ public class AccessStore extends Store {
     } //store_package_updates_05_12_21_09_17_devDEBUG
 
     @Override
+    public void update(ThePatient p) throws StoreException {
+        
+    }
+    
+    @Override
     /**
      * Explicit manual transaction processing enabled -- updates the specified
      * by key patient
@@ -3760,6 +3789,11 @@ public class AccessStore extends Store {
         }
          */
     }
+    
+    @Override
+    public void create(ThePatient table) throws StoreException{
+        
+    }
 
     @Override
     /**
@@ -3888,7 +3922,13 @@ public class AccessStore extends Store {
         }
          */
     }
+    
+    @Override
+    public void drop(ThePatient table) throws StoreException {
+    
+    }
 
+    @Override
     public void drop(Patient table) throws StoreException {
         boolean result = false;
         try {

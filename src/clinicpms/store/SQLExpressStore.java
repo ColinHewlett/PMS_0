@@ -7,6 +7,7 @@ package clinicpms.store;
 
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointments;
+import clinicpms.model.ThePatient;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.AppointmentTable;
@@ -54,12 +55,22 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
+    public void insert(ThePatient p) throws StoreException{
+        
+    }
+    
+    @Override
     public void insert(Patient p) throws StoreException{
         
     }
     
     @Override
     public void delete(Appointment a) throws StoreException{
+        
+    }
+    
+    @Override
+    public void delete(ThePatient p) throws StoreException{
         
     }
     
@@ -75,6 +86,16 @@ public class SQLExpressStore extends Store {
     
     @Override
     public Appointment read(Appointment a) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
+        return null;
+    }
+    
+    @Override
+    public ThePatient read(ThePatient p) throws StoreException{
         return null;
     }
     
@@ -126,6 +147,11 @@ public class SQLExpressStore extends Store {
     
     @Override
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
+        
+    }
+    
+    @Override
+    public void update(ThePatient p) throws StoreException{
         
     }
     
@@ -398,6 +424,9 @@ public class SQLExpressStore extends Store {
     public void drop(Appointment a)throws StoreException{
         
     }
+    public void drop(ThePatient p)throws StoreException{
+        
+    }
     public void drop(Patient p)throws StoreException{
         
     }
@@ -405,6 +434,9 @@ public class SQLExpressStore extends Store {
         
     }
     public void create(Appointment a)throws StoreException{
+        
+    }
+    public void create(ThePatient p)throws StoreException{
         
     }
     public void create(Patient p)throws StoreException{

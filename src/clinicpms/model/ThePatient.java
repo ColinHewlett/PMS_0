@@ -1,23 +1,21 @@
-/**
- * Current version includes an inner class which defines references to
- * Appointment objects, i.e the lastDentalAppointment, the nextDentalAppointment 
- * and the nextHygieneAppointment. The query leg work to fetch the Appointment 
- * objects can be done automatically by the Store object or initiated by the 
- * Patient class. Currently the latter option is adopted.   
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package clinicpms.model;
 
-import clinicpms.store.StoreException;
+import clinicpms.store.IPMSStoreAction;
 import clinicpms.store.Store;
+import clinicpms.store.StoreException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import clinicpms.store.IPMSStoreAction;
 
 /**
  *
  * @author colin
  */
-public class Patient implements IEntity, IEntityStoreType{
+public class ThePatient extends EntityStoreType implements IEntity{
     
     private LocalDate dob = null;
     private Patient guardian = null;
@@ -28,10 +26,11 @@ public class Patient implements IEntity, IEntityStoreType{
     private String phone1 = null;
     private String phone2 = null;
 
-    private Patient.AppointmentHistory appointmentHistory = null;
-    private Patient.Address address = null;
-    private Patient.Name name = null;
-    private Patient.Recall recall = null;
+    private ThePatient.AppointmentHistory appointmentHistory = null;
+    private ThePatient.Address address = null;
+    private ThePatient.Name name = null;
+    private ThePatient.Recall recall = null;
+    private ThePatient.Collection collection = null;
     
     /**
      * Utility method involved in the "tidy up" of the imported patient's contact details
@@ -120,107 +119,60 @@ public class Patient implements IEntity, IEntityStoreType{
                                             }
                                 }
     
-    @Override
-    public boolean isAppointment(){
-        return false;
-    }
-    
-    @Override
-    public boolean isAppointments(){
-        return false;
-    }
-    
-    @Override
-    public boolean isAppointmentTable(){
-        return false;
-    }
-    
-    @Override
-    public boolean isAppointmentDate(){
-        return false;
-    }
-    
-    @Override
-    public final boolean isAppointmentTableRowValue(){
-        return false;
-    }
-    
-    @Override
-    public boolean isPatientTable(){
-        return false;
-    }
-    
-    @Override
-    public boolean isPatient(){
-        return true;
-    }
-    
-    @Override
-    public boolean isPatients(){
-        return false;
-    }
-    
-    @Override
-    public final boolean isPatientTableRowValue(){
-        return false;
-    }
-    
-    @Override
-    public boolean isSurgeryDaysAssignment(){
-        return false;
-    }
-    
-    /**
-     * Constructs a new Patient object with none of its fields initialised
-     */
-    public Patient(){
+    public ThePatient(){
         name = new Name();
         address = new Address();
         recall = new Recall();
         appointmentHistory = new AppointmentHistory();
+        collection = new Collection();
     } 
     
-    public Patient(Integer key) {
+    public ThePatient(Integer key) {
             name = new Name();
             address = new Address();
             recall = new Recall();
             appointmentHistory = new AppointmentHistory();
+            collection = new Collection();
             this.key = key;
     } 
     
     @Override
     public void create()throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.create(this);
     }
     
     @Override
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType) this);
         store.insert(this);    
     }
     
     @Override
     public void delete() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.delete(this);
     }
     
     @Override
     public void drop() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.drop(this);        
     }
     
-    @Override
-    public Patient read() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+    @Override 
+    public Patient read()throws StoreException{
+        return null;
+    }
+    
+    public ThePatient readThePatient() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType) this);
         return store.read(this); 
     }
     
     @Override
     public void update() throws StoreException{ 
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.update(this);
     }
 
@@ -348,23 +300,32 @@ public class Patient implements IEntity, IEntityStoreType{
     
     public class AppointmentHistory{
 
+        /**
+         * At this stage of app development appointments.readForPatient expects a Patient object, not a ThePatient object
+         * @return
+         * @throws StoreException 
+         */
         public ArrayList<Appointment> getDentalAppointments()throws StoreException{
-            if (Patient.this.getKey()!=null) {
+            if (ThePatient.this.getKey()!=null) {
                 Appointments appointments = new Appointments();
+                Patient patient = new Patient(ThePatient.this.getKey());
                 appointments.readForPatient(
-                    Patient.this,Appointment.Category.DENTAL);
+                    patient,Appointment.Category.DENTAL);
                 return appointments;
             }
             else return null;
         }
         
         public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
+            /**
             if (Patient.this.getKey()!=null){ 
                 Appointments appointments = new Appointments();
                 appointments.readForPatient(Patient.this, Appointment.Category.HYGIENE);
                 return appointments;
             }
             else return null;
+            */
+            return null;
         }
     }
     
@@ -424,32 +385,40 @@ public class Patient implements IEntity, IEntityStoreType{
         this.guardian = guardian;
     }
     
-    public Patient.Name getName(){
+    public ThePatient.Name getName(){
         return name;
     }
-    public void setName(Patient.Name name){
+    public void setName(ThePatient.Name name){
         this.name = name;
     }
     
-    public Patient.Address getAddress(){
+    public ThePatient.Address getAddress(){
         return address;
     }
-    public void setAddress(Patient.Address address){
+    public void setAddress(ThePatient.Address address){
         this.address = address;
     }
     
-    public Patient.Recall getRecall(){
+    public ThePatient.Recall getRecall(){
         return recall;
     }
-    public void setRecall(Patient.Recall recall){
+    public void setRecall(ThePatient.Recall recall){
         this.recall = recall;
     }
     
-    public Patient.AppointmentHistory getAppointmentHistory(){
+    public ThePatient.AppointmentHistory getAppointmentHistory(){
         return appointmentHistory;
     }
-    public void setAppointmentHistory(Patient.AppointmentHistory value){
+    public void setAppointmentHistory(ThePatient.AppointmentHistory value){
         this.appointmentHistory = value;
+    }
+    
+    public ThePatient.Collection getCollection(){
+        return collection;
+    }
+    
+    public void setCollection(ThePatient.Collection value){
+        collection = value;
     }
     
     public void reformat(){
@@ -619,6 +588,29 @@ public class Patient implements IEntity, IEntityStoreType{
         }
         return cappedName;
     }
-    
+    public class Collection extends EntityStoreType{
+        private ArrayList<ThePatient> collection = null;
+        
+        private Collection(){
+            this.setIsPatients(true);
+        }
+        
+        public ArrayList<ThePatient> get(){
+            return collection;
+        }
+        
+        public void set(ArrayList<ThePatient> value){
+            collection = value;
+        }
+
+        public void read()throws StoreException{
+            IPMSStoreAction store = Store.FACTORY(this);
+            /**
+             * is the next line of code redundant?
+             * -- if the PatientNotification.Collection object is the same as "this" one
+             */
+            set(store.read(this).get());
+        }
+    }
     
 }
