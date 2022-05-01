@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class ThePatient extends EntityStoreType implements IEntity{
     
     private LocalDate dob = null;
-    private Patient guardian = null;
+    private ThePatient guardian = null;
     private String gender = null;
     private Boolean isGuardianAPatent = null;
     private Integer key  = null;
@@ -125,6 +125,7 @@ public class ThePatient extends EntityStoreType implements IEntity{
         recall = new Recall();
         appointmentHistory = new AppointmentHistory();
         collection = new Collection();
+        this.setIsPatient(true);
     } 
     
     public ThePatient(Integer key) {
@@ -134,6 +135,7 @@ public class ThePatient extends EntityStoreType implements IEntity{
             appointmentHistory = new AppointmentHistory();
             collection = new Collection();
             this.key = key;
+            this.setIsPatient(true);
     } 
     
     @Override
@@ -378,10 +380,10 @@ public class ThePatient extends EntityStoreType implements IEntity{
         this.isGuardianAPatent = isGuardianAPatient;
     }
     
-    public Patient getGuardian(){
+    public ThePatient getGuardian(){
         return guardian;
     }
-    public void setGuardian(Patient guardian){
+    public void setGuardian(ThePatient guardian){
         this.guardian = guardian;
     }
     
@@ -539,7 +541,25 @@ public class ThePatient extends EntityStoreType implements IEntity{
         getAddress().setCounty(cappedCounty);
     }
     
-    
+    @Override
+        public boolean equals(Object obj) 
+        { 
+            // if both the object references are  
+            // referring to the same object. 
+            if(this == obj) 
+                return true; 
+
+            // checks if the comparison involves 2 objecs of the same type 
+            if(obj == null || obj.getClass()!= this.getClass()) 
+                return false; 
+
+            // type casting of the argument.  
+            ThePatient patient = (ThePatient) obj; 
+
+            // comparing the state of argument with  
+            // the state of 'this' Object. 
+            return (patient.getKey().equals(this.getKey())); 
+        }
     
     @Override
     /**
@@ -551,7 +571,7 @@ public class ThePatient extends EntityStoreType implements IEntity{
      */
     public String toString(){
         String cappedName = null;
-        if (getName().getSurname().length()>0){
+        if (!getName().getSurname().isEmpty()){
             //if (getData().getSurname().strip().contains("-")) 
             if (getName().getSurname().contains("-"))
                 cappedName = capitaliseFirstLetter(getName().getSurname(), "-");
@@ -561,7 +581,7 @@ public class ThePatient extends EntityStoreType implements IEntity{
             else
                 cappedName = capitaliseFirstLetter(getName().getSurname(), "");
         }
-        if (getName().getForenames().length()>0){
+        if (!getName().getForenames().isEmpty()){
             if (cappedName!=null){
                 //if (getData().getForenames().strip().contains("-")) 
                 if (getName().getForenames().contains("-"))
@@ -581,7 +601,7 @@ public class ThePatient extends EntityStoreType implements IEntity{
                 else cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "");
             }
         }
-        if (getName().getTitle().length()>0){
+        if (!getName().getTitle().isEmpty()){
             if (cappedName!=null)
                 cappedName = cappedName + " (" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
             else cappedName = "(" + capitaliseFirstLetter(getName().getTitle(), "") + ")";

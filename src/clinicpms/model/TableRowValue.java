@@ -14,6 +14,7 @@ public class TableRowValue extends EntityStoreType{
     
     public TableRowValue(Integer key){
         setIsTableRowValue(true);
+        setValue(key);
     }
     
     public Integer getValue(){

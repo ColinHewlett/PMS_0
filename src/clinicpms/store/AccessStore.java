@@ -296,19 +296,11 @@ public class AccessStore extends Store {
             case APPOINTMENT:
                 result = doAppointmentPMSSQL(pmsSQL, entity);
                 break;
-            case APPOINTMENTS:
-                result = doAppointmentsPMSSQL(pmsSQL, entity);
-                break;
             case PATIENT:
                 result = doPatientPMSSQL(pmsSQL, entity);
-            case PATIENTS:
-                result = this.doPatientsPMSSQL(pmsSQL, entity);
                 break;
             case PATIENT_NOTIFICATION:
                 result = doPatientNotificationPMSSQL(pmsSQL, entity);
-                break;
-            case PATIENT_NOTIFICATIONS:
-                result = doPatientNotificationsPMSSQL(pmsSQL, entity);
                 break;
             case SURGERY_DAYS_ASSIGNMENT:
                 result = doSurgeryDaysAssignmentPMSSQL(pmsSQL, entity);
@@ -2038,13 +2030,14 @@ public class AccessStore extends Store {
     private PatientNotification get(PatientNotification patientNotification, ResultSet rs)throws StoreException{
         try{
             if (!rs.wasNull()){
+                rs.next();
                 int pid = rs.getInt("pid");
                 int patientKey = rs.getInt("patientToNotify");
                 LocalDate notificationDate = rs.getObject("notificationDate", LocalDate.class);
                 String notificationText = rs.getString("notificationText");
                 Boolean isActioned = rs.getBoolean("isActioned");
                 patientNotification.setKey(pid);
-                patientNotification.setPatient(new Patient(patientKey));
+                patientNotification.setPatient(new ThePatient(patientKey));
                 patientNotification.setNotificationDate(notificationDate);
                 patientNotification.setNotificationText(notificationText);
                 patientNotification.setIsActioned(isActioned);
@@ -2068,7 +2061,7 @@ public class AccessStore extends Store {
                    Boolean isActioned = rs.getBoolean("isActioned");
                    PatientNotification patientNotification = new PatientNotification();
                    patientNotification.setKey(pid);
-                   patientNotification.setPatient(new Patient(patientKey));
+                   patientNotification.setPatient(new ThePatient(patientKey));
                    patientNotification.setNotificationDate(notificationDate);
                    patientNotification.setNotificationText(notificationText);
                    patientNotification.setIsActioned(isActioned);
@@ -2109,6 +2102,58 @@ public class AccessStore extends Store {
                     + "StoreException -> raised in Access::get(Appointments,ResultSet)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
+    }
+    
+    private ThePatient getThePatientDetails(ThePatient patient, ResultSet rs) throws SQLException {
+        int key = rs.getInt("pid");
+        String title = rs.getString("title");
+        String forenames = rs.getString("forenames");
+        String surname = rs.getString("surname");
+        String line1 = rs.getString("line1");
+        String line2 = rs.getString("line2");
+        String town = rs.getString("town");
+        String county = rs.getString("county");
+        String postcode = rs.getString("postcode");
+        String phone1 = rs.getString("phone1");
+        String phone2 = rs.getString("phone2");
+        String gender = rs.getString("gender");
+        String notes = rs.getString("notes");
+        LocalDate dob = rs.getObject("dob", LocalDate.class);
+        if (dob.getYear() == 1899) {
+            dob = null;
+        }
+        int recallFrequency = rs.getInt("recallFrequency");
+        LocalDate recallDate = rs.getObject("recallDate", LocalDate.class);
+        if (recallDate.getYear() == 1899) {
+            recallDate = null;
+        }
+        boolean isGuardianAPatient = rs.getBoolean("isGuardianAPatient");
+
+        patient.setKey(key);
+        patient.getName().setTitle(title);
+        patient.getName().setForenames(forenames);
+        patient.getName().setSurname(surname);
+        patient.getAddress().setLine1(line1);
+        patient.getAddress().setLine2(line2);
+        patient.getAddress().setTown(town);
+        patient.getAddress().setCounty(county);
+        patient.getAddress().setPostcode(postcode);
+        patient.setGender(gender);
+        patient.setDOB(dob);
+        patient.setPhone1(phone1);
+        patient.setPhone2(phone2);
+        patient.getRecall().setDentalDate(recallDate);
+        patient.getRecall().setDentalFrequency(recallFrequency);
+        patient.setNotes(notes);
+        patient.setIsGuardianAPatient(isGuardianAPatient);
+        if (patient.getIsGuardianAPatient()) {
+            int guardianKey = rs.getInt("guardianKwey");
+            if (guardianKey > 0) {
+                ThePatient p = new ThePatient(guardianKey);
+                patient.setGuardian(p);
+            }
+        }
+        return patient;
     }
 
     private Patient getPatientDetails(Patient patient, ResultSet rs) throws SQLException {
@@ -2162,6 +2207,19 @@ public class AccessStore extends Store {
         }
         return patient;
     }
+    
+    private ThePatient get(ThePatient patient, ResultSet rs) throws SQLException {
+        ThePatient result = null;
+        if (!rs.wasNull()) {
+            if (rs.next()) {
+                patient = getThePatientDetails(patient, rs);
+                result = patient;
+            }
+        } else {
+            result = null;
+        }
+        return result;
+    }
 
     private Patient get(Patient patient, ResultSet rs) throws SQLException {
         Patient result = null;
@@ -2211,6 +2269,37 @@ public class AccessStore extends Store {
         } catch (SQLException ex) {
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(SurgeryDaysAssignment,ResultSet)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+    }
+    
+    /**
+     * method decodes the ResultSet for persistent storage into a ThePatient.Collection object
+     * -- the resulting collection of ThePatient child objects is used to initialise a mother ThePatient.Collection object
+     * -- the information contained in ThePatient object is either in the values of its state fields, excepting its collection field;
+     * -- or the information is contained in its Collection inner class
+     * -- This is possibly ambiguous, and can be overcome by making a separate class responsible for the collection
+     * @param collection
+     * @param rs
+     * @return
+     * @throws StoreException 
+     */
+    private ThePatient.Collection get(ThePatient.Collection collection, ResultSet rs) throws StoreException {
+        ArrayList<ThePatient> patients = new ArrayList<>();
+        ThePatient motherPatient = new ThePatient();
+        try {
+            if (!rs.wasNull()) {
+                while (rs.next()) {
+                    ThePatient childPatient = new ThePatient();
+                    childPatient = getThePatientDetails(childPatient, rs);
+                    patients.add(childPatient);
+                }
+                motherPatient.getCollection().set(patients);
+            }
+            return motherPatient.getCollection();
+        } catch (SQLException ex) {
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                    + "StoreException -> raised in Access::get(ThePatient.Collection,ResultSet)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
@@ -2810,7 +2899,29 @@ public class AccessStore extends Store {
     
     @Override
     public void insert(ThePatient p) throws StoreException {
-        
+        EntityStoreType entity;
+        message = "";
+        try {//turn off jdbc driver's auto commit after each SQL statement
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+
+            if (p.getKey() == null) {
+                entity = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_HIGHEST_KEY, new ThePatient());
+                p.setKey(((TableRowValue) entity).getValue() + 1);
+                runSQL(EntitySQL.PATIENT,PMSSQL.INSERT_PATIENT, p);
+                entity = (ThePatient) runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_WITH_KEY, p);
+                if (entity == null) {
+                    message = "StoreException raised in method AccessStore::insert(ThePatient p)\n"
+                            + "Reason -> newly created patient record could not be found";
+                    throw new StoreException(message, StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+            }
+        } catch (SQLException ex) {
+            message = message + "SQLException message -> " + ex.getMessage() + "\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::insert(ThePatient a)\n"
+                    + "Cause -> unexpected effect when transaction/auto commit statement executed",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        } 
     }
     
     @Override
@@ -3009,30 +3120,105 @@ public class AccessStore extends Store {
 
     }
     
+    /**
+     * method fetches the patient notification with the specified key
+     * -- the notification's patient that is fetched has only its key value defined; it is the caller's responsibility to issue a request for the patient's other values
+     * @param patientNotification
+     * @return PatientNotification
+     * @throws StoreException in the following cases
+     * -- an unexpected value is returned from the store; i.e. not a PatientNotification object
+     * -- a patient notification with the specified key value could not be located on the store
+     * -- a patient notification key has not been defined
+     */
     @Override
     public PatientNotification read(PatientNotification patientNotification)throws StoreException{
-        return null;
+        EntityStoreType value;
+        PatientNotification result;
+        if (patientNotification.getKey()!= null){
+            try{
+                setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+                value = runSQL(Store.EntitySQL.PATIENT_NOTIFICATION, 
+                            Store.PMSSQL.READ_PATIENT_NOTIFICATION_WITH_KEY, 
+                            patientNotification);
+                if (value!=null){
+                    if (value.getIsPatientNotification()){
+                        result = (PatientNotification)value;
+                        return result;
+                    }else{
+                        throw new StoreException(
+                            message + "StoreException raised -> unexpected value returned from persistent store "
+                                + "in method AccessStore::read(PatientNotification)\n",
+                            StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED); 
+                    }
+                }else{
+                    throw new StoreException(
+                        message + "StoreException raised -> could not locate specified patient notification "
+                            + "in method AccessStore::read(PatientNotification)\n",
+                        StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+                }
+            }catch(SQLException ex){
+                message = message + "SQLException message -> " + ex.getMessage() + "\n";
+                throw new StoreException(
+                        message + "StoreException raised in method AccessStore::read(PatientNotification)\n"
+                        + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
+                        StoreException.ExceptionType.SQL_EXCEPTION);
+            }          
+        }else{
+            throw new StoreException(
+                    message + "StoreException raised -> undefined key in specified patient notification "
+                        + "in method AccessStore::read(PatientNotification)\n",
+                    StoreException.ExceptionType.INVALID_KEY_VALUE_EXCEPTION);
+        }
     }
     
+    /**
+     * method fetches a collection of patient notifications from store
+     * -- the specified collection object defines the scope of the required collection
+     * -- for each notification's patient only the key value is returned; its the responsibility of the caller to issue another read request per notification to fetch the patient's other details, if this is necessary 
+     * @param patientNotificationCollection
+     * @return
+     * @throws StoreException 
+     */
     @Override
     public PatientNotification.Collection read(PatientNotification.Collection patientNotificationCollection)throws StoreException{
         EntityStoreType value = null;
         PatientNotification.Collection result = null;
         try {
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            if (patientNotificationCollection.getScope().equals(PatientNotification.Scope.UNACTIONED))
-                value = runSQL(EntitySQL.PATIENT_NOTIFICATIONS,
+            PatientNotification.Scope scope = patientNotificationCollection.getScope();
+            switch(scope){
+                case UNACTIONED:
+                    value = runSQL(EntitySQL.PATIENT_NOTIFICATION,
                                 PMSSQL.READ_UNACTIONED_PATIENT_NOTIFICATIONS, 
                                 patientNotificationCollection);
-            else
-                value = runSQL(EntitySQL.PATIENT_NOTIFICATIONS,
+                    break;
+                case ALL:
+                    value = runSQL(EntitySQL.PATIENT_NOTIFICATION,
                                 PMSSQL.READ_ALL_PATIENT_NOTIFICATIONS, 
                                 patientNotificationCollection);
-            
-            if (value.getIsPatientNotificationCollection())
-                result = (PatientNotification.Collection)value;
-
-            return result;
+                    break;
+                case ALL_FOR_PATIENT:
+                    value = runSQL(EntitySQL.PATIENT_NOTIFICATION,
+                                PMSSQL.READ_PATIENT_NOTIFICATIONS_FOR_PATIENT, 
+                                patientNotificationCollection);
+                    break;
+            }
+            if (value!=null){
+                    if (value.getIsPatientNotificationCollection()){
+                        result = (PatientNotification.Collection)value;
+                        return result;
+                    }else{
+                        throw new StoreException(
+                            message + "StoreException raised -> unexpected data type returned from persistent store "
+                                + "in method AccessStore::read(PatientNotification.Collection)\n",
+                            StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED); 
+                    }
+            }else{
+                throw new StoreException(
+                    message + "StoreException raised -> null value returned from persistent store "
+                        + "in method AccessStore::read(PatientNotification.Collection)\n",
+                    StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
         }catch (SQLException ex) {
             message = message + "SQLException message -> " + ex.getMessage() + "\n";
             throw new StoreException(
@@ -3115,12 +3301,71 @@ public class AccessStore extends Store {
     
     @Override
     public ThePatient read(ThePatient p) throws StoreException {
-        return null;
+        EntityStoreType entity = null;
+        boolean result = false;
+        ThePatient thePatient = null;
+        try {//ensure auto commit setting switched on
+            if (getPMSConnection().getAutoCommit()) {
+                getPMSConnection().setAutoCommit(true);
+            }
+            entity
+                    = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_WITH_KEY, p);
+            if (entity == null) {
+                //if (patients.isEmpty()){//patient with this key not found
+                throw new StoreException(
+                        "Could not find patient with key = " + String.valueOf(p.getKey() + " in AccessStore::read(ThePatient)"),
+                        StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
+            } else {
+                ThePatient g = null;
+                thePatient = (ThePatient) entity;
+                //patient = patients.get(0);
+                if (thePatient.getGuardian() != null) {
+                    entity = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_WITH_KEY, thePatient.getGuardian());
+                    if (entity != null) {
+                        g = (ThePatient) entity;
+                        thePatient.setGuardian(g);
+                    }
+                }
+            }
+            result = true;
+            return thePatient;
+        } catch (SQLException ex) {
+            message = "SQLException -> " + ex.getMessage() + "\n";
+            throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::read(ThePatient p)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
     }
 
     @Override
     public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
-        return null;
+        EntityStoreType value = null;
+        ThePatient.Collection result = null;
+        try {
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            value = runSQL(EntitySQL.PATIENT,PMSSQL.READ_ALL_PATIENTS,null);
+            if (value!=null){
+                if (value.getIsPatients()){
+                    result = (ThePatient.Collection)value;
+                    return result;
+                }else{
+                    throw new StoreException(
+                        "StoreException raised -> unexpected data type returned from persistent store "
+                            + "in method AccessStore::read(ThePatient.Collection)\n",
+                        StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED); 
+                }
+            }else{
+                throw new StoreException(
+                    "StoreException raised -> null value returned from persistent store "
+                        + "in method AccessStore::read(ThePatient.Collection)\n",
+                    StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        }catch (SQLException ex) {
+            message = ex.getMessage() + "SQLException message -> " + ex.getMessage() + "\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::read(ThePatient.Collection)\n"
+                    + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
     }
     
     @Override
@@ -3525,6 +3770,25 @@ public class AccessStore extends Store {
     @Override
     public void update(ThePatient p) throws StoreException {
         
+    }
+    
+    /**
+     * method sends the specified pn to persistent store
+     * @param pn
+     * @throws StoreException if exception arises in transaction control
+     */
+    @Override
+    public void update(PatientNotification pn)throws StoreException{
+        try {
+            if (getPMSConnection().getAutoCommit()) {
+                getPMSConnection().setAutoCommit(true);
+            }
+            runSQL(EntitySQL.PATIENT_NOTIFICATION, PMSSQL.UPDATE_PATIENT_NOTIFICATION,pn);
+        } catch (SQLException ex) {
+            message = "SQLException -> " + ex.getMessage() + "\n";
+            throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::update(Patient)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
     }
     
     @Override
@@ -4744,8 +5008,33 @@ public class AccessStore extends Store {
         return null;
     }
     
-    private EntityStoreType doPatientPMSSQL(PMSSQL q, EntityStoreType entity){
-        return null;
+    private EntityStoreType doPatientPMSSQL(PMSSQL q, EntityStoreType entity)throws StoreException{
+        EntityStoreType result = null;
+        String sql = null;
+        switch (q){
+            case INSERT_PATIENT:
+                sql
+                    = "INSERT INTO Patient "
+                    + "(title, forenames, surname, line1, line2,"
+                    + "town, county, postcode,phone1, phone2, gender, dob,"
+                    + "isGuardianAPatient, recallFrequency, recallDate, notes,pid) "
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                doInsertPatient(sql, entity);
+                break;
+            case READ_ALL_PATIENTS:
+                sql = "SELECT * FROM Patient ORDER BY surname, forenames ASC;";;
+                result = doReadAllPatients(sql);
+                break;
+            case READ_PATIENT_WITH_KEY:
+                sql = "SELECT pid, title, forenames, surname, line1, line2, "
+                        + "town, county, postcode, gender, dob, isGuardianAPatient, "
+                        + "phone1, phone2, recallFrequency, recallDate, notes, guardianKey "
+                        + "FROM Patient "
+                        + "WHERE pid=?;";
+                result = doReadPatientWithKey(sql, entity);
+                break;
+        }
+        return result;
     }
     
     private EntityStoreType doPatientsPMSSQL(PMSSQL q, EntityStoreType entity){
@@ -4769,12 +5058,84 @@ public class AccessStore extends Store {
                 break;
             case READ_PATIENT_NOTIFICATION_WITH_KEY:
                 sql = "SELECT * "
-                        + "FROM PatientNotificaion "
+                        + "FROM PatientNotification "
                         + "WHERE pid = ?;";
                 result = doReadPatientNotificationWithKey(sql, entity);
                 break;
+            case READ_PATIENT_NOTIFICATIONS_FOR_PATIENT:
+                sql = "SELECT patientToNotify, notificationDate, notificationText, isActioned, isDeleted pid "
+                        + "FROM PatientNotification "
+                        + "WHERE patientToNotify = ?;";
+                result = doReadPatientNotificationsForPatient(sql, entity);
+                break;
+            case READ_UNACTIONED_PATIENT_NOTIFICATIONS:
+                sql = "SELECT * FROM PatientNotification "
+                        + "WHERE IsActioned = false "
+                        + "ORDER BY notificationDate DESC;";
+                result = doReadPatientNotifications(sql);
+                break;
+            case READ_ALL_PATIENT_NOTIFICATIONS:
+                sql = "SELECT * FROM PatientNotification ORDER BY notificationDate DESC;";
+                result = doReadPatientNotifications(sql);
+                break; 
+            case UPDATE_PATIENT_NOTIFICATION:
+                sql = "UPDATE PatientNotification "
+                        + "SET patientToNotify = ?, "
+                        + "notificationDate = ?, "
+                        + "notificationText = ?, "
+                        + "isActioned = ? "
+                        + "WHERE pid = ?;";
+                doUpdatePatientNotification(sql, entity);                
         }
         return result;
+    }
+    
+    private void doInsertPatient(String sql, EntityStoreType entity)throws StoreException{
+        ThePatient thePatient;
+        if (entity != null) {
+            if (entity.getIsPatient()) {
+                thePatient = (ThePatient) entity;
+                try {
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.setString(1, thePatient.getName().getTitle());
+                    preparedStatement.setString(2, thePatient.getName().getForenames());
+                    preparedStatement.setString(3, thePatient.getName().getSurname());
+                    preparedStatement.setString(4, thePatient.getAddress().getLine1());
+                    preparedStatement.setString(5, thePatient.getAddress().getLine2());
+                    preparedStatement.setString(6, thePatient.getAddress().getTown());
+                    preparedStatement.setString(7, thePatient.getAddress().getCounty());
+                    preparedStatement.setString(8, thePatient.getAddress().getPostcode());
+                    preparedStatement.setString(9, thePatient.getPhone1());
+                    preparedStatement.setString(10, thePatient.getPhone2());
+                    preparedStatement.setString(11, thePatient.getGender());
+                    if (thePatient.getDOB() != null) {
+                        preparedStatement.setDate(12, java.sql.Date.valueOf(thePatient.getDOB()));
+                    } else {
+                        preparedStatement.setDate(12, java.sql.Date.valueOf(LocalDate.of(1899, 1, 1)));
+                    }
+                    preparedStatement.setBoolean(13, thePatient.getIsGuardianAPatient());
+                    preparedStatement.setInt(14, thePatient.getRecall().getDentalFrequency());
+                    if (thePatient.getRecall().getDentalDate() != null) {
+                        preparedStatement.setDate(15, java.sql.Date.valueOf(thePatient.getRecall().getDentalDate()));
+                    } else {
+                        preparedStatement.setDate(15, java.sql.Date.valueOf(LocalDate.of(1899, 1, 1)));
+                    }
+                    preparedStatement.setString(16, thePatient.getNotes());
+                    preparedStatement.setLong(17, thePatient.getKey());
+                    preparedStatement.executeUpdate();
+                } catch (SQLException ex) {
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doInsertPatient()",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+            } else {
+                String message = "StoreException -> entity invalidly defined, expected patient object, in AccessStore::doInsertPatient()";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> entity undefined in AccessStore::doInsertPatient()";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        }
     }
     
     private EntityStoreType doInsertPatientNotification(String sql, EntityStoreType entity) throws StoreException{
@@ -4806,6 +5167,117 @@ public class AccessStore extends Store {
         return null;
     }
     
+    private void doUpdatePatientNotification(String sql, EntityStoreType entity) throws StoreException{
+        PatientNotification  patientNotification = null;
+        if (entity != null) {
+            if (entity.getIsPatientNotification()) {
+                patientNotification = (PatientNotification) entity;
+                try {
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.setLong(1, patientNotification.getPatient().getKey());
+                    preparedStatement.setDate(2, java.sql.Date.valueOf(patientNotification.getNotificationDate()));
+                    preparedStatement.setString(3, patientNotification.getNotificationText());
+                    preparedStatement.setBoolean(4, patientNotification.getIsActioned());
+                    preparedStatement.setLong(5, patientNotification.getKey());
+                    preparedStatement.execute();
+                } catch (SQLException ex) {
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doUpdatePatientNotification()",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+            } else {
+                String message = "StoreException -> patient notification defined invalidly in doUpdatePatientNotification()";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> patient notificaion undefined in doUpdatePatientNotification()";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        }
+    }
+    
+    private EntityStoreType doReadAllPatients(String sql) throws StoreException{
+        EntityStoreType result = null;
+        
+        try {
+            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+            ResultSet rs = preparedStatement.executeQuery();
+            ThePatient patient = new ThePatient();
+            result = get(patient.getCollection(), rs);
+            return result;
+        } catch (SQLException ex) {
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                    + "StoreException message -> exception raised in AccessStore::runSQL(PatientManagementSystemSQL..) during a READ_ALL_PATIENTS statement",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }   
+    }
+    
+    private EntityStoreType doReadPatientWithKey(String sql, EntityStoreType entity)throws StoreException{
+        EntityStoreType result = null;
+        ThePatient patient = null;
+        if (entity != null){
+            if (entity.getIsPatient()){
+                patient = (ThePatient)entity;
+                try {
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.setLong(1, patient.getKey());
+                    ResultSet rs = preparedStatement.executeQuery();
+                    result = get(new ThePatient(), rs);
+                } catch (SQLException ex) {
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doReadPatientWithKey(sql, EntityStoreType)",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+            } else {
+                String message = "StoreException -> entity not a patient object in AccessStore::doReadPatientWithKey(sql, EntityStoreType)";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> entity undefined in AccessStore::doReadPatientWithKey(sql, EntityStoreType)";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        }
+        return result;
+    }
+    
+    private EntityStoreType doReadPatientNotifications(String sql)throws StoreException{
+        EntityStoreType result = null;
+        try {
+            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+            ResultSet rs = preparedStatement.executeQuery();
+            result = get(new PatientNotification().getCollection(), rs);
+            return result;
+        } catch (SQLException ex) {
+            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                    + "StoreException message -> exception raised in AccessStore::doReadPatientNotifications(sql))",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+    }
+    
+    private EntityStoreType doReadPatientNotificationsForPatient(String sql, EntityStoreType entity)throws StoreException{
+        PatientNotification patientNotification = null;
+        if (entity != null) {
+            if (entity.getIsPatient()) {
+                ThePatient patient = (ThePatient) entity;
+                try {
+                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    preparedStatement.setLong(1, patient.getKey());
+                    ResultSet rs = preparedStatement.executeQuery();
+                    patientNotification = new PatientNotification();
+                    return get(patientNotification.getCollection(), rs);
+                } catch (SQLException ex) {
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doReadPatientNotificationsForPatient()",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+            } else {
+                String message = "StoreException -> unexpected entity definition, expecting a patient object, in AccessStore::doReadPatientNotificationForPatient()";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> patient notification undefined in Access::doReadPatientNotificationForPatient()";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        }
+    }
+    
     private EntityStoreType doReadPatientNotificationWithKey(String sql, EntityStoreType entity) throws StoreException{
         PatientNotification patientNotification = null;
         if (entity != null) {
@@ -4829,47 +5301,6 @@ public class AccessStore extends Store {
             String message = "StoreException -> patient notification undefined in Access::doReadPatientNotificationWithKey()";
             throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
         }
-    }
-    
-    private EntityStoreType doPatientNotificationsPMSSQL(PMSSQL q, EntityStoreType entity)throws StoreException{
-        EntityStoreType result = null;
-        String sql = null;
-        switch (q){
-            case READ_UNACTIONED_PATIENT_NOTIFICATIONS:
-                sql = "SELECT * FROM PatientNotification WHERE IsActioned = false;";
-                if (entity != null) {
-                    if (entity.getIsPatientNotificationCollection()) {
-                        try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
-                            ResultSet rs = preparedStatement.executeQuery();
-                            result = get((PatientNotification.Collection)entity, rs);
-                        } catch (SQLException ex) {
-                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                                    + "StoreException message -> exception raised in AccessStore::runSQL(PMSSQL.READ_UNACTIONED_PATIENT_NOTIFICATIONS)",
-                                    StoreException.ExceptionType.SQL_EXCEPTION);
-                        }
-                    }
-                }
-                break;
-            case READ_ALL_PATIENT_NOTIFICATIONS:{
-                sql = "SELECT * FROM PatientNotification;";
-                if (entity != null) {
-                    if (entity.getIsPatientNotificationCollection()) {
-                        try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
-                            ResultSet rs = preparedStatement.executeQuery();
-                            result = get((PatientNotification.Collection)entity, rs);
-                        } catch (SQLException ex) {
-                            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                                    + "StoreException message -> exception raised in AccessStore::runSQL(PMSSQL.READ_ALL_PATIENT_NOTIFICATIONS)",
-                                    StoreException.ExceptionType.SQL_EXCEPTION);
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        return result;
     }
     
     private EntityStoreType doSurgeryDaysAssignmentPMSSQL(PMSSQL q, EntityStoreType entity){

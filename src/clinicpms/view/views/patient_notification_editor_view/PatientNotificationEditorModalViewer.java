@@ -91,6 +91,9 @@ public class PatientNotificationEditorModalViewer extends View {
             cmbSelectPatient.setSelectedItem(patientNotification.getPatient());
             dpNotificationDate.setDate(patientNotification.getNotificationDate());
             txaNotificationText.setText(patientNotification.getNotificationText());
+            if (patientNotification.getIsActioned())
+                this.rdbNotificationActioned.setSelected(true);
+            else this.rdbNotificationUnactioned.setSelected(true);
             this.cmbSelectPatient.setEditable(false);
             this.btnCreateUpdatePatientNotification.setText(ViewController.ViewMode.Update.toString());
         }
@@ -207,8 +210,8 @@ public class PatientNotificationEditorModalViewer extends View {
         toUse.add(this);
         this.setLayer(JLayeredPane.MODAL_LAYER);
         centreViewOnDesktop(x.getParent(),this);
-        this.initialiseView();
-        this.setVisible(true);
+        //this.initialiseView();
+        //this.setVisible(true);
         
         
         ActionEvent actionEvent = new ActionEvent(this,
@@ -251,6 +254,8 @@ public class PatientNotificationEditorModalViewer extends View {
         /**
          * initialise ui
          */
+        setVisible(true);
+        populatePatientSelector(this.cmbSelectPatient);
         doReceivedPatientNotification(); 
     }
     
@@ -302,7 +307,7 @@ public class PatientNotificationEditorModalViewer extends View {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        cmbSelectPatient = new javax.swing.JComboBox<Patient>();
+        cmbSelectPatient = new javax.swing.JComboBox<ThePatient>();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         dpNotificationDate = new com.github.lgooddatepicker.components.DatePicker();
@@ -326,7 +331,7 @@ public class PatientNotificationEditorModalViewer extends View {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<Patient>());
+        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<ThePatient>());
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -432,6 +437,11 @@ public class PatientNotificationEditorModalViewer extends View {
         });
 
         btnCloseView.setText("Close view");
+        btnCloseView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloseViewActionPerformed(evt);
+            }
+        });
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Notification history", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
@@ -516,14 +526,24 @@ public class PatientNotificationEditorModalViewer extends View {
         else doRequestUpdatePatientNotification();
     }//GEN-LAST:event_btnCreateUpdatePatientNotificationActionPerformed
 
+    private void btnCloseViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseViewActionPerformed
+        doViewCloseAction();
+    }//GEN-LAST:event_btnCloseViewActionPerformed
+
+    private void doViewCloseAction(){
+        String message = "Are you sure you want to close the notification editor window?";
+        int response = JOptionPane.showConfirmDialog(
+                this, message, "Patient notification editor", JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.YES_OPTION){
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                EntityDescriptor.PatientNotificationViewControllerActionEvent.MODAL_VIEWER_DEACTIVATED.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
+    }
+    
     private void doRequestNewPatientNotification(){
         if (doValidatePatientNotificationRequest()){
-            PatientNotification patientNotification = new PatientNotification();
-            patientNotification.setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
-            patientNotification.setNotificationDate(this.dpNotificationDate.getDate());
-            patientNotification.setNotificationText(this.txaNotificationText.getText());
-            getEntityDescriptor().getRequest().setPatientNotification(patientNotification);
-
             ActionEvent actionEvent = new ActionEvent(
                 this,ActionEvent.ACTION_PERFORMED,
                 EntityDescriptor.PatientNotificationViewControllerActionEvent.
@@ -533,7 +553,13 @@ public class PatientNotificationEditorModalViewer extends View {
     }
     
     private void doRequestUpdatePatientNotification(){
-        
+        if (doValidatePatientNotificationRequest()){
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                EntityDescriptor.PatientNotificationViewControllerActionEvent.
+                        PATIENT_NOTIFICATION_EDITOR_UPDATE_NOTIFICATION_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
     }
     
     private boolean doValidatePatientNotificationRequest(){
@@ -563,6 +589,19 @@ public class PatientNotificationEditorModalViewer extends View {
                     JOptionPane.WARNING_MESSAGE);
             }
         }
+        if (result){
+            PatientNotification patientNotification;
+            if (getViewMode().equals(ViewController.ViewMode.Create))
+                patientNotification = new PatientNotification();
+            else
+                patientNotification = getEntityDescriptor().getPatientNotification();
+            patientNotification.setPatient((ThePatient)this.cmbSelectPatient.getSelectedItem());
+            patientNotification.setNotificationDate(this.dpNotificationDate.getDate());
+            patientNotification.setNotificationText(this.txaNotificationText.getText());
+            patientNotification.setIsActioned(rdbNotificationActioned.isSelected());
+            getEntityDescriptor().getRequest().setPatientNotification(patientNotification);
+        }
+        else getEntityDescriptor().getRequest().setPatientNotification(null);
         return result;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -570,7 +609,7 @@ public class PatientNotificationEditorModalViewer extends View {
     private javax.swing.JButton btnCreateUpdatePatientNotification;
     private javax.swing.JButton btnDeletePatientNotification;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<Patient> cmbSelectPatient;
+    private javax.swing.JComboBox<ThePatient> cmbSelectPatient;
     private com.github.lgooddatepicker.components.DatePicker dpNotificationDate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

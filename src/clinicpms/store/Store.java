@@ -38,11 +38,8 @@ public abstract class Store implements IAppointmentsStoreAction,
     
     protected enum EntitySQL {
                             APPOINTMENT,
-                            APPOINTMENTS,
                             PATIENT,
-                            PATIENTS,
                             PATIENT_NOTIFICATION,
-                            PATIENT_NOTIFICATIONS,
                             SURGERY_DAYS_ASSIGNMENT}
 
     protected enum PMSSQL   {
@@ -62,10 +59,11 @@ public abstract class Store implements IAppointmentsStoreAction,
                             READ_APPOINTMENT_HIGHEST_KEY,
                             READ_ALL_PATIENT_NOTIFICATIONS,
                             READ_UNACTIONED_PATIENT_NOTIFICATIONS,
-                            INSERT_PATIENT_NOTIFICATION,
-                            UPDATE_PATIENT_NOTIFICATION,
                             READ_PATIENT_NOTIFICATION_HIGHEST_KEY,
                             READ_PATIENT_NOTIFICATION_WITH_KEY,
+                            READ_PATIENT_NOTIFICATIONS_FOR_PATIENT,
+                            INSERT_PATIENT_NOTIFICATION,
+                            UPDATE_PATIENT_NOTIFICATION,
                             DELETE_PATIENT_NOTIFICATION,
                             PATIENT_NOTIFICATION_CREATE, 
                             PATIENT_NOTIFICATION_DROP,

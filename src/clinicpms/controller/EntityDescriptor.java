@@ -124,11 +124,13 @@ public class EntityDescriptor {
                                             ACTION_PATIENT_NOTIFICATION_REQUEST,
                                             CREATE_PATIENT_NOTIFICATION_REQUEST,
                                             UPDATE_PATIENT_NOTIFICATION_REQUEST,
+                                            UNACTIONED_PATIENT_NOTIFICATIONS_REQUEST,
                                             PATIENT_NOTIFICATIONS_REQUEST,
                                             PATIENT_NOTIFICATION_EDITOR_CLOSE_VIEW_REQUEST,
                                             PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST,
                                             PATIENT_NOTIFICATION_EDITOR_UPDATE_NOTIFICATION_REQUEST,
-                                            MODAL_VIEWER_ACTIVATED
+                                            MODAL_VIEWER_ACTIVATED,
+                                            MODAL_VIEWER_DEACTIVATED
                                             }   
     public static enum PatientNotificationViewControllerPropertyChangeEvent{
                                             RECEIVED_ALL_PATIENT_NOTIFICATIONS,

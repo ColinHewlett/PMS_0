@@ -11,6 +11,7 @@ import clinicpms.store.StoreException;
 import clinicpms.store.IPMSStoreAction;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
 /**
  *
  * @author colin
@@ -18,15 +19,14 @@ import java.util.ArrayList;
 public class PatientNotification extends EntityStoreType {
     private PatientNotification.Collection collection = null;
     private Integer key = null;
-    private Patient patient = null;
+    private ThePatient patient = null;
     private LocalDate date = null;
     private String notification = null;
     private Boolean isActioned = false;
     private Boolean isDeleted = false;
     private Scope scope = null;
-    
-    
-    public enum Scope{ALL,UNACTIONED,ALL_BY_KEY, UNACTIONED_BY_KEY};
+
+    public enum Scope{ALL,UNACTIONED,ALL_FOR_PATIENT, UNACTIONED_FOR_PATIENT};
     
     public Collection getCollection(){
         return collection;
@@ -74,7 +74,7 @@ public class PatientNotification extends EntityStoreType {
         return notification;
     }
     
-    public Patient getPatient(){
+    public ThePatient getPatient(){
         return patient;
     }
     
@@ -98,8 +98,13 @@ public class PatientNotification extends EntityStoreType {
         notification = value;
     }
     
-    public void setPatient(Patient value){
+    public void setPatient(ThePatient value){
         patient = value;
+    }
+    
+    public void action()throws StoreException{
+        setIsActioned(true);
+        this.update();
     }
     
     /**
@@ -116,9 +121,24 @@ public class PatientNotification extends EntityStoreType {
         store.insert(this);
     }
     
+    /**
+     * method fetches from persistent store a patient notification object
+     * -- the concrete store class returns a patient object empty of all values except patient's key value
+     * -- to return a fully initialised patient per notification object, the key value must be used to fetch from store the patient object
+     * @return PatientNotification
+     * @throws StoreException 
+     */
     public PatientNotification read() throws StoreException{
         IPMSStoreAction store = Store.FACTORY(this);
-        return store.read(this);
+        PatientNotification patientNotification = store.read(this);
+        ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
+        patientNotification.setPatient(patient.readThePatient());
+        return patientNotification;
+    }
+    
+    public void update()throws StoreException{
+        IPMSStoreAction store = Store.FACTORY(this);
+        store.update(this);
     }
     
     public class Collection extends EntityStoreType{
@@ -144,13 +164,31 @@ public class PatientNotification extends EntityStoreType {
             collection = value;
         }
 
+        /**
+         * method fetches from  store either all notifications for this notification's patient; or all (typically unactioned only) patient notifications recorded on the system
+         * -- an additional read to fetch the patient details is not required for the former case
+         * -- in the latter case, an additional read from store fetches the patient details associated with the notification 
+         * @throws StoreException 
+         */
         public void read()throws StoreException{
             IPMSStoreAction store = Store.FACTORY(this);
-            /**
-             * is the next line of code redundant?
-             * -- if the PatientNotification.Collection object is the same as "this" one
-             */
             set(store.read(this).get());
+            Iterator it = get().iterator();
+            switch(getScope()){
+                case ALL_FOR_PATIENT:
+                    while(it.hasNext()) {
+                        PatientNotification patientNotification = (PatientNotification)it.next();
+                        patientNotification.setPatient(PatientNotification.this.getPatient());     
+                    }
+                    break;
+                default:
+                    while(it.hasNext()){
+                        PatientNotification patientNotification = (PatientNotification)it.next();
+                        ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
+                        patientNotification.setPatient(patient.readThePatient());
+                    }
+                    break;        
+            }
         }
     }
 }

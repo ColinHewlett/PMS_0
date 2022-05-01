@@ -894,7 +894,9 @@ public class DesktopViewController extends ViewController{
             
             
         }catch (StoreException ex){
-            
+            String message = ex.getMessage();
+            JOptionPane.showMessageDialog(this.getView(), 
+                    message, "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
         }
     }
                 

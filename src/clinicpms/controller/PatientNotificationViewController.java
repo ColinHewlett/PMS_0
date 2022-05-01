@@ -8,6 +8,7 @@ package clinicpms.controller;
 //import clinicpms.controller.EntityDescriptor;
 //import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
+import java.beans.PropertyVetoException;
 /**
  * Patients was used to replace the use of EntityDescriptor.Patient
  * -- EntityDescriptor.thePatient getter/setters a partial approach to this end
@@ -105,6 +106,12 @@ public class PatientNotificationViewController extends ViewController{
         EntityDescriptor.PatientNotificationViewControllerActionEvent actionCommand =
                EntityDescriptor.PatientNotificationViewControllerActionEvent.valueOf(e.getActionCommand());
         switch (actionCommand){
+            case UNACTIONED_PATIENT_NOTIFICATIONS_REQUEST:
+                doUnactionedPatientNotificationsRequest();
+                break;
+            case PATIENT_NOTIFICATIONS_REQUEST:
+                doPatientNotificationsRequest();
+                break;
             case ACTION_PATIENT_NOTIFICATION_REQUEST:
                 doActionPatientNotificationRequest();
                 break;
@@ -117,8 +124,52 @@ public class PatientNotificationViewController extends ViewController{
         }
     }
     
+    private void doUnactionedPatientNotificationsRequest(){
+        setNewEntityDescriptor(new EntityDescriptor());
+        PatientNotification patientNotification = new PatientNotification();
+        patientNotification.getCollection().setScope(PatientNotification.Scope.UNACTIONED);
+        getPatientNotificationsFor(patientNotification);
+    }
+    
+    private void doPatientNotificationsRequest(){
+        setNewEntityDescriptor(new EntityDescriptor());
+        PatientNotification patientNotification = new PatientNotification();
+        patientNotification.getCollection().setScope(PatientNotification.Scope.ALL);
+        getPatientNotificationsFor(patientNotification);
+    }
+    
+    private void getPatientNotificationsFor(PatientNotification notification){
+        try{
+            notification.getCollection().read();
+            getNewEntityDescriptor().setPatientNotifications(
+                    notification.getCollection().get());
+            pcSupportForView.addPropertyChangeListener(this.view);
+            pcEvent = new PropertyChangeEvent(this,
+               EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent.RECEIVED_PATIENT_NOTIFICATIONS.toString(),
+               getOldEntityDescriptor(),getNewEntityDescriptor());
+            pcSupportForView.firePropertyChange(pcEvent);
+            pcSupportForView.removePropertyChangeListener(this.view);
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),
+                    "Patient notification controller error",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
     private void doActionPatientNotificationRequest(){
-        
+        ArrayList<PatientNotification> notifications = 
+                getEntityDescriptorFromView().getRequest().getPatientNotifications();
+        try{
+            for (PatientNotification patientNotification : notifications){
+                patientNotification.action();
+                doUnactionedPatientNotificationsRequest();
+            }
+        }catch (StoreException ex){
+            displayErrorMessage(
+                    ex.getMessage(),
+                    "Patient notification controller error", 
+                    JOptionPane.WARNING_MESSAGE);
+        } 
     }
     
     /**
@@ -128,7 +179,6 @@ public class PatientNotificationViewController extends ViewController{
      * -- 
      */
     private void doCreatePatientNotificationRequest(){
-        clinicpms.model.Patients patients = null;
         setOldEntityDescriptor(getNewEntityDescriptor());
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().setPatientNotifications(new ArrayList<>());
@@ -144,7 +194,7 @@ public class PatientNotificationViewController extends ViewController{
             patientCollection.read();
             getNewEntityDescriptor().setThePatients(patientCollection.get());
             View.setViewer(View.Viewer.PATIENT_NOTIFICATION_EDITOR_VIEW);
-            setSecondaryView(View.factory(this, getNewEntityDescriptor(), desktopView));
+            secondaryView = View.factory(this, getNewEntityDescriptor(), desktopView);
             //note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
             ActionEvent actionEvent = new ActionEvent(
                    this,ActionEvent.ACTION_PERFORMED,
@@ -155,18 +205,41 @@ public class PatientNotificationViewController extends ViewController{
             displayErrorMessage(message,"PatientNotificaionViewController error",JOptionPane.WARNING_MESSAGE);
         }
     }
-    
+
     private void doUpdatePatientNotificationRequest(){
-        
+        PatientNotification notification = getEntityDescriptorFromView().getRequest().getPatientNotification();
+        setOldEntityDescriptor(getNewEntityDescriptor());
+        setNewEntityDescriptor(new EntityDescriptor());
+        getNewEntityDescriptor().setPatientNotification(notification);
+        try{
+            ThePatient patient = new ThePatient();
+            ThePatient.Collection  patientCollection = patient.getCollection();
+            patientCollection.read();
+            getNewEntityDescriptor().setThePatients(patientCollection.get());
+            View.setViewer(View.Viewer.PATIENT_NOTIFICATION_EDITOR_VIEW);
+            secondaryView = View.factory(this, getNewEntityDescriptor(), desktopView);
+            //note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+            ActionEvent actionEvent = new ActionEvent(
+                   this,ActionEvent.ACTION_PERFORMED,
+                   DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+            this.myController.actionPerformed(actionEvent);
+        }catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"PatientNotificaionViewController error",JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void doSecondaryViewActionRequest(ActionEvent e)throws StoreException{
         View the_view = (View)e.getSource();
+        setSecondaryView(the_view);
         switch (the_view.getMyViewType()){
             case PATIENT_NOTIFICATION_EDITOR_VIEW:
                 EntityDescriptor.PatientNotificationViewControllerActionEvent actionCommand =
                EntityDescriptor.PatientNotificationViewControllerActionEvent.valueOf(e.getActionCommand());
                 switch (actionCommand){
+                    case MODAL_VIEWER_ACTIVATED:
+                        getSecondaryView().initialiseView();
+                        break;
                     case PATIENT_NOTIFICATION_EDITOR_CREATE_NOTIFICATION_REQUEST:
                         doPatientNotificationEditorCreateNotificationRequest();
                         break;
@@ -176,7 +249,8 @@ public class PatientNotificationViewController extends ViewController{
                     case PATIENT_NOTIFICATION_EDITOR_CLOSE_VIEW_REQUEST:
                         doPatientNotificationEditorCloseViewRequest();
                         break;
-                    case MODAL_VIEWER_ACTIVATED:
+                    case MODAL_VIEWER_DEACTIVATED:
+                        closeSecondaryView();
                         break;
                 }
                 break;
@@ -188,43 +262,51 @@ public class PatientNotificationViewController extends ViewController{
                         JOptionPane.WARNING_MESSAGE);
         }
     }
-    
+
     private void doPatientNotificationEditorCreateNotificationRequest()throws StoreException{
         PatientNotification patientNotification = 
                 getEntityDescriptorFromView().getRequest().getPatientNotification();
         if (patientNotification!=null){
             patientNotification.insert();
-            PatientNotification newPatientNotification = patientNotification.read();
-            setNewEntityDescriptor(new EntityDescriptor());
-            getNewEntityDescriptor().setPatientNotification(newPatientNotification);
-            this.pcSupportForView.addPropertyChangeListener(getSecondaryView());
-            pcEvent = new PropertyChangeEvent(this,
-                    EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent.
-                        RECEIVED_PATIENT_NOTIFICATION.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupportForView.firePropertyChange(pcEvent);
-            this.pcSupportForView.removePropertyChangeListener(getSecondaryView());
-            
-            
-            PatientNotification.Collection patientNotificationCollection = patientNotification.getCollection();
-            patientNotificationCollection.setScope(PatientNotification.Scope.ALL_BY_KEY);
-            ArrayList<PatientNotification> patientNotifications = patientNotificationCollection.get();
-            setNewEntityDescriptor(new EntityDescriptor());
-            getNewEntityDescriptor().setPatientNotifications(patientNotifications);
-            this.pcSupportForView.addPropertyChangeListener(getSecondaryView());
-            pcEvent = new PropertyChangeEvent(this,
-                    EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent.
-                        RECEIVED_PATIENT_NOTIFICATIONS.toString(),
-                    getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupportForView.firePropertyChange(pcEvent);
-            this.pcSupportForView.removePropertyChangeListener(getSecondaryView());
+            closeSecondaryView();
+            sendPrimaryViewPatientNotifications();
             
         }
     }
     
-    private void doPatientNotificationEditorUpdateNotificationRequest(){
-        
+    private void doPatientNotificationEditorUpdateNotificationRequest()throws StoreException{
+        PatientNotification patientNotification = 
+                getEntityDescriptorFromView().getRequest().getPatientNotification();
+        if (patientNotification!=null){
+            patientNotification.update();
+            closeSecondaryView();
+            sendPrimaryViewPatientNotifications();
+        }
+            
     }
+    
+    private void sendPrimaryViewPatientNotifications()throws StoreException{
+        PatientNotification maPatientNotification = new PatientNotification();
+        PatientNotification.Collection patientNotificationCollection = maPatientNotification.getCollection();
+        patientNotificationCollection.setScope(PatientNotification.Scope.UNACTIONED);
+        patientNotificationCollection.read();
+        setNewEntityDescriptor(new EntityDescriptor());
+        getNewEntityDescriptor().setPatientNotifications(patientNotificationCollection.get());
+        pcSupportForView.addPropertyChangeListener(this.view);
+        pcEvent = new PropertyChangeEvent(this,
+           EntityDescriptor.PatientNotificationViewControllerPropertyChangeEvent.RECEIVED_PATIENT_NOTIFICATIONS.toString(),
+           getOldEntityDescriptor(),getNewEntityDescriptor());
+        pcSupportForView.firePropertyChange(pcEvent);
+        pcSupportForView.removePropertyChangeListener(this.view);  
+    }
+    
+    private void closeSecondaryView(){
+        try{
+            getSecondaryView().setClosed(true);
+        }catch (PropertyVetoException ex){
+
+        }
+    } 
     
     private void doPatientNotificationEditorCloseViewRequest(){
         
@@ -259,14 +341,9 @@ public class PatientNotificationViewController extends ViewController{
          * -- initialise its Collection with the stored unactioned notifications on the system
          * -- store the patient notification object in an EntityDescriptor object
          */
-        PatientNotification patientNotification = new PatientNotification();
-        patientNotification.getCollection().setScope(PatientNotification.Scope.UNACTIONED);
-        patientNotification.getCollection().read();
-        getNewEntityDescriptor().setPatientNotifications(
-                patientNotification.getCollection().get());
-        
         View.setViewer(View.Viewer.PATIENT_NOTIFICATION_VIEW);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
+        this.view.initialiseView();
         super.centreViewOnDesktop(desktopView, view);
     }
     

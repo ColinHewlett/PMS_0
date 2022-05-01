@@ -149,6 +149,11 @@ public class PostgreSQLStore extends Store {
     }
     
     @Override
+    public void update(PatientNotification p) throws StoreException{
+        
+    }
+    
+    @Override
     public void update(ThePatient p) throws StoreException{
         
     }

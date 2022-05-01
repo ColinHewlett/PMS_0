@@ -36,7 +36,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private final String SELECT_VIEW_MENU_TITLE = "Select view";
         private final String APPOINTMENT_VIEW_REQUEST_TITLE = "Appointment";
         private final String PATIENT_VIEW_REQUEST_TITLE = "Patient";
-        private final String PATIENT_NOTIFICATION_VIEW_REQUEST = "Outstanding patient notifications";
+        private final String PATIENT_NOTIFICATION_VIEW_REQUEST = "Patient notifications";
         
         private final String EXIT_VIEW_REQUEST_TITLE = "Exit the Clinic practice management system";
     

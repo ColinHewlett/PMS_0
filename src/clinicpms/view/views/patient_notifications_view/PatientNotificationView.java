@@ -6,40 +6,53 @@
 package clinicpms.view.views.patient_notifications_view;
 
 import clinicpms.view.View;
-import clinicpms.view.TableHeaderCellBorderRenderer;
 //import clinicpms.view.views.appontment_schedule_view.AppointmentsTableLocalDateTimeRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.model.PatientNotification;
-
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.time.format.DateTimeFormatter;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
 
 /**
  *
  * @author colin
  */
-public class PatientNotificationView extends View {
+public class PatientNotificationView extends View implements ItemListener {
     private View.Viewer myViewType = null;
     private EntityDescriptor entityDescriptor = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private ActionListener myController = null;
     private JTable tblPatientNotifications = null;
+
+    private final String DISPLAY_UNACTIONED_NOTIFICATIONS_TEXT = "display unactioned notifications";
+    private final String DISPLAY_ALL_NOTIFICATIONS_TEXT = "display all notifications";
+    private final String UI_UNACTIONED_NOTIFICATIONS_TITLE = "Outstanding patient notifications";
+    private final String UI_ALL_NOTIFICATIONS_TITLE = "Patient notifications";
+    
+    private String UITitle = UI_UNACTIONED_NOTIFICATIONS_TITLE;
+
+    private String getUITitle(){
+        return UITitle;
+    }
+    private void setUITitle(String title){
+        UITitle = title;
+    }
+    private void setEntityDescriptor(EntityDescriptor value){
+        entityDescriptor = value;
+    }
 
     /**
      * 
@@ -52,17 +65,36 @@ public class PatientNotificationView extends View {
             EntityDescriptor value) {
         this.setMyViewType(myViewType);
         this.myController = myController;
-        this.entityDescriptor = value;
-        initComponents();
-        this.tblPatientNotifications = new JTable(new PatientNotificationView4ColumnTableModel());
-        scrPatientNotificationView.setViewportView(this.tblPatientNotifications);
-        ViewController.setJTableColumnProperties(
-                tblPatientNotifications, 
-                scrPatientNotificationView.getPreferredSize().width, 
-                12,23,15,50);
-        this.populatePatientNotificationTable(
-                getEntityDescriptor().
-                        getPatientNotifications());
+        setEntityDescriptor(value);
+        initComponents();     
+    }
+    
+    @Override
+    public void itemStateChanged(ItemEvent e){
+        EntityDescriptor.PatientNotificationViewControllerActionEvent request = null;
+        String text = ((JRadioButton)e.getItem()).getText();
+        switch(text){
+            case DISPLAY_UNACTIONED_NOTIFICATIONS_TEXT:
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                    request = EntityDescriptor.
+                            PatientNotificationViewControllerActionEvent.
+                            UNACTIONED_PATIENT_NOTIFICATIONS_REQUEST;
+                            setUITitle(UI_UNACTIONED_NOTIFICATIONS_TITLE);
+                break;
+            case DISPLAY_ALL_NOTIFICATIONS_TEXT:
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                    request = EntityDescriptor.
+                            PatientNotificationViewControllerActionEvent.
+                            PATIENT_NOTIFICATIONS_REQUEST;
+                            setUITitle(UI_ALL_NOTIFICATIONS_TITLE);
+                break;
+        }
+        if (request!=null){
+            ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                request.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
     }
     
     /**
@@ -96,16 +128,36 @@ public class PatientNotificationView extends View {
      */
     @Override
     public void propertyChange(PropertyChangeEvent e){
-        
+        setEntityDescriptor((EntityDescriptor)e.getNewValue());
+        EntityDescriptor.
+                PatientNotificationViewControllerPropertyChangeEvent
+                propertyName = EntityDescriptor.
+                        PatientNotificationViewControllerPropertyChangeEvent.
+                        valueOf(e.getPropertyName());
+        switch (propertyName){
+            case RECEIVED_PATIENT_NOTIFICATIONS:
+                populatePatientNotificationTable(
+                        getEntityDescriptor().getPatientNotifications());
+                setTitle(getUITitle());
+                break;
+        }
     }
     
+    /**
+     * class assumes this method will be called by the controller; and initialises
+     * -- window properties
+     * -- unactioned notifications for display
+     * -- radio button event listeners 
+     * -- notifications table properties
+     * -- patient selector control from collection of patients stored in the EntutyDsecriptor
+     * -- sends controller request for unactioned notifications on the system
+     * 
+     */
     @Override
     public void initialiseView(){
         try{
             setVisible(true);
-            //setTitle("Patient contact list for appointments on " + getEntityDescriptor().getRequest().getDay().format(DateTimeFormatter.ofPattern("EEEE, MMM dd")));
-            
-            setTitle("Outstanding patient notifications currently on the system");
+            setTitle(getUITitle());
             setClosable(true);
             setMaximizable(false);
             setIconifiable(true);
@@ -116,6 +168,25 @@ public class PatientNotificationView extends View {
         catch (PropertyVetoException ex){
             
         }
+        this.rdbDisplayUnactionedNotifications.setSelected(true);
+        this.rdbDisplayAllNotifications.addItemListener(this);
+        this.rdbDisplayUnactionedNotifications.addItemListener(this);
+        this.tblPatientNotifications = new JTable(new PatientNotificationView4ColumnTableModel());
+        scrPatientNotificationView.setViewportView(this.tblPatientNotifications);
+        ViewController.setJTableColumnProperties(
+                tblPatientNotifications, 
+                scrPatientNotificationView.getPreferredSize().width, 
+                12,23,15,50);
+        this.tblPatientNotifications.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.tblPatientNotifications.setAutoCreateRowSorter(true);
+        this.populatePatientNotificationTable(
+                getEntityDescriptor().
+                        getPatientNotifications());
+        ActionEvent actionEvent = new ActionEvent(
+            this,ActionEvent.ACTION_PERFORMED,
+            EntityDescriptor.PatientNotificationViewControllerActionEvent.UNACTIONED_PATIENT_NOTIFICATIONS_REQUEST.toString());
+        this.getMyController().actionPerformed(actionEvent);
+        
     }
     
     @Override
@@ -128,6 +199,7 @@ public class PatientNotificationView extends View {
     }
     
     private void populatePatientNotificationTable(ArrayList<PatientNotification> patientNotifications){
+        this.tblPatientNotifications.setAutoCreateRowSorter(false);
         PatientNotificationView4ColumnTableModel model = 
                 (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
         model.removeAllElements();
@@ -136,6 +208,7 @@ public class PatientNotificationView extends View {
         while (it.hasNext()){
             ((PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel()).addElement(it.next());
         }
+        this.tblPatientNotifications.setAutoCreateRowSorter(true);
     }
 
     /**
@@ -163,10 +236,10 @@ public class PatientNotificationView extends View {
 
         buttonGroup1.add(rdbDisplayUnactionedNotifications);
         rdbDisplayUnactionedNotifications.setSelected(true);
-        rdbDisplayUnactionedNotifications.setText("display unactioned notifications");
+        rdbDisplayUnactionedNotifications.setText(DISPLAY_UNACTIONED_NOTIFICATIONS_TEXT);
 
         buttonGroup1.add(rdbDisplayAllNotifications);
-        rdbDisplayAllNotifications.setText("display all notifications");
+        rdbDisplayAllNotifications.setText(DISPLAY_ALL_NOTIFICATIONS_TEXT);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -276,27 +349,31 @@ public class PatientNotificationView extends View {
      * @param evt 
      */
     private void btnActionSelectedNotificationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActionSelectedNotificationsActionPerformed
-        // TODO add your handling code here:
+        boolean isError = false;
         if (this.tblPatientNotifications.getSelectedRow()==-1){
             JOptionPane.showMessageDialog(this, "no notifications have been selected and so cannot be actioned/removed from the list");
+            isError = true;
         }
-        int response = JOptionPane.NO_OPTION;
-        String message ="Are you sure you want to remove (action) all selected notifications from the list?";
-        response = JOptionPane.showConfirmDialog(this,message, "Action selected patient notifications", JOptionPane.YES_NO_OPTION);
-        if (response==JOptionPane.YES_OPTION){
-            PatientNotificationView4ColumnTableModel model = (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
-            ArrayList<PatientNotification> patientNotifications = new ArrayList<>();
-            int selectedRows[] = tblPatientNotifications.getSelectedRows();
-            for (int row : selectedRows){
-                PatientNotification patientNotification = (PatientNotification)model.getPatientNotifications().get(row);
-                patientNotifications.add(patientNotification);
+        if (!isError){
+            int response = JOptionPane.NO_OPTION;
+            String message ="Are you sure you want to remove (action) all selected notifications from the list?";
+            response = JOptionPane.showConfirmDialog(this,message, "Action selected patient notifications", JOptionPane.YES_NO_OPTION);
+            if (response==JOptionPane.YES_OPTION){
+                PatientNotificationView4ColumnTableModel model = (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
+                ArrayList<PatientNotification> patientNotifications = new ArrayList<>();
+                int selectedRows[] = tblPatientNotifications.getSelectedRows();
+                for (int row : selectedRows){
+                    PatientNotification patientNotification = (PatientNotification)model.getPatientNotifications().get(row);
+                    patientNotifications.add(patientNotification);
+                }
+                getEntityDescriptor().getRequest().setPatientNotifications(patientNotifications);
+                ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    EntityDescriptor.PatientNotificationViewControllerActionEvent.ACTION_PATIENT_NOTIFICATION_REQUEST.toString());
+                this.getMyController().actionPerformed(actionEvent); 
             }
-            getEntityDescriptor().getRequest().setPatientNotifications(patientNotifications);
-            ActionEvent actionEvent = new ActionEvent(
-                this,ActionEvent.ACTION_PERFORMED,
-                EntityDescriptor.PatientNotificationViewControllerActionEvent.ACTION_PATIENT_NOTIFICATION_REQUEST.toString());
-            this.getMyController().actionPerformed(actionEvent); 
-        } 
+        }
+         
     }//GEN-LAST:event_btnActionSelectedNotificationsActionPerformed
 
     private void btnAddNewNotificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddNewNotificationActionPerformed
@@ -309,13 +386,22 @@ public class PatientNotificationView extends View {
 
     private void btnEditSelectedNotificationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditSelectedNotificationActionPerformed
         // TODO add your handling code here:
+        boolean isError = false;
         if (this.tblPatientNotifications.getSelectedRow()==-1){
             JOptionPane.showMessageDialog(this, "A notifification to edit has not been selected");
+            isError = true;
         }
-        ActionEvent actionEvent = new ActionEvent(
-                this,ActionEvent.ACTION_PERFORMED,
-                EntityDescriptor.PatientNotificationViewControllerActionEvent.UPDATE_PATIENT_NOTIFICATION_REQUEST.toString());
-        this.getMyController().actionPerformed(actionEvent);
+        if (!isError){
+            PatientNotificationView4ColumnTableModel model = 
+                (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
+            getEntityDescriptor().getRequest().setPatientNotification(
+                    model.getElementAt(this.tblPatientNotifications.getSelectedRow()));
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    EntityDescriptor.PatientNotificationViewControllerActionEvent.UPDATE_PATIENT_NOTIFICATION_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
+        
     }//GEN-LAST:event_btnEditSelectedNotificationActionPerformed
 
 

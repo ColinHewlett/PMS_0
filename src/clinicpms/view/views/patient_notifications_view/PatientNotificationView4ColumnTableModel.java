@@ -6,7 +6,7 @@
 package clinicpms.view.views.patient_notifications_view;
 
 //import clinicpms.view.views.schedule_contact_details_view.*;
-import clinicpms.model.Patient;
+import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.controller.EntityDescriptor;
 import java.time.format.DateTimeFormatter;
@@ -24,7 +24,7 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
     private enum COLUMN{Date, Patient,Phone,Notification};
     private final Class[] columnClass = new Class[] {
         LocalDate.class,
-        Patient.class, 
+        ThePatient.class, 
         String.class,
         String.class};
     
@@ -38,6 +38,10 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
     
     public void addElement(PatientNotification patientNotification){
         patientNotifications.add(patientNotification);
+    }
+    
+    public PatientNotification getElementAt(int row){
+        return patientNotifications.get(row);
     }
     
     public void removeAllElements(){
@@ -96,11 +100,14 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
                 }
                 else{
                     LocalDate date = patientNotification.getNotificationDate();
-                    Patient patient = patientNotification.getPatient();
+                    ThePatient patient = patientNotification.getPatient();
                     String phone = null;
-                    if (!patient.getPhone1().isEmpty())phone = patient.getPhone1();
-                    if (!patient.getPhone2().isEmpty()){
-                        if (patient.getPhone1().isEmpty()) phone = patient.getPhone2();
+                    //if (!patient.getPhone1().isEmpty())phone = patient.getPhone1();
+                    if (patient.getPhone1()!= null)phone = patient.getPhone1();
+                    //if (!patient.getPhone2().isEmpty()){
+                    if (patient.getPhone2()!=null){
+                        //if (patient.getPhone1().isEmpty()) phone = patient.getPhone2();
+                        if (patient.getPhone1()==null) phone = patient.getPhone2();
                         else phone = phone + "//" + patient.getPhone2();
                     }
                     String notification = patientNotification.getNotificationText();
