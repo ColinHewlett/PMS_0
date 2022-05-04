@@ -343,7 +343,7 @@ public class PatientNotificationViewController extends ViewController{
          */
         View.setViewer(View.Viewer.PATIENT_NOTIFICATION_VIEW);
         this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
-        this.view.initialiseView();
+        //this.view.initialiseView();
         super.centreViewOnDesktop(desktopView, view);
     }
     

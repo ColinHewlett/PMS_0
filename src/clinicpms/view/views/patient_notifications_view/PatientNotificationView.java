@@ -16,6 +16,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JInternalFrame;
@@ -178,10 +179,7 @@ public class PatientNotificationView extends View implements ItemListener {
                 scrPatientNotificationView.getPreferredSize().width, 
                 12,23,15,50);
         this.tblPatientNotifications.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        this.tblPatientNotifications.setAutoCreateRowSorter(true);
-        this.populatePatientNotificationTable(
-                getEntityDescriptor().
-                        getPatientNotifications());
+        //this.tblPatientNotifications.setAutoCreateRowSorter(true);
         ActionEvent actionEvent = new ActionEvent(
             this,ActionEvent.ACTION_PERFORMED,
             EntityDescriptor.PatientNotificationViewControllerActionEvent.UNACTIONED_PATIENT_NOTIFICATIONS_REQUEST.toString());
@@ -200,14 +198,21 @@ public class PatientNotificationView extends View implements ItemListener {
     
     private void populatePatientNotificationTable(ArrayList<PatientNotification> patientNotifications){
         this.tblPatientNotifications.setAutoCreateRowSorter(false);
+        this.tblPatientNotifications = new JTable(new PatientNotificationView4ColumnTableModel());
+        
         PatientNotificationView4ColumnTableModel model = 
                 (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
         model.removeAllElements();
+        
 //model.fireTableDataChanged();
+        this.tblPatientNotifications.setDefaultRenderer(LocalDate.class, new PatientNotificationTableLocalDateRenderer());
         Iterator<PatientNotification> it = patientNotifications.iterator();
+        //PatientNotificationView4ColumnTableModel model = (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
         while (it.hasNext()){
-            ((PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel()).addElement(it.next());
+            model.addElement(it.next());
         }
+        this.tblPatientNotifications.setModel(model);
+        
         this.tblPatientNotifications.setAutoCreateRowSorter(true);
     }
 

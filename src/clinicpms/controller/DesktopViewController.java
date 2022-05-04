@@ -157,7 +157,7 @@ public class DesktopViewController extends ViewController{
             case "DesktopView":
                 doDesktopViewAction(e);
                  break;
-            case "AppointmentViewController":
+            case "AppointmentScheduleViewController":
                 doAppointmentViewControllerAction(e);
                 break;
             case "PatientViewController":
@@ -220,7 +220,7 @@ public class DesktopViewController extends ViewController{
                     /**
                      * re-enable view's data menu, if it exists
                      */
-                    
+                    /*
                     pcSupport.addPropertyChangeListener(view);
                     PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                         DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
@@ -237,7 +237,7 @@ public class DesktopViewController extends ViewController{
                     
                     getView().enableDataControl();
                     getView().enableWindowCloseControl();
-                    
+                    */
                 }
             }
             
@@ -847,7 +847,7 @@ public class DesktopViewController extends ViewController{
                         null);
         if (close == JOptionPane.YES_OPTION){
             this.isDesktopPendingClosure = true;
-            if (this.appointmentViewControllers.isEmpty()||this.patientViewControllers.isEmpty()){
+            if (!this.appointmentViewControllers.isEmpty()||!this.patientViewControllers.isEmpty()){
                 requestViewControllersToCloseViews();
             }
             else {

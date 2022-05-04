@@ -99,7 +99,8 @@ public class PatientNotificationView2ColumnTableModel extends DefaultTableModel{
                     
                     switch (column){
                         case Date:
-                            result = date.format(ddmmyy);
+                            //result = date.format(ddmmyy);
+                            result = date;
                             break;
                         case Notification:
                             result = notification;

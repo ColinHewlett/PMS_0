@@ -117,7 +117,8 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
                             result = patient;
                             break;
                         case Date:
-                            result = date.format(ddmmyy);
+                            //result = date.format(ddmmyy);
+                            result = date;
                             break;
                         case Phone:
                             result = phone;
