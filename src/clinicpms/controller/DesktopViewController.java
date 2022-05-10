@@ -410,7 +410,10 @@ public class DesktopViewController extends ViewController{
                             if (this.getEntityDescriptor().
                                     getMigrationDescriptor().
                                     getExportOperationStatus())
+                            {
                                 doExportMigratedAppointments(); 
+                                
+                            }
                             else doImportAppointmentsFromSource();
                         }
                     }
@@ -1523,7 +1526,9 @@ public class DesktopViewController extends ViewController{
             if (entity!=null){
                 if (entity.isSurgeryDaysAssignment()){
                     surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
-                    surgeryDaysAssignment.update();
+                    //surgeryDaysAssignment.update();
+                    surgeryDaysAssignment.insert();
+                    doMigrationActionCompleteResponse(true);
                 }else{
                     displayErrorMessage("SurgeryDaysAssignment entity expected but not encountered in AccessStore::doExportMigratedData()",
                         "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
@@ -1655,39 +1660,6 @@ public class DesktopViewController extends ViewController{
          }
          this.doMigrationActionCompleteResponse(true);
     }
-    /*
-    private void doImportDataFromSource(){
-        AppointmentTable appointmentTable = new AppointmentTable();
-        PatientTable patientTable = new PatientTable();
-        SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
-        
-
-        try{
-            appointmentTable.drop();
-            patientTable.drop();
-            surgeryDaysAssignmentTable.drop();
-
-            patientTable.create();
-            //05/03/2022 20:09
-            //patientTable.populate();
-            patientTable.importFromCSV();
-            startBackgroundThread(patientTable, this);
-
-            appointmentTable.create();
-            //05/03/2022 20:09
-            //appointmentTable.populate();
-            appointmentTable.importFromCSV();
-
-            surgeryDaysAssignmentTable.create();
-            surgeryDaysAssignmentTable.populate();
-
-            this.doMigrationActionCompleteResponse(true);
-        }catch (StoreException ex){
-            //displayErrorMessage(ex.getMessage(),"MigrationManagerViewController error",JOptionPane.WARNING_MESSAGE);
-            JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage()));
-        }  
-    }
-    */
     
     private boolean isPMSDatabaseSelected(EntityDescriptor entityDescriptor){
         boolean result = false;

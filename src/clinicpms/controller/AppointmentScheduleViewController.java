@@ -78,8 +78,12 @@ public class AppointmentScheduleViewController extends ViewController{
         //getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
+        setOldEntityDescriptor(getNewEntityDescriptor());
         try{
-            getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
+            SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+            //surgeryDaysAssignment.read();
+            surgeryDaysAssignment = surgeryDaysAssignment.read();
+            getNewEntityDescriptor().setSurgeryDaysAssignment(surgeryDaysAssignment);
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
             super.centreViewOnDesktop(desktopView, view);
@@ -466,6 +470,21 @@ public class AppointmentScheduleViewController extends ViewController{
                     this,ActionEvent.ACTION_PERFORMED,
                     DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
             this.myController.actionPerformed(actionEvent); 
+            
+            /**
+             * To replace above which is no longer relevant
+             * -- on this notification controller 
+             * ---- reads current settings from persistent store
+             * ---- initialises EntityDescriptor.SurgeryDaysAssignment with this
+             */
+            SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+            try{
+                surgeryDaysAssignment.read();
+                
+            }catch (StoreException ex){
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            }
             
         }
         else if (e.getActionCommand().equals(

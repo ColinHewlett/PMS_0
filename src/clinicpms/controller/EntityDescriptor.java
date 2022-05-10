@@ -34,7 +34,7 @@ public class EntityDescriptor {
     private EntityDescriptor.Patients patients = null;
     //private clinicpms.model.Patients thePatients = null;
     private ArrayList<ThePatient> thePatients = null;
-    private SurgeryDaysAssignment surgeryDaysAssignment = null;
+    private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
     
@@ -51,6 +51,7 @@ public class EntityDescriptor {
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
                                             APPOINTMENT_FOR_DAY_ERROR,
                                             SURGERY_DAYS_UPDATE_RECEIVED,
+                                            RECEIVED_SURGERY_DAYS_ASSIGNMENT,
                                             NON_SURGERY_DAY_EDIT_RECEIVED
                                             }
     
@@ -68,7 +69,8 @@ public class EntityDescriptor {
                                             NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST,
                                             NON_SURGERY_DAY_SCHEDULE_EDIT_REQUEST,
                                             SURGERY_DAYS_EDIT_REQUEST,
-                                            SURGERY_DAYS_EDITOR_VIEW_REQUEST
+                                            SURGERY_DAYS_EDITOR_VIEW_REQUEST,
+                                            REQUEST_SURGERY_DAYS_ASSIGNMENT
                                             }
     
     public static enum AppointmentViewDialogActionEvent {
@@ -110,6 +112,7 @@ public class EntityDescriptor {
                                 IMPORT_START_REQUEST,
                                 READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS,
                                 READY_FOR_RECEIPT_OF_PATIENT_PROGRESS,
+                                IMPORT_EXPORT_SURGERY_DAYS_ASSIGNMENT,
                                 IMPORT_EXPORT_PROGRESS_CLOSE_NOTIFICATION}
     
     public static enum ImportExportProgressViewControllerPropertyChangeEvent{
@@ -181,7 +184,16 @@ public class EntityDescriptor {
         request = new EntityDescriptor.Request();
         migrationDescriptor = new EntityDescriptor.MigrationDescriptor();
         patientNotifications = new ArrayList<PatientNotification>();
+        surgeryDaysAssignment = new HashMap<DayOfWeek,Boolean>(); 
         error = null;
+    }
+    
+    public HashMap<DayOfWeek,Boolean> getSurgeryDaysAssignment(){
+        return surgeryDaysAssignment;
+    }
+    
+    public void setSurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
+        surgeryDaysAssignment = value;
     }
     
     public PatientNotification getPatientNotification(){
