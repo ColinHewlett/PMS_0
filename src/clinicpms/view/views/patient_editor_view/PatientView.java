@@ -195,7 +195,7 @@ public class PatientView extends View{
                     LocalDate day = ((LocalDateTime)tblAppointmentHistory.getValueAt(row,0)).toLocalDate();
                     getEntityDescriptor().getRequest().setDay(day);
                     ActionEvent actionEvent = new ActionEvent(
-                            this,ActionEvent.ACTION_PERFORMED,
+                            PatientView.this,ActionEvent.ACTION_PERFORMED,
                             EntityDescriptor.PatientViewControllerActionEvent.APPOINTMENT_VIEW_CONTROLLER_REQUEST.toString());
                     getMyController().actionPerformed(actionEvent);
                 }

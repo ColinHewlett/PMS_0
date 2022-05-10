@@ -163,6 +163,10 @@ public class PatientNotification extends EntityStoreType {
         public void set(ArrayList<PatientNotification> value){
             collection = value;
         }
+        
+        public ThePatient getPatient(){
+            return PatientNotification.this.getPatient();
+        }
 
         /**
          * method fetches from  store either all notifications for this notification's patient; or all (typically unactioned only) patient notifications recorded on the system

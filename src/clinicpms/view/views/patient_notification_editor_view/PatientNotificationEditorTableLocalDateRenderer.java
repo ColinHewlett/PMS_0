@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view.views.patient_notifications_view;
+package clinicpms.view.views.patient_notification_editor_view;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.time.LocalDate;
@@ -18,12 +17,14 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author colin
  */
-public class PatientNotificationTableLocalDateRenderer extends JLabel implements TableCellRenderer{
+public class PatientNotificationEditorTableLocalDateRenderer extends JLabel implements TableCellRenderer{
     private DateTimeFormatter ddmmyy = DateTimeFormatter.ofPattern("dd/MM/yy");
     private LocalDate date = null;
     
-    public PatientNotificationTableLocalDateRenderer(){
-        super.setFont(new Font("Tahoma",Font.PLAIN,11 ));
+    public PatientNotificationEditorTableLocalDateRenderer(){
+        Font font = super.getFont();
+        super.setFont(font.deriveFont(font.getStyle()|~Font.BOLD));
+        super.setFont(font.deriveFont(font.getStyle()|~Font.ITALIC));
         setOpaque(true);
     }
     
@@ -32,6 +33,7 @@ public class PatientNotificationTableLocalDateRenderer extends JLabel implements
         boolean hasFocus, int row, int column){
         
         super.setFont(new Font("Tahoma",Font.PLAIN,11 ));
+        //Font font = super.getFont();
         if (value != null){
             date = (LocalDate)value;
             super.setText(date.format(ddmmyy));

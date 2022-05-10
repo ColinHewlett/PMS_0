@@ -693,6 +693,7 @@ public class AccessStore extends Store {
                 SurgeryDaysAssignment surgeryDaysAssignment = null;
                 if (entity != null) {
                     if (entity.isSurgeryDaysAssignment()) {
+                        surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
                         for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.entrySet()) {
                             sql = "INSERT INTO SurgeryDays (Day, IsSurgery) VALUES(?, ?);";
                             try {
@@ -1109,7 +1110,7 @@ public class AccessStore extends Store {
                         try {
                             for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.entrySet()) {
                                 sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?;";
-                                sql = "INSERT INTO SurgeryDays (IsSurgery,Day) VALUES(?, ?);";
+                                //sql = "INSERT INTO SurgeryDays (IsSurgery,Day) VALUES(?, ?);";
 
                                 PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
                                 preparedStatement.setBoolean(1, entry.getValue());
@@ -3200,7 +3201,7 @@ public class AccessStore extends Store {
                 case ALL_FOR_PATIENT:
                     value = runSQL(EntitySQL.PATIENT_NOTIFICATION,
                                 PMSSQL.READ_PATIENT_NOTIFICATIONS_FOR_PATIENT, 
-                                patientNotificationCollection);
+                                patientNotificationCollection.getPatient());
                     break;
             }
             if (value!=null){

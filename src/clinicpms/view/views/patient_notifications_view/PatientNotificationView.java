@@ -26,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
@@ -37,6 +38,7 @@ public class PatientNotificationView extends View implements ItemListener {
     private InternalFrameAdapter internalFrameAdapter = null;
     private ActionListener myController = null;
     private JTable tblPatientNotifications = null;
+    private TableCellRenderer patientNotificationTableDefaultRenderer = null;
 
     private final String DISPLAY_UNACTIONED_NOTIFICATIONS_TEXT = "display unactioned notifications";
     private final String DISPLAY_ALL_NOTIFICATIONS_TEXT = "display all notifications";
@@ -53,6 +55,14 @@ public class PatientNotificationView extends View implements ItemListener {
     }
     private void setEntityDescriptor(EntityDescriptor value){
         entityDescriptor = value;
+    }
+    
+    private TableCellRenderer getPatientNotificationTableDefaultRenderer(){
+        return patientNotificationTableDefaultRenderer;
+    }
+    
+    private void setPatientNotificationTableDefaultRenderer(TableCellRenderer renderer){
+        patientNotificationTableDefaultRenderer = renderer;
     }
 
     /**
@@ -138,8 +148,14 @@ public class PatientNotificationView extends View implements ItemListener {
         switch (propertyName){
             case RECEIVED_PATIENT_NOTIFICATIONS:
                 populatePatientNotificationTable(
-                        getEntityDescriptor().getPatientNotifications());
+                        getEntityDescriptor().getPatientNotifications(),false);
                 setTitle(getUITitle());
+                break;
+               case RECEIVED_UNACTIONED_NOTIFICATIONS:
+                populatePatientNotificationTable(
+                        getEntityDescriptor().getPatientNotifications(),true);
+                setTitle(getUITitle());
+                this.rdbDisplayUnactionedNotifications.setSelected(true);
                 break;
         }
     }
@@ -173,6 +189,7 @@ public class PatientNotificationView extends View implements ItemListener {
         this.rdbDisplayAllNotifications.addItemListener(this);
         this.rdbDisplayUnactionedNotifications.addItemListener(this);
         this.tblPatientNotifications = new JTable(new PatientNotificationView4ColumnTableModel());
+        setPatientNotificationTableDefaultRenderer(this.tblPatientNotifications.getDefaultRenderer(LocalDate.class));
         scrPatientNotificationView.setViewportView(this.tblPatientNotifications);
         ViewController.setJTableColumnProperties(
                 tblPatientNotifications, 
@@ -196,23 +213,21 @@ public class PatientNotificationView extends View implements ItemListener {
         return this.myController;
     }
     
-    private void populatePatientNotificationTable(ArrayList<PatientNotification> patientNotifications){
+    private void populatePatientNotificationTable(
+            ArrayList<PatientNotification> patientNotifications, boolean toAddRenderer){
         this.tblPatientNotifications.setAutoCreateRowSorter(false);
-        this.tblPatientNotifications = new JTable(new PatientNotificationView4ColumnTableModel());
-        
         PatientNotificationView4ColumnTableModel model = 
                 (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
         model.removeAllElements();
-        
 //model.fireTableDataChanged();
-        this.tblPatientNotifications.setDefaultRenderer(LocalDate.class, new PatientNotificationTableLocalDateRenderer());
         Iterator<PatientNotification> it = patientNotifications.iterator();
-        //PatientNotificationView4ColumnTableModel model = (PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel();
         while (it.hasNext()){
-            model.addElement(it.next());
+            ((PatientNotificationView4ColumnTableModel)this.tblPatientNotifications.getModel()).addElement(it.next());
         }
-        this.tblPatientNotifications.setModel(model);
-        
+        if (toAddRenderer)
+            this.tblPatientNotifications.setDefaultRenderer(LocalDate.class, new PatientNotificationTableOverdueLocalDateRenderer());
+        else 
+            this.tblPatientNotifications.setDefaultRenderer(LocalDate.class, new PatientNotificationTableLocalDateRenderer());
         this.tblPatientNotifications.setAutoCreateRowSorter(true);
     }
 

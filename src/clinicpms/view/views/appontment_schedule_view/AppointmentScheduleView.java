@@ -79,6 +79,12 @@ public class AppointmentScheduleView extends View{
             DatePickerSettings dps = dayDatePicker.getSettings();
             dps.setVetoPolicy(vetoPolicy);
         }
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.RECEIVED_SURGERY_DAYS_ASSIGNMENT.toString())){
+            setEntityDescriptor((EntityDescriptor)e.getNewValue());
+            this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
+            DatePickerSettings dps = dayDatePicker.getSettings();
+            dps.setVetoPolicy(vetoPolicy); 
+        }
         else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.NON_SURGERY_DAY_EDIT_RECEIVED.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             setEntityDescriptor(ed);
@@ -118,7 +124,7 @@ public class AppointmentScheduleView extends View{
     @Override
     public void initialiseView(){
         //following action invokes call to controller via DateChange\Listener
-        this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
+        this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getSurgeryDaysAssignment());
         DatePickerSettings dps = dayDatePicker.getSettings();
         dps.setVetoPolicy(vetoPolicy);
        

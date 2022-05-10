@@ -179,12 +179,8 @@ public class SurgeryDaysEditorModalViewer extends View {
     @Override
     public void propertyChange(PropertyChangeEvent e){
         setEntityDescriptor((EntityDescriptor)e.getNewValue());
-        
+ 
         if (e.getPropertyName().equals(
-                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
-            //initialiseViewFromED();
-        }
-        else if (e.getPropertyName().equals(
             EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
             ViewController.displayErrorMessage(getEntityDescriptor().getError(),
                                                "Appointment editor dialog error",
