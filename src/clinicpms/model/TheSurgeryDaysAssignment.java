@@ -15,69 +15,29 @@ import java.util.HashMap;
  *
  * @author colin
  */
-public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements IEntity, 
-                                                                                 IEntityStoreType{
+public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity{
     private IPMSStoreAction store = null;
     private String day = null;
     private boolean isSurgery = false;
+    private HashMap<DayOfWeek,Boolean> assignment = null;
     
-    public SurgeryDaysAssignment(){
-    
+    private void set(HashMap<DayOfWeek,Boolean> value){
+        assignment = value;
     }
     
-    public SurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
-        putAll(value);
+    public TheSurgeryDaysAssignment(){
+        setIsSurgeryDaysAssignment(true);
     }
     
-    @Override
-    public boolean isAppointment(){
-        return false;
+    public TheSurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
+        set(value);
+        setIsSurgeryDaysAssignment(true);
     }
     
-    @Override
-    public boolean isAppointments(){
-        return false;
+    public HashMap<DayOfWeek,Boolean> get(){
+        return assignment;
     }
     
-    @Override
-    public boolean isAppointmentDate(){
-        return false;
-    }
-    
-    @Override
-    public final boolean isAppointmentTableRowValue(){
-        return false;
-    }
-    
-    @Override
-    public boolean isPatient(){
-        return false;
-    }
-    
-    @Override
-    public boolean isPatients(){
-        return false;
-    }
-    
-    @Override
-    public final boolean isPatientTableRowValue(){
-        return false;
-    }
-    
-    @Override
-    public boolean isSurgeryDaysAssignment(){
-        return true;
-    }
-    
-    @Override
-    public boolean isAppointmentTable(){
-        return false;
-    }
-    
-    @Override
-    public boolean isPatientTable(){
-        return false;
-    }
     
     @Override
     /**
@@ -90,13 +50,13 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
     
     @Override
     public void create() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.create(this);        
     }
     
     @Override
     public void drop() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.drop(this);        
     }
     
@@ -106,18 +66,23 @@ public class SurgeryDaysAssignment extends HashMap<DayOfWeek,Boolean> implements
      * -- 
      */
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.insert(this);
     }
     
+    @Override
     public SurgeryDaysAssignment read() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        return null;
+    }
+    
+    public TheSurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
         return store.read(this);
     }
       
     @Override
     public void update() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this); 
+        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this); 
         store.update(this);
     }
     

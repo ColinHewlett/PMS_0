@@ -9,6 +9,7 @@ import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.TheSurgeryDaysAssignment;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointment;
 import clinicpms.model.Appointment.Category;
@@ -40,17 +41,20 @@ public interface IPMSStoreAction {
     public void create(Patient p) throws StoreException;
     public void create(ThePatient p )throws StoreException;
     public void create(SurgeryDaysAssignment s)throws StoreException;
+    public void create(TheSurgeryDaysAssignment s)throws StoreException;
     public void insert(Appointment a) throws StoreException;
     public void insert(Patient p) throws StoreException;
     public void insert(ThePatient p) throws StoreException;
     public void insert(PatientNotification pn) throws StoreException;
     public void insert(SurgeryDaysAssignment p) throws StoreException;
+    public void insert(TheSurgeryDaysAssignment p) throws StoreException;
     public void delete(Appointment a) throws StoreException;
     public void delete(Patient p) throws StoreException;
     public void delete(ThePatient p) throws StoreException;
     public PatientNotification read(PatientNotification value)throws StoreException;
     public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException;
     public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
+    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public Patient read(Patient p) throws StoreException;
     public ThePatient read(ThePatient p) throws StoreException;
@@ -58,6 +62,7 @@ public interface IPMSStoreAction {
     public String read(Store.SelectedTargetStore db)throws StoreException;
     public void update(Appointment a) throws StoreException;
     public void update(SurgeryDaysAssignment value) throws StoreException;
+    public void update(TheSurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
     public void update(ThePatient p) throws StoreException;
     public void update(PatientNotification pn)throws StoreException;
@@ -66,6 +71,7 @@ public interface IPMSStoreAction {
     public void drop(Patient p)throws StoreException;
     public void drop(ThePatient p)throws StoreException;
     public void drop(SurgeryDaysAssignment s)throws StoreException;
+    public void drop(TheSurgeryDaysAssignment s)throws StoreException;
     
     
     

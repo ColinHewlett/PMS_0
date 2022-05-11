@@ -16,6 +16,7 @@ import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.TheSurgeryDaysAssignment;
 import java.io.File;
 import java.util.List;
 import java.time.LocalDate;
@@ -475,6 +476,31 @@ public class PostgreSQLStore extends Store {
     
     @Override
     public void closeMigrationConnection() throws StoreException{
+        
+    }
+    
+    @Override
+    public void drop(TheSurgeryDaysAssignment table)throws StoreException{
+        
+    }
+    
+    @Override
+    public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+        
+    }
+    
+    @Override
+    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment s) throws StoreException {
+        return null;
+    }
+    
+    @Override
+    public void create(TheSurgeryDaysAssignment s) throws StoreException {
+        
+    }
+    
+    @Override
+    public void insert(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         
     }
 }

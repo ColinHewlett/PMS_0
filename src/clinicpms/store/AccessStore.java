@@ -19,6 +19,7 @@ import clinicpms.model.AppointmentTableRowValue;
 import clinicpms.model.PatientTableRowValue;
 import clinicpms.model.TableRowValue;
 import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.TheSurgeryDaysAssignment;
 import clinicpms.store.Store.SelectedTargetStore;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
@@ -2736,6 +2737,17 @@ public class AccessStore extends Store {
     }
 
     @Override
+    public void insert(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+        try{
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT,
+                    PMSSQL.INSERT_SURGERY_DAYS_ASSIGNMENT, surgeryDaysAssignment);
+        } catch (SQLException ex){
+        
+        }
+    }
+    
+    @Override
     /**
      * used for exporting data into PMS database from Migration database
      */
@@ -3227,6 +3239,12 @@ public class AccessStore extends Store {
                     + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         } 
+    }
+    
+    
+    @Override
+    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment s) throws StoreException {
+        return null;
     }
     
     @Override
@@ -3868,6 +3886,10 @@ public class AccessStore extends Store {
     }
 
     @Override
+    public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+        
+    }
+    @Override
     /**
      * Explicit manual transaction processing enabled -- updates which days are
      * surgery days on the system
@@ -4103,6 +4125,11 @@ public class AccessStore extends Store {
     }
 
     @Override
+    public void create(TheSurgeryDaysAssignment s) throws StoreException {
+        
+    }
+    
+    @Override
     public void create(SurgeryDaysAssignment s) throws StoreException {
         try {
             getPMSConnection().setAutoCommit(true);
@@ -4226,7 +4253,10 @@ public class AccessStore extends Store {
         }
          */
     }
-
+    public void drop(TheSurgeryDaysAssignment table)throws StoreException{
+        
+    }
+    
     public void drop(SurgeryDaysAssignment table) throws StoreException {
         boolean result = false;
         try {
@@ -4841,7 +4871,7 @@ public class AccessStore extends Store {
             }
         }
     }
-
+    
     @Override
     public SurgeryDaysAssignment read(SurgeryDaysAssignmentTable table) throws StoreException {
         boolean result = false;
@@ -5304,8 +5334,16 @@ public class AccessStore extends Store {
         }
     }
     
-    private EntityStoreType doSurgeryDaysAssignmentPMSSQL(PMSSQL q, EntityStoreType entity){
-        return null;
+    private EntityStoreType doSurgeryDaysAssignmentPMSSQL(PMSSQL q, EntityStoreType entity)throws StoreException{
+        EntityStoreType result = null;
+        String sql = null;
+        switch (q){
+            case INSERT_SURGERY_DAYS_ASSIGNMENT:
+                doInsertSurgeryDaysAssignment(entity);
+                break;
+                      
+        }
+        return result;
     }
     
     private EntityStoreType doReadHighestKey(String sql) throws StoreException{
@@ -5323,6 +5361,56 @@ public class AccessStore extends Store {
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException message -> exception raised in AccessStore::doReadHighestKey()",
                     StoreException.ExceptionType.SQL_EXCEPTION);
+        }
+    }
+    
+    private void doInsertSurgeryDaysAssignment(EntityStoreType entity ) throws StoreException{
+        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+        if (entity != null) {
+            if (entity.getIsSurgeryDaysAssignment()) {
+                surgeryDaysAssignment = (TheSurgeryDaysAssignment)entity;
+                for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.get().entrySet()) {
+                    String sql = "INSERT INTO SurgeryDays (Day, IsSurgery) VALUES(?, ?);";
+                    try {
+                        PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                        preparedStatement.setBoolean(2, entry.getValue());
+                        switch (entry.getKey()) {
+                            case MONDAY:
+                                preparedStatement.setString(1, "Monday");
+                                break;
+                            case TUESDAY:
+                                preparedStatement.setString(1, "Tuesday");
+                                break;
+                            case WEDNESDAY:
+                                preparedStatement.setString(1, "Wednesday");
+                                break;
+                            case THURSDAY:
+                                preparedStatement.setString(1, "Thursday");
+                                break;
+                            case FRIDAY:
+                                preparedStatement.setString(1, "Friday");
+                                break;
+                            case SATURDAY:
+                                preparedStatement.setString(1, "Saturday");
+                                break;
+                            case SUNDAY:
+                                preparedStatement.setString(1, "Sunday");
+                                break;
+                        }
+                        preparedStatement.execute();
+                    } catch (SQLException ex) {
+                        throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                                + "StoreException message -> exception raised in AccessStore::doInsertSurgeryDaysAssignment()",
+                                StoreException.ExceptionType.SQL_EXCEPTION);
+                    }
+                }
+            } else {
+                String message = "StoreException -> entity wrongly defined in AccessStore::doInsertSurgeryDaysAssignment()";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> entity undefined in AccessStore::doInsertSurgeryDaysAssignment()";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
         }
     }
 }
