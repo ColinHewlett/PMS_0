@@ -10,7 +10,7 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.TheSurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import clinicpms.view.DesktopView;
 import clinicpms.view.View;
@@ -80,10 +80,10 @@ public class AppointmentScheduleViewController extends ViewController{
         setNewEntityDescriptor(e);
         setOldEntityDescriptor(getNewEntityDescriptor());
         try{
-            SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+            TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment();
             //surgeryDaysAssignment.read();
-            surgeryDaysAssignment = surgeryDaysAssignment.read();
-            getNewEntityDescriptor().setSurgeryDaysAssignment(surgeryDaysAssignment);
+            surgeryDaysAssignment = surgeryDaysAssignment.readTheSurgeryDaysAssignment();
+            getNewEntityDescriptor().setSurgeryDaysAssignment(surgeryDaysAssignment.get());
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
             super.centreViewOnDesktop(desktopView, view);
@@ -224,14 +224,10 @@ public class AppointmentScheduleViewController extends ViewController{
             //SurgeryDaysValues surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = getEntityDescriptorFromView().getRequest().getSurgeryDaysAssignmentValue();
             try{
-                /**
-                 * 05/12/2021 09:17 follows store.update() call with a store.read() call
-                 */
-                //SurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
-                //surgeryDaysValues.putAll(surgeryDays);
-                SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment(surgeryDaysAssignmentValue);
+                TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment(surgeryDaysAssignmentValue);
                 surgeryDaysAssignment.update();
-                getEntityDescriptorFromView().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
+                getEntityDescriptorFromView().setSurgeryDaysAssignment(
+                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
@@ -248,7 +244,8 @@ public class AppointmentScheduleViewController extends ViewController{
             }
         }
         else if (e.getActionCommand().equals(
-                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
+                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
+            this.view2.initialiseView();
             /**
              * passes message to DesktopView Controller to disable the VIEW control
              */
@@ -463,36 +460,15 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         else if (e.getActionCommand().equals(
                 EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
-            /**
-             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
-             */
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
-            this.myController.actionPerformed(actionEvent); 
-            
-            /**
-             * To replace above which is no longer relevant
-             * -- on this notification controller 
-             * ---- reads current settings from persistent store
-             * ---- initialises EntityDescriptor.SurgeryDaysAssignment with this
-             */
-            SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
-            try{
-                surgeryDaysAssignment.read();
-                
-            }catch (StoreException ex){
-                String message = ex.getMessage();
-                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-            }
-            
+           //this.view2.initialiseView();
         }
         else if (e.getActionCommand().equals(
                 EntityDescriptor.AppointmentViewControllerActionEvent.NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST.toString())){
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
+                getNewEntityDescriptor().setSurgeryDaysAssignment(
+                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
@@ -515,7 +491,8 @@ public class AppointmentScheduleViewController extends ViewController{
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(new SurgeryDaysAssignment().read());
+                getNewEntityDescriptor().setSurgeryDaysAssignment(
+                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**

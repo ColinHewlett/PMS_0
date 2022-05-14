@@ -44,7 +44,6 @@ public class DesktopViewController extends ViewController{
     private ArrayList<AppointmentScheduleViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
     private ArrayList<ImportExportProgressViewController> importExportProgressViewControllers = null;
-    private ArrayList<MigrationManagerViewController> migrationViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
     private PropertyChangeSupport pcSupport = null;
     private EntityDescriptor entityDescriptor = null;
@@ -144,7 +143,6 @@ public class DesktopViewController extends ViewController{
         patientViewControllers = new ArrayList<>();
         importExportProgressViewControllers = new ArrayList<>();
         patientNotificationViewControllers = new ArrayList<>();
-        migrationViewControllers = new ArrayList<>();
         
         if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
     }
@@ -166,8 +164,9 @@ public class DesktopViewController extends ViewController{
             case "ImportExportProgressViewController":
                 doImportExportProgressViewControllerAction(e);
                 break;
+                /*
             case "MigrationManagerViewController":
-                doMigrationManagerViewControllerAction(e);
+                doMigrationManagerViewControllerAction(e);*/
         }
     }
     
@@ -514,7 +513,7 @@ public class DesktopViewController extends ViewController{
                 break;
             }
             case PMS_DATABASE_CREATION_REQUEST:{
-                doPMSDatabaseCreationRequest();
+                //doPMSDatabaseCreationRequest();
                 break;
             } 
             case PMS_DATABASE_DELETION_REQUEST:{
@@ -693,22 +692,7 @@ public class DesktopViewController extends ViewController{
         }
          
     }
-    
-    private void createNewMigrationViewController(){
-        try{
-            this.migrationViewControllers.add(new MigrationManagerViewController(this, getView()));
-            MigrationManagerViewController mvc = 
-                        migrationViewControllers.get(migrationViewControllers.size()-1);
-        }
-        catch(StoreException ex){
-                displayErrorMessage(ex.getMessage() + "\nUnable to create MigrationManagerViewController","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-        }
-        finally{
-            getView().enableDataControl();
-            getView().enableWindowCloseControl();
-        }
-    }
-    
+
     private void createNewAppointmentViewController(Optional<EntityDescriptor> ed){
         try{
                 appointmentViewControllers.add(
@@ -813,7 +797,7 @@ public class DesktopViewController extends ViewController{
                     getMigrationDescriptor().
                     setPMSDatabaseSelection(PMSDatabase.getPath());
             if (PMSDatabase.isSelected()){
-                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new SurgeryDaysAssignment().count());
+                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new TheSurgeryDaysAssignment().count());
                 getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
                 getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
                 
@@ -1118,22 +1102,17 @@ public class DesktopViewController extends ViewController{
             */
         }
     }
-    
+
+ /*
+    -- commented out methodon because unused 
     private void doPMSDatabaseCreationRequest(){
         try{
-            /**
-             * 07/12/2021 19:17 updates
-             */
             FileNameExtensionFilter filter = null;
             StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getPMSTargetStorePath();
             String storageType = storeManager.getStorageType();
             filter = new FileNameExtensionFilter("Access database files", "accdb");
 
-            /**
-             * display contents of currently selected folder
-             * but not the currently selected file
-             */
             targetPath = removeFilenameFrom(targetPath);
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Create PMS database");
@@ -1152,7 +1131,7 @@ public class DesktopViewController extends ViewController{
                     Appointment appointment = new Appointment();
                     appointment.create();
 
-                    SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+                    TheSurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
                     surgeryDaysAssignment.create();
                     
 
@@ -1164,9 +1143,7 @@ public class DesktopViewController extends ViewController{
                 else{
                     displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be created because it already exists",
                             "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*JOptionPane.showMessageDialog(getView(),
-                                              new ErrorMessagePanel(ex.getMessage()));
-                    */
+
                 }
                 this.doMigrationActionCompleteResponse(true);  
             }
@@ -1176,7 +1153,7 @@ public class DesktopViewController extends ViewController{
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
         }
     }
-    
+ */   
     private void doPMSDatabaseDeletionRequest(){
         String filenameFromPMSTargetDatabaseStorePath = null;
         String pmsDatabaseStorePathWithoutFilename = null;
@@ -1518,14 +1495,14 @@ public class DesktopViewController extends ViewController{
     
     private void doExportMigratedSurgeryDaysAssignment(){
         IEntityStoreType entity = null;
-        SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
+        SurgeryDaysAssignmentx surgeryDaysAssignment = new SurgeryDaysAssignmentx();
         try{
             surgeryDaysAssignment.create();
             SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
             entity = surgeryDaysAssignmentTable.read();
             if (entity!=null){
                 if (entity.isSurgeryDaysAssignment()){
-                    surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
+                    surgeryDaysAssignment = (SurgeryDaysAssignmentx)entity;
                     //surgeryDaysAssignment.update();
                     surgeryDaysAssignment.insert();
                     doMigrationActionCompleteResponse(true);

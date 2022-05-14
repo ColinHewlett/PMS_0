@@ -30,11 +30,11 @@ public class SurgeryDaysAssignmentTable implements ITable{
     @Override
     public void exportToPMS() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
-        store.exportToPMS(new SurgeryDaysAssignment());
+        store.exportToPMS(new SurgeryDaysAssignmentx());
     }
     
     public void populate() throws StoreException{
-        SurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
+        SurgeryDaysAssignmentx surgeryDaysValues = new SurgeryDaysAssignmentx();
         //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
         surgeryDaysValues.put(DayOfWeek.MONDAY, Boolean.TRUE);
         surgeryDaysValues.put(DayOfWeek.TUESDAY, Boolean.TRUE);

@@ -7,7 +7,7 @@ package clinicpms.controller;
 
 import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
-import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.TheSurgeryDaysAssignment;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -195,7 +195,7 @@ public class EntityDescriptor {
     public void setSurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
         surgeryDaysAssignment = value;
     }
-    
+
     public PatientNotification getPatientNotification(){
         return patientNotification;
     }
@@ -651,9 +651,10 @@ public class EntityDescriptor {
         private String databaseLocation = null;
         private ArrayList<PatientNotification> patientNotifications = null;
         private PatientNotification patientNotification = null;
+        private TheSurgeryDaysAssignment surgeryDaysAssignment = null;
         
         private HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = null;
-        //private SurgeryDaysAssignment surgeryDaysAssignmentValue = null;
+
 
         protected Request() {
             appointment = new EntityDescriptor.Appointment();
@@ -661,6 +662,7 @@ public class EntityDescriptor {
             guardian = new EntityDescriptor.Patient();
             day = LocalDate.now();
             duration = Duration.ZERO; 
+            HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = new HashMap<>();
             
         }
         

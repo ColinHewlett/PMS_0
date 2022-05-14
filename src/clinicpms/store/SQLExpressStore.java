@@ -15,7 +15,7 @@ import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
-import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.TheSurgeryDaysAssignment;
 import java.io.File;
 import java.time.LocalDate;
@@ -172,12 +172,12 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
-    public void update(SurgeryDaysAssignment value){
+    public void update(SurgeryDaysAssignmentx value){
 
     }
 
     @Override
-    public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException{
+    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException{
         return null;
     }
     
@@ -290,12 +290,12 @@ public class SQLExpressStore extends Store {
     
     
     /**
-     * Populates the surgery days table in the migration store from the specified SurgeryDaysAssignment collection of values
-     * @param data:SurgeryDaysAssignment
+     * Populates the surgery days table in the migration store from the specified SurgeryDaysAssignmentx collection of values
+     * @param data:SurgeryDaysAssignmentx
      * @throws StoreException 
      */
     @Override
-    public void populate(SurgeryDaysAssignment data)throws StoreException{
+    public void populate(SurgeryDaysAssignmentx data)throws StoreException{
         
     }
     
@@ -386,7 +386,7 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
-    public SurgeryDaysAssignment read(SurgeryDaysAssignmentTable table){
+    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table){
         return null;
     }
     
@@ -408,7 +408,7 @@ public class SQLExpressStore extends Store {
         
     }
     
-    public void insert(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException{
+    public void insert(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException{
         
     }
     
@@ -423,7 +423,7 @@ public class SQLExpressStore extends Store {
     }
     
     @Override
-    public void exportToPMS(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException{
+    public void exportToPMS(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException{
         
     }
     
@@ -436,7 +436,7 @@ public class SQLExpressStore extends Store {
     public void drop(Patient p)throws StoreException{
         
     }
-    public void drop(SurgeryDaysAssignment s)throws StoreException{
+    public void drop(SurgeryDaysAssignmentx s)throws StoreException{
         
     }
     public void create(Appointment a)throws StoreException{
@@ -448,7 +448,7 @@ public class SQLExpressStore extends Store {
     public void create(Patient p)throws StoreException{
         
     }
-    public void create(SurgeryDaysAssignment p)throws StoreException{
+    public void create(SurgeryDaysAssignmentx p)throws StoreException{
         
     }
     

@@ -258,7 +258,7 @@ public class NonSurgeryDayEditorModalViewer extends View {
      * -- the new (toggled) version of the settings is then used to initialise the DatePickerSettings
      */
     public void initialiseView(){
-        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue();
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getSurgeryDaysAssignment();
         HashMap<DayOfWeek,Boolean> nonSurgeryDays = new HashMap<DayOfWeek,Boolean>();
         for(Map.Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
             if (entry.getValue()) nonSurgeryDays.put(entry.getKey(), Boolean.FALSE);

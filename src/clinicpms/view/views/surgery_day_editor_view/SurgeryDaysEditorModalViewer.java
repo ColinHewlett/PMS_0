@@ -67,7 +67,7 @@ public class SurgeryDaysEditorModalViewer extends View {
         toUse.add(this);
         this.setLayer(JLayeredPane.MODAL_LAYER);
         centreViewOnDesktop(x.getParent(),this);
-        this.initialiseView();
+        //this.initialiseView();
         this.setVisible(true);
         this.setClosable(true);
         
@@ -142,7 +142,7 @@ public class SurgeryDaysEditorModalViewer extends View {
     @Override
     public void initialiseView(){
         setTitle("Surgery days editor");
-        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue();
+        HashMap<DayOfWeek, Boolean> surgeryDays = getEntityDescriptor().getSurgeryDaysAssignment();
         for(Entry<DayOfWeek,Boolean> entry : surgeryDays.entrySet()){
             switch(entry.getKey()){
                 case MONDAY:
@@ -331,6 +331,7 @@ public class SurgeryDaysEditorModalViewer extends View {
         surgeryDaysAssignmentValue.put(DayOfWeek.SATURDAY, this.chkSaturday.isSelected()); 
         surgeryDaysAssignmentValue.put(DayOfWeek.SUNDAY, this.chkSunday.isSelected());
         getEntityDescriptor().getRequest().setSurgeryDaysAssignmentValue(surgeryDaysAssignmentValue);
+        
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 EntityDescriptor.AppointmentViewControllerActionEvent.SURGERY_DAYS_EDIT_REQUEST.toString());

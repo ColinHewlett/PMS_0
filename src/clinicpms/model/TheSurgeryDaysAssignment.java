@@ -19,7 +19,7 @@ public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity
     private IPMSStoreAction store = null;
     private String day = null;
     private boolean isSurgery = false;
-    private HashMap<DayOfWeek,Boolean> assignment = null;
+    private HashMap<DayOfWeek,Boolean> assignment = new HashMap<>();
     
     private void set(HashMap<DayOfWeek,Boolean> value){
         assignment = value;
@@ -71,7 +71,7 @@ public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity
     }
     
     @Override
-    public SurgeryDaysAssignment read() throws StoreException{
+    public SurgeryDaysAssignmentx read() throws StoreException{
         return null;
     }
     
@@ -89,17 +89,17 @@ public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity
     
 
     public Integer count()throws StoreException{
-        SurgeryDaysAssignment surgeryDaysAssignment = null;
+        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
         try{
-            surgeryDaysAssignment = this.read();
+            surgeryDaysAssignment = this.readTheSurgeryDaysAssignment();
             
         }catch (StoreException ex){
             if (!ex.getErrorType().equals(StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_PMS_DATABASE))
                 throw ex;
         }
         if (surgeryDaysAssignment==null) return null;
-        if (surgeryDaysAssignment.isEmpty()) return 0;
-        else return surgeryDaysAssignment.size();
+        if (surgeryDaysAssignment.get().isEmpty()) return 0;
+        else return surgeryDaysAssignment.get().size();
     }
     
     public String getDay(){
