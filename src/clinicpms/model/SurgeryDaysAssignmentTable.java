@@ -8,7 +8,6 @@ package clinicpms.model;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.DayOfWeek;
-import java.util.HashMap;
 import clinicpms.store.IMigrationStoreAction;
 
 /**

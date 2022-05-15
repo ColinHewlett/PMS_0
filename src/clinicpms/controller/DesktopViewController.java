@@ -352,8 +352,8 @@ public class DesktopViewController extends ViewController{
                     /**
                      * re-enable view's data menu, if it exists
                      */
-                    getView().enableDataControl();
-                    getView().enableWindowCloseControl();
+                    //getView().enableDataControl();
+                    //getView().enableWindowCloseControl();
                 }
             }
         }
@@ -453,9 +453,9 @@ public class DesktopViewController extends ViewController{
          */
         if (e.getActionCommand().equals(
             DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString())){
-            getView().enableViewControl();
-            getView().enableDataControl();
-            getView().enableWindowCloseControl();
+            //getView().enableViewControl();
+            //getView().enableDataControl();
+            //getView().enableWindowCloseControl();
         }
         
     }
@@ -512,16 +512,17 @@ public class DesktopViewController extends ViewController{
                 doMigrationDatabaseSelectionRequest();
                 break;
             }
+            
             case PMS_DATABASE_CREATION_REQUEST:{
                 //doPMSDatabaseCreationRequest();
                 break;
             } 
             case PMS_DATABASE_DELETION_REQUEST:{
-                doPMSDatabaseDeletionRequest();
+                //doPMSDatabaseDeletionRequest();
                 break;
             }
             case PMS_DATABASE_SELECTION_REQUEST:{
-                doPMSDatabaseSelectionRequest();
+                //doPMSDatabaseSelectionRequest();
                 break;
             }
             case SET_CSV_APPOINTMENT_FILE_REQUEST:{
@@ -866,7 +867,7 @@ public class DesktopViewController extends ViewController{
     
     private void doAppointmentViewControllerRequest(){
         createNewAppointmentViewController(Optional.ofNullable(null));
-        getView().disableDataControl();
+        //getView().disableDataControl();
     }
     
     private void doPatientNotificationViewControllerRequest(){
@@ -905,7 +906,7 @@ public class DesktopViewController extends ViewController{
             /**
              * disable data menu in the desktop view
              */
-            getView().disableDataControl();
+            //getView().disableDataControl();
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
@@ -1102,58 +1103,8 @@ public class DesktopViewController extends ViewController{
             */
         }
     }
-
- /*
-    -- commented out methodon because unused 
-    private void doPMSDatabaseCreationRequest(){
-        try{
-            FileNameExtensionFilter filter = null;
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-            String targetPath = storeManager.getPMSTargetStorePath();
-            String storageType = storeManager.getStorageType();
-            filter = new FileNameExtensionFilter("Access database files", "accdb");
-
-            targetPath = removeFilenameFrom(targetPath);
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Create PMS database");
-            chooser.setApproveButtonText("Create database");
-            chooser.setFileFilter(filter);
-            chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of PMS database to create"));
-            int returnVal = chooser.showOpenDialog(getView());
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                if (!file.exists()){
-                    file = storeManager.initialiseTargetDatabase(file);
-                    storeManager.setPMSTargetStorePath(file.getPath());
-                    
-                    Patient patient = new Patient();
-                    patient.create();
-                    Appointment appointment = new Appointment();
-                    appointment.create();
-
-                    TheSurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
-                    surgeryDaysAssignment.create();
-                    
-
-                    JOptionPane.showMessageDialog(getView(),
-                            storeManager.getPMSTargetStorePath(),
-                            "Current migration database path", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
-                else{
-                    displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be created because it already exists",
-                            "DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-                }
-                this.doMigrationActionCompleteResponse(true);  
-            }
-              
-        }
-        catch (StoreException ex){
-            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-        }
-    }
- */   
+  
+    /*
     private void doPMSDatabaseDeletionRequest(){
         String filenameFromPMSTargetDatabaseStorePath = null;
         String pmsDatabaseStorePathWithoutFilename = null;
@@ -1174,14 +1125,6 @@ public class DesktopViewController extends ViewController{
                 File file = chooser.getSelectedFile();
                 
                 if (file.exists()){
-                    /**
-                     * if the migration database to be deleted is also the selected migration database
-                     * -- remove the selected filename from the selected migration database path
-                     * Delete database file selected for deletion
-                     * if attempt to delete the database fails
-                     * -- restore the original selected migration database path
-                     */
-                    
                     pmsTargetDatabaseStorePath = storeManager.getPMSTargetStorePath();
                     filenameFromPMSTargetDatabaseStorePath = 
                             FilenameUtils.getName(pmsTargetDatabaseStorePath);
@@ -1199,9 +1142,6 @@ public class DesktopViewController extends ViewController{
                 }
                 else{
                     displayErrorMessage("PMS database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*JOptionPane.showMessageDialog(getView(),
-                                              new ErrorMessagePanel(ex.getMessage()));
-                    */
                 }
                 
             }
@@ -1209,15 +1149,12 @@ public class DesktopViewController extends ViewController{
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
         }
 
     }
+    */
     
+    /*
     private void doPMSDatabaseSelectionRequest(){
         try{
             File path;
@@ -1245,9 +1182,7 @@ public class DesktopViewController extends ViewController{
                 }
                 else{
                     displayErrorMessage("PMS database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*JOptionPane.showMessageDialog(getView(),
-                                              new ErrorMessagePanel(ex.getMessage()));
-                    */
+
                 }
                 this.doMigrationActionCompleteResponse(true);
             }
@@ -1256,13 +1191,9 @@ public class DesktopViewController extends ViewController{
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
         }
     }
+    */
      
     private void doCSVAppointmentFileRequest(){
         try{

@@ -1253,49 +1253,49 @@ public class AccessStore extends Store {
         String sql = null;
         switch (q) {
             case SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION:
-                sql = "INSERT INTO SurgeryDaysTable "
+                sql = "INSERT INTO SurgeryDaysAssignment "
                         + "(Day,IsSurgery) VALUES(?,?)";
                 break;
             case SURGERY_DAYS_TABLE_ROW_COUNT:
-                sql = "SELECT COUNT(*) as row_count FROM SurgeryDaysTable;";
+                sql = "SELECT COUNT(*) as row_count FROM SurgeryDaysAssignment;";
                 break;
             case APPOINTMENT_TABLE_ROW_COUNT:
-                sql = "SELECT COUNT(*) as row_count FROM AppointmentTable;";
+                sql = "SELECT COUNT(*) as row_count FROM Appointment;";
                 break;
             case APPOINTMENT_TABLE_CREATE:
-                sql = "CREATE TABLE AppointmentTable ("
+                sql = "CREATE TABLE Appointment ("
                         + "pid LONG PRIMARY KEY, "
-                        + "patientKey LONG NOT NULL REFERENCES PatientTable(pid), "
+                        + "patientKey LONG NOT NULL REFERENCES Patient(pid), "
                         + "start DateTime, "
                         + "duration LONG, "
                         + "notes char);";
                 break;
             case APPOINTMENT_TABLE_ADD_FOREIGN_KEY:
-                sql = "ALTER TABLE AppointmentTable "
+                sql = "ALTER TABLE Appointment "
                         + "ADD CONSTRAINT [x]  "
                         + "FOREIGN KEY(patientKey) "
-                        + "REFERENCES PatientTable(pid) "
+                        + "REFERENCES Patient(pid) "
                         + "ON DELETE CASCADE";
                 break;
             case APPOINTMENT_TABLE_INSERT_ROW:
-                sql = "INSERT INTO AppointmentTable "
+                sql = "INSERT INTO Appointment "
                         + "(PatientKey, Start, Duration, Notes,pid) "
                         + "VALUES (?,?,?,?,?);";
                 break;
             case APPOINTMENT_TABLE_DROP:
-                sql = "DROP TABLE AppointmentTable;";
+                sql = "DROP TABLE Appointment;";
                 break;
             case APPOINTMENT_TABLE_HIGHEST_KEY:
                 sql = "SELECT MAX(pid) as highest_key "
-                        + "FROM AppointmentTable;";
+                        + "FROM Appointment;";
                 break;
             case APPOINTMENT_TABLE_START_TIME_NORMALISED:
-                sql = "UPDATE AppointmentTable "
+                sql = "UPDATE Appointment "
                         + "SET start = DateAdd('h',12,[start]) "
                         + "WHERE DatePart('h',start)<8;";
                 break;
             case APPOINTMENT_TABLE_READ:
-                sql = "SELECT * FROM AppointmentTable;";
+                sql = "SELECT * FROM Appointment;";
                 break;
             case APPOINTMENT_TABLE_READ_WITH_KEY:
                 sql = "SELECT a.pid, a.Start, a.PatientKey, a.Duration, a.Notes "
@@ -1303,13 +1303,13 @@ public class AccessStore extends Store {
                         + "WHERE a.pid = ?;";
                 break;
             case APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY:
-                sql = "DELETE FROM AppointmentTable a WHERE a.patientKey = ?;";
+                sql = "DELETE FROM Appointment a WHERE a.patientKey = ?;";
                 break;
             case PATIENT_TABLE_ROW_COUNT:
-                sql = "SELECT COUNT(*) as row_count FROM PatientTable;";
+                sql = "SELECT COUNT(*) as row_count FROM Patient;";
                 break;
             case PATIENT_TABLE_CREATE:
-                sql = "CREATE TABLE PatientTable ("
+                sql = "CREATE TABLE Patient ("
                         + "pid Long PRIMARY KEY,"
                         + "title Char(10),"
                         + "forenames Char(25), "
@@ -1330,24 +1330,24 @@ public class AccessStore extends Store {
                         + "guardianKey Long);";
                 break;
             case PATIENT_TABLE_INSERT_ROW:
-                sql = "INSERT INTO PatientTable "
+                sql = "INSERT INTO Patient "
                         + "(title, forenames, surname, line1, line2,"
                         + "town, county, postcode,phone1, phone2, gender, dob,"
                         + "isGuardianAPatient, recallFrequency, recallDate, notes,pid) "
                         + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
                 break;
             case PATIENT_TABLE_DROP:
-                sql = "DROP TABLE PatientTable;";
+                sql = "DROP TABLE Patient;";
                 break;
             case PATIENT_TABLE_READ:
-                sql = "SELECT * FROM PatientTable;";
+                sql = "SELECT * FROM Patient;";
                 break;
             case PATIENT_TABLE_READ_PATIENT:
-                sql = "SELECT * FROM PatientTable WHERE pid = ?;";
+                sql = "SELECT * FROM Patient WHERE pid = ?;";
                 break;
             case PATIENT_TABLE_UPDATE:
                 sql
-                        = "UPDATE PatientTable "
+                        = "UPDATE Patient "
                         + "SET title = ?, "
                         + "forenames = ?,"
                         + "surname = ?,"
@@ -1368,15 +1368,15 @@ public class AccessStore extends Store {
                         + "WHERE pid = ? ;";
                 break;
             case SURGERY_DAYS_TABLE_CREATE:
-                sql = "CREATE TABLE SurgeryDaysTable ("
+                sql = "CREATE TABLE SurgeryDaysAssignment ("
                         + "Day Char(10),"
                         + "IsSurgery YesNo);";
                 break;
             case SURGERY_DAYS_TABLE_DROP:
-                sql = "DROP TABLE SurgeryDaysTable;";
+                sql = "DROP TABLE SurgeryDaysAssignment;";
                 break;
             case SURGERY_DAYS_TABLE_READ:
-                sql = "SELECT * FROM SurgeryDaysTable;";
+                sql = "SELECT * FROM SurgeryDaysAssignment;";
                 break;
 
         }
