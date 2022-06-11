@@ -12,7 +12,7 @@ import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.TheSurgeryDaysAssignment;
 import clinicpms.store.StoreException;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import java.awt.event.ActionEvent;

@@ -5,6 +5,7 @@
  */
 package clinicpms.view;
 
+import clinicpms.view.views.DesktopView;
 import clinicpms.view.factory_methods.*;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.interfaces.IView;
@@ -82,10 +83,10 @@ public abstract class View extends JInternalFrame
                 result = new EmptySlotScannerFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case EXPORT_PROGRESS_VIEW:
-                result = new ImportExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
+                result = new ImportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;
             case MIGRATION_MANAGER_VIEW:
-                result = new ImportExportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
+                result = new ImportProgressFactoryMethod(controller, ed, dtView).makeView(viewer);
             case PATIENT_VIEW:
                 result = new PatientFactoryMethod(controller, ed, dtView).makeView(viewer);
                 break;

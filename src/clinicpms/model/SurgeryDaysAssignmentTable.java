@@ -14,8 +14,8 @@ import clinicpms.store.IMigrationStoreAction;
  *
  * @author colin
  */
-public class SurgeryDaysAssignmentTable implements ITable{
-  
+public class SurgeryDaysAssignmentTable {
+  /*
     public void create() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.create(this);
@@ -60,10 +60,7 @@ public class SurgeryDaysAssignmentTable implements ITable{
             IMigrationStoreAction store = Store.FACTORY(this);
             return store.countRowsIn(this);
         }catch (StoreException ex){
-            /**
-             * if MigrationSQL.SURGERY_DAYS_TABLE_ROW_COUNT is source of exception
-             * -- assumed this is cause because the SurgeryDaysTable is currently missing from the database schema 
-             */
+
             if (!ex.getErrorType().equals(StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_MIGRATION_DATABASE)){
                 throw new StoreException(ex.getMessage(), ex.getErrorType());
                 //result = null;
@@ -72,5 +69,5 @@ public class SurgeryDaysAssignmentTable implements ITable{
         return result;
          
     }
-
+*/
 }

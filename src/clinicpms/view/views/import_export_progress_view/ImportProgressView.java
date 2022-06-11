@@ -23,19 +23,21 @@ import javax.swing.event.InternalFrameEvent;
  *
  * @author colin
  */
-public class ImportExportProgressView extends View {
+public class ImportProgressView extends View {
     enum Mode {PATIENT, APPOINTMENT, NONE};
     enum Operation {EXPORT, IMPORT};
-    
-    
+    private boolean hasSystemGCed = false;
+    /*
     private static String EXPORT_TITLE_HEADER = "Export progress";
     private static String EXPORT_APPOINTMENT_PROGRESS_HEADER = "Export appointment data to PMS";
     private static String EXPORT_PATIENT_PROGRESS_HEADER = "Export patient data to PMS";
     private static String EXPORT_START_PROCESS_HEADER = "Start export";
+    */
     private static String IMPORT_TITLE_HEADER = "Import progress";
     private static String IMPORT_APPOINTMENT_PROGRESS_HEADER = "Import appointment data from CSV source";
     private static String IMPORT_PATIENT_PROGRESS_HEADER = "Import patient data from CSV source";
     private static String IMPORT_START_PROCESS_HEADER = "Start import";
+    
     
     private Mode mode = Mode.NONE;
     private Operation operation = Operation.IMPORT;
@@ -206,7 +208,7 @@ public class ImportExportProgressView extends View {
     /**
      * Creates new form MigrationManagerModelViewer
      */
-    public ImportExportProgressView(View.Viewer myViewType,ActionListener myController,
+    public ImportProgressView(View.Viewer myViewType,ActionListener myController,
             EntityDescriptor entityDescriptor) {
         setMyViewType(myViewType);
         setEntityDescriptor(entityDescriptor);
@@ -227,7 +229,7 @@ public class ImportExportProgressView extends View {
             @Override  
             public void internalFrameClosing(InternalFrameEvent e) {
                 ActionEvent actionEvent = new ActionEvent(
-                        ImportExportProgressView.this,ActionEvent.ACTION_PERFORMED,
+                        ImportProgressView.this,ActionEvent.ACTION_PERFORMED,
                         EntityDescriptor.ImportExportProgressViewControllerActionEvent.IMPORT_EXPORT_PROGRESS_CLOSE_NOTIFICATION.toString());
                 getMyController().actionPerformed(actionEvent);
             }
@@ -240,19 +242,21 @@ public class ImportExportProgressView extends View {
         this.setVisible(true);
         if (getEntityDescriptor().getMigrationDescriptor().getImportOperationStatus()){
             setOperation(Operation.IMPORT);
-            lblPatientsProgressBar.setText(ImportExportProgressView.IMPORT_PATIENT_PROGRESS_HEADER);
-            lblAppointmentsProgressBar.setText(ImportExportProgressView.IMPORT_APPOINTMENT_PROGRESS_HEADER);
-            btnStart.setText(ImportExportProgressView.IMPORT_START_PROCESS_HEADER);
-            this.setTitle(ImportExportProgressView.IMPORT_TITLE_HEADER);
+            lblPatientsProgressBar.setText(ImportProgressView.IMPORT_PATIENT_PROGRESS_HEADER);
+            lblAppointmentsProgressBar.setText(ImportProgressView.IMPORT_APPOINTMENT_PROGRESS_HEADER);
+            btnStart.setText(ImportProgressView.IMPORT_START_PROCESS_HEADER);
+            this.setTitle(ImportProgressView.IMPORT_TITLE_HEADER);
             setOperation(Operation.IMPORT);   
         }
+        /*
         else if (getEntityDescriptor().getMigrationDescriptor().getExportOperationStatus()){
-            lblPatientsProgressBar.setText(ImportExportProgressView.EXPORT_PATIENT_PROGRESS_HEADER);
-            lblAppointmentsProgressBar.setText(ImportExportProgressView.EXPORT_APPOINTMENT_PROGRESS_HEADER);
-            btnStart.setText(ImportExportProgressView.EXPORT_START_PROCESS_HEADER);
-            this.setTitle(ImportExportProgressView.EXPORT_TITLE_HEADER);
+            lblPatientsProgressBar.setText(ImportProgressView.EXPORT_PATIENT_PROGRESS_HEADER);
+            lblAppointmentsProgressBar.setText(ImportProgressView.EXPORT_APPOINTMENT_PROGRESS_HEADER);
+            btnStart.setText(ImportProgressView.EXPORT_START_PROCESS_HEADER);
+            this.setTitle(ImportProgressView.EXPORT_TITLE_HEADER);
             setOperation(Operation.EXPORT);
         }
+*/
    
     }
     
@@ -275,6 +279,10 @@ public class ImportExportProgressView extends View {
         switch (propertyName){
             case progress:{
                 int progress = (Integer) e.getNewValue();
+                if ((progress > 65)&&!hasSystemGCed){
+                    System.gc();
+                    hasSystemGCed = true;
+                }
                 switch (getMode()){
                     case PATIENT:
                         barPatients.setIndeterminate(false);
@@ -296,7 +304,7 @@ public class ImportExportProgressView extends View {
                 barAppointments.setIndeterminate(true);
                 setMode(Mode.APPOINTMENT);
                 actionEvent = new ActionEvent(
-                        ImportExportProgressView.this,ActionEvent.ACTION_PERFORMED,
+                        ImportProgressView.this,ActionEvent.ACTION_PERFORMED,
                         EntityDescriptor.ImportExportProgressViewControllerActionEvent.READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS.toString());
                 getMyController().actionPerformed(actionEvent);
                 break;
@@ -306,7 +314,7 @@ public class ImportExportProgressView extends View {
                 barAppointments.setValue(0);
                 setMode(Mode.PATIENT);
                 actionEvent = new ActionEvent(
-                        ImportExportProgressView.this,ActionEvent.ACTION_PERFORMED,
+                        ImportProgressView.this,ActionEvent.ACTION_PERFORMED,
                         EntityDescriptor.ImportExportProgressViewControllerActionEvent.READY_FOR_RECEIPT_OF_PATIENT_PROGRESS.toString());
                 getMyController().actionPerformed(actionEvent);
                 break;

@@ -17,10 +17,9 @@ import clinicpms.model.EntityStoreType;
  *
  * @author colin
  */
-public abstract class Store implements IAppointmentsStoreAction, 
-                                       IPatientsStoreAction, 
-                                       IPMSStoreAction, 
-                                       IMigrationStoreAction, 
+public abstract class Store implements IStoreAction, 
+                                       IAppointmentsStoreAction,
+                                       IPatientsStoreAction,
                                        ITargetsStoreAction {
     
     protected enum ConnectionMode{ AUTO_COMMIT_OFF, AUTO_COMMIT_ON}
@@ -40,47 +39,124 @@ public abstract class Store implements IAppointmentsStoreAction,
                             APPOINTMENT,
                             PATIENT,
                             PATIENT_NOTIFICATION,
-                            SURGERY_DAYS_ASSIGNMENT}
-
-    protected enum PMSSQL   {
-                            READ_HIGHEST_KEY,
-                            CREATE_PRIMARY_KEY,
-                            APPOINTMENTS_COUNT,
-                            APPOINTMENT_TABLE_DROP,
-                            APPOINTMENT_TABLE_CREATE,
+                            SURGERY_DAYS_ASSIGNMENT,
+                            PMS_STORE}
+    
+    protected enum AppointmentSQL{
+                            CREATE_APPOINTMENT_TABLE,
+                            COUNT_APPOINTMENTS,
+                            DROP_APPOINTMENT_TABLE,
                             DELETE_APPOINTMENT_WITH_KEY,
-                            DELETE_APPOINTMENTS_WITH_PATIENT_KEY,
+                            DELETE_APPOINTMENT_WITH_PATIENT_KEY,
                             INSERT_APPOINTMENT,
                             READ_APPOINTMENTS,
                             READ_APPOINTMENTS_FOR_DAY,
                             READ_APPOINTMENTS_FOR_PATIENT,
                             READ_APPOINTMENTS_FROM_DAY,
                             READ_APPOINTMENT_WITH_KEY,
-                            READ_APPOINTMENT_HIGHEST_KEY,
-                            READ_ALL_PATIENT_NOTIFICATIONS,
+                            READ_HIGHEST_KEY,
+                            UPDATE_APPOINTMENT,
+                            }
+    protected enum PatientNotificationSQL{
+                            CREATE_PATIENT_NOTIFICATION, 
+                            DROP_PATIENT_NOTIFICATION,
+                            DELETE_PATIENT_NOTIFICATION,
+                            INSERT_PATIENT_NOTIFICATION,
+                            READ_PATIENT_NOTIFICATIONS,
+                            READ_PATIENT_NOTIFICATIONS_FOR_PATIENT,
+                            READ_PATIENT_NOTIFICATION_WITH_KEY,
                             READ_UNACTIONED_PATIENT_NOTIFICATIONS,
                             READ_PATIENT_NOTIFICATION_HIGHEST_KEY,
-                            READ_PATIENT_NOTIFICATION_WITH_KEY,
-                            READ_PATIENT_NOTIFICATIONS_FOR_PATIENT,
-                            INSERT_PATIENT_NOTIFICATION,
-                            UPDATE_PATIENT_NOTIFICATION,
-                            DELETE_PATIENT_NOTIFICATION,
-                            PATIENT_NOTIFICATION_CREATE, 
-                            PATIENT_NOTIFICATION_DROP,
-                            UPDATE_APPOINTMENT,
+                            UPDATE_PATIENT_NOTIFICATION
+                            }
+    protected enum PatientSQL{
+                            COUNT_PATIENTS,
+                            CREATE_PATIENT_TABLE,
+                            DROP_PATIENT_TABLE,
                             INSERT_PATIENT,
-                            PATIENTS_COUNT,
-                            PATIENT_TABLE_DROP,
-                            PATIENT_TABLE_CREATE,
-                            READ_ALL_PATIENTS,
-                            READ_PATIENT_HIGHEST_KEY,
+                            READ_PATIENTS,
                             READ_PATIENT_WITH_KEY,
-                            UPDATE_PATIENT,
-                            READ_SURGERY_DAYS,
-                            UPDATE_SURGERY_DAYS,
-                            SURGERY_DAYS_TABLE_CREATE,
+                            UPDATE_PATIENT
+                            }
+    protected enum SurgeryDaysAssignmentSQL{
+                            COUNT_SURGERY_DAYS_ASSIGNMENTS,
+                            CREATE_SURGERY_DAYS_ASSIGNMENT_TABLE,
+                            DROP_SURGERY_DAYS_ASSIGNMENT_TABLE,
+                            READ_SURGERY_DAYS_ASSIGNMENT,
                             INSERT_SURGERY_DAYS_ASSIGNMENT,
-                            SURGERY_DAYS_TABLE_DROP}
+                            UPDATE_SURGERY_DAYS_ASSIGNMENT,
+                            }
+    protected enum TargetSQL{
+                            
+        
+                            }
+
+    protected enum PMSSQL   {
+                            
+                                READ_HIGHEST_KEY,
+                            CREATE_PRIMARY_KEY,
+                                APPOINTMENTS_COUNT,
+                                
+                                 
+                                
+                                COUNT_APPOINTMENTS,
+                                COUNT_APPOINTMENTS_FOR_DAY,
+                                COUNT_APPOINTMENTS_FOR_PATIENT,
+                                COUNT_APPOINTMENTS_FROM_DAY,
+                                CREATE_APPOINTMENT_TABLE,
+                                DELETE_APPOINTMENT,
+                                DELETE_APPOINTMENTS_FOR_PATIENT,
+                                DROP_APPOINTMENT_TABLE,
+                                INSERT_APPOINTMENT,
+                                READ_APPOINTMENT,
+                                READ_APPOINTMENTS,
+                                READ_APPOINTMENTS_FOR_DAY,
+                                READ_APPOINTMENTS_FOR_PATIENT,
+                                READ_APPOINTMENTS_FROM_DAY,
+                                READ_APPOINTMENT_NEXT_HIGHEST_KEY,
+                                UPDATE_APPOINTMENT,
+                                
+                                COUNT_PATIENT_NOTIFICATIONS,
+                                COUNT_UNACTIONED_PATIENT_NOTIFICATIONS,
+                                CREATE_PATIENT_NOTIFICATION_TABLE,
+                                INSERT_PATIENT_NOTIFICATION,
+                                READ_PATIENT_NOTIFICATIONS,
+                                READ_UNACTIONED_PATIENT_NOTIFICATIONS,
+                                READ_PATIENT_NOTIFICATION_NEXT_HIGHEST_KEY,
+                                READ_PATIENT_NOTIFICATION,
+                                READ_PATIENT_NOTIFICATIONS_FOR_PATIENT,
+                                UPDATE_PATIENT_NOTIFICATION,
+                                DELETE_PATIENT_NOTIFICATION,
+                                PATIENT_NOTIFICATION_CREATE, 
+                                PATIENT_NOTIFICATION_DROP,
+                                
+                                COUNT_PATIENTS,
+                                CREATE_PATIENT_TABLE,
+                                DROP_PATIENT_TABLE,
+                                INSERT_PATIENT,
+                                READ_PATIENT,
+                                READ_PATIENTS,
+                                READ_PATIENT_NEXT_HIGHEST_KEY,
+                                UPDATE_PATIENT,
+                                
+                                COUNT_SURGERY_DAYS_ASSIGNMENT,
+                                CREATE_SURGERY_DAYS_ASSIGNMENT_TABLE,
+                                DROP_SURGERY_DAYS_ASSIGNMENT_TABLE,
+                                INSERT_SURGERY_DAYS_ASSIGNMENT,
+                                READ_SURGERY_DAYS_ASSIGNMENT,
+                                UPDATE_SURGERY_DAYS_ASSIGNMENT,
+
+                                READ_CSV_APPOINTMENT_FILE_LOCATION,
+                                READ_CSV_PATIENT_FILE_LOCATION,
+                                READ_PMS_STORE_LOCATION,
+                                
+                                UPDATE_CSV_APPOINTMENT_FILE_LOCATION,
+                                UPDATE_CSV_PATIENT_FILE_LOCATION,
+                                UPDATE_PMS_STORE_LOCATION
+    
+                                }
+    
+                                
     
     protected enum MigrationSQL {
                             APPOINTMENT_TABLE_CREATE,
@@ -108,13 +184,14 @@ public abstract class Store implements IAppointmentsStoreAction,
                             EXPORT_MIGRATED_DATA_TO_PMS
                             }
 
+/*
     protected enum PatientSQL   {INSERT_PATIENT,
-                                PATIENTS_COUNT,
-                                READ_ALL_PATIENTS,
+                                COUNT_PATIENTS,
+                                READ_PATIENTS,
                                 READ_HIGHEST_KEY,
-                                READ_PATIENT_WITH_KEY,
+                                READ_PATIENT,
                                 UPDATE_PATIENT}
-    
+*/    
     
     protected enum CSVMigrationMethod  {   
                                         CSV_APPOINTMENT_FILE_CONVERTER,
@@ -124,6 +201,7 @@ public abstract class Store implements IAppointmentsStoreAction,
     protected enum SelectedTargetStore{
                                 MIGRATION_DB,
                                 PMS_DB,
+                                STORE_DB,
                                 CSV_APPOINTMENT_FILE,
                                 CSV_PATIENT_FILE}
     
@@ -133,6 +211,7 @@ public abstract class Store implements IAppointmentsStoreAction,
      * DEBUG -- following DatabasePath variables updated from private to protected scope
      * which enables access from the concrete store class
      */
+    protected String PMSStorePath = null;
     protected  String migrationDatabasePath = null;
     protected  String pmsDatabasePath = null;
     //store_package_updates_05_12_21_09_17_devDEBUG
@@ -160,10 +239,10 @@ public abstract class Store implements IAppointmentsStoreAction,
                 result = AccessStore.getInstance();
                 break;
             case POSTGRES:
-                result = PostgreSQLStore.getInstance();
+                //result = PostgreSQLStore.getInstance();
                 break;
             case SQL_EXPRESS:
-                result = SQLExpressStore.getInstance();
+                //result = SQLExpressStore.getInstance();
                 break;
                 
         }
@@ -171,6 +250,7 @@ public abstract class Store implements IAppointmentsStoreAction,
         IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
         return result;
     }
+    
     /**
      * Selects the STORAGE class to use (Access, PostgresSQL etc)
  -- ensures STORAGE type and database locator path have been initialised
@@ -179,6 +259,7 @@ public abstract class Store implements IAppointmentsStoreAction,
      * @return IMigrationStoreAction object
      * @throws StoreException 
      */
+    /*
     private static IMigrationStoreAction FACTORY_FOR_MIGRATION_STORE()throws StoreException{
         INITIALISE_DATABASE_LOCATOR_PATH();
         INITIALISE_STORAGE_TYPE();
@@ -200,6 +281,7 @@ public abstract class Store implements IAppointmentsStoreAction,
         IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
         return result;
     }
+    */
     
     private static IPatientsStoreAction FACTORY_FOR_PATIENTS_STORE()throws StoreException{
         INITIALISE_DATABASE_LOCATOR_PATH();
@@ -211,10 +293,10 @@ public abstract class Store implements IAppointmentsStoreAction,
                 result = AccessStore.getInstance();
                 break;
             case POSTGRES:
-                result = PostgreSQLStore.getInstance();
+                //result = PostgreSQLStore.getInstance();
                 break;
             case SQL_EXPRESS:
-                result = SQLExpressStore.getInstance();
+                //result = SQLExpressStore.getInstance();
                 break;
                 
         }
@@ -231,6 +313,7 @@ public abstract class Store implements IAppointmentsStoreAction,
      * @return IPMSStoreAction object
      * @throws StoreException 
      */
+    /*
     private static IPMSStoreAction FACTORY_FOR_PMS_STORE()throws StoreException{
         INITIALISE_DATABASE_LOCATOR_PATH();
         INITIALISE_STORAGE_TYPE();
@@ -245,6 +328,28 @@ public abstract class Store implements IAppointmentsStoreAction,
                 break;
             case SQL_EXPRESS:
                 result = SQLExpressStore.getInstance();
+                break;
+                
+        }
+        SET_PMS_STORE_ACTION_STATE(true);
+        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
+        return result;
+    }
+    */
+    private static IStoreAction FACTORY_FOR_STORE_ACTION()throws StoreException{
+        INITIALISE_DATABASE_LOCATOR_PATH();
+        INITIALISE_STORAGE_TYPE();
+        //IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
+        IStoreAction result = null;
+        switch (STORAGE){
+            case ACCESS: 
+                result = AccessStore.getInstance();
+                break;
+            case POSTGRES:
+                //result = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                //result = SQLExpressStore.getInstance();
                 break;
                 
         }
@@ -271,10 +376,10 @@ public abstract class Store implements IAppointmentsStoreAction,
                 result = AccessStore.getInstance();
                 break;
             case POSTGRES:
-                result = PostgreSQLStore.getInstance();
+                //result = PostgreSQLStore.getInstance();
                 break;
             case SQL_EXPRESS:
-                result = SQLExpressStore.getInstance();
+                //result = SQLExpressStore.getInstance();
                 break;
                 
         }
@@ -347,6 +452,10 @@ public abstract class Store implements IAppointmentsStoreAction,
         return migrationDatabasePath;
     }
     
+    protected String getPMSStorePath(){
+        return PMSStorePath;
+    }
+    
     /**
      * update logged 22/11/2021 08:52
      * The target Migration database path is initialised. If the FACTORY() method is not in mid cycle
@@ -367,6 +476,10 @@ public abstract class Store implements IAppointmentsStoreAction,
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
     
+    protected void setPMSStorePath(String path) throws StoreException{
+        PMSStorePath = path;
+        FACTORY_FOR_TARGETS_STORE();
+    }
     protected String getPMSDatabasePath(){
         return pmsDatabasePath;
     }
@@ -410,25 +523,30 @@ public abstract class Store implements IAppointmentsStoreAction,
         patientCSVPath = value;
     }
     */
+    
     public static IAppointmentsStoreAction FACTORY(IAppointments appointments) throws StoreException{
         return FACTORY_FOR_APPOINTMENTS_STORE();
     }
     
+    /*
     public static IMigrationStoreAction FACTORY(ITable table)throws StoreException{
         return FACTORY_FOR_MIGRATION_STORE();
     }
+    */
     
     public static IPatientsStoreAction FACTORY(IPatients patients) throws StoreException{
         return FACTORY_FOR_PATIENTS_STORE();
     }
     
-    public static IPMSStoreAction FACTORY (EntityStoreType entity) throws StoreException{
-        return FACTORY_FOR_PMS_STORE();
+    public static IStoreAction FACTORY (EntityStoreType entity) throws StoreException{
+        return FACTORY_FOR_STORE_ACTION();
     }
-    
-    public static IPMSStoreAction FACTORY(IEntity entity)throws StoreException{
-        return FACTORY_FOR_PMS_STORE();
+   
+   
+    public static IStoreAction FACTORY(IEntity entity)throws StoreException{
+        return FACTORY_FOR_STORE_ACTION();
     }
+
     
     public static ITargetsStoreAction FACTORY(IStoreManager manager)throws StoreException{
         return FACTORY_FOR_TARGETS_STORE();

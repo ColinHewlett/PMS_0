@@ -8,6 +8,7 @@ package clinicpms.controller;
 import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.TheSurgeryDaysAssignment;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -37,6 +38,10 @@ public class EntityDescriptor {
     private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
     private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
+    private Integer tableRowCount = null;
+    private String appointmentCSVPath = null;
+    private String patientCSVPath = null;
+    private String pmsStorePath = null;
     
     public static enum AppointmentField {ID,
                                 KEY,
@@ -186,6 +191,38 @@ public class EntityDescriptor {
         patientNotifications = new ArrayList<PatientNotification>();
         surgeryDaysAssignment = new HashMap<DayOfWeek,Boolean>(); 
         error = null;
+    }
+    
+    public String getAppointmentCSVPath(){
+        return appointmentCSVPath;
+    }
+    
+    public void setAppointmentCSVPath(String value){
+        appointmentCSVPath = value;
+    }
+    
+    public String getPatientCSVPath(){
+        return patientCSVPath;
+    }
+    
+    public void setPatientCSVPath(String value){
+        patientCSVPath = value;
+    }
+    
+    public String getPMSStorePath(){
+        return pmsStorePath;
+    }
+    
+    public void setPMSStorePath(String value){
+        pmsStorePath = value;
+    }
+    
+    public Integer getTableRowCount(){
+        return tableRowCount;
+    }
+    
+    public void setTableRowCount(Integer value){
+        tableRowCount = value;
     }
     
     public HashMap<DayOfWeek,Boolean> getSurgeryDaysAssignment(){

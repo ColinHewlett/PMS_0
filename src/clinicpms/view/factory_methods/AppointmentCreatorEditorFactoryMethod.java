@@ -6,7 +6,7 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.view.views.appointment_creator_editor_view.AppointmentCreatorEditorModalViewer;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;
 import java.awt.event.ActionListener;

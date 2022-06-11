@@ -23,7 +23,7 @@ import java.beans.PropertyVetoException;
 import clinicpms.model.ThePatient;
 
 import clinicpms.store.StoreException;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

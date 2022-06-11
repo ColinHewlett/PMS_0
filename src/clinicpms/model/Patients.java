@@ -9,6 +9,8 @@ import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.util.ArrayList;
 import clinicpms.store.IPatientsStoreAction;
+import clinicpms.store.IStoreAction;
+import java.util.List;
 
 /**
  *
@@ -96,4 +98,6 @@ public class Patients extends ArrayList<Patient> implements IPatients, IEntitySt
         }
         return result;
     }
+    
+    
 }

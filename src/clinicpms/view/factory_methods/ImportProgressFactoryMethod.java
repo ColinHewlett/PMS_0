@@ -6,24 +6,24 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.view.views.import_export_progress_view.ImportExportProgressView;
+import clinicpms.view.views.import_export_progress_view.ImportProgressView;
 import clinicpms.view.View;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import java.awt.event.ActionListener;
 
 /**
  *
  * @author colin
  */
-public class ImportExportProgressFactoryMethod extends ViewFactoryMethod{
+public class ImportProgressFactoryMethod extends ViewFactoryMethod{
     
-    public ImportExportProgressFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
+    public ImportProgressFactoryMethod(ActionListener controller, EntityDescriptor ed, DesktopView dtView){
         initialiseView(controller, ed, dtView);
     }
     
     @Override
     public View makeView(View.Viewer myViewType){
-        return new ImportExportProgressView(myViewType, this.getViewController(), 
+        return new ImportProgressView(myViewType, this.getViewController(), 
                 this.getEntityDescriptor());
         
     }

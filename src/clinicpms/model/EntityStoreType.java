@@ -24,6 +24,7 @@ public class EntityStoreType{
     private Boolean isPatients = false;
     private Boolean isPatientTable = false;
     private Boolean isTableRowValue = false;
+    private Boolean isPMSStore = false;
     private Boolean isSurgeryDaysAssignment = false;
     
     private void resetAll(){
@@ -36,8 +37,9 @@ public class EntityStoreType{
         setIsPatientNotification(false);
         setIsPatientNotificationCollection(false);
         setIsPatients(false);
+        setIsPMSStore(false);
         setIsPatientTable(false);
-        setIsTableRowValue(false);
+        setIsTableRowValue(false); 
         setIsSurgeryDaysAssignment(false);
     }
     
@@ -73,6 +75,9 @@ public class EntityStoreType{
     }
     public final Boolean getIsTableRowValue(){
         return isTableRowValue;
+    }
+    public final Boolean getIsPMSStore(){
+        return isPMSStore;
     }
     public Boolean getIsSurgeryDaysAssignment(){
         return isSurgeryDaysAssignment;
@@ -122,12 +127,12 @@ public class EntityStoreType{
         if (value) resetAll();
         isTableRowValue = value;
     }
+    public final void setIsPMSStore(Boolean value){
+        if (value) resetAll();
+        isPMSStore = value;
+    }
     public void setIsSurgeryDaysAssignment(Boolean value){
         if (value) resetAll();
         isSurgeryDaysAssignment = value;
     } 
-    
-    //public abstract ArrayList<?> getCollection();
-    
-    //public abstract void setCollection(ArrayList<?> value );
 }

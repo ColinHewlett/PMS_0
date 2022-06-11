@@ -5,6 +5,7 @@
  */
 package clinicpms.controller;
 
+import static clinicpms.controller.ViewController.displayErrorMessage;
 import org.apache.commons.io.FilenameUtils;
 
 import clinicpms.model.*;
@@ -12,7 +13,7 @@ import clinicpms.model.*;
 //import com.healthmarketscience.jackcess.Database;
 import clinicpms.model.StoreManager;
 import clinicpms.store.StoreException;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -23,6 +24,8 @@ import java.io.IOException;
 import java.io.File;
 import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.Iterator;
@@ -43,7 +46,7 @@ public class DesktopViewController extends ViewController{
     private ArrayList<PatientNotificationViewController> patientNotificationViewControllers = null;
     private ArrayList<AppointmentScheduleViewController> appointmentViewControllers = null;
     private ArrayList<PatientViewController> patientViewControllers = null;
-    private ArrayList<ImportExportProgressViewController> importExportProgressViewControllers = null;
+    private ArrayList<ImportProgressViewController> importExportProgressViewControllers = null;
     private static Boolean isDataMigrationOptionEnabled = null;
     private PropertyChangeSupport pcSupport = null;
     private EntityDescriptor entityDescriptor = null;
@@ -68,6 +71,10 @@ public class DesktopViewController extends ViewController{
                                             IMPORT_EXPORT_PATIENT_DATA,
                                             IMPORT_EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT,
                                             EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT_COMPLETED,
+                                            APPOINTMENT_TABLE_COUNT_REQUEST,
+                                            PATIENT_NOTIFICATION_TABLE_COUNT_REQUEST,
+                                            PATIENT_TABLE_COUNT_REQUEST,
+                                            SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_REQUEST,
                                             APPOINTMENT_HISTORY_CHANGE_NOTIFICATION,
                                             APPOINTMENT_VIEW_CONTROLLER_REQUEST,
                                             DATABASE_LOCATOR_REQUEST,
@@ -77,11 +84,15 @@ public class DesktopViewController extends ViewController{
                                             PATIENT_VIEW_CONTROLLER_REQUEST,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST,
                                             PATIENT_NOTIFICATION_VIEW_CONTROLLER_REQUEST,
-                                            SET_CSV_APPOINTMENT_FILE_REQUEST,
-                                            SET_CSV_PATIENT_FILE_REQUEST,
-                                            MIGRATION_DATABASE_CREATION_REQUEST,
-                                            MIGRATION_DATABASE_DELETION_REQUEST,
-                                            MIGRATION_DATABASE_SELECTION_REQUEST,
+                                            GET_APPOINTMENT_CSV_PATH_REQUEST,
+                                            GET_PATIENT_CSV_PATH_REQUEST,
+                                            GET_PMS_STORE_PATH_REQUEST,
+                                            SET_APPOINTMENT_CSV_PATH_REQUEST,
+                                            SET_PATIENT_CSV_PATH_REQUEST,
+                                            PMS_STORE_COPY_REQUEST,
+                                            PMS_STORE_CREATION_REQUEST,
+                                            PMS_STORE_DELETION_REQUEST,
+                                            PMS_STORE_SELECTION_REQUEST,
                                             PMS_DATABASE_CREATION_REQUEST,
                                             PMS_DATABASE_DELETION_REQUEST,
                                             PMS_DATABASE_SELECTION_REQUEST,
@@ -98,7 +109,14 @@ public class DesktopViewController extends ViewController{
                                             ENABLE_DESKTOP_VIEW_CONTROL,
                                             DISABLE_DESKTOP_WINDOW_CONTROL,
                                             ENABLE_DESKTOP_WINDOW_CONTROL,
-                                            MIGRATION_ACTION_COMPLETE
+                                            MIGRATION_ACTION_COMPLETE,
+                                            APPOINTMENT_CSV_PATH_RECEIVED,
+                                            APPOINTMENT_TABLE_COUNT_RECEIVED,
+                                            PATIENT_TABLE_COUNT_RECEIVED,
+                                            PATIENT_CSV_PATH_RECEIVED,
+                                            PATIENT_NOTIFICATION_TABLE_COUNT_RECEIVED,
+                                            PMS_STORE_PATH_RECEIVED,
+                                            SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_RECEIVED
                                             }
     
     @Override
@@ -144,7 +162,31 @@ public class DesktopViewController extends ViewController{
         importExportProgressViewControllers = new ArrayList<>();
         patientNotificationViewControllers = new ArrayList<>();
         
-        if (isDataMigrationOptionEnabled) this.doMigrationActionCompleteResponse(true);
+        boolean isPMSStoreDefined;
+        if (isDataMigrationOptionEnabled) {
+            notifyMigrationActionCompleted();
+        }
+        else{
+            try{
+                TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+                String pmsStorePath = storeManager.getPMSStorePath();
+                if (pmsStorePath == null) isPMSStoreDefined = false;
+                else if (FilenameUtils.getName(pmsStorePath).equals(""))
+                    isPMSStoreDefined = false;
+                else isPMSStoreDefined = true;
+                if (!isPMSStoreDefined){
+                    displayErrorMessage("A PMS store has not been defined; ClinicPMS will abort\n"
+                            + "Re-enter application in data migration mode by specifying DATA_MIGRATION_ENABLED on the command line",
+                            "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
+                    System.exit(0);
+                }
+            }catch (StoreException ex){
+                displayErrorMessage(ex.getMessage() + "\n"
+                        + "Exception handled in Desktop View Controller constructor",
+                        "Desktop View Controller error",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
     }
     
     @Override
@@ -161,7 +203,7 @@ public class DesktopViewController extends ViewController{
             case "PatientViewController":
                 doPatientViewControllerAction(e);
                 break;
-            case "ImportExportProgressViewController":
+            case "ImportProgressViewController":
                 doImportExportProgressViewControllerAction(e);
                 break;
                 /*
@@ -216,27 +258,7 @@ public class DesktopViewController extends ViewController{
                 
                 if (this.appointmentViewControllers.isEmpty() && 
                         this.patientViewControllers.isEmpty()){ 
-                    /**
-                     * re-enable view's data menu, if it exists
-                     */
-                    /*
-                    pcSupport.addPropertyChangeListener(view);
-                    PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
-                        DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
-                        null,getEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(view);
-                    
-                    pcSupport.addPropertyChangeListener(view);
-                    pcEvent = new PropertyChangeEvent(this,
-                        DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
-                        null,getEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(view);
-                    
-                    getView().enableDataControl();
-                    getView().enableWindowCloseControl();
-                    */
+
                 }
             }
             
@@ -380,19 +402,13 @@ public class DesktopViewController extends ViewController{
         switch (actionCommand){
             case VIEW_CLOSED_NOTIFICATION:
                 importExportProgressViewControllers.clear();
+                notifyMigrationActionCompleted();
                 break;
                 
             case IMPORT_EXPORT_PATIENT_DATA:
                 try{
-                    if (MigrationDatabase.isSelected()){
-                        if(PMSDatabase.isSelected()){
-                            if (this.getEntityDescriptor().
-                                    getMigrationDescriptor().
-                                    getExportOperationStatus())
-                                doExportMigratedPatients(); 
-                            else doImportPatientsFromSource();       
-                        }
-                    }
+                    if (PMSStore.isSelected()) 
+                        startBackgroundThread(new ThePatient(), this);
                 }catch (StoreException ex){
                     displayErrorMessage(ex.getMessage() + "\nException handled"
                             + " in case EXPORT_MIGRATED_PATIENTS inside "
@@ -404,40 +420,14 @@ public class DesktopViewController extends ViewController{
                 
             case IMPORT_EXPORT_APPOINTMENT_DATA:
                 try{
-                    if (MigrationDatabase.isSelected()){
-                        if(PMSDatabase.isSelected()){
-                            if (this.getEntityDescriptor().
-                                    getMigrationDescriptor().
-                                    getExportOperationStatus())
-                            {
-                                doExportMigratedAppointments(); 
-                                
-                            }
-                            else doImportAppointmentsFromSource();
-                        }
-                    }
+                    if (PMSStore.isSelected()) 
+                        startBackgroundThread(new TheAppointment(), this);
                 }catch (StoreException ex){
                     displayErrorMessage(ex.getMessage() + "\nException handled"
                             + " in case EXPORT_MIGRATED_APPOINTMENTS inside "
                             + "doImportExportProgressViewControllerAction()",
                             "Desktop View Controller error",
-                            JOptionPane.WARNING_MESSAGE);
-                    
-                }
-                break;
-                
-            case IMPORT_EXPORT_MIGRATED_SURGERY_DAYS_ASSIGNMENT:
-                try{
-                    if (MigrationDatabase.isSelected()){
-                        if(PMSDatabase.isSelected())
-                            if (this.getEntityDescriptor().
-                                    getMigrationDescriptor().
-                                    getExportOperationStatus())
-                                doExportMigratedSurgeryDaysAssignment();
-                            else doImportSurgeryDaysAssignment();
-                    }
-                }catch (StoreException ex){
-                    
+                            JOptionPane.WARNING_MESSAGE);    
                 }
                 break;
         }
@@ -478,9 +468,47 @@ public class DesktopViewController extends ViewController{
      * @param e source of event is DesktopView object
      */
     private void doDesktopViewAction(ActionEvent e){ 
+        Integer count = null;
         DesktopViewControllerActionEvent actionCommand =
                 DesktopViewController.DesktopViewControllerActionEvent.valueOf(e.getActionCommand());
         switch (actionCommand){
+            case GET_APPOINTMENT_CSV_PATH_REQUEST:
+                doGetPathRequest(actionCommand, e.getSource());
+                break;
+            case GET_PATIENT_CSV_PATH_REQUEST:
+                doGetPathRequest(actionCommand, e.getSource());
+                break;
+            case GET_PMS_STORE_PATH_REQUEST:
+                doGetPathRequest(actionCommand, e.getSource());
+                break;
+            case APPOINTMENT_TABLE_COUNT_REQUEST:
+                count = doAppointmentTableCountRequest();
+                getEntityDescriptor().setTableRowCount(count);
+                doPropertyChangeEvent(
+                        DesktopViewControllerPropertyChangeEvent.APPOINTMENT_TABLE_COUNT_RECEIVED,
+                        (PropertyChangeListener)e.getSource());
+                break;
+            case PATIENT_TABLE_COUNT_REQUEST:
+                count = doPatientTableCountRequest();
+                getEntityDescriptor().setTableRowCount(count);
+                doPropertyChangeEvent(
+                        DesktopViewControllerPropertyChangeEvent.PATIENT_TABLE_COUNT_RECEIVED,
+                        (PropertyChangeListener)e.getSource());
+                break;
+            case PATIENT_NOTIFICATION_TABLE_COUNT_REQUEST:
+                count = doPatientNotificationTableCountRequest();
+                getEntityDescriptor().setTableRowCount(count);
+                doPropertyChangeEvent(
+                        DesktopViewControllerPropertyChangeEvent.PATIENT_NOTIFICATION_TABLE_COUNT_RECEIVED,
+                        (PropertyChangeListener)e.getSource());
+                break;
+            case SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_REQUEST:
+                count = doSurgeryDaysAssignmentTableCountRequest();
+                getEntityDescriptor().setTableRowCount(count);
+                doPropertyChangeEvent(
+                        DesktopViewControllerPropertyChangeEvent.SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_RECEIVED,
+                        (PropertyChangeListener)e.getSource());
+                break;
             case PATIENT_NOTIFICATION_VIEW_CONTROLLER_REQUEST:
                 doPatientNotificationViewControllerRequest();
                 break;
@@ -500,36 +528,33 @@ public class DesktopViewController extends ViewController{
                 doViewNotificationRequest();
                 break;
             }    
-            case MIGRATION_DATABASE_CREATION_REQUEST:{
-                doMigrationDatabaseCreationRequest();
+            //case MIGRATION_DATABASE_CREATION_REQUEST:{
+                //doMigrationDatabaseCreationRequest();
+            case PMS_STORE_COPY_REQUEST:
+                doPMSStoreCopyRequest();
+                break;
+            case PMS_STORE_CREATION_REQUEST:{
+                doPMSStoreCreationRequest();
                 break;
             }
-            case MIGRATION_DATABASE_DELETION_REQUEST:{
-                doMigrationDatabaseDeletionRequest();
+            case PMS_STORE_DELETION_REQUEST:{
+            //case MIGRATION_DATABASE_DELETION_REQUEST:{
+                //doMigrationDatabaseDeletionRequest();
+                doPMSStoreDeletionRequest();
                 break;
             }
-            case MIGRATION_DATABASE_SELECTION_REQUEST:{
-                doMigrationDatabaseSelectionRequest();
+            //case MIGRATION_DATABASE_SELECTION_REQUEST:{
+                //doMigrationDatabaseSelectionRequest();
+            case PMS_STORE_SELECTION_REQUEST:{
+                doPMSStoreSelectionRequest();
                 break;
             }
-            
-            case PMS_DATABASE_CREATION_REQUEST:{
-                //doPMSDatabaseCreationRequest();
-                break;
-            } 
-            case PMS_DATABASE_DELETION_REQUEST:{
-                //doPMSDatabaseDeletionRequest();
-                break;
-            }
-            case PMS_DATABASE_SELECTION_REQUEST:{
-                //doPMSDatabaseSelectionRequest();
-                break;
-            }
-            case SET_CSV_APPOINTMENT_FILE_REQUEST:{
+    
+            case SET_APPOINTMENT_CSV_PATH_REQUEST:{
                 doCSVAppointmentFileRequest();
                 break;
             }
-            case SET_CSV_PATIENT_FILE_REQUEST:{
+            case SET_PATIENT_CSV_PATH_REQUEST:{
                 doCSVPatientFileRequest();
                 break;
             }
@@ -768,42 +793,52 @@ public class DesktopViewController extends ViewController{
         if (FilenameUtils.getBaseName(file).isEmpty()) result = new File(file + direction);
         return result;
     }
-    
-    private void doMigrationActionCompleteResponse(boolean includeTableRowCounts){
-       //setEntityDescriptor(new EntityDescriptor());
-       try{
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+    /*
+    private void doMigrationActionCompleteResonse1(){
+        try{
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
             this.
             getEntityDescriptor().
                     getMigrationDescriptor().
-                    setMigrationDatabaseSelection(MigrationDatabase.getPath());
-              
-            getEntityDescriptor().
-                    getMigrationDescriptor().
-                    setAppointmentCSVFilePath(storeManager.getAppointmentCSVPath());
-            getEntityDescriptor().
-                    getMigrationDescriptor().
-                    setPatientCSVFilePath(storeManager.getPatientCSVPath());
-            getEntityDescriptor().getMigrationDescriptor().setPMSDatabaseSelection(storeManager.getPMSTargetStorePath());
-            
-            if (MigrationDatabase.isSelected()){
-                    getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
-                    getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
-                    getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentTableCount(new SurgeryDaysAssignmentTable().count());
+                    setMigrationDatabaseSelection(storeManager.getPMSStorePath());
+            getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentTableCount(new SurgeryDaysAssignmentTable().count());
                     //getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
                     //getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
-            }
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage() + "\nMigration database "
+                    + "connection failure","DesktopViewController error",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void doMigrationActionCompleteResponse(boolean includeTableRowCounts){
+       String PMSStorePath = null;
+       String patientCSVPath = null;
+       String appointmentCSVPath = null;
+       try{
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            PMSStorePath = storeManager.getPMSStorePath();
+            patientCSVPath = storeManager.getPatientCSVPath();
+            appointmentCSVPath = storeManager.getAppointmentCSVPath();
+            
+            
+           //getEntityDescriptor().getMigrationDescriptor().setPMSDatabaseSelection(storeManager.getPMSTargetStorePath());
+            
+            //if (MigrationDatabase.isSelected()){
+                    getEntityDescriptor().getMigrationDescriptor().setAppointmentTableCount(new AppointmentTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setPatientTableCount(new PatientTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentTableCount(new SurgeryDaysAssignmentTable().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
+                    //getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
+            //}
             
             getEntityDescriptor().
                     getMigrationDescriptor().
                     setPMSDatabaseSelection(PMSDatabase.getPath());
-            if (PMSDatabase.isSelected()){
-                getEntityDescriptor().getMigrationDescriptor().setSurgeryDaysAssignmentCount(new TheSurgeryDaysAssignment().count());
-                getEntityDescriptor().getMigrationDescriptor().setAppointmentsCount(new Appointments().count());
-                getEntityDescriptor().getMigrationDescriptor().setPatientsCount(new Patients().count());
-                
-                
-            }
+   
+            
             pcSupport.addPropertyChangeListener(view);
             PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                 DesktopViewController.DesktopViewControllerPropertyChangeEvent.MIGRATION_ACTION_COMPLETE.toString(),
@@ -818,7 +853,7 @@ public class DesktopViewController extends ViewController{
                     JOptionPane.WARNING_MESSAGE);
         }  
     }
-    
+    */
     private void doViewCloseRequest(){
         String[] options = {"Yes", "No"};
         String message;
@@ -852,8 +887,8 @@ public class DesktopViewController extends ViewController{
     private void doImportExportProgressViewControllerRequest(){
         if (importExportProgressViewControllers.isEmpty()){
             importExportProgressViewControllers.add(
-                                    new ImportExportProgressViewController(this, getView(), getEntityDescriptor()));
-            ImportExportProgressViewController evc = importExportProgressViewControllers.get(importExportProgressViewControllers.size()-1);
+                                    new ImportProgressViewController(this, getView(), getEntityDescriptor()));
+            ImportProgressViewController evc = importExportProgressViewControllers.get(importExportProgressViewControllers.size()-1);
 
             this.getView().getDeskTop().add(evc.getView());
         }else{
@@ -927,21 +962,127 @@ public class DesktopViewController extends ViewController{
     private void doViewNotificationRequest(){
             System.exit(0);
     }
+    
+    /**
+     * the method copies the currently selected PMS store to a designated destination path
+     */
+    private void doPMSStoreCopyRequest(){
+
+        try{
+            FileNameExtensionFilter filter = null;
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            String sourcePath = storeManager.getPMSStorePath();
+            String targetPath = sourcePath;
+            if (targetPath != null) targetPath = removeFilenameFrom(targetPath);
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Copy PMS store");
+            chooser.setApproveButtonText("Copy database");
+            chooser.setFileFilter(filter);
+            if (targetPath!=null) chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of PMS store to create"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file.exists()){
+                    int reply = JOptionPane.showConfirmDialog(getView(),
+                        "are you sure you want to overwrite the selected destination file ("
+                                + FilenameUtils.getName(file.getPath()) + ")",
+                        "Destination file for copying", 
+                        JOptionPane.OK_CANCEL_OPTION);
+                    if (reply==JOptionPane.OK_OPTION){
+                        Files.copy(Paths.get(sourcePath),
+                                Paths.get(file.getPath()),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+                else {
+                    Path destinationPath = Paths.get(file.getPath());
+                    Files.copy(Paths.get(sourcePath),
+                                destinationPath,
+                                StandardCopyOption.REPLACE_EXISTING);
+                }
+                     
+            }
+        }catch(StoreException ex){
+            
+        }
+        catch(IOException ex){
+            String message = ex.getMessage();
+        }
+        
+    }
+    
+    private void doPMSStoreCreationRequest(){
+        try{
+            FileNameExtensionFilter filter = null;
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getPMSStorePath();
+            if (targetPath != null) targetPath = removeFilenameFrom(targetPath);
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Create PMS store");
+            chooser.setApproveButtonText("Create database");
+            chooser.setFileFilter(filter);
+            if (targetPath!=null) chooser.setSelectedFile(addDirectionIfFilenameMissing(targetPath,"Enter name of PMS store to create"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (FilenameUtils.getExtension(file.getPath()).equals("accdb")) {
+                    if (!file.exists()){
+                        file = storeManager.createStore(file);
+                        storeManager.setPMSStorePath(file.getPath());
+                        ThePatient patientTable = new ThePatient();
+                        patientTable.create();
+                        PatientNotification patientNotificationTable = new PatientNotification();
+                        patientNotificationTable.create();
+                        TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
+                        surgeryDaysAssignmentTable.create();
+                        surgeryDaysAssignmentTable.insert();
+                        TheAppointment appointmentTable = new TheAppointment();
+                        appointmentTable.create();
+                       JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPMSStorePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    else{
+                        String filename = file.toPath().getName(file.toPath().getNameCount()-1).toString();
+                        displayErrorMessage("Selected database file to create -> " + 
+                                filename + " already exists","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(getView(),
+                                storeManager.getPMSStorePath(),
+                                "Current selected PMS store database path", 
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }else{
+                    String filename = file.toPath().getName(file.toPath().getNameCount()-1).toString();
+                    displayErrorMessage("Selected database file -> " + 
+                            filename + "has an incorrect or missing extension","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPMSStorePath(),
+                            "Current migration database path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
                 
+                //this.doMigrationActionCompleteResponse(true);
+                notifyMigrationActionCompleted();
+            }
+               
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+
+        }
+    } 
+    
+    /*
     private void doMigrationDatabaseCreationRequest(){
         try{
-            /**
-             * 07/12/2021 19:17 updates
-             */
             FileNameExtensionFilter filter = null;
             StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getMigrationTargetStorePath();
             filter = new FileNameExtensionFilter("Access database files", "accdb");
-
-            /**
-             * display contents of currently selected folder
-             * but do not display the currently selected file (if NY)
-             */
 
             targetPath = removeFilenameFrom(targetPath);
             JFileChooser chooser = new JFileChooser();
@@ -955,14 +1096,15 @@ public class DesktopViewController extends ViewController{
                 if (!file.exists()){
                     file = storeManager.initialiseTargetDatabase(file);
                     storeManager.setMigrationTargetStorePath(file.getPath());
-                    PatientTable patientTable = new PatientTable();
+                    Patient patientTable = new Patient();
                     patientTable.create();
-                    AppointmentTable appointmentTable = new AppointmentTable();
+                    Appointment appointmentTable = new Appointment();
                     appointmentTable.create();
 
-                    SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+                    //SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+                    TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
                     surgeryDaysAssignmentTable.create();
-                    surgeryDaysAssignmentTable.populate();
+                    surgeryDaysAssignmentTable.insert();
 
                    JOptionPane.showMessageDialog(getView(),
                         storeManager.getMigrationTargetStorePath(),
@@ -979,20 +1121,70 @@ public class DesktopViewController extends ViewController{
                             "Current migration database path", 
                             JOptionPane.INFORMATION_MESSAGE);
                 }
-                this.doMigrationActionCompleteResponse(true);
+                //this.doMigrationActionCompleteResponse(true);
+                notifyMigrationActionCompleted();
             }
                
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
 
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
+
         }
     }
+    */
     
+    private void doPMSStoreDeletionRequest(){
+        String pmsStorePath = null;
+        String filenameFromPMSStorePath = null;
+        String pmsStoreStorePathWithoutFilename = null;
+        try{
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            pmsStorePath = storeManager.getPMSStorePath();
+            String storageType = storeManager.getStorageType();
+            FileNameExtensionFilter filter = null;
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            pmsStoreStorePathWithoutFilename = removeFilenameFrom(pmsStorePath);
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Delete migration database");
+            chooser.setApproveButtonText("Delete database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(addDirectionIfFilenameMissing(pmsStoreStorePathWithoutFilename,"Select migration database to delete"));
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                
+                if (file.exists()){
+                    pmsStorePath = storeManager.getPMSStorePath();
+                    filenameFromPMSStorePath = 
+                            FilenameUtils.getName(pmsStorePath);
+                    if (pmsStorePath.equals(file.getPath())){
+                            pmsStoreStorePathWithoutFilename = removeFilenameFrom(pmsStorePath);
+                            storeManager.setPMSStorePath(pmsStoreStorePathWithoutFilename);
+                    }
+                    if (!file.delete()){
+                        displayErrorMessage("Unable to delete the migration database file -> "  + 
+                                file.getPath(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                        storeManager.setPMSStorePath(
+                                FilenameUtils.concat(pmsStorePath, filenameFromPMSStorePath));   
+                    }
+                    //this.doMigrationActionCompleteResponse(false);
+                    notifyMigrationActionCompleted();
+                }
+                else{
+                    displayErrorMessage("Migration database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                }
+                
+            }
+            
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+        }
+    }
+    /*
     private void doMigrationDatabaseDeletionRequest(){
         String migrationTargetDatabaseStorePath = null;
         String filenameFromMigrationTargetDatabaseStorePath = null;
@@ -1015,14 +1207,6 @@ public class DesktopViewController extends ViewController{
                 File file = chooser.getSelectedFile();
                 
                 if (file.exists()){
-                    /**
-                     * if the migration database to be deleted is also the selected migration database
-                     * -- remove the selected filename from the selected migration database path
-                     * Delete database file selected for deletion
-                     * if attempt to delete the database fails
-                     * -- restore the original selected migration database path
-                     */
-                    
                     migrationTargetDatabaseStorePath = storeManager.getMigrationTargetStorePath();
                     filenameFromMigrationTargetDatabaseStorePath = 
                             FilenameUtils.getName(migrationTargetDatabaseStorePath);
@@ -1036,13 +1220,11 @@ public class DesktopViewController extends ViewController{
                         storeManager.setMigrationTargetStorePath(
                                 FilenameUtils.concat(migrationTargetDatabaseStorePath, filenameFromMigrationTargetDatabaseStorePath));   
                     }
-                    this.doMigrationActionCompleteResponse(false);
+                    //this.doMigrationActionCompleteResponse(false);
+                    notifyMigrationActionCompleted();
                 }
                 else{
                     displayErrorMessage("Migration database file -> " + file.getPath() + " cannot be located","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*JOptionPane.showMessageDialog(getView(),
-                                              new ErrorMessagePanel(ex.getMessage()));
-                    */
                 }
                 
             }
@@ -1051,27 +1233,22 @@ public class DesktopViewController extends ViewController{
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
 
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
         }
     }
-    
-    private void doMigrationDatabaseSelectionRequest(){
+    */
+    private void doPMSStoreSelectionRequest(){
         try{
-            /**
-             * 07/12/2021 19:17 updates
-             */
             FileNameExtensionFilter filter = null;
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-            String targetPath = storeManager.getMigrationTargetStorePath();
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getPMSStorePath();
             String storageType = storeManager.getStorageType();
             filter = new FileNameExtensionFilter("Access database files", "accdb");
 
-            File path = addDirectionIfFilenameMissing(targetPath, "Select migration database to use");
+            //File path = addDirectionIfFilenameMissing(targetPath, "Select migration database to use");
+            File path = addDirectionIfFilenameMissing(targetPath, "Select database to use as PMS store");
             JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Select migration database to use");
+            //chooser.setDialogTitle("Select migration database to use");
+            chooser.setDialogTitle("Select database to use as PMS store");
             chooser.setApproveButtonText("Select database");
             chooser.setFileFilter(filter);
             chooser.setSelectedFile(path);
@@ -1079,7 +1256,52 @@ public class DesktopViewController extends ViewController{
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 if (file.exists()){
-                    storeManager.setMigrationTargetStorePath(file.getPath());
+                    //storeManager.setMigrationTargetStorePath(file.getPath());
+                    storeManager.setPMSStorePath(file.getPath());
+
+                    JOptionPane.showMessageDialog(getView(),
+                            storeManager.getPMSStorePath(),
+                            "Current PMS store path", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    displayErrorMessage("PMS store -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+                } 
+                //this.doMigrationActionCompleteResponse(true);
+                notifyMigrationActionCompleted();
+            }
+            
+
+        }
+        catch (StoreException ex){
+            displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
+
+        }
+    }
+    /*
+    private void doMigrationDatabaseSelectionRequest(){
+        try{
+
+            FileNameExtensionFilter filter = null;
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            String targetPath = storeManager.getMigrationTargetStorePath();
+            String storageType = storeManager.getStorageType();
+            filter = new FileNameExtensionFilter("Access database files", "accdb");
+
+            //File path = addDirectionIfFilenameMissing(targetPath, "Select migration database to use");
+            File path = addDirectionIfFilenameMissing(targetPath, "Select persistent storage database to use");
+            JFileChooser chooser = new JFileChooser();
+            //chooser.setDialogTitle("Select migration database to use");
+            chooser.setDialogTitle("Select persistent storage database to use");
+            chooser.setApproveButtonText("Select database");
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(path);
+            int returnVal = chooser.showOpenDialog(getView());
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file.exists()){
+                    //storeManager.setMigrationTargetStorePath(file.getPath());
+                    storeManager.setStorePath(file.getPath());
 
                     JOptionPane.showMessageDialog(getView(),
                             storeManager.getMigrationTargetStorePath(),
@@ -1089,7 +1311,8 @@ public class DesktopViewController extends ViewController{
                 else{
                     displayErrorMessage("Migration database -> " + file.getPath() + " does not exist","DesktopViewController error",JOptionPane.WARNING_MESSAGE);
                 } 
-                this.doMigrationActionCompleteResponse(true);
+                //this.doMigrationActionCompleteResponse(true);
+                notifyMigrationActionCompleted();
             }
             
 
@@ -1097,13 +1320,9 @@ public class DesktopViewController extends ViewController{
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
 
-            /*
-            JOptionPane.showMessageDialog(getView(),
-                                      new ErrorMessagePanel(ex.getMessage()));
-            */
         }
     }
-  
+  */
     /*
     private void doPMSDatabaseDeletionRequest(){
         String filenameFromPMSTargetDatabaseStorePath = null;
@@ -1195,9 +1414,10 @@ public class DesktopViewController extends ViewController{
     }
     */
      
+    
     private void doCSVAppointmentFileRequest(){
         try{
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getAppointmentCSVPath();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
 
@@ -1220,7 +1440,8 @@ public class DesktopViewController extends ViewController{
                         "Current appointment source CSV file path", 
                         JOptionPane.INFORMATION_MESSAGE);
             }
-            this.doMigrationActionCompleteResponse(true);
+            //this.doMigrationActionCompleteResponse(true);
+            notifyMigrationActionCompleted();
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
@@ -1232,7 +1453,7 @@ public class DesktopViewController extends ViewController{
     
     private void doCSVPatientFileRequest(){
         try{
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getPatientCSVPath();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
             File path = new File(targetPath);
@@ -1251,7 +1472,8 @@ public class DesktopViewController extends ViewController{
                         "Current patient source CSV file path", 
                         JOptionPane.INFORMATION_MESSAGE);
             }
-            this.doMigrationActionCompleteResponse(true);
+            //this.doMigrationActionCompleteResponse(true);
+            notifyMigrationActionCompleted();
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"DesktopViewController error",JOptionPane.WARNING_MESSAGE);
@@ -1271,6 +1493,128 @@ public class DesktopViewController extends ViewController{
      * @param entity:IEntityStoreType, which can be interrogated to determine if a collection of appointment or patient objects  have been specified
      * @param desktopViewController references the DesktopViewController object which is referenced in the Action Event sent in the done90 method  
      */
+    private void startBackgroundThread(EntityStoreType entity,DesktopViewController desktopViewController){
+        SwingWorker sw1 = new SwingWorker(){
+            
+            @Override
+            protected String doInBackground() throws Exception 
+            {
+                String result = null;
+                int count = 0;
+                if (entity.getIsPatient()){
+                    ThePatient patientTable = (ThePatient)entity;
+                    //patientTable.create();
+                    List<String[]>dbfRecords = patientTable.importEntityFromCSV();
+                    count = dbfRecords.size();
+                    Iterator dbfRecordsIt = dbfRecords.iterator();
+                    int recordCount = 0;
+                    
+                    while(dbfRecordsIt.hasNext()){
+                        ThePatient patient = patientTable.convertDBFToPatient((String[])dbfRecordsIt.next());
+                        patient.reformat();
+                        try{
+                            patient.insert();
+                        }catch (StoreException ex){
+                        displayErrorMessage(ex.getMessage(), "Desktop View Controller error", 
+                        JOptionPane.WARNING_MESSAGE);
+                        }   
+                        recordCount++;
+                        if (recordCount <= count){
+                            Integer percentage = recordCount*100/count;
+                            setProgress(percentage);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    dbfRecords.clear();
+                    
+                }
+                
+                else if (entity.getIsAppointment()){
+                    TheAppointment appointmentTable = (TheAppointment)entity;
+                    //appointmentTable.create();
+                    List<String[]> dbfRecords = appointmentTable.importEntityFromCSV();
+                    setCount(dbfRecords.size());
+                    Iterator dbfRecordsIt = dbfRecords.iterator();
+                    setRecordCount(0);
+                    while(dbfRecordsIt.hasNext()){
+                        setRecordCount(getRecordCount()+1);
+                        insertAppointments(
+                                appointmentTable.convertDBFRecordToAppointments(
+                                        (String[])dbfRecordsIt.next()),
+                                         appointmentTable);
+                        /*
+                        appointmentsForThisDBFRecord = appointmentTable.convertDBFRecordToAppointments((String[])dbfRecordsIt.next());
+                        
+                        */
+                    }//end of dbfRecords iteration
+                    dbfRecords.clear();
+                }
+                return result; 
+            }
+            
+            private void insertAppointments(ArrayList<TheAppointment> appointments,
+                    TheAppointment appointmentTable) throws StoreException {
+                for(TheAppointment appointment : appointments){
+                    appointment.insert();
+                    if (getRecordCount() <= getCount()){
+                        Integer percentage = getRecordCount()*100/getCount();
+                        setProgress(percentage);
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+            
+            private int getRecordCount(){
+                return recordCount;
+            }
+            
+            private void setRecordCount(int value){
+                recordCount = value;
+            }
+            
+            private int getCount(){
+                return count;
+            }
+            
+            private void setCount(int value){
+                count = value;
+            }
+            
+            /**
+             * Invoked when the doInBackground() method completes
+             * -- used to send an action event to the ExportProgressViewController signalling task completion
+             * -- uses also the specified IEntityStoreTYpe to determine the value of the event sent
+             * -- i.e. either EXPORT_MIGRATED_PATIENTS_COMPLETED event or EXPORT_MIGRATED_APPOINTMENTS_COMPLETED event
+             */
+            @Override
+            protected void done(){
+                DesktopViewControllerActionEvent event = null;
+                if (entity.getIsPatient())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_PATIENT_DATA_COMPLETED;
+                if (entity.getIsAppointment())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
+                
+                ImportProgressViewController evc = importExportProgressViewControllers.get(0);
+                if (event!=null){
+                    ActionEvent actionEvent = new ActionEvent(
+                            desktopViewController,ActionEvent.ACTION_PERFORMED,
+                            event.toString());
+                    evc.actionPerformed(actionEvent);
+                }else{
+                    String message = "Unexpected null encountered for event in SwingWorker::done() method";
+                    displayErrorMessage(message, "Desktop View Controller error", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        };
+        
+        ImportProgressViewController evc = importExportProgressViewControllers.get(0);
+        sw1.addPropertyChangeListener(evc.getView());
+        sw1.execute();
+    }
+    
     private void startBackgroundThread(IEntityStoreType entity, DesktopViewController desktopViewController){
         SwingWorker sw1 = new SwingWorker(){
             
@@ -1279,7 +1623,7 @@ public class DesktopViewController extends ViewController{
             {
                 String result = null;
                 int count = 0;
-                
+                /*
                 if (entity.isPatients()){
                     Patients patients = (Patients)entity;
                     count = patients.size();
@@ -1296,9 +1640,10 @@ public class DesktopViewController extends ViewController{
                         else break;
                     }
                 }
-         
-                else if (entity.isPatientTable()){
-                    PatientTable patientTable = (PatientTable)entity;
+                */
+                /*
+                if (entity.isPatient()){
+                    Patient patientTable = (Patient)entity;
                     //patientTable.create();
                     List<String[]>dbfRecords = patientTable.importFromCSV1();
                     count = dbfRecords.size();
@@ -1338,11 +1683,11 @@ public class DesktopViewController extends ViewController{
                         else break;
                     }
                 } 
-                
+               
                 else if (entity.isAppointmentTable()){
-                    AppointmentTable appointmentTable = (AppointmentTable)entity;
+                    TheAppointment appointmentTable = (TheAppointment)entity;
                     //appointmentTable.create();
-                    List<String[]> dbfRecords = appointmentTable.importFromCSV1();
+                    List<String[]> dbfRecords = appointmentTable.importEntityFromCSV();
                     setCount(dbfRecords.size());
                     Iterator dbfRecordsIt = dbfRecords.iterator();
                     setRecordCount(0);
@@ -1352,14 +1697,13 @@ public class DesktopViewController extends ViewController{
                                 appointmentTable.convertDBFRecordToAppointments(
                                         (String[])dbfRecordsIt.next()),
                                          appointmentTable);
-                        /*
-                        appointmentsForThisDBFRecord = appointmentTable.convertDBFRecordToAppointments((String[])dbfRecordsIt.next());
-                        
-                        */
+
                     }//end of dbfRecords iteration
                     dbfRecords.clear();
                 }
-                return result;    
+                */
+                return result;  
+                
             }
              
             private int getRecordCount(){
@@ -1377,7 +1721,7 @@ public class DesktopViewController extends ViewController{
             private void setCount(int value){
                 count = value;
             }
-            
+    /*
             private void insertAppointments(ArrayList<Appointment> appointments,
                     AppointmentTable appointmentTable) throws StoreException {
                 for(Appointment appointment : appointments){
@@ -1391,7 +1735,7 @@ public class DesktopViewController extends ViewController{
                     }
                 }
             }
-            
+            */
             /**
              * Invoked when the doInBackground() method completes
              * -- used to send an action event to the ExportProgressViewController signalling task completion
@@ -1405,7 +1749,7 @@ public class DesktopViewController extends ViewController{
                 if (entity.isPatientTable())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_PATIENT_DATA_COMPLETED;
                 if (entity.isAppointments())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
                 if (entity.isAppointmentTable())event = DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA_COMPLETED;
-                ImportExportProgressViewController evc = importExportProgressViewControllers.get(0);
+                ImportProgressViewController evc = importExportProgressViewControllers.get(0);
                 if (event!=null){
                     ActionEvent actionEvent = new ActionEvent(
                             desktopViewController,ActionEvent.ACTION_PERFORMED,
@@ -1419,11 +1763,12 @@ public class DesktopViewController extends ViewController{
             }
         };
         
-        ImportExportProgressViewController evc = importExportProgressViewControllers.get(0);
+        ImportProgressViewController evc = importExportProgressViewControllers.get(0);
         sw1.addPropertyChangeListener(evc.getView());
         sw1.execute();
     }
     
+    /*
     private void doExportMigratedSurgeryDaysAssignment(){
         IEntityStoreType entity = null;
         SurgeryDaysAssignmentx surgeryDaysAssignment = new SurgeryDaysAssignmentx();
@@ -1524,9 +1869,12 @@ public class DesktopViewController extends ViewController{
         }
     
     }
-    
+    */
+
+    /*
     private void doImportPatientsFromSource(){
-        PatientTable patientTable = new PatientTable();
+        //PatientTable patientTable = new PatientTable();
+        ThePatient patientTable = new ThePatient();
         
         try{
             StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
@@ -1535,7 +1883,8 @@ public class DesktopViewController extends ViewController{
             file.delete();
             storeManager.initialiseTargetDatabase(file);
             patientTable.create();
-            new AppointmentTable().create();
+            //new AppointmentTable().create();
+            new TheAppointment().create();
             startBackgroundThread(patientTable, this);
             storeManager.closeConnection();
         }catch (StoreException ex){
@@ -1543,30 +1892,39 @@ public class DesktopViewController extends ViewController{
         }
         this.doMigrationActionCompleteResponse(true);
     }
-    
+    */
+    /*
     private void doImportAppointmentsFromSource(){
-        startBackgroundThread(new AppointmentTable(), this);
+        //startBackgroundThread(new AppointmentTable(), this);
+        startBackgroundThread(new TheAppointment(), this);
+        notifyMigrationActionCompleted();
+        
         try{
-            StoreManager store = StoreManager.GET_STORE_MANAGER();
-            store.closeConnection();
-            this.doMigrationActionCompleteResponse(true);
+            TheStoreManager store = TheStoreManager.GET_STORE_MANAGER();
+            
+            //this.doMigrationActionCompleteResponse(true);
+            notifyMigrationActionCompleted();
         }catch (StoreException ex){
             displayErrorMessage("StoreException: " + ex.getMessage(),
                     "DesktopViewController error",
                     JOptionPane.WARNING_MESSAGE);
         }
+
     }
+    8/
     
     private void doImportSurgeryDaysAssignment(){
-         SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+         //SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
+         TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
          try{
             surgeryDaysAssignmentTable.drop();
             surgeryDaysAssignmentTable.create();
-            surgeryDaysAssignmentTable.populate();
+            surgeryDaysAssignmentTable.insert();
          }catch(StoreException ex){
             JOptionPane.showMessageDialog(null,new ErrorMessagePanel(ex.getMessage())); 
          }
-         this.doMigrationActionCompleteResponse(true);
+         //this.doMigrationActionCompleteResponse(true);
+         notifyMigrationActionCompleted();
     }
     
     private boolean isPMSDatabaseSelected(EntityDescriptor entityDescriptor){
@@ -1589,9 +1947,9 @@ public class DesktopViewController extends ViewController{
     
     static class MigrationDatabase {    
         static String getPath()throws StoreException{ 
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
-            String test = FilenameUtils.getName(storeManager.getMigrationTargetStorePath());
-            return storeManager.getMigrationTargetStorePath();
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            //String test = FilenameUtils.getName(storeManager.getMigrationTargetStorePath());
+            return storeManager.getPMSStorePath();
         }
         
         static boolean isSelected()throws StoreException{
@@ -1601,11 +1959,12 @@ public class DesktopViewController extends ViewController{
         }  
     }
     
+    /*
     static class PMSDatabase {  
 
         static String getPath()throws StoreException{ 
-            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();           
-            return storeManager.getPMSTargetStorePath();
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();           
+            return storeManager.getPMSStorePath();
         }
         
         static boolean isSelected()throws StoreException{
@@ -1615,6 +1974,130 @@ public class DesktopViewController extends ViewController{
             return result;
         }  
     }
+*/
     
+    static class PMSStore {  
+
+        static String getPath()throws StoreException{ 
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();           
+            return storeManager.getPMSStorePath();
+        }
+        
+        static boolean isSelected()throws StoreException{
+            boolean result = false;
+            //String test = FilenameUtils.getName(getPath());
+            if (!FilenameUtils.getName(getPath()).isEmpty())result = true;
+            return result;
+        }  
+    }
     
+    private Integer doAppointmentTableCountRequest(){
+        Integer result = null;
+        TheAppointment.Collection collection = new TheAppointment().getCollection();
+        collection.setScope(TheAppointment.Scope.ALL);
+        try{
+            result = collection.count();
+        }catch (StoreException ex){
+            displayErrorMessage(
+                    ex.getMessage() + "\n Exception handled in doAppointmentTableCountRequest()",
+                    "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private Integer doPatientTableCountRequest(){
+        Integer result = null;
+        ThePatient.Collection collection = new ThePatient().getCollection();
+        try{
+            result = collection.count();
+        }catch (StoreException ex){
+            displayErrorMessage(
+                    ex.getMessage() + "\n Exception handled in doAppointmentTableCountRequest()",
+                    "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private Integer doPatientNotificationTableCountRequest(){
+        Integer result = null;
+        PatientNotification.Collection collection = new PatientNotification().getCollection();
+        try{
+            collection.setScope(PatientNotification.Scope.ALL);
+            result = collection.count();
+        }catch (StoreException ex){
+            displayErrorMessage(
+                    ex.getMessage() + "\n Exception handled in doPatientNotificationTableCountRequest()",
+                    "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private Integer doSurgeryDaysAssignmentTableCountRequest(){
+        Integer result = null;
+        TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment();
+        try{
+            result = surgeryDaysAssignment.count();
+        }catch (StoreException ex){
+            displayErrorMessage(
+                    ex.getMessage() + "\n Exception handled in doAppointmentTableCountRequest()",
+                    "Desktop View Controller error", JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private void doPropertyChangeEvent(DesktopViewControllerPropertyChangeEvent event,
+                                        PropertyChangeListener view){
+        pcSupport.removePropertyChangeListener(view);
+        pcSupport.addPropertyChangeListener(view);
+        PropertyChangeEvent pcEvent = new PropertyChangeEvent(
+                this,event.toString(),
+                null,getEntityDescriptor());
+        pcSupport.firePropertyChange(pcEvent);
+        //pcSupport.removePropertyChangeListener(view);
+    }
+    
+    private void doGetPathRequest(DesktopViewControllerActionEvent actionCommand,
+                                    Object source){
+        String path = null;
+        DesktopViewControllerPropertyChangeEvent propertyChangeEvent = null;
+        try{
+            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            switch(actionCommand){
+                case GET_APPOINTMENT_CSV_PATH_REQUEST:
+                    path = storeManager.getAppointmentCSVPath();
+                    getEntityDescriptor().setAppointmentCSVPath(path);
+                    propertyChangeEvent = 
+                            DesktopViewControllerPropertyChangeEvent.APPOINTMENT_CSV_PATH_RECEIVED;
+                    break;
+                case GET_PATIENT_CSV_PATH_REQUEST:
+                    path = storeManager.getPatientCSVPath();
+                    getEntityDescriptor().setPatientCSVPath(path);
+                    propertyChangeEvent = 
+                            DesktopViewControllerPropertyChangeEvent.PATIENT_CSV_PATH_RECEIVED;
+                    break;
+                case GET_PMS_STORE_PATH_REQUEST:
+                    path = storeManager.getPMSStorePath();
+                    getEntityDescriptor().setPMSStorePath(path);
+                    propertyChangeEvent = 
+                            DesktopViewControllerPropertyChangeEvent.PMS_STORE_PATH_RECEIVED;
+                    break;
+            }    
+            doPropertyChangeEvent(propertyChangeEvent, (PropertyChangeListener)source); 
+        }catch (StoreException ex){
+            displayErrorMessage(ex.getMessage() 
+                    + "\nException handled in doGetPathRequest()",
+                    "Desktop View Controller error",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+              
+    }
+    
+    private void notifyMigrationActionCompleted(){
+        pcSupport.addPropertyChangeListener(view);
+        PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
+            DesktopViewController.DesktopViewControllerPropertyChangeEvent.MIGRATION_ACTION_COMPLETE.toString(),
+            null,getEntityDescriptor());
+        pcSupport.firePropertyChange(pcEvent);
+        pcSupport.removePropertyChangeListener(view);
+    }
 }

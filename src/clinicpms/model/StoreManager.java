@@ -43,11 +43,18 @@ public class StoreManager implements IStoreManager{
      * request to update migration store path
      * @throws StoreException
      */
+    /*
     public void setMigrationTargetStorePath(String path)throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         store.updateMigrationTargetStorePath(path);
     }
-    
+    */
+    /*
+    public void setStorePath(String path)throws StoreException{
+        ITargetsStoreAction store = Store.FACTORY(this);
+        store.updateStorePath(path);
+    }
+    */
     /**
      * request for the current migration store path
      * @return String
@@ -56,7 +63,7 @@ public class StoreManager implements IStoreManager{
     public String getMigrationTargetStorePath() throws StoreException{
         String path = null;
         ITargetsStoreAction store = Store.FACTORY(this);
-        path = store.readMigrationTargetStorePath();
+        //path = store.readMigrationTargetStorePath();
         return path;
     }
     
@@ -65,72 +72,85 @@ public class StoreManager implements IStoreManager{
      * @param path:String
      * @throws StoreException 
      */
+    /*
     public void setPMSTargetStorePath(String path)throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         store.updatePMSTargetStorePath(path);
     }
+    */
     
     /**
      * request for the current PMS target store path
      * @return String
      * @throws StoreException 
      */
+    /*
     public String getPMSTargetStorePath() throws StoreException{
         String path = null;
         ITargetsStoreAction store = Store.FACTORY(this);
         path = store.readPMSTargetStorePath();
         return path;
     }
+    */
     
     /**
      * request to update the patient's CSV import file used to migrate data
      * @param path : String 
      * @throws StoreException 
      */
+    /*
     public void setPatientCSVPath(String path)throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         store.updatePatientCSVPath(path);
     }
+    */
     
     /**
      * request to update the appointment's CSV import file used to migrate data
      * @param path : String 
      * @throws StoreException
      */
+    /*
     public void setAppointmentCSVPath(String path)throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         store.updateAppointmentCSVPath(path);
     }
+    */
     
     /**
      * request the current appointment's CSV file used for migrated data
      * @return String 
      * @throws StoreException
      */
+    /*
     public String getAppointmentCSVPath()throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.readAppointmentCSVPath();
     }
+    */
     
     /**
      * request the current patient's CSV file used for migrated data
      * @return String 
      * @throws StoreException
      */
+    /*
     public String getPatientCSVPath()throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.readPatientCSVPath();
     }
+*/
     
     public File initialiseTargetDatabase(File file)throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         return store.initialiseTargetStore(file);
     }
-    
+    /*
     public void closeConnection()throws StoreException{
         ITargetsStoreAction store = Store.FACTORY(this);
         store.closeMigrationConnection();
     }
+*/
 
   
 }

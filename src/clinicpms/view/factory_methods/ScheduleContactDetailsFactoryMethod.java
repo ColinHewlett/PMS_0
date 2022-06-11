@@ -6,7 +6,7 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.view.views.schedule_contact_details_view.ScheduleContactDetailsView;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;
 import java.awt.event.ActionListener;

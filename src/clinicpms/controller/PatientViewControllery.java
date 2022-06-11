@@ -9,7 +9,7 @@ import clinicpms.controller.DesktopViewController.DesktopViewControllerActionEve
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
 import clinicpms.store.StoreException;

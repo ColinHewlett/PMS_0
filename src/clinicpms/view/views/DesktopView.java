@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package clinicpms.view;
+package clinicpms.view.views;
 
 //import clinicpms.controller.ViewController.DesktopViewControllerActionEvent;
 import clinicpms.controller.DesktopViewController;
@@ -23,12 +23,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
  * @author colin
  */
 public class DesktopView extends javax.swing.JFrame implements PropertyChangeListener{
+    private Boolean isPMSStoreDefined = null;
     private EntityDescriptor entityDescriptor = null;
     private final String SELECT_VIEW_MENU_TITLE = "Select view";
         private final String APPOINTMENT_VIEW_REQUEST_TITLE = "Appointment";
@@ -49,7 +51,8 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         private final String DATABASE_CONTENTS_TITLE = "Database contents";
             private final String APPOINTMENT_TABLE_RECORD_COUNT_TITLE = "Appointment table ";
             private final String PATIENT_TABLE_RECORD_COUNT_TITLE = "Patient table ";
-            private final String SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE = "SurgeryDaysAssignment table ";
+            private final String PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE = "PatientNotification table ";
+            private final String SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE = "SurgeryDaysAssignment table ";
         private final String IMPORT_DATA_REQUEST_TITLE = "Import data from CSV files";    
         
     private JMenu mnuSelectView = null; 
@@ -70,9 +73,18 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         private JMenu mnuDatabaseContents = null; 
             private JMenuItem mniAppointmentTableRecordCount = null;
             private JMenuItem mniPatientTableRecordCount = null;
-            private JMenuItem mniSurgeryDaysTableRecordCount = null;
+            private JMenuItem mniPatientNotificationTableRecordCount = null;
+            private JMenuItem mniSurgeryDaysAssignmentTableRecordCount = null;
         private JMenuItem mniImportMigratedDataRequest = null;
 
+    private Boolean getIsPMSStoreDefined(){
+        return isPMSStoreDefined;
+    }   
+    
+    private void setIsPMSStoreDefined(Boolean value){
+        isPMSStoreDefined = value;
+    }
+    
     private void makeSelectViewMenu(){
         mnuSelectView = new JMenu(SELECT_VIEW_MENU_TITLE);
         mniAppointmentViewRequest = new JMenuItem(APPOINTMENT_VIEW_REQUEST_TITLE);
@@ -144,10 +156,12 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private void makeMigrationDatabaseContentsPopupMenu(){
         this.mniAppointmentTableRecordCount = new JMenuItem(APPOINTMENT_TABLE_RECORD_COUNT_TITLE);
         this.mniPatientTableRecordCount = new JMenuItem(PATIENT_TABLE_RECORD_COUNT_TITLE);
-        this.mniSurgeryDaysTableRecordCount = new JMenuItem(SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE);
+        this.mniPatientNotificationTableRecordCount = new JMenuItem(PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE);
+        this.mniSurgeryDaysAssignmentTableRecordCount = new JMenuItem(SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE);
         mnuDatabaseContents.add(mniAppointmentTableRecordCount);
         mnuDatabaseContents.add(mniPatientTableRecordCount);
-        mnuDatabaseContents.add(mniSurgeryDaysTableRecordCount);
+        mnuDatabaseContents.add(mniPatientNotificationTableRecordCount);
+        mnuDatabaseContents.add(mniSurgeryDaysAssignmentTableRecordCount);
     }
   
     private ActionListener controller = null;
@@ -218,26 +232,33 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     @Override
     public void propertyChange(PropertyChangeEvent e){
         String propertyName = e.getPropertyName();
+        setEntityDescriptor((EntityDescriptor)e.getNewValue());
         DesktopViewControllerPropertyChangeEvent propertyType = 
                 DesktopViewController.DesktopViewControllerPropertyChangeEvent.valueOf(e.getPropertyName());
         switch (propertyType){
-            /*
-            case DISABLE_DESKTOP_DATA_CONTROL:
-                //this.disableDataControl();
+            case APPOINTMENT_CSV_PATH_RECEIVED:
+                doAppointmentCSVPathReceived();
                 break;
-            case DISABLE_DESKTOP_VIEW_CONTROL:
-                this.disableViewControl();
+            case PATIENT_CSV_PATH_RECEIVED:
+                doPatientCSVPathReceived();
                 break;
-            case ENABLE_DESKTOP_DATA_CONTROL:
-                this.enableDataControl();
+            case PMS_STORE_PATH_RECEIVED:
+                doPMSStorePathReceived();
                 break;
-            case ENABLE_DESKTOP_VIEW_CONTROL:
-                this.enableViewControl();
+            case APPOINTMENT_TABLE_COUNT_RECEIVED:
+                doAppointmentTableCountReceived();
                 break;
-            */
+            case PATIENT_TABLE_COUNT_RECEIVED:
+                doPatientTableCountReceived();
+                break;
+            case PATIENT_NOTIFICATION_TABLE_COUNT_RECEIVED:
+                doPatientNotificationTableCountReceived();
+                break;
+            case SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_RECEIVED:
+                doSurgeryDaysAssignmentTableCountReceived();
+                break;
             case MIGRATION_ACTION_COMPLETE:
-                setEntityDescriptor((EntityDescriptor)e.getNewValue());
-                doMigrationActionCompletePropertyChange();
+                doMigrationActionComplete();
                 break;     
         }
     }
@@ -250,14 +271,31 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         this.entityDescriptor = value;
     }
     
+    private void doPostMigrationActionPropertyChange(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.SET_PATIENT_CSV_PATH_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
     private void doMigrationActionCompletePropertyChange(){
+        String currentPMSStoreSelectionState = null;
+        String currentPMSStoreSelection = null;
         
         this.mniAppointmentCSVSelectionRequest.setText(this.APPOINTMENT_CSV_SELECTION_REQUEST_TITLE 
                 + getEntityDescriptor().getMigrationDescriptor().getAppointmentCSVFilePath());
         this.mniPatientCSVSelectionRequest.setText(this.PATIENT_CSV_SELECTION_REQUEST_TITLE 
                 + getEntityDescriptor().getMigrationDescriptor().getPatientCSVFilePath());
-        this.mniSelectDatabaseRequest.setText(this.SELECT_DATABASE_REQUEST_TITLE
-                + getEntityDescriptor().getMigrationDescriptor().getMigrationDatabaseSelection());
+        
+        currentPMSStoreSelectionState = getEntityDescriptor().getMigrationDescriptor().getMigrationDatabaseSelection();
+        if (currentPMSStoreSelectionState == null)
+            currentPMSStoreSelection = "undefined";
+        else if(FilenameUtils.getBaseName(currentPMSStoreSelectionState).isEmpty())
+            currentPMSStoreSelection = "undefined";
+        else
+            currentPMSStoreSelection = currentPMSStoreSelectionState;        
+        this.mniSelectDatabaseRequest.setText(this.SELECT_DATABASE_REQUEST_TITLE 
+                + " {" + currentPMSStoreSelection + "}");
+
         
         Integer count = getEntityDescriptor().getMigrationDescriptor().getAppointmentTableCount();
         if (count!=null)
@@ -277,10 +315,10 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         
         count = getEntityDescriptor().getMigrationDescriptor().getSurgeryDaysAssignmentTableCount();
         if (count!=null)
-            this.mniSurgeryDaysTableRecordCount.setText(this.SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE
+            this.mniSurgeryDaysAssignmentTableRecordCount.setText(this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
                 + "(records = " + String.valueOf(count) + ")");
         else
-            this.mniSurgeryDaysTableRecordCount.setText(this.SURGERY_DAYS_TABLE_RECORD_COUNT_TITLE
+            this.mniSurgeryDaysAssignmentTableRecordCount.setText(this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
                 + "(missing table)");
         
         /*
@@ -423,14 +461,14 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     private void mniAppointmentCSVSelectionRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.SET_CSV_APPOINTMENT_FILE_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.SET_APPOINTMENT_CSV_PATH_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniPatientCSVSelectionRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.SET_CSV_PATIENT_FILE_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.SET_PATIENT_CSV_PATH_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
@@ -449,27 +487,30 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     }
     
     private void mniCopySelectedDatabaseRequestActionPerformed(){
-        
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_COPY_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
     }
     
     private void mniSelectDatabaseRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_SELECTION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_SELECTION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
     private void mniCreateDatabaseRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_CREATION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
    
     private void mniDeleteDatabaseRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
-                DesktopViewController.DesktopViewControllerActionEvent.MIGRATION_DATABASE_DELETION_REQUEST.toString());
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_DELETION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
 
@@ -490,4 +531,148 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         DesktopView.this.getController().actionPerformed(actionEvent);
     }
     
+    private void doAppointmentTableCountReceived(){
+        Integer count = getEntityDescriptor().getTableRowCount();
+        if (count!=null)
+            this.mniAppointmentTableRecordCount.setText(this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniAppointmentTableRecordCount.setText(this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");       
+    }
+    
+    private void doPatientTableCountReceived(){
+        Integer count = getEntityDescriptor().getTableRowCount();
+        if (count!=null)
+            this.mniPatientTableRecordCount.setText(this.PATIENT_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniPatientTableRecordCount.setText(this.PATIENT_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+    }
+    
+    private void doPatientNotificationTableCountReceived(){
+        Integer count = getEntityDescriptor().getTableRowCount();
+        if (count!=null)
+            this.mniPatientNotificationTableRecordCount.setText(this.PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniPatientNotificationTableRecordCount.setText(this.PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+
+    }
+    
+    private void doSurgeryDaysAssignmentTableCountReceived(){
+        Integer count = getEntityDescriptor().getTableRowCount();
+        if (count!=null)
+            this.mniSurgeryDaysAssignmentTableRecordCount.setText(this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
+                + "(records = " + String.valueOf(count) + ")");
+        else
+            this.mniSurgeryDaysAssignmentTableRecordCount.setText(this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
+                + "(missing table)");
+    }
+    
+    private void doMigrationActionComplete(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.GET_APPOINTMENT_CSV_PATH_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+        
+        actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.GET_PATIENT_CSV_PATH_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+        
+        actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.GET_PMS_STORE_PATH_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+        
+        if (getIsPMSStoreDefined()){
+            actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_TABLE_COUNT_REQUEST.toString());
+            this.getController().actionPerformed(actionEvent);
+
+            actionEvent = new ActionEvent(this, 
+                    ActionEvent.ACTION_PERFORMED,
+                    DesktopViewController.DesktopViewControllerActionEvent.PATIENT_TABLE_COUNT_REQUEST.toString());
+            this.getController().actionPerformed(actionEvent);
+
+            actionEvent = new ActionEvent(this, 
+                    ActionEvent.ACTION_PERFORMED,
+                    DesktopViewController.DesktopViewControllerActionEvent.PATIENT_NOTIFICATION_TABLE_COUNT_REQUEST.toString());
+            this.getController().actionPerformed(actionEvent);
+
+            actionEvent = new ActionEvent(this, 
+                    ActionEvent.ACTION_PERFORMED,
+                    DesktopViewController.DesktopViewControllerActionEvent.SURGERY_DAYS_ASSIGNMENT_TABLE_COUNT_REQUEST.toString());
+            this.getController().actionPerformed(actionEvent);
+        }else{
+            this.mniAppointmentTableRecordCount.setText(
+                    this.APPOINTMENT_TABLE_RECORD_COUNT_TITLE
+                    + "(PMS store undefined)");
+            this.mniPatientTableRecordCount.setText(
+                    this.PATIENT_TABLE_RECORD_COUNT_TITLE
+                    + "(PMS store undefined)");
+            this.mniPatientNotificationTableRecordCount.setText(
+                    this.PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE
+                    + "(PMS store undefined)");
+            this.mniSurgeryDaysAssignmentTableRecordCount.setText(
+                    this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
+                    + "(PMS store undefined)");
+        }
+        
+    }
+    
+    private void doAppointmentCSVPathReceived(){
+        String currentSelection = null;
+        String path = getEntityDescriptor().getAppointmentCSVPath();
+        if (path==null){
+            currentSelection = "undefined";
+        }
+        else if (FilenameUtils.getBaseName(path).isEmpty()){
+            currentSelection = "undefined";
+        }
+        else currentSelection = path;
+        this.mniAppointmentCSVSelectionRequest.setText(
+                this.APPOINTMENT_CSV_SELECTION_REQUEST_TITLE 
+                    + " {" + currentSelection + "}");
+    }
+    
+    private void doPatientCSVPathReceived(){
+        String currentSelection = null;
+        String path = getEntityDescriptor().getPatientCSVPath();
+        if (path==null){
+            currentSelection = "undefined";
+        }
+        else if (FilenameUtils.getBaseName(path).isEmpty()){
+            currentSelection = "undefined";
+        }
+        else currentSelection = path;
+        this.mniPatientCSVSelectionRequest.setText(
+                this.PATIENT_CSV_SELECTION_REQUEST_TITLE 
+                    + " {" + currentSelection + "}");
+    }
+    
+    private void doPMSStorePathReceived(){
+        String currentPMSStoreSelection = null;
+        String path = getEntityDescriptor().getPMSStorePath();
+        if (path == null){
+            currentPMSStoreSelection = "undefined";
+            setIsPMSStoreDefined(false);
+        }
+        else if (FilenameUtils.getBaseName(path).isEmpty()){
+            currentPMSStoreSelection = "undefined";
+            setIsPMSStoreDefined(false);
+        }
+        else {
+            currentPMSStoreSelection = path;
+            setIsPMSStoreDefined(true);
+        }
+        this.mniSelectDatabaseRequest.setText(this.SELECT_DATABASE_REQUEST_TITLE 
+                + " {" + currentPMSStoreSelection + "}");
+        
+        
+    }
 }

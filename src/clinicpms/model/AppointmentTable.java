@@ -6,8 +6,7 @@
 package clinicpms.model;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
-import clinicpms.store.IMigrationStoreAction;
-import clinicpms.store.IPMSStoreAction;
+import clinicpms.store.IStoreAction;
 import clinicpms.model.IEntityStoreType;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,8 +21,7 @@ import java.util.List;
  *
  * @author colin
  */
-public class AppointmentTable extends ArrayList<Appointment>implements ITable,
-                                                                        IEntityStoreType{
+public class AppointmentTable extends ArrayList<Appointment>implements IEntityStoreType{
     private  enum DenAppField {DATE,A_1,A_2,A_3,A_4,A_5,A_6,A_7,A_8,A_9,
                                 A_10,A_11,A_12,A_13,A_14,A_15,A_16,A_17,A_18,A_19,
                                 A_20,A_21,A_22,A_23,A_24,A_25,A_26,A_27,A_28,A_29,
@@ -95,28 +93,29 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
             
     public Integer count() throws StoreException{
         Integer result = null;
+        /*
         IEntityStoreType entity = null;
         Integer rowcount = null;
         try{
-            IMigrationStoreAction store = Store.FACTORY(this);
+            IStoreAction store = Store.FACTORY(this);
             return store.countRowsIn(this);
         }catch (StoreException ex){
-            /**
-             * if MigrationSQL.APPOINTMENT_TABLE_ROW_COUNT is source of exception
-             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
-             */
+
             if (!ex.getErrorType().equals(StoreException.ExceptionType.APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
                 //throw new StoreException(ex.getMessage(), ex.getErrorType());
                 result = null;
             }
         }
+        */
         return result;
          
     }
-    
+    /*
     public void create() throws StoreException{
+       
         IMigrationStoreAction store = Store.FACTORY(this);
         store.create(this);
+
     }
     
     public void drop()throws StoreException{
@@ -124,7 +123,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         store.drop(this);
     }
     
-    /*
+   
     public void insert()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.insert(this);  
@@ -136,17 +135,19 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
      * @param patient:Patient, the patient object to be inserted into the PatientTable 
      * @throws StoreException 
      */
+    /*
     public void insert(Appointment appointment)throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         store.insert(this,appointment);  
     }
-    
+    */
+    /*
     public List<String[]> importFromCSV1()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         //setImportedDBFRecords(store.importFromCSV1(this));
         return store.importFromCSV1(this);
     }
-    
+    */
     //05/03/2022 20:09
     /*
     @Override
@@ -167,7 +168,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         store.populate(this);
     }
     */
-    
+    /*
     public IEntityStoreType read() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         return store.read(this);
@@ -182,7 +183,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         IMigrationStoreAction store = Store.FACTORY(this);
         store.checkIntegrity();
     }
-    
+    */
     public Integer getKey() {
         return key;
     }
@@ -190,6 +191,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         this.key = key;
     }
     
+    /*
     public ArrayList<Appointment> convertDBFRecordToAppointments(String[] dbfAppointmentRow)throws StoreException{
         String date = null;
         String year;
@@ -293,7 +295,8 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         }
         return appointmentsForThisDBFRecord;
     }
-        
+    */ 
+    /*
     private Integer getPatientKey(String s)throws StoreException{
         int index;
         Integer result = null;
@@ -319,7 +322,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         }
         return result;
     }
-    
+    */
     /**
      * converts row received (String[]) to an Appointment
      * -- from string to Appointment data types
@@ -333,6 +336,7 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
      * @param patientKey
      * @return 
      */
+    /*
     private static Appointment getAppointmentFrom(String[] row, 
                                                   String date, 
                                                   int startSlot, 
@@ -369,11 +373,13 @@ public class AppointmentTable extends ArrayList<Appointment>implements ITable,
         
         return appointment;
     }
-    
+    */
+    /*
     private static LocalTime getAppointmentStartTime(int startRowIndex){
         int slotCountFromDayStart = startRowIndex - DenAppField.A_1.ordinal();
         LocalTime firstSlotTimeForDay = LocalTime.of(8, 0); //= 8am
         return firstSlotTimeForDay.plusMinutes(slotCountFromDayStart * 5);
     }
+*/
 
 }

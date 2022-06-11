@@ -5,7 +5,7 @@
  */
 package clinicpms.controller;
 
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,7 +16,7 @@ import java.beans.PropertyChangeEvent;
  *
  * @author colin
  */
-public class ImportExportProgressViewController extends ViewController{
+public class ImportProgressViewController extends ViewController{
     public static enum Entity{APPOINTMENT, PATIENT, NONE}
     private static enum Operation {EXPORT, IMPORT};
     private EntityDescriptor entityDescriptorFromView = null;
@@ -72,7 +72,7 @@ public class ImportExportProgressViewController extends ViewController{
     private ActionListener getMyController(){
         return this.myController;
     }
-    public ImportExportProgressViewController(DesktopViewController controller, DesktopView desktopView, EntityDescriptor entityDescriptor){
+    public ImportProgressViewController(DesktopViewController controller, DesktopView desktopView, EntityDescriptor entityDescriptor){
         View.setViewer(View.Viewer.EXPORT_PROGRESS_VIEW);
         this.setMyController(controller);
         this.setNewEntityDescriptor(entityDescriptor);
@@ -149,7 +149,7 @@ public class ImportExportProgressViewController extends ViewController{
                     getMyController().actionPerformed(actionEvent);
                     break;
 
-                case READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS:
+                case READY_FOR_RECEIPT_OF_APPOINTMENT_PROGRESS:                 
                     actionEvent = new ActionEvent(
                         this,ActionEvent.ACTION_PERFORMED,
                         DesktopViewController.DesktopViewControllerActionEvent.IMPORT_EXPORT_APPOINTMENT_DATA.toString());

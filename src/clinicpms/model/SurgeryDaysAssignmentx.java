@@ -5,7 +5,7 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IPMSStoreAction;
+import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.DayOfWeek;
@@ -17,7 +17,7 @@ import java.util.HashMap;
  */
 public class SurgeryDaysAssignmentx extends HashMap<DayOfWeek,Boolean> implements IEntity, 
                                                                                  IEntityStoreType{
-    private IPMSStoreAction store = null;
+    private IStoreAction store = null;
     private String day = null;
     private boolean isSurgery = false;
     
@@ -90,14 +90,14 @@ public class SurgeryDaysAssignmentx extends HashMap<DayOfWeek,Boolean> implement
     
     @Override
     public void create() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        store.create(this);        
+        IStoreAction store = Store.FACTORY(this);
+        //store.create(this);        
     }
     
     @Override
     public void drop() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        store.drop(this);        
+        IStoreAction store = Store.FACTORY(this);
+        //store.drop(this);        
     }
     
     @Override
@@ -106,19 +106,20 @@ public class SurgeryDaysAssignmentx extends HashMap<DayOfWeek,Boolean> implement
      * -- 
      */
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        store.insert(this);
+        IStoreAction store = Store.FACTORY(this);
+        //store.insert(this);
     }
     
     public SurgeryDaysAssignmentx read() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        return store.read(this);
+        IStoreAction store = Store.FACTORY(this);
+        //return store.read(this);
+        return null;
     }
       
     @Override
     public void update() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this); 
-        store.update(this);
+        IStoreAction store = Store.FACTORY(this); 
+        //store.update(this);
     }
     
     

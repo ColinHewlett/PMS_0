@@ -6,7 +6,7 @@
 package clinicpms.view.factory_methods;
 
 import clinicpms.view.views.surgery_day_editor_view.SurgeryDaysEditorModalViewer;
-import clinicpms.view.DesktopView;
+import clinicpms.view.views.DesktopView;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.view.*;
 import java.awt.event.ActionListener;

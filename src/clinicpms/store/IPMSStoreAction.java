@@ -12,6 +12,7 @@ import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.TheSurgeryDaysAssignment;
 import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointment;
+import clinicpms.model.TheAppointment;
 import clinicpms.model.Appointment.Category;
 import clinicpms.model.Appointments;
 import clinicpms.model.Patient;
@@ -37,6 +38,7 @@ import java.util.HashMap;
  * @author colin
  */
 public interface IPMSStoreAction {
+    public Integer count(TheAppointment.Collection entity)throws StoreException;
     public void create(Appointment a) throws StoreException;
     public void create(Patient p) throws StoreException;
     public void create(ThePatient p )throws StoreException;

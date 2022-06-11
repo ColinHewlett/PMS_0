@@ -26,96 +26,99 @@ import java.util.List;
  *
  * @author colin
  */
-public class SQLExpressStore extends Store {
+//public class SQLExpressStore extends Store {
+public class SQLExpressStore  {    
     //private static SQLExpressStore INSTANCE = null;
     public static SQLExpressStore getInstance(){
-        SQLExpressStore result;
-        if (INSTANCE == null) result = new SQLExpressStore();
-        else result = (SQLExpressStore)INSTANCE;
+        SQLExpressStore result = null;
+        //if (INSTANCE == null) result = new SQLExpressStore();
+        //else result = (SQLExpressStore)INSTANCE;
         return result;
     }
     
-    @Override
+    /*
+    
     public void insert(AppointmentTable a, Appointment appointment) throws StoreException{
         
     }
+    */
     
-    @Override
     public void insert(PatientNotification pn)throws StoreException{
         
     }
     
-    @Override
+    /*
+    
     public void insert(PatientTable p, Patient patient) throws StoreException{
         
     }
+    */
     
-    @Override
     public void insert(Appointment a) throws StoreException{
         
     }
     
-    @Override
+    
     public void insert(ThePatient p) throws StoreException{
         
     }
     
-    @Override
+    
     public void insert(Patient p) throws StoreException{
         
     }
     
-    @Override
+    
     public void delete(Appointment a) throws StoreException{
         
     }
     
-    @Override
+    
     public void delete(ThePatient p) throws StoreException{
         
     }
     
-    @Override
+    
     public void delete(Patient p) throws StoreException{
         
     }
     
-    @Override
+    
     public String read(Store.SelectedTargetStore db)throws StoreException{
         return null;
     }
     
-    @Override
+    
     public Appointment read(Appointment a) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public ThePatient read(ThePatient p) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public Patient read(Patient p) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public PatientNotification read(PatientNotification value)throws StoreException{
         return null;
     }
     
-    @Override
+    
     public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException{
         return null;
     }
 
-    @Override
+    
     /**
      * Automatic transaction processing enabled
      * -- reads all appointments stored on the system
@@ -126,57 +129,57 @@ public class SQLExpressStore extends Store {
         return null;
     }
     
-    @Override
+    
     public Appointments readAppointmentsFor(LocalDate day) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public Appointments readAppointments(Patient p, Appointment.Category c) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public Appointments readAppointmentsFrom(LocalDate day) throws StoreException{
         return null;
     }
     
-    @Override
+    
     public Patients readPatients() throws StoreException{
         return null;
     }
     
-    @Override
+    
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
         
     }
     
-    @Override
+    
     public void update(PatientNotification p) throws StoreException{
         
     }
     
-    @Override
+    
     public void update(ThePatient p) throws StoreException{
         
     }
     
-    @Override
+    
     public void update(Patient p) throws StoreException{
         
     }
     
-    @Override
+    
     public void update(Appointment a) throws StoreException{
         
     }
     
-    @Override
+    
     public void update(SurgeryDaysAssignmentx value){
 
     }
 
-    @Override
+    
     public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException{
         return null;
     }
@@ -198,31 +201,35 @@ public class SQLExpressStore extends Store {
      * @param table:AppointmenTable 
     * @return 
      */
-    @Override
+    /*
+    
     public int countRowsIn(AppointmentTable table){
         return 0;
     }
-    
+    */
     /**
      * 
      * @param p Patients
      * @return 
      */
-    @Override
+    /*
+    
     public int countRowsIn(PatientTable p){
         return 0;
     }
+    */
+    /*
     
-    @Override
     public int countRowsIn(SurgeryDaysAssignmentTable p){
         return 0;
     }
-    @Override
+    */
+    
     public int countRowsIn(Patients p){
         return 0;
     }
     
-    @Override
+    
     public int countRowsIn(Appointments p){
         return 0;
     }
@@ -233,60 +240,67 @@ public class SQLExpressStore extends Store {
      * @param table:AppointmentTable)
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void create(AppointmentTable table)throws StoreException{
         
     }
-    
+    */
     /**
      * Creates a patient table in the migration store
      * @param table:PatientTable
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void create(PatientTable table)throws StoreException{
         
     }
-    
+    */
     /**
      * Creates a SurgeryDays table in the migration store
      * @param table:SurgeryDaysAssignmentTable
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void create(SurgeryDaysAssignmentTable table)throws StoreException{
         
     }
-    
+    */
     /**
      * drops the current appointment table (if any) in the migration store
      * @param table:AppointmentTable
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void drop(AppointmentTable table)throws StoreException{
         
     }
-    
+    */
     /**
      * Drops the current patient table (if any) in the migration store
      * @param table:PatientTable
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void drop(PatientTable table)throws StoreException{
         
     }
-    
+    */
     /**
      * Drops the current SurgeryDaysAssignmentTable (if any) in the migration store
      * @param table:SurgeyDaysTable
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void drop(SurgeryDaysAssignmentTable table)throws StoreException{
         
     }
+    */
     
     
     /**
@@ -294,7 +308,7 @@ public class SQLExpressStore extends Store {
      * @param data:SurgeryDaysAssignmentx
      * @throws StoreException 
      */
-    @Override
+    
     public void populate(SurgeryDaysAssignmentx data)throws StoreException{
         
     }
@@ -303,9 +317,10 @@ public class SQLExpressStore extends Store {
      * Fetches the selected storage type used by the app
      * @return String representing the storage type
      */
-    @Override
+    
     public String getStoreType(){
-        return getStorageType().toString();
+        //return getStorageType().toString();
+        return null;
     }
     
     /**
@@ -314,10 +329,12 @@ public class SQLExpressStore extends Store {
      * -- if an appointment does; the appointment is deleted
      * @throws StoreException 
      */
-    @Override
+    /*
+    
     public void checkIntegrity()throws StoreException{
         
     }
+    */
     
     /**
      * Convenience method that normalises imported appointment start times
@@ -331,7 +348,7 @@ public class SQLExpressStore extends Store {
      * Fetches the selected path to the CSV file of imported appointment data
      * @return String representing the path
      */
-    @Override
+    
     public String readAppointmentCSVPath(){
         return null;
     }
@@ -340,7 +357,7 @@ public class SQLExpressStore extends Store {
      * Fetches the selected path to the CSV file of imported patient data
      * @return String representing the path
      */
-    @Override
+    
     public String readPatientCSVPath(){
         return null;
     }
@@ -350,7 +367,7 @@ public class SQLExpressStore extends Store {
      * -- stored as a memory image only and not in persistent store
      * @param path:String representing the updated path value 
      */
-    @Override
+    
     public void updateAppointmentCSVPath(String path){
         
     }
@@ -360,46 +377,47 @@ public class SQLExpressStore extends Store {
      * -- stored as a memory image only and not in persistent store
      * @param path:String representing the updated path value 
      */
-    @Override
+    
     public void updatePatientCSVPath(String path){
         
     }
     
-    @Override
+    
     public void updateMigrationTargetStorePath(String path){
         
     }
     
-    @Override
+    
     public void updatePMSTargetStorePath(String path){
         
     }
     
-    @Override
+    
     public String readPMSTargetStorePath(){
         return null;
     }
     
-    @Override
+    
     public String readMigrationTargetStorePath(){
         return null;
     }
     
-    @Override
+    /*
+    
     public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table){
         return null;
     }
     
-    @Override
+    
     public Appointments read(AppointmentTable table){
         return null;
     }
     
-    @Override
+    
     public Patients read(PatientTable table){
         return null;
     }
-    
+    */
     public void insert(Appointments appointments) throws StoreException{
         
     }
@@ -409,21 +427,6 @@ public class SQLExpressStore extends Store {
     }
     
     public void insert(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException{
-        
-    }
-    
-    @Override
-    public void exportToPMS(Appointments appointments) throws StoreException{
-        
-    }
-    
-    @Override
-    public void exportToPMS(Patients patients) throws StoreException{
-        
-    }
-    
-    @Override
-    public void exportToPMS(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException{
         
     }
     
@@ -442,6 +445,9 @@ public class SQLExpressStore extends Store {
     public void create(Appointment a)throws StoreException{
         
     }
+    public void create(PatientNotification pn)throws StoreException{
+        
+    }
     public void create(ThePatient p)throws StoreException{
         
     }
@@ -452,42 +458,42 @@ public class SQLExpressStore extends Store {
         
     }
     
-    @Override
+    
     public List<String[]> importFromCSV1(IEntityStoreType entity)throws StoreException{
         return null;
     }
     
-    @Override
+    
     public File initialiseTargetStore(File path)throws StoreException{
         return null;
     }
     
-    @Override
+    
     public void closeMigrationConnection() throws StoreException{
         
     }
 
-    @Override
+    
     public void drop(TheSurgeryDaysAssignment table)throws StoreException{
         
     }
     
-    @Override
+    
     public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         
     }
     
-    @Override
+    
     public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment s) throws StoreException {
         return null;
     }
     
-    @Override
+    
     public void create(TheSurgeryDaysAssignment s) throws StoreException {
         
     }
     
-    @Override
+    
     public void insert(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         
     }

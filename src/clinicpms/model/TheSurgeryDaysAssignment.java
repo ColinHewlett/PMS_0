@@ -5,7 +5,7 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IPMSStoreAction;
+import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.DayOfWeek;
@@ -15,8 +15,8 @@ import java.util.HashMap;
  *
  * @author colin
  */
-public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity{
-    private IPMSStoreAction store = null;
+public class TheSurgeryDaysAssignment extends EntityStoreType {
+    private IStoreAction store = null;
     private String day = null;
     private boolean isSurgery = false;
     private HashMap<DayOfWeek,Boolean> assignment = new HashMap<>();
@@ -26,69 +26,85 @@ public class TheSurgeryDaysAssignment extends EntityStoreType implements IEntity
     }
     
     public TheSurgeryDaysAssignment(){
-        setIsSurgeryDaysAssignment(true);
+        super.setIsSurgeryDaysAssignment(true);
     }
     
     public TheSurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
         set(value);
-        setIsSurgeryDaysAssignment(true);
+        super.setIsSurgeryDaysAssignment(true);
     }
     
     public HashMap<DayOfWeek,Boolean> get(){
         return assignment;
     }
-    
-    
-    @Override
-    /**
-     * not currently implemented
-     */
+
     public void delete() throws StoreException{
         //not currently implemented
     }
+    public Integer count() throws StoreException{
+        IStoreAction store = Store.FACTORY(this);
+        return store.count(this);
+    }
     
-    
-    @Override
     public void create() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreAction store = Store.FACTORY(this);
         store.create(this);        
     }
     
-    @Override
     public void drop() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreAction store = Store.FACTORY(this);
         store.drop(this);        
     }
     
-    @Override
     /**
      * implemented for migration purposes only
      * -- 
      */
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
+        get().put(DayOfWeek.MONDAY, Boolean.TRUE);
+        get().put(DayOfWeek.TUESDAY, Boolean.TRUE);
+        get().put(DayOfWeek.WEDNESDAY, Boolean.TRUE);
+        get().put(DayOfWeek.THURSDAY, Boolean.TRUE);
+        get().put(DayOfWeek.FRIDAY, Boolean.TRUE);
+        get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
+        get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
+        IStoreAction store = Store.FACTORY((EntityStoreType)this);
         store.insert(this);
     }
     
-    @Override
+    /*
+    public void populate() throws StoreException{
+        //TheSurgeryDaysAssignment surgeryDaysValues = new TheSurgeryDaysAssignment();
+        //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
+        get().put(DayOfWeek.MONDAY, Boolean.TRUE);
+        get().put(DayOfWeek.TUESDAY, Boolean.TRUE);
+        get().put(DayOfWeek.WEDNESDAY, Boolean.TRUE);
+        get().put(DayOfWeek.THURSDAY, Boolean.TRUE);
+        get().put(DayOfWeek.FRIDAY, Boolean.TRUE);
+        get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
+        get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
+        
+        IStoreAction store = Store.FACTORY(this);
+        store.populate(this);
+    }
+    */
     public SurgeryDaysAssignmentx read() throws StoreException{
         return null;
     }
     
     public TheSurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreAction store = Store.FACTORY((EntityStoreType)this);
         return store.read(this);
     }
       
-    @Override
     public void update() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY((EntityStoreType)this); 
+        IStoreAction store = Store.FACTORY((EntityStoreType)this); 
         store.update(this);
     }
     
     
 
-    public Integer count()throws StoreException{
+    public Integer count1()throws StoreException{
         TheSurgeryDaysAssignment surgeryDaysAssignment = null;
         try{
             surgeryDaysAssignment = this.readTheSurgeryDaysAssignment();

@@ -11,7 +11,9 @@ import clinicpms.store.StoreException;
 import clinicpms.store.Store;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import clinicpms.store.IPMSStoreAction;
+import clinicpms.store.IStoreAction;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  *
@@ -32,6 +34,26 @@ public class Patient implements IEntity, IEntityStoreType{
     private Patient.Address address = null;
     private Patient.Name name = null;
     private Patient.Recall recall = null;
+    
+    private enum DenPatField {KEY,
+                              TITLE,
+                              FORENAMES,
+                              SURNAME,
+                              LINE1,
+                              LINE2,
+                              TOWN,
+                              COUNTY,
+                              POSTCODE,
+                              PHONE1,
+                              PHONE2,
+                              GENDER,
+                              DOB,
+                              IS_GUARDIAN_A_PATIENT,
+                              DENTAL_RECALL_FREQUENCY,
+                              DENTAL_RECALL_DATE,
+                              NOTES,
+                              GUARDIAN}
+    private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
     /**
      * Utility method involved in the "tidy up" of the imported patient's contact details
@@ -190,40 +212,239 @@ public class Patient implements IEntity, IEntityStoreType{
     
     @Override
     public void create()throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        store.create(this);
+        IStoreAction store = Store.FACTORY(this);
+        //store.create(this);
     }
     
     @Override
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.insert(this);    
     }
     
     @Override
     public void delete() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.delete(this);
     }
     
     @Override
     public void drop() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.drop(this);        
     }
     
     @Override
     public Patient read() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         return store.read(this); 
     }
     
     @Override
     public void update() throws StoreException{ 
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.update(this);
     }
+    /*
+    public List<String[]> importFromCSV1()throws StoreException{
+        IStoreAction store = Store.FACTORY(this);
+        //setImportedDBFRecords(store.importFromCSV1(this));
+        return store.importFromCSV1(this);
+    }
+    */
+    /*
+    public ThePatient convertDBFToPatient(String[] dbfPatientRow){
+        ThePatient patient = new ThePatient();
+        for (ThePatient.DenPatField pf: Patient.DenPatField.values()){
+            switch (pf){
+                case KEY:
+                    patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));
+                    //if (patient.getKey() == 10791) isSelectedKey = true;
+                    break;
+                case TITLE:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getName().setTitle(dbfPatientRow[pf.ordinal()]);   
+                    }
+                    else patient.getName().setTitle("");
+                    break;
+                case FORENAMES:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getName().setForenames(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.getName().setForenames("");
+                    break;
+                case SURNAME: 
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getName().setSurname(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.getName().setSurname("");
+                    break;
+                case LINE1:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getAddress().setLine1(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.getAddress().setLine1("");
+                    break;
+                case LINE2:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getAddress().setLine2(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.getAddress().setLine2("");
+                    break;
+                case TOWN:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.getAddress().setTown(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.getAddress().setTown("");
+                    break;
+                case COUNTY:
+                    patient.getAddress().setCounty(dbfPatientRow[pf.ordinal()]);
+                    break;
+                case POSTCODE:
+                    patient.getAddress().setPostcode(dbfPatientRow[pf.ordinal()]);
+                    break;
+                case PHONE1:
+                    patient.setPhone1(dbfPatientRow[pf.ordinal()]);
+                    break;
+                case PHONE2:
+                    patient.setPhone2(dbfPatientRow[pf.ordinal()]);
+                    break;
+                case GENDER:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.setGender(dbfPatientRow[pf.ordinal()]);
+                    }
+                    else patient.setGender("");
+                    break;
+                case DOB:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.setDOB(LocalDate.parse(dbfPatientRow[pf.ordinal()],ddMMyyyyFormat));
+                    }
+                    else patient.setDOB(null);
+                    break;
+                case IS_GUARDIAN_A_PATIENT:
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        patient.setIsGuardianAPatient(Boolean.valueOf(dbfPatientRow[pf.ordinal()]));
+                    }
+                    else patient.setIsGuardianAPatient(Boolean.valueOf(false));
+                    break;
+                case DENTAL_RECALL_FREQUENCY:
+                    boolean isDigit = true;
+                    Integer value = 0;
+                    String s = dbfPatientRow[pf.ordinal()];
+                    if (!s.isEmpty()){
+                        s = s.strip();
+                        char[] c = s.toCharArray(); 
+                        for (int index = 0; index < c.length; index++){
+                            if (!Character.isDigit(c[index])){
+                                isDigit = false;
+                                break;
+                            }
+                        }
+                        if (isDigit){
+                            value = Integer.parseInt(s);
+                        }
+                        else value = 0;
+                    }
+                    else value = 0;
+                    patient.getRecall().setDentalFrequency(value);
+                    break;
 
+                case DENTAL_RECALL_DATE: 
+                    boolean isInvalidMonth = false;
+                    String $value = "";
+                    String[] values;
+                    int mm = 0;
+                    int yyyy = 0;
+                    LocalDate recallDate = null;
+                    $value = dbfPatientRow[pf.ordinal()];
+
+                    isInvalidMonth = false;
+                    if ($value.length()>1){
+                        $value = $value.strip();
+                        values = $value.split("-");
+                        if (values.length > 0){
+                            switch (values[0]){
+                                case "Jan": 
+                                    mm = 1;
+                                    break;
+                                case "Feb":
+                                    mm = 2;
+                                    break;
+                                case "Mar":
+                                    mm = 3;
+                                    break;
+                                case "Apr":
+                                    mm = 4;
+                                    break;
+                                case "May":
+                                    mm = 5;
+                                    break;
+                                case "Jun":
+                                    mm = 6;
+                                    break;
+                                case "Jul":
+                                    mm = 7;
+                                    break;
+                                case "Aug":
+                                    mm = 8;
+                                    break;
+                                case "Sep":
+                                    mm = 9;
+                                    break;
+                                case "Oct":
+                                    mm = 10;
+                                    break;
+                                case "Nov":
+                                    mm = 11;
+                                    break;
+                                case "Dec":
+                                    mm = 12;
+                                    break;
+                                default:
+                                    isInvalidMonth = true;
+                                    break;
+                            }
+                        }
+                        if (!isInvalidMonth){
+                            if ((values[1].substring(0,1).equals("9")) || (values[1].substring(0,1).equals("8"))){
+                                yyyy = 1900 + Integer.parseInt(values[1]); 
+                                //break;
+                            }
+                            else if(values[1].substring(0,1).equals(" ")){
+                                String v = values[1].strip();
+                                yyyy = 2000 + Integer.parseInt(v);
+                            }
+                            else{
+                                yyyy = 2000 + Integer.parseInt(values[1]);
+                            }
+                            recallDate = LocalDate.of(yyyy, mm, 1);
+                            patient.getRecall().setDentalDate(recallDate);
+                        }
+                        else patient.getRecall().setDentalDate(null);
+                    }
+                    break;
+                case NOTES:   
+                    String notes = "";
+                    if (!dbfPatientRow[pf.ordinal()].isEmpty()){
+                        notes = notes + dbfPatientRow[pf.ordinal()];
+                    }
+
+                    if (!dbfPatientRow[pf.ordinal()+1].isEmpty()){
+                        if (!notes.isEmpty()){
+                            notes = notes + "; ";
+                        }
+                        notes = notes + dbfPatientRow[pf.ordinal()+1];
+                    }
+                    patient.setNotes(notes);
+
+                //case GUARDIAN -> patient.setGuardian(null); 
+            }
+        }
+        patient.setIsGuardianAPatient(Boolean.FALSE);
+        patient.setGuardian(null);
+        return patient;
+    }
+*/
     public class Name {
 
         private String forenames = null;

@@ -17,8 +17,7 @@ import java.util.List;
  *
  * @author colin
  */
-public class PatientTable extends ArrayList<Patient> implements ITable,
-                                                                IEntityStoreType{
+public class PatientTable extends ArrayList<Patient> implements IEntityStoreType{
     private enum DenPatField {KEY,
                               TITLE,
                               FORENAMES,
@@ -89,30 +88,36 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
         return false;
     }
     
+    /*
     @Override
     public void create() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);   
         store.create(this);
     }
+    */
     
+    /*
     @Override
     public void drop()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
         store.drop(this);
     }
-    
+    */
+    /*
     @Override
     public void exportToPMS() throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this); 
         store.exportToPMS(new Patients());
     }
+    */
     
+    /*
     public List<String[]> importFromCSV1()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         //setImportedDBFRecords(store.importFromCSV1(this));
         return store.importFromCSV1(this);
     }
-    
+    */
     /*
     public void insert()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
@@ -124,11 +129,12 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
      * @param patient:Patient, the patient object to be inserted into the PatientTable 
      * @throws StoreException 
      */
+    /*
     public void insert(Patient patient)throws StoreException{
-        IMigrationStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.insert(this,patient);  
     }
-    
+    */
     public Patient convertDBFToPatient(String[] dbfPatientRow){
         Patient patient = new Patient();
         for (DenPatField pf: DenPatField.values()){
@@ -341,7 +347,7 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
     } 
     */
     
-    @Override
+ /*
     public IEntityStoreType read()throws StoreException{
         IMigrationStoreAction store = Store.FACTORY(this);
         return store.read(this);
@@ -355,10 +361,6 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
             IMigrationStoreAction store = Store.FACTORY(this);
             result = store.countRowsIn(this);
         }catch (StoreException ex){
-            /**
-             * if MigrationSQL.PATIENT_TABLE_ROW_COUNT is source of exception
-             * -- assumed this is cause because the AppointmentTable is currently missing from the database schema 
-             */
             if (!ex.getErrorType().equals(StoreException.ExceptionType.PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE)){
                 //throw new StoreException(ex.getMessage(), ex.getErrorType());
                 result = null;
@@ -366,4 +368,5 @@ public class PatientTable extends ArrayList<Patient> implements ITable,
         }
         return result;
     }
+*/
 }

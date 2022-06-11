@@ -8,7 +8,7 @@ package clinicpms.model;
 
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
-import clinicpms.store.IPMSStoreAction;
+import clinicpms.store.IStoreAction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,13 +46,6 @@ public class PatientNotification extends EntityStoreType {
         setCollection(new Collection());
         setKey(key);
     }
-    
-    /*
-    public PatientNotification read()throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
-        return store.read(this);
-    }
-*/
     
     public Boolean getIsActioned(){
         return isActioned;
@@ -107,6 +100,11 @@ public class PatientNotification extends EntityStoreType {
         this.update();
     }
     
+    public void create() throws StoreException{
+        IStoreAction store = Store.FACTORY(this);
+        store.create(this);
+    }
+    
     /**
      * method sends message to store to insert this patient notification
      * -- the store returns the key value of the inserted notification
@@ -117,7 +115,7 @@ public class PatientNotification extends EntityStoreType {
      * @throws StoreException 
      */
     public void insert() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.insert(this);
     }
     
@@ -129,15 +127,15 @@ public class PatientNotification extends EntityStoreType {
      * @throws StoreException 
      */
     public PatientNotification read() throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         PatientNotification patientNotification = store.read(this);
         ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
-        patientNotification.setPatient(patient.readThePatient());
+        patientNotification.setPatient(patient.read());
         return patientNotification;
     }
     
     public void update()throws StoreException{
-        IPMSStoreAction store = Store.FACTORY(this);
+        IStoreAction store = Store.FACTORY(this);
         store.update(this);
     }
     
@@ -167,6 +165,11 @@ public class PatientNotification extends EntityStoreType {
         public ThePatient getPatient(){
             return PatientNotification.this.getPatient();
         }
+        
+        public Integer count()throws StoreException{
+            IStoreAction store = Store.FACTORY(this);
+            return store.count(this);
+        }
 
         /**
          * method fetches from  store either all notifications for this notification's patient; or all (typically unactioned only) patient notifications recorded on the system
@@ -175,7 +178,7 @@ public class PatientNotification extends EntityStoreType {
          * @throws StoreException 
          */
         public void read()throws StoreException{
-            IPMSStoreAction store = Store.FACTORY(this);
+            IStoreAction store = Store.FACTORY(this);
             set(store.read(this).get());
             Iterator it = get().iterator();
             switch(getScope()){
@@ -189,7 +192,7 @@ public class PatientNotification extends EntityStoreType {
                     while(it.hasNext()){
                         PatientNotification patientNotification = (PatientNotification)it.next();
                         ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
-                        patientNotification.setPatient(patient.readThePatient());
+                        patientNotification.setPatient(patient.read());
                     }
                     break;        
             }
