@@ -41,10 +41,11 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     
     private final String MIGRATION_MANAGEMENT_MENU_TITLE = "Migration management";
         private final String MIGRATION_DATABASE_TITLE = "Database actions";
-            private final String COPY_SELECTED_DATABASE_REQUEST_TITLE = "Copy selected database";
-            private final String SELECT_DATABASE_REQUEST_TITLE = "Select database to use";
-            private final String CREATE_DATABASE_REQUEST_TITLE = "Create a new database";
-            private final String DELETE_DATABASE_REQUEST_TITLE = "Delete database";
+            private final String COPY_SELECTED_DATABASE_REQUEST_TITLE = "Copy PMS store";
+            private final String SELECT_DATABASE_REQUEST_TITLE = "Select PMS store from existing file ";
+            private final String CREATE_DATABASE_REQUEST_TITLE = "Create a new PMS store ";
+            private final String DELETE_DATABASE_REQUEST_TITLE = "Delete PMS store";
+            private final String RENAME_FILE_REQUEST_TITLE = "Rename PMS store";
         private final String CSV_SOURCE_FILES_TITLE = "CSV files";
             private final String APPOINTMENT_CSV_SELECTION_REQUEST_TITLE = "Select appointment CSV file to use";
             private final String PATIENT_CSV_SELECTION_REQUEST_TITLE = "Select patient CSV file to use";
@@ -67,6 +68,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             private JMenuItem mniCreateDatabaseRequest = null;
             private JMenuItem mniDeleteDatabaseRequest = null; 
             private JMenuItem mniCopySelectedDatabaseRequest = null; 
+            private JMenuItem mniRenameFileRequest = null;
         private JMenu mnuCSVSourceFiles = null;
             private JMenuItem mniAppointmentCSVSelectionRequest = null;
             private JMenuItem mniPatientCSVSelectionRequest = null;
@@ -132,14 +134,17 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         mniCreateDatabaseRequest = new JMenuItem(CREATE_DATABASE_REQUEST_TITLE);
         mniDeleteDatabaseRequest = new JMenuItem(DELETE_DATABASE_REQUEST_TITLE);
         mniSelectDatabaseRequest = new JMenuItem(SELECT_DATABASE_REQUEST_TITLE);
+        mniRenameFileRequest = new JMenuItem(RENAME_FILE_REQUEST_TITLE);
         mnuDatabaseActions.add(mniCopySelectedDatabaseRequest);
         mnuDatabaseActions.add(mniCreateDatabaseRequest);
         mnuDatabaseActions.add(mniDeleteDatabaseRequest);
+        mnuDatabaseActions.add(mniRenameFileRequest);
         mnuDatabaseActions.add(mniSelectDatabaseRequest);
         
         mniCopySelectedDatabaseRequest.addActionListener((ActionEvent e) -> mniCopySelectedDatabaseRequestActionPerformed());
         mniCreateDatabaseRequest.addActionListener((ActionEvent e) -> mniCreateDatabaseRequestActionPerformed());
         mniDeleteDatabaseRequest.addActionListener((ActionEvent e) -> mniDeleteDatabaseRequestActionPerformed());
+        mniRenameFileRequest.addActionListener((ActionEvent e) -> mniRenameFileRequestActionPerformed());
         mniSelectDatabaseRequest.addActionListener((ActionEvent e) -> mniSelectDatabaseRequestActionPerformed());
     }
     
@@ -483,6 +488,13 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PATIENT_NOTIFICATION_VIEW_CONTROLLER_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniRenameFileRequestActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_RENAME_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
