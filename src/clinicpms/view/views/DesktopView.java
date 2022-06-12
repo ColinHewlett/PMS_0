@@ -22,6 +22,7 @@ import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JSeparator;
 import org.apache.commons.io.FilenameUtils;
 
@@ -40,13 +41,18 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         private final String EXIT_VIEW_REQUEST_TITLE = "Exit the Clinic practice management system";
     
     private final String MIGRATION_MANAGEMENT_MENU_TITLE = "Migration management";
-        private final String MIGRATION_DATABASE_TITLE = "Database actions";
-            private final String COPY_SELECTED_DATABASE_REQUEST_TITLE = "Copy PMS store";
-            private final String SELECT_DATABASE_REQUEST_TITLE = "Select PMS store from existing file ";
-            private final String CREATE_DATABASE_REQUEST_TITLE = "Create a new PMS store ";
-            private final String DELETE_DATABASE_REQUEST_TITLE = "Delete PMS store";
-            private final String RENAME_FILE_REQUEST_TITLE = "Rename PMS store";
-        private final String CSV_SOURCE_FILES_TITLE = "CSV files";
+        private final String PMS_STORE_RELATED_ACTIONS_TITLE = "PMS storerelated actions";
+            private final String COPY_PMS_STORE_TITLE = "Copy PMS store";
+            private final String CREATE_NEW_PMS_STORE_REQUEST_TITLE = "Create a new PMS store ";
+            private final String DELETE_PMS_STORE_REQUEST_TITLE = "Delete PMS store";
+            private final String RENAME_PMS_STORE_REQUEST_TITLE = "Rename PMS store";
+            private final String SELECT_PMS_STORE_REQUEST_TITLE = "Select PMS store from existing file ";
+        private final String NON_PMS_STORE_RELATED_ACTIONS_TITLE = "Non-PMS store related actions"; 
+            private final String CREATE_NEW_STORE_REQUEST_TITLE = "Create a new store (not the PMS store)";
+            private final String DELETE_STORE_REQUEST_TITLE = "Delete store (not the PMS store)";
+            
+            
+        private final String CSV_SOURCE_FILES_TITLE = "CSV source files selection";
             private final String APPOINTMENT_CSV_SELECTION_REQUEST_TITLE = "Select appointment CSV file to use";
             private final String PATIENT_CSV_SELECTION_REQUEST_TITLE = "Select patient CSV file to use";
         private final String DATABASE_CONTENTS_TITLE = "Database contents";
@@ -54,6 +60,8 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             private final String PATIENT_TABLE_RECORD_COUNT_TITLE = "Patient table ";
             private final String PATIENT_NOTIFICATION_TABLE_RECORD_COUNT_TITLE = "PatientNotification table ";
             private final String SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE = "SurgeryDaysAssignment table ";
+        private final String RECENTLY_ACCESSED_STORES_TITLE = "Recently accessed stores";
+        private final String CLEAR_RECENTLY_ACCESSED_STORES_TITLE = "Clear recently accessed stores list";        
         private final String IMPORT_DATA_REQUEST_TITLE = "Import data from CSV files";    
         
     private JMenu mnuSelectView = null; 
@@ -63,12 +71,15 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         private JMenuItem mniExitViewRequest = null;
         
     private JMenu mnuMigrationManagement = null; 
-        private JMenu mnuDatabaseActions = null;
-            private JMenuItem mniSelectDatabaseRequest = null;
-            private JMenuItem mniCreateDatabaseRequest = null;
-            private JMenuItem mniDeleteDatabaseRequest = null; 
-            private JMenuItem mniCopySelectedDatabaseRequest = null; 
-            private JMenuItem mniRenameFileRequest = null;
+        private JMenu mnuPMSStoreActions = null;
+            private JMenuItem mniSelectPMStoreRequest = null;
+            private JMenuItem mniCreatePMSStoreRequest = null;
+            private JMenuItem mniDeletePMSStoreRequest = null; 
+            private JMenuItem mniCopyPMSStoreRequest = null; 
+            private JMenuItem mniRenamePMSStoreRequest = null;
+        private JMenu mnuNonPMSStoreActions = null;
+            private JMenuItem mniCreateStoreRequest = null;
+            private JMenuItem mniDeleteStoreRequest =  null;
         private JMenu mnuCSVSourceFiles = null;
             private JMenuItem mniAppointmentCSVSelectionRequest = null;
             private JMenuItem mniPatientCSVSelectionRequest = null;
@@ -77,6 +88,8 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             private JMenuItem mniPatientTableRecordCount = null;
             private JMenuItem mniPatientNotificationTableRecordCount = null;
             private JMenuItem mniSurgeryDaysAssignmentTableRecordCount = null;
+        private JMenuItem mniRecentlyAccessedStores = null;
+        private JMenuItem mniClearRecentlyAccessedStores = null;
         private JMenuItem mniImportMigratedDataRequest = null;
 
     private Boolean getIsPMSStoreDefined(){
@@ -107,18 +120,25 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     
     private void makeMigrationManagementMenu(){
         mnuMigrationManagement = new JMenu(MIGRATION_MANAGEMENT_MENU_TITLE);
-        mnuDatabaseActions = new JMenu(MIGRATION_DATABASE_TITLE);
+        mnuPMSStoreActions = new JMenu(PMS_STORE_RELATED_ACTIONS_TITLE);
+        mnuNonPMSStoreActions = new JMenu(NON_PMS_STORE_RELATED_ACTIONS_TITLE);
         makeMigrationDatabasePopupMenu();
         mnuCSVSourceFiles = new JMenu(CSV_SOURCE_FILES_TITLE);
         makeCSVSourceFilesPopupMenu();
         mnuDatabaseContents = new JMenu(DATABASE_CONTENTS_TITLE);
         makeMigrationDatabaseContentsPopupMenu();
+        mniRecentlyAccessedStores = new JMenuItem(RECENTLY_ACCESSED_STORES_TITLE);
+        mniClearRecentlyAccessedStores = new JMenuItem(CLEAR_RECENTLY_ACCESSED_STORES_TITLE);
         mniImportMigratedDataRequest = new JMenuItem(IMPORT_DATA_REQUEST_TITLE); 
         mniExitViewRequest = new JMenuItem(EXIT_VIEW_REQUEST_TITLE);
-        mnuMigrationManagement.add(mnuDatabaseActions);
+        mnuMigrationManagement.add(mnuPMSStoreActions);
+        mnuMigrationManagement.add(mnuNonPMSStoreActions);
         mnuMigrationManagement.add(mnuCSVSourceFiles);
         mnuMigrationManagement.add(mnuDatabaseContents);
         mnuMigrationManagement.add(mniImportMigratedDataRequest);
+        mnuMigrationManagement.add(new JSeparator());
+        mnuMigrationManagement.add(mniRecentlyAccessedStores);
+        mnuMigrationManagement.add(mniClearRecentlyAccessedStores);
         mnuMigrationManagement.add(new JSeparator());
         mnuMigrationManagement.add(mniExitViewRequest);
         
@@ -130,22 +150,29 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
     }
     
     private void makeMigrationDatabasePopupMenu(){
-        mniCopySelectedDatabaseRequest = new JMenuItem(COPY_SELECTED_DATABASE_REQUEST_TITLE);
-        mniCreateDatabaseRequest = new JMenuItem(CREATE_DATABASE_REQUEST_TITLE);
-        mniDeleteDatabaseRequest = new JMenuItem(DELETE_DATABASE_REQUEST_TITLE);
-        mniSelectDatabaseRequest = new JMenuItem(SELECT_DATABASE_REQUEST_TITLE);
-        mniRenameFileRequest = new JMenuItem(RENAME_FILE_REQUEST_TITLE);
-        mnuDatabaseActions.add(mniCopySelectedDatabaseRequest);
-        mnuDatabaseActions.add(mniCreateDatabaseRequest);
-        mnuDatabaseActions.add(mniDeleteDatabaseRequest);
-        mnuDatabaseActions.add(mniRenameFileRequest);
-        mnuDatabaseActions.add(mniSelectDatabaseRequest);
+        mniCopyPMSStoreRequest = new JMenuItem(COPY_PMS_STORE_TITLE);
+        mniCreatePMSStoreRequest = new JMenuItem(CREATE_NEW_PMS_STORE_REQUEST_TITLE);
+        mniDeletePMSStoreRequest = new JMenuItem(DELETE_PMS_STORE_REQUEST_TITLE);
+        mniSelectPMStoreRequest = new JMenuItem(SELECT_PMS_STORE_REQUEST_TITLE);
+        mniRenamePMSStoreRequest = new JMenuItem(RENAME_PMS_STORE_REQUEST_TITLE);
+        mnuPMSStoreActions.add(mniCopyPMSStoreRequest);
+        mnuPMSStoreActions.add(mniCreatePMSStoreRequest);
+        mnuPMSStoreActions.add(mniDeletePMSStoreRequest);
+        mnuPMSStoreActions.add(mniRenamePMSStoreRequest);
+        mnuPMSStoreActions.add(mniSelectPMStoreRequest);
+        mniCopyPMSStoreRequest.addActionListener((ActionEvent e) -> mniCopyPMSStoreRequestActionPerformed());
+        mniCreatePMSStoreRequest.addActionListener((ActionEvent e) -> mniCreatePMSStoreRequestActionPerformed());
+        mniDeletePMSStoreRequest.addActionListener((ActionEvent e) -> mniDeletePMSStoreRequestActionPerformed());
+        mniRenamePMSStoreRequest.addActionListener((ActionEvent e) -> mniRenamePMSStoreRequestActionPerformed());
+        mniSelectPMStoreRequest.addActionListener((ActionEvent e) -> mniSelectPMSStoreRequestActionPerformed());
         
-        mniCopySelectedDatabaseRequest.addActionListener((ActionEvent e) -> mniCopySelectedDatabaseRequestActionPerformed());
-        mniCreateDatabaseRequest.addActionListener((ActionEvent e) -> mniCreateDatabaseRequestActionPerformed());
-        mniDeleteDatabaseRequest.addActionListener((ActionEvent e) -> mniDeleteDatabaseRequestActionPerformed());
-        mniRenameFileRequest.addActionListener((ActionEvent e) -> mniRenameFileRequestActionPerformed());
-        mniSelectDatabaseRequest.addActionListener((ActionEvent e) -> mniSelectDatabaseRequestActionPerformed());
+        mniCreateStoreRequest = new JMenuItem(CREATE_NEW_STORE_REQUEST_TITLE);
+        mniDeleteStoreRequest = new JMenuItem(DELETE_STORE_REQUEST_TITLE);
+        mnuNonPMSStoreActions.add(mniCreateStoreRequest);
+        mnuNonPMSStoreActions.add(mniDeleteStoreRequest);
+        mniCreateStoreRequest.addActionListener((ActionEvent e) -> mniCreateNonPMSStoreRequestActionPerformed());
+        mniDeleteStoreRequest.addActionListener((ActionEvent e) -> mniDeleteNonPMSStoreRequestActionPerformed());
+        
     }
     
     private void makeCSVSourceFilesPopupMenu(){
@@ -298,7 +325,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             currentPMSStoreSelection = "undefined";
         else
             currentPMSStoreSelection = currentPMSStoreSelectionState;        
-        this.mniSelectDatabaseRequest.setText(this.SELECT_DATABASE_REQUEST_TITLE 
+        this.mniSelectPMStoreRequest.setText(this.SELECT_PMS_STORE_REQUEST_TITLE 
                 + " {" + currentPMSStoreSelection + "}");
 
         
@@ -491,38 +518,52 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniRenameFileRequestActionPerformed(){
+    private void mniRenamePMSStoreRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_RENAME_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniCopySelectedDatabaseRequestActionPerformed(){
+    private void mniCopyPMSStoreRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_COPY_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniSelectDatabaseRequestActionPerformed(){
+    private void mniSelectPMSStoreRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_SELECTION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
     
-    private void mniCreateDatabaseRequestActionPerformed(){
+    private void mniCreatePMSStoreRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_CREATION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
    
-    private void mniDeleteDatabaseRequestActionPerformed(){
+    private void mniCreateNonPMSStoreRequestActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.NON_PMS_STORE_CREATION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniDeletePMSStoreRequestActionPerformed(){
         ActionEvent actionEvent = new ActionEvent(this, 
                 ActionEvent.ACTION_PERFORMED,
                 DesktopViewController.DesktopViewControllerActionEvent.PMS_STORE_DELETION_REQUEST.toString());
+        this.getController().actionPerformed(actionEvent);
+    }
+    
+    private void mniDeleteNonPMSStoreRequestActionPerformed(){
+        ActionEvent actionEvent = new ActionEvent(this, 
+                ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.NON_PMS_STORE_DELETION_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
 
@@ -682,7 +723,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             currentPMSStoreSelection = path;
             setIsPMSStoreDefined(true);
         }
-        this.mniSelectDatabaseRequest.setText(this.SELECT_DATABASE_REQUEST_TITLE 
+        this.mniSelectPMStoreRequest.setText(this.SELECT_PMS_STORE_REQUEST_TITLE 
                 + " {" + currentPMSStoreSelection + "}");
         
         
