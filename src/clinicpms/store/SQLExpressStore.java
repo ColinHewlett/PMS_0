@@ -15,8 +15,8 @@ import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
-import clinicpms.model.SurgeryDaysAssignmentx;
-import clinicpms.model.TheSurgeryDaysAssignment;
+//import clinicpms.model.SurgeryDaysAssignmentx;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.Dictionary;
@@ -175,14 +175,10 @@ public class SQLExpressStore  {
     }
     
     
-    public void update(SurgeryDaysAssignmentx value){
-
-    }
+    
 
     
-    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException{
-        return null;
-    }
+    
     
     public Dictionary<String,Boolean> readSurgeryDays() throws StoreException{
         return null;
@@ -303,15 +299,7 @@ public class SQLExpressStore  {
     */
     
     
-    /**
-     * Populates the surgery days table in the migration store from the specified SurgeryDaysAssignmentx collection of values
-     * @param data:SurgeryDaysAssignmentx
-     * @throws StoreException 
-     */
     
-    public void populate(SurgeryDaysAssignmentx data)throws StoreException{
-        
-    }
     
     /**
      * Fetches the selected storage type used by the app
@@ -426,9 +414,7 @@ public class SQLExpressStore  {
         
     }
     
-    public void insert(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException{
-        
-    }
+    
     
     public void drop(Appointment a)throws StoreException{
         
@@ -439,9 +425,7 @@ public class SQLExpressStore  {
     public void drop(Patient p)throws StoreException{
         
     }
-    public void drop(SurgeryDaysAssignmentx s)throws StoreException{
-        
-    }
+    
     public void create(Appointment a)throws StoreException{
         
     }
@@ -452,9 +436,6 @@ public class SQLExpressStore  {
         
     }
     public void create(Patient p)throws StoreException{
-        
-    }
-    public void create(SurgeryDaysAssignmentx p)throws StoreException{
         
     }
     
@@ -474,27 +455,27 @@ public class SQLExpressStore  {
     }
 
     
-    public void drop(TheSurgeryDaysAssignment table)throws StoreException{
+    public void drop(SurgeryDaysAssignment table)throws StoreException{
         
     }
     
     
-    public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void update(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         
     }
     
     
-    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment s) throws StoreException {
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment s) throws StoreException {
         return null;
     }
     
     
-    public void create(TheSurgeryDaysAssignment s) throws StoreException {
+    public void create(SurgeryDaysAssignment s) throws StoreException {
         
     }
     
     
-    public void insert(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void insert(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         
     }
 }

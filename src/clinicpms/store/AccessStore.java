@@ -19,8 +19,8 @@ import clinicpms.model.AppointmentTable;
 import clinicpms.model.AppointmentTableRowValue;
 import clinicpms.model.PatientTableRowValue;
 import clinicpms.model.TableRowValue;
-import clinicpms.model.SurgeryDaysAssignmentx;
-import clinicpms.model.TheSurgeryDaysAssignment;
+//import clinicpms.model.SurgeryDaysAssignmentx;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.Store.SelectedTargetStore;
 import clinicpms.model.Appointment;
 import clinicpms.model.TheAppointment;
@@ -44,7 +44,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Iterator;
 import clinicpms.model.IEntityStoreType;
-import clinicpms.model.TheStoreManager;
+import clinicpms.model.StoreManager;
 import javax.swing.JOptionPane;
 
 /**
@@ -104,7 +104,7 @@ public class AccessStore extends Store {
     private Connection getPMSStoreConnection() throws StoreException{
         String url;
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             if (PMSstoreConnection==null){
                 String path = storeManager.getPMSStorePath();
                 if (path==null){
@@ -722,6 +722,7 @@ public class AccessStore extends Store {
                 break;
             }
             case INSERT_SURGERY_DAYS_ASSIGNMENT: {
+                /*
                 SurgeryDaysAssignmentx surgeryDaysAssignment = null;
                 if (entity != null) {
                     if (entity.isSurgeryDaysAssignment()) {
@@ -769,6 +770,7 @@ public class AccessStore extends Store {
                     String message = "StoreException -> entitu undefined in AccessStore::runSQL(PMSSQL.INSERT_SURGERY_DAYS_ASSIGNMENT)";
                     throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
+                */
                 break;
             }
             case INSERT_APPOINTMENT: {
@@ -1119,6 +1121,7 @@ public class AccessStore extends Store {
             }
             break;
             case READ_SURGERY_DAYS_ASSIGNMENT: {
+                /*
                 SurgeryDaysAssignmentx surgeryDaysAssignment = null;
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
@@ -1133,8 +1136,10 @@ public class AccessStore extends Store {
                             StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_PMS_DATABASE);
                 }
                 break;
+                */
             }
             case UPDATE_SURGERY_DAYS_ASSIGNMENT: {
+                /*
                 SurgeryDaysAssignmentx surgeryDaysAssignment = null;
                 if (entity != null) {
                     if (entity.isSurgeryDaysAssignment()) {
@@ -1185,25 +1190,17 @@ public class AccessStore extends Store {
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_SURGERY_DAYS";
                     throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
+                */
             }
+                
         }
         return result;
     }
+    
 
-    /**
-     * One of a collection of overloaded methods requesting an PMS
-     * connection-based SQL statement to be processed
-     *
-     * @param q:SurgeryDaysSQL signifying the SQL statement to be processed, and
- which include -- READ_SURGERY_DAYS_ASSIGNMENT -- UPDATE_SURGERY_DAYS_ASSIGNMENT
-     * @param map:SurgeryDaysAssignmentx which contains the values of rows
- updated in the SurgeryDays table
-     * @return SurgeryDaysAssignmentx; values read back from table which will be
- null if update of values executed
-     * @throws StoreException wraps the SQLException that can be thrown
-     */
-    private SurgeryDaysAssignmentx runSQL(SurgeryDaysSQL q, SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
-        SurgeryDaysAssignmentx result = null;
+    /*
+    private void runSQL(SurgeryDaysSQL q, SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
+        //SurgeryDaysAssignmentx result = null;
         String sql;
         switch (q) {
             case READ_SURGERY_DAYS:
@@ -1264,19 +1261,8 @@ public class AccessStore extends Store {
         }
         return result;
     }
-
-    /**
-     * One of a collection of overloaded methods requesting a migration
-     * connection-based SQL statement to be executed
-     *
-     * @param q:MigrationSQL signifying the SQL statement to be processed
-     * @param value:IEntityStoreType; which is checked for being either an
- Appointment, Patient, or SurgeryDaysAssignmentx object -- value parameter
- could also be null, when an IEntityype is not specified
-     * @return Integer, which could be null if the selected SL statement never
-     * returns a value (e.g a DROP)
-     * @throws StoreException
-     */
+*/
+    /*
     private IEntityStoreType runSQL(MigrationSQL q, IEntityStoreType entity) throws StoreException {
         IEntityStoreType result = null;
         //SurgeryDaysAssignment surgeryDaysAssignment = null;
@@ -1414,7 +1400,7 @@ public class AccessStore extends Store {
 
         switch (q) {
             case EXPORT_MIGRATED_DATA_TO_PMS: {
-                /*
+                
                 String table = null;
                 String selectedPMSDatabase = getPMSDatabasePath();;
                 ResultSet rs;
@@ -1445,11 +1431,11 @@ public class AccessStore extends Store {
                                 StoreException.ExceptionType.SQL_EXCEPTION);
                     }
                 }
-                */
+                
                 break;
             }
             case SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION: {
-                /*
+                
                 SurgeryDaysAssignmentx surgeryDaysAssignment = null;
                 if (entity != null) {
                     if (entity.isSurgeryDaysAssignment()) {
@@ -1503,12 +1489,12 @@ public class AccessStore extends Store {
                     String message = "StoreException -> appointment undefined in MigrationQL.SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION ";
                     throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
-                */
+                
                 break;
             }
 
             case SURGERY_DAYS_TABLE_ROW_COUNT: {
-                /*
+                
                 int count = 0;
                 try {
                     
@@ -1523,12 +1509,12 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during runSQL(MigrationSQL.SURGERY_DAYS_TABLE_ROW_COUNT)",
                             StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_MIGRATION_DATABASE);
                 }
-                */
+                
                 break;
             }
 
             case APPOINTMENT_TABLE_ROW_COUNT: {
-                /*
+                
                 int count = 0;
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
@@ -1542,11 +1528,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during an APPOINTMENT_TABLE_ROW_COUNT data migration operation",
                             StoreException.ExceptionType.APPOINTMENT_TABLE_MISSING_IN_MIGRATION_DATABASE);
                 }
-                */
+                
                 break;
             }
             case APPOINTMENT_TABLE_ADD_FOREIGN_KEY:
-                /*
+                
                 try {
                 Statement statement = getMigrationConnection().createStatement();
                 statement.execute(sql);
@@ -1555,10 +1541,10 @@ public class AccessStore extends Store {
                         + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_ADD_FOREIGN_KEY)",
                         StoreException.ExceptionType.SQL_EXCEPTION);
             }
-                */
+                
                 break;
             case APPOINTMENT_TABLE_CREATE: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.execute();
@@ -1568,11 +1554,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_CREATE) ",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case APPOINTMENT_TABLE_INSERT_ROW:
-                /*
+                
                 Appointment appointment = null;
                 int test;
                 if (entity != null) {
@@ -1604,21 +1590,21 @@ public class AccessStore extends Store {
                     String message = "StoreException -> entity undefined in AccessStore::runSQL(MigrationSQL.APPOINTMENT_TABLE_INSERT_ROW";
                     throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
-                */
+                
                 break;
             case APPOINTMENT_TABLE_DROP: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
 
                 }
-                */
+                
                 break;
             }
             case APPOINTMENT_TABLE_HIGHEST_KEY:
-                /*
+                
                 try {
                 Integer key = null;
                 PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
@@ -1632,10 +1618,10 @@ public class AccessStore extends Store {
                         + "StoreException message -> exception raised during a READ_HIGHEST_KEY from Appointment table",
                         StoreException.ExceptionType.SQL_EXCEPTION);
             }
-                */
+                
             break;
             case APPOINTMENT_TABLE_START_TIME_NORMALISED: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
@@ -1644,11 +1630,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case APPOINTMENT_TABLE_READ: {
-                /*
+                
                 Appointments appointments = new Appointments();
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
@@ -1660,11 +1646,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case APPOINTMENT_TABLE_READ_WITH_KEY: {
-                /*
+                
                 AppointmentTable appointmentTable = null;
                 if (entity != null) {
                     if (entity.isAppointmentTable()) {
@@ -1687,12 +1673,12 @@ public class AccessStore extends Store {
                     String message = "StoreException -> appointment undefined in PatientManagementSystemSQL.READ_APPOINTMENT_WITH_KEY";
                     throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
                 }
-                */
+                
                 break;
             }
 
             case APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY:
-                /*
+                
                 if (entity != null) {
                     if (entity.isPatientTableRowValue()) {
                         Integer patientKey = ((PatientTableRowValue) entity).getValue();
@@ -1713,10 +1699,10 @@ public class AccessStore extends Store {
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY";
                     throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
-                */
+                
                 break;
             case PATIENT_TABLE_ROW_COUNT: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
@@ -1729,11 +1715,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a PATIENT_TABLE_ROW_COUNT data migration operation",
                             StoreException.ExceptionType.PATIENT_TABLE_MISSING_IN_MIGRATION_DATABASE);
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_CREATE: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
@@ -1742,11 +1728,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_INSERT_ROW: {
-                /*
+                
                 Patient patient = null;
                 if (entity != null) {
                     if (entity.isPatient()) {
@@ -1792,11 +1778,11 @@ public class AccessStore extends Store {
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_INSERT_ROW";
                     throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_DROP: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.execute();
@@ -1804,11 +1790,11 @@ public class AccessStore extends Store {
  
 
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_READ: {
-                /*
+                
                 Patients patients = new Patients();
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
@@ -1820,11 +1806,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_READ_PATIENT: {
-                /*
+                
                 Patient patient = null;
                 if (entity != null) {
                     if (entity.isPatient()) {
@@ -1847,11 +1833,11 @@ public class AccessStore extends Store {
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_READ_TABLE";
                     throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
-                */
+                
                 break;
             }
             case SURGERY_DAYS_TABLE_CREATE: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
@@ -1860,11 +1846,11 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_START_TIME_NORMALISED data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
             case PATIENT_TABLE_UPDATE: {
-                /*
+                
                 Patient patient = null;
                 if (entity != null) {
                     if (entity.isPatient()) {
@@ -1915,11 +1901,11 @@ public class AccessStore extends Store {
                     String message = "StoreException -> undefined patient key in Access::runSQL(MigrationSQL.PATIENT_TABLE_UPDATE";
                     throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                 }
-                */
+                
                 break;
             }
             case SURGERY_DAYS_TABLE_DROP: {
-                /*
+                
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
@@ -1927,11 +1913,11 @@ public class AccessStore extends Store {
 
                      
                 }
-                */
+                
                 break;
             }
             case SURGERY_DAYS_TABLE_READ: {
-                /*
+                
                 SurgeryDaysAssignmentx s = new SurgeryDaysAssignmentx();
                 try {
                     PreparedStatement preparedStatement = getMigrationConnection().prepareStatement(sql);
@@ -1943,13 +1929,13 @@ public class AccessStore extends Store {
                             + "StoreException message -> exception raised during a APPOINTMENT_TABLE_READ data migration operation",
                             StoreException.ExceptionType.SQL_EXCEPTION);
                 }
-                */
+                
                 break;
             }
         }
         return result;
     }
-
+*/
     /**
      * Explicit manual transaction processing enabled -- updates which days are
      * surgery days on the system
@@ -1958,8 +1944,11 @@ public class AccessStore extends Store {
      * to update currently stored values
      * @throws StoreException
      */
+    /*
     private SurgeryDaysAssignmentx getSurgeryDaysFromRS(ResultSet rs) throws SQLException {
+      
         SurgeryDaysAssignmentx result = new SurgeryDaysAssignmentx();
+        
         if (!rs.wasNull()) {
             while (rs.next()) {
                 switch (rs.getString("Day")) {
@@ -1985,8 +1974,10 @@ public class AccessStore extends Store {
                 }
             }
         }
+        
         return result;
     }
+    */
 
     private ArrayList<Patient> getPatientsFromRS(ResultSet rs) throws SQLException {
         ArrayList<Patient> result = new ArrayList<>();
@@ -2310,7 +2301,9 @@ public class AccessStore extends Store {
         return result;
     }
 
+    /*
     private SurgeryDaysAssignmentx get(SurgeryDaysAssignmentx surgeryDaysAssignment, ResultSet rs) throws StoreException {
+        
         String day = null;
         try {
             if (!rs.wasNull()) {
@@ -2347,9 +2340,11 @@ public class AccessStore extends Store {
                     + "StoreException -> raised in Access::get(SurgeryDaysAssignment,ResultSet)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
+        
     }
+    */
     
-    private TheSurgeryDaysAssignment get(TheSurgeryDaysAssignment surgeryDaysAssignment, ResultSet rs) throws StoreException {
+    private SurgeryDaysAssignment get(SurgeryDaysAssignment surgeryDaysAssignment, ResultSet rs) throws StoreException {
         String day = null;
         try {
             if (!rs.wasNull()) {
@@ -2661,6 +2656,7 @@ public class AccessStore extends Store {
      * @return int count of the number of appointment records
      * @throws StoreException
      */
+    /*
     private void insertMigratedAppointmentsx(ArrayList<Appointment> appointments) throws StoreException {
         Integer result = null;
         Iterator<Appointment> it = appointments.iterator();
@@ -2678,7 +2674,7 @@ public class AccessStore extends Store {
             }
         }
     }
-
+*/
     /**
      * Important:- method returns count of Patient rows in the currently
      * selected store -- hence count returned will be of rows in the currently
@@ -2695,10 +2691,14 @@ public class AccessStore extends Store {
         return value.get(0).getKey();
     }
      */
+    
     private int getPatientTableCount() throws StoreException {
+        /*
         int count = 0;
         count = ((PatientTableRowValue) runSQL(MigrationSQL.PATIENT_TABLE_ROW_COUNT, null)).getValue();
         return count;
+        */
+        return 0;
     }
 
     /**
@@ -2715,6 +2715,7 @@ public class AccessStore extends Store {
      * non-existing patient key
      */
     private void migratedAppointmentsIntegrityCheck() throws StoreException {
+        /*
         Integer key;
         HashSet<Integer> nonExistingPatientsReferencedbyAppointments = new HashSet<>();
         HashSet<Integer> patientSet = new HashSet<>();
@@ -2745,7 +2746,7 @@ public class AccessStore extends Store {
             Integer nonExistingPatientKey = nonExistingPatientKeysIt.next();
             //deleteAppointmentWithPatientKey(nonExistingPatientKey);
         }
-
+*/
     }
 
     private boolean isMigrationActionStore() {
@@ -2858,7 +2859,7 @@ public class AccessStore extends Store {
     }
 
     @Override
-    public void insert(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void insert(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         try{
             getPMSStoreConnection().setAutoCommit(true);
             runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT, 
@@ -2871,19 +2872,6 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
                
-    }
-    
- 
-    /**
-     * used for exporting data into PMS database from Migration database
-     */
-    public void insert(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            runSQL(PMSSQL.INSERT_SURGERY_DAYS_ASSIGNMENT, surgeryDaysAssignment);
-        } catch (SQLException ex) {
-
-        }
     }
 
     public void insert(TheAppointment a) throws StoreException {
@@ -2965,6 +2953,7 @@ public class AccessStore extends Store {
         }
     }
 
+    /*
     public void insert(AppointmentTable table) throws StoreException {
         boolean result = false;
         IEntityStoreType value;
@@ -3006,7 +2995,7 @@ public class AccessStore extends Store {
             }
         }
     }
-
+*/
     @Override
     /**
      * method attempts to insert a new patient notification record on the database
@@ -3152,6 +3141,7 @@ public class AccessStore extends Store {
      * @param patient:Patient
      * @throws StoreException
      */
+    /*
     public void insert(PatientTable table, Patient patient) throws StoreException {
         boolean result = false;
         IEntityStoreType entity;
@@ -3181,7 +3171,8 @@ public class AccessStore extends Store {
             }
         }
     }
-
+*/
+    /*
     public void insert(AppointmentTable table, Appointment appointment) throws StoreException {
         boolean result = false;
         IEntityStoreType entity;
@@ -3217,7 +3208,7 @@ public class AccessStore extends Store {
             }
         }
     }
-
+*/
     public void delete(TheAppointment a) throws StoreException {
         
     }
@@ -3397,15 +3388,15 @@ public class AccessStore extends Store {
     
     
     @Override
-    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment s) throws StoreException {
-        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment s) throws StoreException {
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         EntityStoreType value = null;
         try {
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             value = runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT,PMSSQL.READ_SURGERY_DAYS_ASSIGNMENT, null);
             if (value != null) {
                 if (value.getIsSurgeryDaysAssignment()) {
-                    surgeryDaysAssignment = (TheSurgeryDaysAssignment) value;
+                    surgeryDaysAssignment = (SurgeryDaysAssignment) value;
                 }
             }
             return surgeryDaysAssignment;
@@ -3418,6 +3409,7 @@ public class AccessStore extends Store {
         }
     }
     
+    /*
     public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx s) throws StoreException {
         SurgeryDaysAssignmentx surgeryDaysAssignment = null;
         IEntityStoreType value = null;
@@ -3439,7 +3431,7 @@ public class AccessStore extends Store {
         }
 
     }
-    
+    */
     public Integer count(PatientNotification.Collection collection)throws StoreException{
         TableRowValue result = null;
         PMSSQL sqlStatement = null;
@@ -3482,7 +3474,7 @@ public class AccessStore extends Store {
         return result.getValue();
     }
     
-    public Integer count(TheSurgeryDaysAssignment surgeryDaysAssignment)throws StoreException{
+    public Integer count(SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException{
         TableRowValue result = null;
         result = (TableRowValue)runSQL(
                 EntitySQL.SURGERY_DAYS_ASSIGNMENT, PMSSQL.COUNT_SURGERY_DAYS_ASSIGNMENT, null );
@@ -4166,7 +4158,7 @@ public class AccessStore extends Store {
     }
 
     @Override
-    public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void update(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         try {
             if (getPMSStoreConnection().getAutoCommit()) {
                 getPMSStoreConnection().setAutoCommit(true);
@@ -4188,7 +4180,9 @@ public class AccessStore extends Store {
      * to update currently stored values
      * @throws StoreException
      */
+    /*
     public void update(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
+        
         boolean result = false;
         try {
             if (getPMSStoreConnection().getAutoCommit()) {
@@ -4201,7 +4195,8 @@ public class AccessStore extends Store {
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::update(HashMap<DayOfWeek,Boolean>)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
-        /*
+        
+        
         finally{
             try{
                 if (result) getPMSStoreConnection().commit();
@@ -4214,8 +4209,9 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);    
             }
         } 
-         */
+         
     }
+    */
 
     public void tidyPatientImportedDate() throws StoreException {
         Patients patients = (Patients) runSQL(PMSSQL.READ_PATIENTS,
@@ -4369,7 +4365,7 @@ public class AccessStore extends Store {
     }
 
     @Override
-    public void create(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void create(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         try {
             getPMSStoreConnection().setAutoCommit(true);
             IEntityStoreType value = null;
@@ -4498,7 +4494,7 @@ public class AccessStore extends Store {
         }
          */
     }
-    public void drop(TheSurgeryDaysAssignment table)throws StoreException{
+    public void drop(SurgeryDaysAssignment table)throws StoreException{
         try {
             if (getPMSStoreConnection().getAutoCommit()) {
                 getPMSStoreConnection().setAutoCommit(true);
@@ -4514,6 +4510,7 @@ public class AccessStore extends Store {
         }
     }
     
+    /*
     public void drop(SurgeryDaysAssignmentx table) throws StoreException {
         boolean result = false;
         try {
@@ -4530,22 +4527,9 @@ public class AccessStore extends Store {
                     + "Reason -> unexpected effect when auto commit state disabled",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
-        /*
-        finally{
-            try{
-                if (result) getMigrationConnection().commit();
-                else getMigrationConnection().rollback();
-            }catch (SQLException ex){
-                message = "SQLException message -> " + ex.getMessage() +"\n";
-                throw new StoreException(
-                    message + "StoreException raised in finally clause of method AccessStore.drop(SurgeryDaysAssignmentx))\n"
-                            + "Reason -> unexpected effect when terminating the current transaction",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-                
-            }
-        }
-         */
+
     }
+    */
 
     /**
      * Explicit transaction processing enabled for attempt to drop the
@@ -4666,7 +4650,7 @@ public class AccessStore extends Store {
 
     public List<String[]> importEntityFromCSV(EntityStoreType entity) throws StoreException{
         List<String[]> result = null;
-        TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+        StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
         if (entity.getIsAppointment()) {
             result = new CSVReader().getAppointmentDBFRecords(storeManager.getAppointmentCSVPath());
         }
@@ -4770,7 +4754,7 @@ public class AccessStore extends Store {
         }
     }
      */
-    public void populate(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
+    public void populate(SurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         try{
             getPMSStoreConnection().setAutoCommit(true);
             runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT, 
@@ -4817,9 +4801,9 @@ public class AccessStore extends Store {
         }
         */
     }
-
+/*
     public void populate(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
-        /*
+        
         boolean result = false;
         try {
             if (getMigrationConnection().getAutoCommit()) {
@@ -4849,9 +4833,10 @@ public class AccessStore extends Store {
 
             }
         }
-        */
+        
     }
-
+*/
+    /*
     public void checkIntegrity() throws StoreException {
         boolean result = false;
         IEntityStoreType entity;
@@ -4882,10 +4867,7 @@ public class AccessStore extends Store {
                         throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
                     }
                 }
-                /**
-                 * deletes appointment records which reference non existing
-                 * patients
-                 */
+  
                 this.setNonExistingPatientsReferencedByAppointmentsCount(nonExistingPatientsReferencedbyAppointments.size());
                 Iterator<Integer> nonExistingPatientKeysIt = nonExistingPatientsReferencedbyAppointments.iterator();
                 while (nonExistingPatientKeysIt.hasNext()) {
@@ -4904,7 +4886,7 @@ public class AccessStore extends Store {
                     message + "StoreException raised in method AccessStore.checkIntegrity()\n"
                     + "Reason -> unexpected effect when trying to change the auto commit state",
                     StoreException.ExceptionType.SQL_EXCEPTION);
-        } /*finally {
+        } finally {
             try {
                 if (result) {
                     
@@ -4920,8 +4902,9 @@ public class AccessStore extends Store {
                         StoreException.ExceptionType.SQL_EXCEPTION);
 
             }
-        }*/
+        }
     }
+*/
 /*
     @Override
     public void updateStorePath(String path) throws StoreException{
@@ -5024,14 +5007,16 @@ public class AccessStore extends Store {
         return getStorageType().toString();
     }
 
+    /*
     public int countRowsIn(SurgeryDaysAssignmentx table) throws StoreException {
         return 0;
     }
-    
-    public int countRowsIn(TheSurgeryDaysAssignment table) throws StoreException {
+    */
+    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException {
         return 0;
     }
     
+    /*
     public int countRowsIn(SurgeryDaysAssignmentTable table) throws StoreException {
         int count;
         try {
@@ -5044,7 +5029,8 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-
+*/
+    /*
     public int countRowsIn(AppointmentTable table) throws StoreException {
         int count;
         try {
@@ -5057,11 +5043,12 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-
+*/
     public int countRowsIn(ThePatient table) throws StoreException {
         return 0;
     }
     
+    /*
     public int countRowsIn(PatientTable table) throws StoreException {
         Integer count = null;
         try {
@@ -5074,7 +5061,7 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-
+*/
     public int countRowsIn(Appointments appointments) throws StoreException {
         Integer count = null;
         try {
@@ -5137,7 +5124,7 @@ public class AccessStore extends Store {
     public void setNonExistingPatientsReferencedByAppointmentsCount(int value) {
         nonExistingPatientsReferencedByAppointmentsCount = value;
     }
-
+/*
     public Appointments read(AppointmentTable table) throws StoreException {
         boolean result = false;
         IEntityStoreType entity = null;
@@ -5172,8 +5159,8 @@ public class AccessStore extends Store {
             }
         }
     }
-
-
+*/
+/*
     public Patients read(PatientTable table) throws StoreException {
         boolean result = false;
         IEntityStoreType entity = null;
@@ -5207,7 +5194,8 @@ public class AccessStore extends Store {
             }
         }
     }
-
+    */
+/*
     public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table) throws StoreException {
         boolean result = false;
         IEntityStoreType entity = null;
@@ -5230,21 +5218,9 @@ public class AccessStore extends Store {
                     + "Reason -> unexpected effect when trying to change the auto commit state",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
-        /*
-        finally{
-            try{
-                setConnectionState(result);
-            }catch (SQLException ex){
-                message = "SQLException message -> " + ex.getMessage() +"\n";
-                throw new StoreException(
-                    message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
-                            + "Reason -> unexpected effect when terminating the current transaction",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-                
-            }
-        }
-         */
+        
     }
+    */
 /*
     @Override
     public void exportToPMS(Appointments table) throws StoreException {
@@ -5947,10 +5923,10 @@ public class AccessStore extends Store {
     }
     
     private void doInsertSurgeryDaysAssignment(EntityStoreType entity ) throws StoreException{
-        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         if (entity != null) {
             if (entity.getIsSurgeryDaysAssignment()) {
-                surgeryDaysAssignment = (TheSurgeryDaysAssignment)entity;
+                surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
                 for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.get().entrySet()) {
                     String sql = "INSERT INTO SurgeryDays (Day, IsSurgery) VALUES(?, ?);";
                     try {
@@ -5996,13 +5972,13 @@ public class AccessStore extends Store {
         }
     }
     
-    private TheSurgeryDaysAssignment doReadSurgeryDaysAssignment(String sql)throws StoreException{
-        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+    private SurgeryDaysAssignment doReadSurgeryDaysAssignment(String sql)throws StoreException{
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         try {
             PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs != null) {
-                surgeryDaysAssignment = (TheSurgeryDaysAssignment) get(new TheSurgeryDaysAssignment(), rs);
+                surgeryDaysAssignment = (SurgeryDaysAssignment) get(new SurgeryDaysAssignment(), rs);
             }
             return surgeryDaysAssignment;
         } catch (SQLException ex) {
@@ -6013,10 +5989,10 @@ public class AccessStore extends Store {
     }
     
     private void doUpdateSurgeryDaysAssignment(EntityStoreType entity)throws StoreException{
-        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         if (entity != null) {
             if (entity.getIsSurgeryDaysAssignment()) {
-                surgeryDaysAssignment = (TheSurgeryDaysAssignment)entity;
+                surgeryDaysAssignment = (SurgeryDaysAssignment)entity;
                 try {
                     for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.get().entrySet()) {
                         String sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?;";

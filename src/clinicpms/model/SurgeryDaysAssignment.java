@@ -15,7 +15,7 @@ import java.util.HashMap;
  *
  * @author colin
  */
-public class TheSurgeryDaysAssignment extends EntityStoreType {
+public class SurgeryDaysAssignment extends EntityStoreType {
     private IStoreAction store = null;
     private String day = null;
     private boolean isSurgery = false;
@@ -25,11 +25,11 @@ public class TheSurgeryDaysAssignment extends EntityStoreType {
         assignment = value;
     }
     
-    public TheSurgeryDaysAssignment(){
+    public SurgeryDaysAssignment(){
         super.setIsSurgeryDaysAssignment(true);
     }
     
-    public TheSurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
+    public SurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
         set(value);
         super.setIsSurgeryDaysAssignment(true);
     }
@@ -74,7 +74,7 @@ public class TheSurgeryDaysAssignment extends EntityStoreType {
     
     /*
     public void populate() throws StoreException{
-        //TheSurgeryDaysAssignment surgeryDaysValues = new TheSurgeryDaysAssignment();
+        //TheSurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
         //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
         get().put(DayOfWeek.MONDAY, Boolean.TRUE);
         get().put(DayOfWeek.TUESDAY, Boolean.TRUE);
@@ -88,11 +88,13 @@ public class TheSurgeryDaysAssignment extends EntityStoreType {
         store.populate(this);
     }
     */
+    /*
     public SurgeryDaysAssignmentx read() throws StoreException{
         return null;
     }
+*/
     
-    public TheSurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
+    public SurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
         IStoreAction store = Store.FACTORY((EntityStoreType)this);
         return store.read(this);
     }
@@ -105,7 +107,7 @@ public class TheSurgeryDaysAssignment extends EntityStoreType {
     
 
     public Integer count1()throws StoreException{
-        TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+        SurgeryDaysAssignment surgeryDaysAssignment = null;
         try{
             surgeryDaysAssignment = this.readTheSurgeryDaysAssignment();
             

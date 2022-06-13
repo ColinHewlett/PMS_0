@@ -17,7 +17,7 @@ import clinicpms.model.PatientTable;
 import clinicpms.model.Patients;
 import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.ThePatient;
-import clinicpms.model.TheSurgeryDaysAssignment;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,18 +31,18 @@ public interface IStoreAction {
     //public int countRowsIn(Patient table)throws StoreException;
     public int countRowsIn(Patients p) throws StoreException;
     public int countRowsIn(ThePatient table)throws StoreException;
-    public int countRowsIn(TheSurgeryDaysAssignment table) throws StoreException;
+    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException;
     //public int countRowsIn(SurgeryDaysAssignmentx table)throws StoreException;
     
     public Integer count(TheAppointment.Collection collection)throws StoreException;
     public Integer count(ThePatient.Collection collection)throws StoreException;
     public Integer count(PatientNotification.Collection collection)throws StoreException;
-    public Integer count(TheSurgeryDaysAssignment surgeryDaysAssignment)throws StoreException;
+    public Integer count(SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException;
     
     public void create(TheAppointment a) throws StoreException;
     public void create(PatientNotification pn) throws StoreException;
     public void create(ThePatient p )throws StoreException;
-    public void create(TheSurgeryDaysAssignment s)throws StoreException;
+    public void create(SurgeryDaysAssignment s)throws StoreException;
     
     public void delete(Appointment a) throws StoreException;
     public void delete(TheAppointment a) throws StoreException;
@@ -52,7 +52,7 @@ public interface IStoreAction {
     public void drop(TheAppointment a)throws StoreException;
     public void drop(Patient p)throws StoreException;
     public void drop(ThePatient p)throws StoreException;
-    public void drop(TheSurgeryDaysAssignment s)throws StoreException;
+    public void drop(SurgeryDaysAssignment s)throws StoreException;
     
     public List<String[]> importEntityFromCSV(EntityStoreType entity) throws StoreException;
     
@@ -64,14 +64,14 @@ public interface IStoreAction {
     public void insert(ThePatient p) throws StoreException;
     public void insert(PatientNotification pn) throws StoreException;
     //public void insert(SurgeryDaysAssignmentx p) throws StoreException;
-    public void insert(TheSurgeryDaysAssignment p) throws StoreException;
+    public void insert(SurgeryDaysAssignment p) throws StoreException;
     
-    public void populate(TheSurgeryDaysAssignment data)throws StoreException;
+    public void populate(SurgeryDaysAssignment data)throws StoreException;
     
     public PatientNotification read(PatientNotification value)throws StoreException;
     public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException;
     //public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException;
-    public TheSurgeryDaysAssignment read(TheSurgeryDaysAssignment value) throws StoreException;
+    public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
     public Appointment read(Appointment a) throws StoreException;
     public TheAppointment read(TheAppointment a)throws StoreException ;
     public TheAppointment.Collection read(TheAppointment.Collection a)throws StoreException ;
@@ -90,7 +90,7 @@ public interface IStoreAction {
     public void update(Appointment a) throws StoreException;
     public void update(TheAppointment a) throws StoreException;
     //public void update(SurgeryDaysAssignmentx value) throws StoreException;
-    public void update(TheSurgeryDaysAssignment value) throws StoreException;
+    public void update(SurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
     public void update(ThePatient p) throws StoreException;
     public void update(PatientNotification pn)throws StoreException;

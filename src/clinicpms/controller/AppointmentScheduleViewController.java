@@ -10,7 +10,7 @@ import clinicpms.model.Appointments;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.Patients;
-import clinicpms.model.TheSurgeryDaysAssignment;
+import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
@@ -80,7 +80,7 @@ public class AppointmentScheduleViewController extends ViewController{
         setNewEntityDescriptor(e);
         setOldEntityDescriptor(getNewEntityDescriptor());
         try{
-            TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment();
+            SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
             //surgeryDaysAssignment.read();
             surgeryDaysAssignment = surgeryDaysAssignment.readTheSurgeryDaysAssignment();
             getNewEntityDescriptor().setSurgeryDaysAssignment(surgeryDaysAssignment.get());
@@ -224,10 +224,9 @@ public class AppointmentScheduleViewController extends ViewController{
             //SurgeryDaysValues surgeryDays = getEntityDescriptorFromView().getRequest().getSurgeryDays();
             HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = getEntityDescriptorFromView().getRequest().getSurgeryDaysAssignmentValue();
             try{
-                TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment(surgeryDaysAssignmentValue);
+                SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment(surgeryDaysAssignmentValue);
                 surgeryDaysAssignment.update();
-                getEntityDescriptorFromView().setSurgeryDaysAssignment(
-                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+                getEntityDescriptorFromView().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
@@ -467,8 +466,7 @@ public class AppointmentScheduleViewController extends ViewController{
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().setSurgeryDaysAssignment(
-                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+                getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**
@@ -491,8 +489,7 @@ public class AppointmentScheduleViewController extends ViewController{
             try{
                 setNewEntityDescriptor(new EntityDescriptor());
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().setSurgeryDaysAssignment(
-                        new TheSurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+                getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
                 View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
                 /**

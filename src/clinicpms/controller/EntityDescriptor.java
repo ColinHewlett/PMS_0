@@ -7,7 +7,7 @@ package clinicpms.controller;
 
 import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
-import clinicpms.model.TheSurgeryDaysAssignment;
+import clinicpms.model.SurgeryDaysAssignment;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.time.Duration;
@@ -688,7 +688,7 @@ public class EntityDescriptor {
         private String databaseLocation = null;
         private ArrayList<PatientNotification> patientNotifications = null;
         private PatientNotification patientNotification = null;
-        private TheSurgeryDaysAssignment surgeryDaysAssignment = null;
+        private SurgeryDaysAssignment surgeryDaysAssignment = null;
         
         private HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = null;
 

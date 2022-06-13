@@ -11,10 +11,8 @@ import org.apache.commons.io.FilenameUtils;
 import clinicpms.model.*;
 //import com.healthmarketscience.jackcess.DatabaseBuilder;
 //import com.healthmarketscience.jackcess.Database;
-import clinicpms.model.StoreManager;
 import clinicpms.store.StoreException;
 import clinicpms.view.views.DesktopView;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -171,7 +169,7 @@ public class DesktopViewController extends ViewController{
         }
         else{
             try{
-                TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+                StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
                 String pmsStorePath = storeManager.getPMSStorePath();
                 if (pmsStorePath == null) isPMSStoreDefined = false;
                 else if (FilenameUtils.getName(pmsStorePath).equals(""))
@@ -301,14 +299,14 @@ public class DesktopViewController extends ViewController{
             pcSupport.addPropertyChangeListener(view);
             PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
                 DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_VIEW_CONTROL.toString(),
-                Color.BLACK,Color.BLUE);
+                null,new EntityDescriptor());
             pcSupport.firePropertyChange(pcEvent);
             pcSupport.removePropertyChangeListener(view);
             
             pcSupport.addPropertyChangeListener(view);
             pcEvent = new PropertyChangeEvent(this,
                 DesktopViewController.DesktopViewControllerPropertyChangeEvent.ENABLE_DESKTOP_WINDOW_CONTROL.toString(),
-                Color.BLACK,Color.BLUE);
+                null,new EntityDescriptor());
             pcSupport.firePropertyChange(pcEvent);
             pcSupport.removePropertyChangeListener(view);
             /**
@@ -319,24 +317,7 @@ public class DesktopViewController extends ViewController{
             getView().enableWindowCloseControl();
             */
         }
-        /*
-        else if (e.getActionCommand().equals(
-            DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
-            
-            pcSupport.addPropertyChangeListener(view);
-            PropertyChangeEvent pcEvent = new PropertyChangeEvent(this,
-                DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_VIEW_CONTROL.toString(),
-                Color.BLACK,Color.BLUE);
-            pcSupport.firePropertyChange(pcEvent);
-            pcSupport.removePropertyChangeListener(view);
-            
-            pcSupport.addPropertyChangeListener(view);
-            pcEvent = new PropertyChangeEvent(this,
-                DesktopViewController.DesktopViewControllerPropertyChangeEvent.DISABLE_DESKTOP_WINDOW_CONTROL.toString(),
-                Color.BLACK,Color.BLUE);
-            pcSupport.firePropertyChange(pcEvent);
-            pcSupport.removePropertyChangeListener(view);
-        */
+        
             /**
              * on receipt of DISABLE_DESKTOP_CONTROLS_REQUEST
              * -- sends desktop view controller sends message to its view to disable VIEW and DATA controls as well as its window closing control
@@ -805,7 +786,7 @@ public class DesktopViewController extends ViewController{
     /*
     private void doMigrationActionCompleteResonse1(){
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             this.
             getEntityDescriptor().
                     getMigrationDescriptor().
@@ -827,7 +808,7 @@ public class DesktopViewController extends ViewController{
        String patientCSVPath = null;
        String appointmentCSVPath = null;
        try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             PMSStorePath = storeManager.getPMSStorePath();
             patientCSVPath = storeManager.getPatientCSVPath();
             appointmentCSVPath = storeManager.getAppointmentCSVPath();
@@ -979,7 +960,7 @@ public class DesktopViewController extends ViewController{
 
         try{
             FileNameExtensionFilter filter = null;
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String sourcePath = storeManager.getPMSStorePath();
             String targetPath = sourcePath;
             if (targetPath != null) targetPath = removeFilenameFrom(targetPath);
@@ -1024,7 +1005,7 @@ public class DesktopViewController extends ViewController{
     private void doNonPMSStoreCreationRequest(){
         try{
             FileNameExtensionFilter filter = null;
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             //String targetPath = storeManager.getPMSStorePath();
             //if (targetPath != null) targetPath = removeFilenameFrom(targetPath);
             filter = new FileNameExtensionFilter("Access database files", "accdb");
@@ -1045,7 +1026,7 @@ public class DesktopViewController extends ViewController{
                         patientTable.create();
                         PatientNotification patientNotificationTable = new PatientNotification();
                         patientNotificationTable.create();
-                        TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
+                        SurgeryDaysAssignment surgeryDaysAssignmentTable = new SurgeryDaysAssignment();
                         surgeryDaysAssignmentTable.create();
                         surgeryDaysAssignmentTable.insert();
                         TheAppointment appointmentTable = new TheAppointment();
@@ -1079,7 +1060,7 @@ public class DesktopViewController extends ViewController{
     private void doPMSStoreCreationRequest(){
         try{
             FileNameExtensionFilter filter = null;
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getPMSStorePath();
             if (targetPath != null) targetPath = removeFilenameFrom(targetPath);
             filter = new FileNameExtensionFilter("Access database files", "accdb");
@@ -1099,7 +1080,7 @@ public class DesktopViewController extends ViewController{
                         patientTable.create();
                         PatientNotification patientNotificationTable = new PatientNotification();
                         patientNotificationTable.create();
-                        TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
+                        SurgeryDaysAssignment surgeryDaysAssignmentTable = new SurgeryDaysAssignment();
                         surgeryDaysAssignmentTable.create();
                         surgeryDaysAssignmentTable.insert();
                         TheAppointment appointmentTable = new TheAppointment();
@@ -1139,7 +1120,7 @@ public class DesktopViewController extends ViewController{
         String pmsStorePath = null;
         String storageType = null;
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             pmsStorePath = storeManager.getPMSStorePath();
             if (pmsStorePath != null){
                 isPMSStoreDefined = true;
@@ -1216,7 +1197,7 @@ public class DesktopViewController extends ViewController{
         String filenameFromPMSStorePath = null;
         String pmsStoreStorePathWithoutFilename = null;
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             pmsStorePath = storeManager.getPMSStorePath();
             String storageType = storeManager.getStorageType();
             FileNameExtensionFilter filter = null;
@@ -1272,7 +1253,7 @@ public class DesktopViewController extends ViewController{
         String filenameFromPMSStorePath = null;
         String pmsStoreStorePathWithoutFilename = null;
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             pmsStorePath = storeManager.getPMSStorePath();
             String storageType = storeManager.getStorageType();
             FileNameExtensionFilter filter = null;
@@ -1372,7 +1353,7 @@ public class DesktopViewController extends ViewController{
     private void doPMSStoreSelectionRequest(){
         try{
             FileNameExtensionFilter filter = null;
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getPMSStorePath();
             String storageType = storeManager.getStorageType();
             filter = new FileNameExtensionFilter("Access database files", "accdb");
@@ -1550,7 +1531,7 @@ public class DesktopViewController extends ViewController{
     
     private void doCSVAppointmentFileRequest(){
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getAppointmentCSVPath();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
 
@@ -1586,7 +1567,7 @@ public class DesktopViewController extends ViewController{
     
     private void doCSVPatientFileRequest(){
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             String targetPath = storeManager.getPatientCSVPath();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV source files", "csv");
             File path = new File(targetPath);
@@ -2033,7 +2014,7 @@ public class DesktopViewController extends ViewController{
         notifyMigrationActionCompleted();
         
         try{
-            TheStoreManager store = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager store = StoreManager.GET_STORE_MANAGER();
             
             //this.doMigrationActionCompleteResponse(true);
             notifyMigrationActionCompleted();
@@ -2048,7 +2029,7 @@ public class DesktopViewController extends ViewController{
     
     private void doImportSurgeryDaysAssignment(){
          //SurgeryDaysAssignmentTable surgeryDaysAssignmentTable = new SurgeryDaysAssignmentTable();
-         TheSurgeryDaysAssignment surgeryDaysAssignmentTable = new TheSurgeryDaysAssignment();
+         SurgeryDaysAssignment surgeryDaysAssignmentTable = new SurgeryDaysAssignment();
          try{
             surgeryDaysAssignmentTable.drop();
             surgeryDaysAssignmentTable.create();
@@ -2080,7 +2061,7 @@ public class DesktopViewController extends ViewController{
     
     static class MigrationDatabase {    
         static String getPath()throws StoreException{ 
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             //String test = FilenameUtils.getName(storeManager.getMigrationTargetStorePath());
             return storeManager.getPMSStorePath();
         }
@@ -2096,7 +2077,7 @@ public class DesktopViewController extends ViewController{
     static class PMSDatabase {  
 
         static String getPath()throws StoreException{ 
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();           
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();           
             return storeManager.getPMSStorePath();
         }
         
@@ -2112,7 +2093,7 @@ public class DesktopViewController extends ViewController{
     static class PMSStore {  
 
         static String getPath()throws StoreException{ 
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();           
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();           
             return storeManager.getPMSStorePath();
         }
         
@@ -2167,7 +2148,7 @@ public class DesktopViewController extends ViewController{
     
     private Integer doSurgeryDaysAssignmentTableCountRequest(){
         Integer result = null;
-        TheSurgeryDaysAssignment surgeryDaysAssignment = new TheSurgeryDaysAssignment();
+        SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
         try{
             result = surgeryDaysAssignment.count();
         }catch (StoreException ex){
@@ -2194,7 +2175,7 @@ public class DesktopViewController extends ViewController{
         String path = null;
         DesktopViewControllerPropertyChangeEvent propertyChangeEvent = null;
         try{
-            TheStoreManager storeManager = TheStoreManager.GET_STORE_MANAGER();
+            StoreManager storeManager = StoreManager.GET_STORE_MANAGER();
             switch(actionCommand){
                 case GET_APPOINTMENT_CSV_PATH_REQUEST:
                     path = storeManager.getAppointmentCSVPath();

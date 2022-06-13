@@ -15,7 +15,7 @@ import java.io.File;
  * @author colin
  */
 public class PMS_Store extends EntityStoreType{
-    private TheStoreManager storeManager = null;
+    private StoreManager storeManager = null;
     private Scope scope = null;
     private String path = null;
     
@@ -24,11 +24,11 @@ public class PMS_Store extends EntityStoreType{
                         CSV_PATIENT_FILE,
                         PMS_STORE};
     
-    private TheStoreManager getStoreManager(){
+    private StoreManager getStoreManager(){
         return storeManager;
     }
     
-    private void setPMSStoreManager(TheStoreManager manager){
+    private void setPMSStoreManager(StoreManager manager){
         storeManager = manager;
     }
     
@@ -48,7 +48,7 @@ public class PMS_Store extends EntityStoreType{
         return scope;
     }
     
-    protected PMS_Store(TheStoreManager manager){
+    protected PMS_Store(StoreManager manager){
         setPMSStoreManager(manager);
         super.setIsPMSStore(true);
     }

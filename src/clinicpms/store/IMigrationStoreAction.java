@@ -12,7 +12,7 @@ import clinicpms.model.Patient;
 import clinicpms.model.Patients;
 import clinicpms.model.PatientTable;
 import clinicpms.model.SurgeryDaysAssignmentTable;
-import clinicpms.model.SurgeryDaysAssignmentx;
+//import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.IEntityStoreType;
 import java.util.List;
 
@@ -34,16 +34,16 @@ public interface IMigrationStoreAction {
     public void drop(SurgeryDaysAssignmentTable table)throws StoreException;
     public void exportToPMS(Appointments table)throws StoreException;
     public void exportToPMS(Patients table)throws StoreException;
-    public void exportToPMS(SurgeryDaysAssignmentx table)throws StoreException;
+    //public void exportToPMS(SurgeryDaysAssignmentx table)throws StoreException;
     //public IEntityStoreType importFromCSV(IEntityStoreType entity) throws StoreException;
     public List<String[]> importFromCSV1(IEntityStoreType entity) throws StoreException;
     public void insert(AppointmentTable table, Appointment appointment)throws StoreException;
     public void insert(PatientTable table, Patient patient)throws StoreException;
     //public void populate(AppointmentTable table)throws StoreException;
     //public void populate(PatientTable table)throws StoreException;
-    public void populate(SurgeryDaysAssignmentx data)throws StoreException;
+    //public void populate(SurgeryDaysAssignmentx data)throws StoreException;
     public Appointments read(AppointmentTable table)throws StoreException;
     public Patients read(PatientTable table)throws StoreException;
-    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table)throws StoreException;
+    //public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table)throws StoreException;
 
 }

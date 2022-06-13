@@ -627,16 +627,18 @@ public class PatientViewController extends ViewController {
         if (e.getSource() instanceof DesktopViewController){
             doDesktopViewControllerActionRequest(e);
         }
-
-        View the_view = (View)e.getSource();
-        switch (the_view.getMyViewType()){
-            case PATIENT_VIEW:
-                doPrimaryViewActionRequest(e);
-                break;
-            default:
-                doSecondaryViewActionRequest(e);
-                break;
+        else{
+            View the_view = (View)e.getSource();
+            switch (the_view.getMyViewType()){
+                case PATIENT_VIEW:
+                    doPrimaryViewActionRequest(e);
+                    break;
+                default:
+                    doSecondaryViewActionRequest(e);
+                    break;
+            }
         }
+        
     }
     
     public View getView( ){
