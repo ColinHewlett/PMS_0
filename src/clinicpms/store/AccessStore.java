@@ -117,7 +117,7 @@ public class AccessStore extends Store {
 
         } catch (SQLException ex) {//message handling added
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::getPMSConnection() method",
+                    + "StoreException message -> exception raised in AccessStore::getPMSStoreConnection() method",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
 
@@ -133,7 +133,7 @@ public class AccessStore extends Store {
      * @return Connection object
      * @throws StoreException
      */
-    private Connection getPMSConnection() throws StoreException {
+    private Connection getPMSStoreConnectionx() throws StoreException {
         try {
             if (this.pmsConnection == null) {
 
@@ -147,7 +147,7 @@ public class AccessStore extends Store {
 
         } catch (SQLException ex) {//message handling added
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::getPMSConnection() method",
+                    + "StoreException message -> exception raised in AccessStore::getPMSStoreConnection() method",
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
 
@@ -513,7 +513,7 @@ public class AccessStore extends Store {
                                 + "ADD PRIMARY KEY (pid);";
                     }
                     try {
-                        PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                        PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                         preparedStatement.execute();
 
                     } catch (SQLException ex) {
@@ -536,7 +536,7 @@ public class AccessStore extends Store {
                  * sys.MSysObjects WHERE name = 'Appointment';";
                  */
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
                     if (ex.getMessage().contains("object not found: APPOINTMENT")) {
@@ -551,7 +551,7 @@ public class AccessStore extends Store {
             }
             case CREATE_APPOINTMENT_TABLE: {
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
 
                 } catch (SQLException ex) {
@@ -563,7 +563,7 @@ public class AccessStore extends Store {
             }
             case CREATE_SURGERY_DAYS_ASSIGNMENT_TABLE: {
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
 
@@ -585,7 +585,7 @@ public class AccessStore extends Store {
                  * sys.MSysObjects WHERE name = 'Appointment';";
                  */
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
                     if (ex.getMessage().contains("object not found: PATIENT")) {
@@ -600,7 +600,7 @@ public class AccessStore extends Store {
             }
             case CREATE_PATIENT_TABLE: {
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.executeUpdate();
                 } catch (SQLException ex) {
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
@@ -620,7 +620,7 @@ public class AccessStore extends Store {
                  * sys.MSysObjects WHERE name = 'Appointment';";
                  */
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
                     /*
@@ -634,7 +634,7 @@ public class AccessStore extends Store {
             case APPOINTMENTS_COUNT: {
                 try {
                     Integer key = null;
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
                     if (rs.next()) {
                         int count = rs.getInt("record_count");
@@ -654,7 +654,7 @@ public class AccessStore extends Store {
             case READ_APPOINTMENT_NEXT_HIGHEST_KEY: {
                 try {
                     Integer key = null;
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
                     if (rs.next()) {
                         key = (int) rs.getLong("highest_key");
@@ -675,7 +675,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointment()) {
                         appointment = (Appointment) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setInt(1, appointment.getKey());
                             preparedStatement.executeUpdate();
                         } catch (SQLException ex) {
@@ -699,7 +699,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointment()) {
                         appointment = (Appointment) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             if (appointment != null) {
                                 if (appointment.getPatient().getKey() != null) {
                                     preparedStatement.setInt(1, appointment.getPatient().getKey());
@@ -729,7 +729,7 @@ public class AccessStore extends Store {
                         for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.entrySet()) {
                             sql = "INSERT INTO SurgeryDays (Day, IsSurgery) VALUES(?, ?);";
                             try {
-                                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                                 preparedStatement.setBoolean(2, entry.getValue());
                                 switch (entry.getKey()) {
                                     case MONDAY:
@@ -777,7 +777,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointment()) {
                         appointment = (Appointment) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setInt(1, appointment.getPatient().getKey());
                             preparedStatement.setTimestamp(2, Timestamp.valueOf(appointment.getStart()));
                             preparedStatement.setLong(3, appointment.getDuration().toMinutes());
@@ -808,7 +808,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointment()) {
                         appointment = (Appointment) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setLong(1, appointment.getKey());
                             ResultSet rs = preparedStatement.executeQuery();
                             result = get(new Appointment(), rs);
@@ -829,7 +829,7 @@ public class AccessStore extends Store {
             }
             case READ_APPOINTMENTS:
                 try {
-                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                 ResultSet rs = preparedStatement.executeQuery();
                 result = get(new Appointments(), rs);
             } catch (SQLException ex) {
@@ -844,7 +844,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointmentDate()) {
                         day = ((AppointmentDate) entity).getValue();
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setDate(1, java.sql.Date.valueOf(day));
                             ResultSet rs = preparedStatement.executeQuery();
                             result = get(new Appointments(), rs);
@@ -869,7 +869,7 @@ public class AccessStore extends Store {
                     if (entity.isPatient()) {
                         patient = (Patient) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setLong(1, patient.getKey());
                             ResultSet rs = preparedStatement.executeQuery();
                             result = get(new Appointments(), rs);
@@ -894,7 +894,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointmentDate()) {
                         day = ((AppointmentDate) entity).getValue();
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setInt(1, day.getYear());
                             preparedStatement.setInt(2, day.getMonthValue());
                             preparedStatement.setInt(3, day.getDayOfMonth());
@@ -921,7 +921,7 @@ public class AccessStore extends Store {
                     if (entity.isAppointment()) {
                         appointment = (Appointment) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             if (appointment.getPatient() != null) {
                                 preparedStatement.setInt(1, appointment.getPatient().getKey());
                             }
@@ -948,7 +948,7 @@ public class AccessStore extends Store {
             case READ_PATIENT_NEXT_HIGHEST_KEY:
                 try {
                 Integer key = null;
-                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                 ResultSet rs = preparedStatement.executeQuery();
                 if (rs.next()) {
                     key = (int) rs.getLong("highest_key");
@@ -968,7 +968,7 @@ public class AccessStore extends Store {
                     if (entity.isPatient()) {
                         patient = (Patient) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setString(1, patient.getName().getTitle());
                             preparedStatement.setString(2, patient.getName().getForenames());
                             preparedStatement.setString(3, patient.getName().getSurname());
@@ -1016,7 +1016,7 @@ public class AccessStore extends Store {
                     if (entity.isPatient()) {
                         patient = (Patient) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setLong(1, patient.getKey());
                             ResultSet rs = preparedStatement.executeQuery();
                             result = get(new Patient(), rs);
@@ -1037,7 +1037,7 @@ public class AccessStore extends Store {
             }
             case READ_PATIENTS:
                 try {
-                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                 ResultSet rs = preparedStatement.executeQuery();
                 result = get(new Patients(), rs);
             } catch (SQLException ex) {
@@ -1052,7 +1052,7 @@ public class AccessStore extends Store {
                     if (entity.isPatient()) {
                         patient = (Patient) entity;
                         try {
-                            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                             preparedStatement.setString(1, patient.getName().getTitle());
                             preparedStatement.setString(2, patient.getName().getForenames());
                             preparedStatement.setString(3, patient.getName().getSurname());
@@ -1102,7 +1102,7 @@ public class AccessStore extends Store {
             case COUNT_PATIENTS:
                 try {
                 Integer key = null;
-                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                 ResultSet rs = preparedStatement.executeQuery();
                 if (rs.next()) {
                     int count = rs.getInt("record_count");
@@ -1121,7 +1121,7 @@ public class AccessStore extends Store {
             case READ_SURGERY_DAYS_ASSIGNMENT: {
                 SurgeryDaysAssignmentx surgeryDaysAssignment = null;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
                     if (rs != null) {
                         surgeryDaysAssignment = (SurgeryDaysAssignmentx) get(new SurgeryDaysAssignmentx(), rs);
@@ -1144,7 +1144,7 @@ public class AccessStore extends Store {
                                 sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?;";
                                 //sql = "INSERT INTO SurgeryDays (IsSurgery,Day) VALUES(?, ?);";
 
-                                PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                                 preparedStatement.setBoolean(1, entry.getValue());
                                 switch (entry.getKey()) {
                                     case MONDAY:
@@ -1209,7 +1209,7 @@ public class AccessStore extends Store {
             case READ_SURGERY_DAYS:
                 sql = "SELECT Day, IsSurgery FROM SurgeryDays;";
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
 
                     if (rs != null) {
@@ -1229,7 +1229,7 @@ public class AccessStore extends Store {
                 for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.entrySet()) {
                     sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?";
                     try {
-                        PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                        PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                         preparedStatement.setBoolean(1, entry.getValue());
                         switch (entry.getKey()) {
                             case MONDAY:
@@ -2774,8 +2774,8 @@ public class AccessStore extends Store {
                     }
                     */
                 } else if (IS_PMS_STORE_ACTION) {
-                    if (getPMSConnection().getAutoCommit()) {
-                        getPMSConnection().setAutoCommit(false);
+                    if (getPMSStoreConnection().getAutoCommit()) {
+                        getPMSStoreConnection().setAutoCommit(false);
                     }
                 }
                 break;
@@ -2788,8 +2788,8 @@ public class AccessStore extends Store {
                     }
                     */
                 } else if (IS_PMS_STORE_ACTION) {
-                    if (getPMSConnection().getAutoCommit()) {
-                        getPMSConnection().setAutoCommit(true);
+                    if (getPMSStoreConnection().getAutoCommit()) {
+                        getPMSStoreConnection().setAutoCommit(true);
                     }
                 }
                 break;
@@ -2817,9 +2817,9 @@ public class AccessStore extends Store {
                 */
             } else if (IS_PMS_STORE_ACTION) {
                 if (state) {
-                    getPMSConnection().commit();
+                    getPMSStoreConnection().commit();
                 } else {
-                    getPMSConnection().rollback();
+                    getPMSStoreConnection().rollback();
                 }
             }
         }
@@ -3550,9 +3550,9 @@ public class AccessStore extends Store {
         } finally {
             try {
                 if (result) {
-                    getPMSConnection().commit();
+                    getPMSStoreConnection().commit();
                 } else {
-                    getPMSConnection().rollback();
+                    getPMSStoreConnection().rollback();
                 }
             } catch (SQLException ex) {
                 message = "SQLException message -> " + ex.getMessage() + "\n";
@@ -3570,8 +3570,8 @@ public class AccessStore extends Store {
         boolean result = false;
         ThePatient thePatient = null;
         try {//ensure auto commit setting switched on
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             entity
                     = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT, p);
@@ -3647,8 +3647,8 @@ public class AccessStore extends Store {
         boolean result = false;
         Patient patient = null;
         try {//ensure auto commit setting switched on
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(false);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(false);
             }
             entity
                     = runSQL(PMSSQL.READ_PATIENT, p);
@@ -3678,9 +3678,9 @@ public class AccessStore extends Store {
         } finally {
             try {
                 if (result) {
-                    getPMSConnection().commit();
+                    getPMSStoreConnection().commit();
                 } else {
-                    getPMSConnection().rollback();
+                    getPMSStoreConnection().rollback();
                 }
             } catch (SQLException ex) {
                 message = "SQLException message -> " + ex.getMessage() + "\n";
@@ -4075,8 +4075,8 @@ public class AccessStore extends Store {
     @Override
     public void update(PatientNotification pn)throws StoreException{
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             runSQL(EntitySQL.PATIENT_NOTIFICATION, PMSSQL.UPDATE_PATIENT_NOTIFICATION,pn);
         } catch (SQLException ex) {
@@ -4097,8 +4097,8 @@ public class AccessStore extends Store {
     public void update(Patient p) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(false);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(false);
             }
             runSQL(PMSSQL.UPDATE_PATIENT, p);
             result = true;
@@ -4109,9 +4109,9 @@ public class AccessStore extends Store {
         } finally {
             try {
                 if (result) {
-                    getPMSConnection().commit();
+                    getPMSStoreConnection().commit();
                 } else {
-                    getPMSConnection().rollback();
+                    getPMSStoreConnection().rollback();
                 }
             } catch (SQLException ex) {
                 message = "SQLException message -> " + ex.getMessage() + "\n";
@@ -4139,8 +4139,8 @@ public class AccessStore extends Store {
     public void update(Appointment a) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(false);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(false);
             }
             runSQL(PMSSQL.UPDATE_APPOINTMENT, a);
             result = true;
@@ -4151,9 +4151,9 @@ public class AccessStore extends Store {
         } finally {
             try {
                 if (result) {
-                    getPMSConnection().commit();
+                    getPMSStoreConnection().commit();
                 } else {
-                    getPMSConnection().rollback();
+                    getPMSStoreConnection().rollback();
                 }
             } catch (SQLException ex) {
                 message = "SQLException message -> " + ex.getMessage() + "\n";
@@ -4168,8 +4168,8 @@ public class AccessStore extends Store {
     @Override
     public void update(TheSurgeryDaysAssignment surgeryDaysAssignment) throws StoreException {
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT,
                     PMSSQL.UPDATE_SURGERY_DAYS_ASSIGNMENT, surgeryDaysAssignment);
@@ -4191,8 +4191,8 @@ public class AccessStore extends Store {
     public void update(SurgeryDaysAssignmentx surgeryDaysAssignment) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             runSQL(PMSSQL.UPDATE_SURGERY_DAYS_ASSIGNMENT, surgeryDaysAssignment);
             result = true;
@@ -4204,8 +4204,8 @@ public class AccessStore extends Store {
         /*
         finally{
             try{
-                if (result) getPMSConnection().commit();
-                else getPMSConnection().rollback();
+                if (result) getPMSStoreConnection().commit();
+                else getPMSStoreConnection().rollback();
             }catch (SQLException ex){
                 message = "SQLException message -> " + ex.getMessage() +"\n";
                 throw new StoreException(
@@ -4430,8 +4430,8 @@ public class AccessStore extends Store {
     public void drop(Appointment table) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PMSSQL.DROP_APPOINTMENT_TABLE, value);
@@ -4469,8 +4469,8 @@ public class AccessStore extends Store {
     public void drop(Patient table) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PMSSQL.DROP_PATIENT_TABLE, value);
@@ -4500,8 +4500,8 @@ public class AccessStore extends Store {
     }
     public void drop(TheSurgeryDaysAssignment table)throws StoreException{
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             runSQL(Store.EntitySQL.SURGERY_DAYS_ASSIGNMENT,
                     PMSSQL.DROP_SURGERY_DAYS_ASSIGNMENT_TABLE, null);
@@ -4517,8 +4517,8 @@ public class AccessStore extends Store {
     public void drop(SurgeryDaysAssignmentx table) throws StoreException {
         boolean result = false;
         try {
-            if (getPMSConnection().getAutoCommit()) {
-                getPMSConnection().setAutoCommit(true);
+            if (getPMSStoreConnection().getAutoCommit()) {
+                getPMSStoreConnection().setAutoCommit(true);
             }
             IEntityStoreType value = null;
             runSQL(PMSSQL.DROP_SURGERY_DAYS_ASSIGNMENT_TABLE, value);
@@ -5254,7 +5254,7 @@ public class AccessStore extends Store {
             //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS, table);
             //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            //getPMSConnection().setAutoCommit(true);
+            //getPMSStoreConnection().setAutoCommit(true);
             //runSQL(PMSSQL.CREATE_PRIMARY_KEY,table);
             result = true;
         } catch (SQLException ex) {
@@ -5648,7 +5648,7 @@ public class AccessStore extends Store {
             if (entity.getIsPatientNotification()) {
                 patientNotification = (PatientNotification) entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patientNotification.getPatient().getKey());
                     preparedStatement.setDate(2, java.sql.Date.valueOf(patientNotification.getNotificationDate()));
                     preparedStatement.setString(3, patientNotification.getNotificationText());
@@ -5675,7 +5675,7 @@ public class AccessStore extends Store {
             if (entity.getIsPatientNotification()) {
                 patientNotification = (PatientNotification) entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patientNotification.getPatient().getKey());
                     preparedStatement.setDate(2, java.sql.Date.valueOf(patientNotification.getNotificationDate()));
                     preparedStatement.setString(3, patientNotification.getNotificationText());
@@ -5701,7 +5701,7 @@ public class AccessStore extends Store {
         EntityStoreType result = null;
         
         try {
-            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             ThePatient patient = new ThePatient();
             result = get(patient.getCollection(), rs);
@@ -5743,7 +5743,7 @@ public class AccessStore extends Store {
     private EntityStoreType doReadPatientNotifications(String sql)throws StoreException{
         EntityStoreType result = null;
         try {
-            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             result = get(new PatientNotification().getCollection(), rs);
             return result;
@@ -5760,7 +5760,7 @@ public class AccessStore extends Store {
             if (entity.getIsPatient()) {
                 ThePatient patient = (ThePatient) entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patient.getKey());
                     ResultSet rs = preparedStatement.executeQuery();
                     patientNotification = new PatientNotification();
@@ -5786,7 +5786,7 @@ public class AccessStore extends Store {
             if (entity.getIsPatientNotification()) {
                 patientNotification = (PatientNotification) entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, patientNotification.getKey());
                     ResultSet rs = preparedStatement.executeQuery();
                     return get(new PatientNotification(), rs);
@@ -5935,7 +5935,7 @@ public class AccessStore extends Store {
     
     private void doDropSurgeryDaysAssignmentTable(String sql) throws StoreException{
         try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.execute();
                 } catch (SQLException ex) {
                     /*
@@ -5999,7 +5999,7 @@ public class AccessStore extends Store {
     private TheSurgeryDaysAssignment doReadSurgeryDaysAssignment(String sql)throws StoreException{
         TheSurgeryDaysAssignment surgeryDaysAssignment = null;
         try {
-            PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs != null) {
                 surgeryDaysAssignment = (TheSurgeryDaysAssignment) get(new TheSurgeryDaysAssignment(), rs);
@@ -6020,7 +6020,7 @@ public class AccessStore extends Store {
                 try {
                     for (Entry<DayOfWeek, Boolean> entry : surgeryDaysAssignment.get().entrySet()) {
                         String sql = "UPDATE SurgeryDays SET IsSurgery = ? WHERE Day = ?;";
-                        PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                        PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                         preparedStatement.setBoolean(1, entry.getValue());
                         switch (entry.getKey()) {
                             case MONDAY:
@@ -6140,7 +6140,7 @@ public class AccessStore extends Store {
             if (entity.getIsAppointments()){
                 appointment = (TheAppointment)entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getPatient().getKey());
                     ResultSet rs = preparedStatement.executeQuery();
                     if (rs.next())value = rs.getInt("row_count");
@@ -6173,7 +6173,7 @@ public class AccessStore extends Store {
             if (entity.getIsAppointments()){
                 appointment = (TheAppointment)entity; 
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setDate(1, 
                             java.sql.Date.valueOf(appointment.getStart().toLocalDate()));
                     ResultSet rs = preparedStatement.executeQuery();
@@ -6206,7 +6206,7 @@ public class AccessStore extends Store {
             if (entity.getIsAppointments()){
                 appointment = (TheAppointment)entity;
                 try {
-                    PreparedStatement preparedStatement = getPMSConnection().prepareStatement(sql);
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getStart().getYear());
                     preparedStatement.setInt(2, appointment.getStart().getMonthValue());
                     preparedStatement.setInt(3, appointment.getStart().getDayOfMonth());
