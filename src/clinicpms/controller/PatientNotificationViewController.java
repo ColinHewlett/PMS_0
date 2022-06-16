@@ -5,15 +5,8 @@
  */
 package clinicpms.controller;
 
-//import clinicpms.controller.EntityDescriptor;
-//import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import java.beans.PropertyVetoException;
-/**
- * Patients was used to replace the use of EntityDescriptor.Patient
- * -- EntityDescriptor.thePatient getter/setters a partial approach to this end
- */
-//import clinicpms.model.Patients;
 /**
  * ThePatient is used temporarily to start a refactored and restructured Patient process
  * -- primary difference between Patient & ThePatient is ThePatient.Collection inner class
@@ -31,7 +24,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JOptionPane;
 import java.util.ArrayList;
-//import java.util.Iterator;
 
 /**
  *
@@ -82,19 +74,20 @@ public class PatientNotificationViewController extends ViewController{
         if (e.getSource() instanceof DesktopViewController){
             doDesktopViewControllerActionRequest(e);
         }
-                                            
-        View the_view = (View)e.getSource();
-        setEntityDescriptorFromView(the_view.getEntityDescriptor());
-        switch (the_view.getMyViewType()){
-            case PATIENT_NOTIFICATION_VIEW:
-                doPrimaryViewActionRequest(e);
-                break;
-            default:
-                try{
-                    doSecondaryViewActionRequest(e);
-                }catch (StoreException ex){
-                    
-                }
+        else{                                    
+            View the_view = (View)e.getSource();
+            setEntityDescriptorFromView(the_view.getEntityDescriptor());
+            switch (the_view.getMyViewType()){
+                case PATIENT_NOTIFICATION_VIEW:
+                    doPrimaryViewActionRequest(e);
+                    break;
+                default:
+                    try{
+                        doSecondaryViewActionRequest(e);
+                    }catch (StoreException ex){
+
+                    }
+            }
         }
     }
     
