@@ -34,7 +34,7 @@ public interface IStoreAction {
     public int countRowsIn(SurgeryDaysAssignment table) throws StoreException;
     //public int countRowsIn(SurgeryDaysAssignmentx table)throws StoreException;
     
-    public Integer count(TheAppointment.Collection collection)throws StoreException;
+    public Integer count(TheAppointment.Collection collection, Integer appointeeKey)throws StoreException;
     public Integer count(ThePatient.Collection collection)throws StoreException;
     public Integer count(PatientNotification.Collection collection)throws StoreException;
     public Integer count(SurgeryDaysAssignment surgeryDaysAssignment)throws StoreException;
@@ -57,27 +57,32 @@ public interface IStoreAction {
     public List<String[]> importEntityFromCSV(EntityStoreType entity) throws StoreException;
     
     public void insert(Appointment a) throws StoreException;
-    public void insert(TheAppointment a) throws StoreException; 
+    public Integer insert(TheAppointment a, Integer appointeeKey) throws StoreException; 
     public void insert(Appointments appointments)throws StoreException;
     public void insert(Patient p) throws StoreException;
     public void insert(Patients patients) throws StoreException;
-    public void insert(ThePatient p) throws StoreException;
-    public void insert(PatientNotification pn) throws StoreException;
+    public Integer insert(ThePatient p, Integer key) throws StoreException;
+    //public Integer insert(ThePatient p) throws StoreException;
+    public Integer insert(PatientNotification pn) throws StoreException;
     //public void insert(SurgeryDaysAssignmentx p) throws StoreException;
     public void insert(SurgeryDaysAssignment p) throws StoreException;
     
     public void populate(SurgeryDaysAssignment data)throws StoreException;
     
-    public PatientNotification read(PatientNotification value)throws StoreException;
-    public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException;
+    public TheAppointment read(TheAppointment a, Integer key)throws StoreException ;
+    public TheAppointment read(TheAppointment.Collection a, Integer key)throws StoreException ;
+    public ThePatient read(ThePatient p, Integer key) throws StoreException;
+    public ThePatient.Collection read(ThePatient.Collection value)throws StoreException;
+    public PatientNotification read(PatientNotification value, Integer key)throws StoreException;
+    public PatientNotification.Collection read(PatientNotification.Collection value, Integer key)throws StoreException;
     //public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException;
     public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
+    
+    
     public Appointment read(Appointment a) throws StoreException;
-    public TheAppointment read(TheAppointment a)throws StoreException ;
-    public TheAppointment.Collection read(TheAppointment.Collection a)throws StoreException ;
+    
     public Patient read(Patient p) throws StoreException;
-    public ThePatient read(ThePatient p) throws StoreException;
-    public ThePatient.Collection read(ThePatient.Collection value)throws StoreException;
+    
     public String read(Store.SelectedTargetStore db)throws StoreException;
     
     public Appointments readAppointments(Patient p, Appointment.Category c) throws StoreException;
@@ -88,12 +93,12 @@ public interface IStoreAction {
     public Patients readPatients() throws StoreException;
     
     public void update(Appointment a) throws StoreException;
-    public void update(TheAppointment a) throws StoreException;
+    public void update(TheAppointment a, Integer key, Integer appointeeKee) throws StoreException;
     //public void update(SurgeryDaysAssignmentx value) throws StoreException;
     public void update(SurgeryDaysAssignment value) throws StoreException;
     public void update(Patient p) throws StoreException;
-    public void update(ThePatient p) throws StoreException;
-    public void update(PatientNotification pn)throws StoreException;
+    public void update(ThePatient p, Integer key, Integer guardianKey) throws StoreException;
+    public void update(PatientNotification pn, Integer key, Integer patientKey)throws StoreException;
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
 
 }

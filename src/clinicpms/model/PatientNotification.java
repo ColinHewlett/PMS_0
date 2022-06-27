@@ -28,6 +28,10 @@ public class PatientNotification extends EntityStoreType {
 
     public enum Scope{ALL,UNACTIONED,ALL_FOR_PATIENT, UNACTIONED_FOR_PATIENT};
     
+    public PatientNotification getPatientNotification(){
+        return this;
+    }
+
     public Collection getCollection(){
         return collection;
     }
@@ -37,13 +41,13 @@ public class PatientNotification extends EntityStoreType {
     
     public PatientNotification(){
         this.setIsPatientNotification(true);
-        setCollection(new Collection());
+        setCollection(new Collection(this));
         
     }
     
     public PatientNotification(int key){
         this.setIsPatientNotification(true);
-        setCollection(new Collection());
+        setCollection(new Collection(this));
         setKey(key);
     }
     
@@ -59,7 +63,7 @@ public class PatientNotification extends EntityStoreType {
         return date;
     }
     
-    public Integer getKey(){
+    protected Integer getKey(){
         return key;
     }
     
@@ -83,7 +87,7 @@ public class PatientNotification extends EntityStoreType {
         date = value;
     }
     
-    public void setKey(int value){
+    protected void setKey(int value){
         key = value;
     }
     
@@ -128,7 +132,7 @@ public class PatientNotification extends EntityStoreType {
      */
     public PatientNotification read() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        PatientNotification patientNotification = store.read(this);
+        PatientNotification patientNotification = store.read(this, getKey());
         ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
         patientNotification.setPatient(patient.read());
         return patientNotification;
@@ -136,14 +140,28 @@ public class PatientNotification extends EntityStoreType {
     
     public void update()throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        store.update(this);
+        store.update(this, getKey(), getPatient().getKey());
     }
     
     public class Collection extends EntityStoreType{
         private ArrayList<PatientNotification> collection = new ArrayList<>();
+        private PatientNotification patientNotification = null;
         
         private Collection(){
-            this.setIsPatientNotificationCollection(true);
+            this.setIsPatients(true);
+        }
+        
+        private Collection(PatientNotification pn){
+            this.setIsPatients(true);
+            setPatientNotification(pn);
+        }
+        
+        public PatientNotification getPatientNotification(){
+            return patientNotification;
+        }
+        
+        private void setPatientNotification(PatientNotification pn){
+            patientNotification = pn;
         }
         
         public Scope getScope(){
@@ -179,7 +197,7 @@ public class PatientNotification extends EntityStoreType {
          */
         public void read()throws StoreException{
             IStoreAction store = Store.FACTORY(this);
-            set(store.read(this).get());
+            set(store.read(this, getPatient().getKey()).get());
             Iterator it = get().iterator();
             switch(getScope()){
                 case ALL_FOR_PATIENT:

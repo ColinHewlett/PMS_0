@@ -64,7 +64,7 @@ public class EntityStoreType{
     public Boolean getIsPatientNotification(){
         return isPatientNotification;
     }
-    public Boolean getIsPatientNotificationCollection(){
+    public Boolean getIsPatientNotifications(){
         return isPatientNotificationCollection;
     }
     public Boolean getIsPatients(){

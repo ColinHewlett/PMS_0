@@ -27,7 +27,7 @@ public class TheAppointment extends EntityStoreType{
     private LocalDateTime start = null;
     private Duration duration  = null;
     private String notes = null;
-    private Patient patient;
+    private ThePatient patient;
     private Category category = null;
     private Status status = TheAppointment.Status.BOOKED;
     
@@ -55,8 +55,10 @@ public class TheAppointment extends EntityStoreType{
     
     public TheAppointment(){
         super.setIsAppointment(true);
-        collection = new TheAppointment.Collection();
+        collection = new TheAppointment.Collection(this);
     } //constructor creates a new Appointment record
+    
+    
 
     /**
      * 
@@ -64,7 +66,7 @@ public class TheAppointment extends EntityStoreType{
      */
     public TheAppointment( int key) {
         this.key = key;
-        collection = new TheAppointment.Collection();
+        collection = new Collection(this);
         super.setIsAppointment(true);
     }
     
@@ -97,10 +99,10 @@ public class TheAppointment extends EntityStoreType{
         this.notes = notes;
     }
 
-    public Integer getKey() {
+    protected Integer getKey() {
         return key;
     }
-    public void setKey(Integer key) {
+    protected void setKey(Integer key) {
         this.key = key;
     }
     public TheAppointment.Status getStatus(){
@@ -110,10 +112,10 @@ public class TheAppointment extends EntityStoreType{
         this.status = value;
     }       
 
-    public Patient getPatient() {
+    public ThePatient getPatient() {
         return patient;
     }
-    public void setPatient(Patient patient) {
+    public void setPatient(ThePatient patient) {
         this.patient = patient;
     }
     
@@ -129,9 +131,13 @@ public class TheAppointment extends EntityStoreType{
         store.create(this);
     }
     
+    /**
+     * method explicitly declares the appointee's key value
+     * @throws StoreException 
+     */
     public void insert() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        store.insert(this);  
+        store.insert(this, getPatient().getKey());  
     }
     
     public void delete() throws StoreException{
@@ -146,27 +152,66 @@ public class TheAppointment extends EntityStoreType{
     
     public TheAppointment read() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        return store.read(this);
+        return store.read(this,getKey());
     }
     
     public void update() throws StoreException{ 
         IStoreAction store = Store.FACTORY(this);
-        store.update(this);
+        store.update(this, getKey(), getPatient().getKey());
     }
     
     public class Collection extends EntityStoreType{
+        private TheAppointment appointment = null; 
         private ArrayList<TheAppointment> collection = null;
         private TheAppointment.Scope readScope = null;
+        
         private Collection(){
+            super.setIsAppointments(true);  
+        }
+        
+        private Collection(TheAppointment appointment){
             super.setIsAppointments(true);
+            setAppointment(appointment);   
         }
+        
+        public TheAppointment getAppointment(){
+            return appointment;
+        }
+        
+        public void setAppointment(TheAppointment a){
+            this.appointment = a;
+        }
+         
+        /**
+         * on entry count() method assumes start field has been defined for date based collections
+         * -- for a count of appointments for a specific patient the patient's key value must be explicitly defined in the call to the store class
+         * @return
+         * @throws StoreException 
+         */
         public Integer count()throws StoreException{
+            Integer key = null;
             IStoreAction store = Store.FACTORY(this); 
-            return store.count(this);
+            switch (getScope()){
+                case FOR_PATIENT:
+                    key = getAppointment().getPatient().getKey();      
+            }
+            return store.count(this, key);
         }
+        
+        /**
+         * on entry read() method presumes start date has been defined in the appointment at the time of the call to the store
+         * -- in the case of a read of appointments for a specific patient , the key value of patient must be defined explicitly in the call to the store
+         * -- also presumed on entry is the correct scope of read has been defined 
+         * @throws StoreException 
+         */
         public void read()throws StoreException{
+            Integer key = null;
             IStoreAction store = Store.FACTORY(TheAppointment.this); 
-            set(store.read(this).get());
+            switch (getScope()){
+                case FOR_PATIENT:
+                    key = getAppointment().getPatient().getKey();      
+            }
+            set(store.read(this, key).getCollection().get());
         }
         
         public ArrayList<TheAppointment> get(){
@@ -311,14 +356,14 @@ public class TheAppointment extends EntityStoreType{
                                                   int startSlot, 
                                                   int endSlot, 
                                                   Integer patientKey){
-        Patient patient;
+        ThePatient patient;
         LocalDateTime start; 
         Duration duration;
         String notes = "";
         LocalTime startTime = getAppointmentStartTime(startSlot);
         LocalDate day = LocalDate.parse(date,ddMMyyyyFormat);
         start = LocalDateTime.of(day, startTime);
-        patient = new Patient(patientKey);
+        patient = new ThePatient(patientKey);
         duration = Duration.ofMinutes((endSlot-startSlot)*5);
         int index = startSlot + 1;
         String keyString = String.valueOf(patient.getKey());

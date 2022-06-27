@@ -40,12 +40,10 @@ public class ImportProgressView extends View {
     
     
     private Mode mode = Mode.NONE;
-    private Operation operation = Operation.IMPORT;
     private ActionListener myController = null;
     private EntityDescriptor entityDescriptor = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private View.Viewer myViewType = null;
-    
     
     private void setMode(Mode value){
         mode = value;
@@ -54,15 +52,7 @@ public class ImportProgressView extends View {
     private Mode getMode(){
         return mode;
     }
-    
-    private void setOperation(Operation value){
-        operation = value;
-    }
-    
-    private Operation getOperation(){
-        return operation;
-    }
-    
+
     private void setMyViewType(View.Viewer value){
         this.myViewType = value;
     }
@@ -239,25 +229,12 @@ public class ImportProgressView extends View {
 
     @Override
     public void initialiseView(){
+        
         this.setVisible(true);
-        if (getEntityDescriptor().getMigrationDescriptor().getImportOperationStatus()){
-            setOperation(Operation.IMPORT);
-            lblPatientsProgressBar.setText(ImportProgressView.IMPORT_PATIENT_PROGRESS_HEADER);
-            lblAppointmentsProgressBar.setText(ImportProgressView.IMPORT_APPOINTMENT_PROGRESS_HEADER);
-            btnStart.setText(ImportProgressView.IMPORT_START_PROCESS_HEADER);
-            this.setTitle(ImportProgressView.IMPORT_TITLE_HEADER);
-            setOperation(Operation.IMPORT);   
-        }
-        /*
-        else if (getEntityDescriptor().getMigrationDescriptor().getExportOperationStatus()){
-            lblPatientsProgressBar.setText(ImportProgressView.EXPORT_PATIENT_PROGRESS_HEADER);
-            lblAppointmentsProgressBar.setText(ImportProgressView.EXPORT_APPOINTMENT_PROGRESS_HEADER);
-            btnStart.setText(ImportProgressView.EXPORT_START_PROCESS_HEADER);
-            this.setTitle(ImportProgressView.EXPORT_TITLE_HEADER);
-            setOperation(Operation.EXPORT);
-        }
-*/
-   
+        lblPatientsProgressBar.setText(ImportProgressView.IMPORT_PATIENT_PROGRESS_HEADER);
+        lblAppointmentsProgressBar.setText(ImportProgressView.IMPORT_APPOINTMENT_PROGRESS_HEADER);
+        btnStart.setText(ImportProgressView.IMPORT_START_PROCESS_HEADER);
+        this.setTitle(ImportProgressView.IMPORT_TITLE_HEADER);
     }
     
     @Override 

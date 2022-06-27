@@ -309,6 +309,7 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
                 DesktopViewController.DesktopViewControllerActionEvent.SET_PATIENT_CSV_PATH_REQUEST.toString());
         this.getController().actionPerformed(actionEvent);
     }
+    /*
     private void doMigrationActionCompletePropertyChange(){
         String currentPMSStoreSelectionState = null;
         String currentPMSStoreSelection = null;
@@ -353,34 +354,9 @@ public class DesktopView extends javax.swing.JFrame implements PropertyChangeLis
             this.mniSurgeryDaysAssignmentTableRecordCount.setText(this.SURGERY_DAYS_ASSIGNMENT_TABLE_RECORD_COUNT_TITLE
                 + "(missing table)");
         
-        /*
-        count = getEntityDescriptor().getMigrationDescriptor().getAppointmentsCount();
-        if (count!=null)
-            this.mniAppointmentRecordCount.setText(this.APPOINTMENT_RECORD_COUNT_TITLE
-                + "(records = " + String.valueOf(count) + ")");
-        else
-            this.mniAppointmentRecordCount.setText(this.APPOINTMENT_RECORD_COUNT_TITLE
-                + "(missing table)");
-        
-        count = getEntityDescriptor().getMigrationDescriptor().getPatientsCount();
-        if (count!=null)
-            this.mniPatientRecordCount.setText(this.PATIENT_RECORD_COUNT_TITLE
-                + "(records = " + String.valueOf(count) + ")");
-        else
-            this.mniPatientRecordCount.setText(this.PATIENT_RECORD_COUNT_TITLE
-                + "(missing table)");
-        
-        count = getEntityDescriptor().getMigrationDescriptor().getSurgeryDaysAssignmentCount();
-        if (count!=null)
-            this.mniSurgeryDaysRecordCount.setText(this.SURGERY_DAYS_RECORD_COUNT_TITLE
-                + "(records = " + String.valueOf(count) + ")");
-        else
-            this.mniSurgeryDaysRecordCount.setText(this.SURGERY_DAYS_RECORD_COUNT_TITLE
-                + "(missing table)");
-        */
         
     }
-
+*/
     /*
     public void enableWindowCloseControl(){
         this.closeIsEnabled = true;

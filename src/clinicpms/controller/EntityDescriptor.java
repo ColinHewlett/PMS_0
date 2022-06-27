@@ -36,7 +36,7 @@ public class EntityDescriptor {
     //private clinicpms.model.Patients thePatients = null;
     private ArrayList<ThePatient> thePatients = null;
     private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
-    private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
+    //private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
     private String error = null;
     private Integer tableRowCount = null;
     private String appointmentCSVPath = null;
@@ -187,7 +187,7 @@ public class EntityDescriptor {
         appointments = new EntityDescriptor.Appointments();     
         patients = new EntityDescriptor.Patients();  
         request = new EntityDescriptor.Request();
-        migrationDescriptor = new EntityDescriptor.MigrationDescriptor();
+        //migrationDescriptor = new EntityDescriptor.MigrationDescriptor();
         patientNotifications = new ArrayList<PatientNotification>();
         surgeryDaysAssignment = new HashMap<DayOfWeek,Boolean>(); 
         error = null;
@@ -327,11 +327,11 @@ public class EntityDescriptor {
     public void setThePatients (ArrayList<ThePatient> value){
         thePatients = value;
     }
-    
+    /*
     public MigrationDescriptor getMigrationDescriptor(){
         return this.migrationDescriptor;
     }
-
+*/
     /**
      * EntityDescriptor.Appointment inner class
      */
@@ -679,7 +679,8 @@ public class EntityDescriptor {
         } 
     }
     public class Request {
-        
+        private ThePatient thePatient = null;
+        private ThePatient theGuardian = null;
         private EntityDescriptor.Patient patient = null;
         private EntityDescriptor.Appointment appointment = null;
         private EntityDescriptor.Patient guardian = null;
@@ -696,11 +697,29 @@ public class EntityDescriptor {
         protected Request() {
             appointment = new EntityDescriptor.Appointment();
             patient = new EntityDescriptor.Patient();
+            thePatient = new ThePatient();
+            theGuardian = new ThePatient();
             guardian = new EntityDescriptor.Patient();
             day = LocalDate.now();
             duration = Duration.ZERO; 
             HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = new HashMap<>();
             
+        }
+        
+        public ThePatient getTheGuardian(){
+            return theGuardian;
+        }
+        
+        public void setTheGuardian(ThePatient patient){
+            theGuardian = patient;
+        }
+        
+        public ThePatient getThePatient(){
+            return thePatient;
+        }
+        
+        public void setThePatient(ThePatient patient){
+            thePatient = patient;
         }
         
         public PatientNotification getPatientNotification(){
@@ -776,9 +795,9 @@ public class EntityDescriptor {
         }
     }
     
-    public class MigrationDescriptor {
-        private MigrationDescriptor.Appointment appointment = null;
-        private MigrationDescriptor.Patient patient = null;
+    public class MigrationDescriptorx {
+        //private MigrationDescriptor.Appointment appointment = null;
+        //private MigrationDescriptor.Patient patient = null;
         private Target target = null;
         private Integer appointmentsCount = null;
         private Integer patientsCount = null;
@@ -795,12 +814,13 @@ public class EntityDescriptor {
         private boolean importOperationStatus = false;
         private boolean exportOperationStatus = true;
 
+        /*
         public MigrationDescriptor(){
             appointment = new Appointment();
             patient = new Patient();
             target = new Target();
         }
-        
+        */
         public void setImportOperationStatus(boolean value){
             this.importOperationStatus = value;
             this.exportOperationStatus = !value;
@@ -916,7 +936,7 @@ public class EntityDescriptor {
         protected void setSurgeryDaysAssignmentCount(Integer value){
             surgeryDaysAssignmentCount = value;
         }
-
+/*
         public Appointment getAppointment(){
             return appointment;
         }
@@ -924,7 +944,7 @@ public class EntityDescriptor {
         public Patient getPatient(){
             return patient;
         }
-
+*/
         public Target getTarget(){
             return target;
         }

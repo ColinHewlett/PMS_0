@@ -5,7 +5,6 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IMigrationStoreAction;
 import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
@@ -20,6 +19,7 @@ import java.util.List;
  */
 public class ThePatient extends EntityStoreType {
     
+    private Boolean isPatientKeyDefined = null;
     private LocalDate dob = null;
     private ThePatient guardian = null;
     private String gender = null;
@@ -179,9 +179,16 @@ public class ThePatient extends EntityStoreType {
     }
 
     public void insert() throws StoreException{
-        //setInsertOperation(op);
+        Integer key = null;
         IStoreAction store = Store.FACTORY((EntityStoreType) this);
-        store.insert(this);    
+        if (getIsKeyDefined()){
+            key = store.insert(this,getKey());
+        }
+        else {
+            if (getIsGuardianAPatient())
+                key = store.insert(this, getGuardian().getKey());
+        }
+        setKey(key);        
     }
 
     public void delete() throws StoreException{
@@ -194,20 +201,29 @@ public class ThePatient extends EntityStoreType {
         store.drop(this);        
     }
 
-    /*
-    public Patient read()throws StoreException{
-        return null;
-    }
-    */
-    
+    /**
+     * the read method interrogates the Patient object returned from store, thus
+     * -- if its getIsGuardianAKey() method returns true it reads the patient's guardian object in as well
+     * @return a fully initialised Patient object appropriately with or without a guardian if one exists
+     * @throws StoreException 
+     */
     public ThePatient read() throws StoreException{
+        ThePatient patient = null;
+        ThePatient guardian = null;
         IStoreAction store = Store.FACTORY((EntityStoreType) this);
-        return store.read(this); 
+        patient = store.read(this, getKey()); 
+        if (patient.getIsGuardianAPatient()){
+            guardian = patient.getGuardian();
+            guardian = store.read(guardian, guardian.getKey());
+            patient.setGuardian(guardian);
+        }
+        return patient;
     }
 
     public void update() throws StoreException{ 
         IStoreAction store = Store.FACTORY((EntityStoreType)this);
-        store.update(this);
+        if (getIsGuardianAPatient()) store.update(this, this.getKey(),this.getGuardian().getKey());
+        else store.update(this, this.getKey(),null);
     }
 
     public class Name {
@@ -377,11 +393,27 @@ public class ThePatient extends EntityStoreType {
         this.dob = dob;
     }
     
-    public Integer getKey(){
+    protected Integer getKey(){
         return key;
     }
-    public void setKey(Integer key){
+    
+    protected void setKey(Integer key){
         this.key = key;
+        if (key != null){
+            if (key!=0)
+                setIsKeyDefined(true);
+            else
+                setIsKeyDefined(false);
+        }
+                
+    }
+    
+    public Boolean getIsKeyDefined(){
+        return isPatientKeyDefined;
+    }
+    
+    private void setIsKeyDefined(Boolean value){
+        isPatientKeyDefined = value;
     }
     
     public String getNotes(){
