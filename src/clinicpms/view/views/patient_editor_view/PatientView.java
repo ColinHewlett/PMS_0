@@ -13,7 +13,9 @@ import clinicpms.controller.RenderedPatient;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;
 import clinicpms.view.views.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
-import clinicpms.view.exceptions.CrossCheckErrorException;
+import clinicpms.model.ThePatient;
+import clinicpms.model.TheAppointment;
+import clinicpms.view.exceptions.CrossCheckErrorException; 
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
@@ -232,7 +234,22 @@ public class PatientView extends View{
           setViewStatus(true);
         } 
     };
-    private void populatePatientSelector(JComboBox<EntityDescriptor.Patient> selector){
+    
+    private void populatePatientSelector(JComboBox<ThePatient> selector){
+        DefaultComboBoxModel<ThePatient> model = 
+                new DefaultComboBoxModel<>();
+        ArrayList<ThePatient> patients = 
+                getEntityDescriptor().getThePatients();
+        Iterator<ThePatient> it = patients.iterator();
+        while (it.hasNext()){
+            ThePatient patient = it.next();
+            model.addElement(patient);
+        }
+        selector.setModel(model);
+        selector.setSelectedIndex(-1);
+    }
+    
+    private void populatePatientSelectorx(JComboBox<EntityDescriptor.Patient> selector){
         DefaultComboBoxModel<EntityDescriptor.Patient> model = 
                 new DefaultComboBoxModel<>();
         ArrayList<EntityDescriptor.Patient> patients = 
@@ -283,7 +300,7 @@ public class PatientView extends View{
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(PatientView.ViewMode.Update_patient_details);
             initialisePatientViewComponentFromED(); 
-            String frameTitle = getEntityDescriptor().getPatient().toString();
+            String frameTitle = getEntityDescriptor().getThePatient().toString();
             this.setTitle(frameTitle);
             
             /**
@@ -580,24 +597,62 @@ public class PatientView extends View{
         }
     }
     
-    
-    private void populateAppointmentsHistoryTable(ArrayList<EntityDescriptor.Appointment> appointments, String header){
+    private void populateAppointmentsHistoryTable(ThePatient patient){
         Appointments3ColumnTableModel tableModel = 
                 (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
         tableModel.removeAllElements();
-        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
-        while (it.hasNext()){
-            tableModel.addElement(it.next());
+        if (patient!=null){//if patient data in view has just been cleared
+            Iterator<TheAppointment> it = patient.getAppointmentHistory().get().iterator();
+            while (it.hasNext()){
+                tableModel.addElement(it.next());
+            }
         }
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     }
+    
+    private void populateAppointmentsHistoryTablex(ArrayList<EntityDescriptor.Appointment> appointments, String header){
+        Appointments3ColumnTableModel tableModel = 
+                (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
+        tableModel.removeAllElements();
+        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
+        while (it.hasNext()){
+            //tableModel.addElement(it.next());
+        }
+        this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
+        this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
+        this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    }
+    
+    private void initialisePatientAppointmentHistoryViewFromEDx(){
+        /*
+        ArrayList<TheAppointment> appointments = new ArrayList<>();
+        String headerTitle = null;
+        appointments = 
+                    getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
+                headerTitle =  "Dental appointments";
+        switch (category){
+            case DENTAL:
+                appointments = 
+                    getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
+                headerTitle =  "Dental appointments";
+                break;
+            case HYGIENE:
+                appointments = 
+                    getEntityDescriptor().getPatientAppointmentHistory().getHygieneAppointments();
+                headerTitle = "Hygiene appointments";
+                break; 
+        }
+        populateAppointmentsHistoryTable(appointments, headerTitle);
+        */
+    }
     /**
      * The method initialises the patient view's appointment history view 
      * component from the EntityDescriptor.Patient object
      */
-    private void initialisePatientAppointmentHistoryViewFromED(PatientView.Category category){
+    private void initialisePatientAppointmentHistoryViewFromEDx(PatientView.Category category){
+        /*
         ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
         String headerTitle = null;
         switch (category){
@@ -613,6 +668,7 @@ public class PatientView extends View{
                 break; 
         }
         populateAppointmentsHistoryTable(appointments, headerTitle);
+        */
     }
     private int getAge(LocalDate dob){
         return Period.between(dob, LocalDate.now()).getYears();
@@ -620,7 +676,7 @@ public class PatientView extends View{
     private void clearViewForCreateNewPatient(){
         setViewMode(PatientView.ViewMode.Create_new_patient);
         this.cmbSelectPatient.setSelectedIndex(-1);
-        populateAppointmentsHistoryTable(new ArrayList<EntityDescriptor.Appointment>(), "" );
+        populateAppointmentsHistoryTable(null);
         this.setTitle(null);
         setSurname(null);
         setForenames(null);
@@ -645,62 +701,62 @@ public class PatientView extends View{
                
         
     }
+    
     /**
      * The method initialises the patient component of the view state from the
      * current entity state
      */
     private void initialisePatientViewComponentFromED(){  
         EntityDescriptor ed = getEntityDescriptor();
-        RenderedPatient patient = getEntityDescriptor().getPatient().getData();
+        ThePatient patient = getEntityDescriptor().getThePatient();
         this.setTitle(getSurname()); //Internal frame title
-        setPatientTitle(patient.getTitle());
-        setForenames(patient.getForenames());
-        setSurname(patient.getSurname());
+        setPatientTitle(patient.getName().getTitle());
+        setForenames(patient.getName().getForenames());
+        setSurname(patient.getName().getSurname());
         setPhone1(patient.getPhone1());
         setPhone2(patient.getPhone2());
-        setLine1(patient.getLine1());
-        setLine2(patient.getLine2());
-        setTown(patient.getTown());
-        setCounty(patient.getCounty());
-        setPostcode(patient.getPostcode());
-        setRecallDate(patient.getDentalRecallDate());
-        setDentalRecallFrequency(patient.getDentalRecallFrequency());
+        setLine1(patient.getAddress().getLine1());
+        setLine2(patient.getAddress().getLine2());
+        setTown(patient.getAddress().getTown());
+        setCounty(patient.getAddress().getCounty());
+        setPostcode(patient.getAddress().getPostcode());
+        setRecallDate(patient.getRecall().getDentalDate());
+        setDentalRecallFrequency(patient.getRecall().getDentalFrequency());
         setGender(patient.getGender());
         setNotes(patient.getNotes());
         setDOB(patient.getDOB());
         setIsGuardianAPatient(patient.getIsGuardianAPatient());
         //update 30/07/2021 09:05 applied
-        if(getEntityDescriptor().getPatient().getPatientGuardian()!=null)
-                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getPatientGuardian());
-        else this.cmbSelectGuardian.setSelectedIndex(-1);
-        
-        //if(getEntityDescriptor().getPatientGuardian()!=null)
-                //this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
-        //else this.cmbSelectGuardian.setSelectedIndex(-1);
-        
-        initialisePatientAppointmentHistoryViewFromED(PatientView.Category.DENTAL);
+        if(getEntityDescriptor().getThePatient().getGuardian()!=null)
+                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getThePatient().getGuardian());
+        else this.cmbSelectGuardian.setSelectedIndex(-1); 
+        //following is new statement
+        populateAppointmentsHistoryTable(patient);
+        //initialisePatientAppointmentHistoryViewFromED(PatientView.Category.DENTAL);
     }
     private void initialiseEntityFromView(){
-        getEntityDescriptor().getRequest().getPatient().getData().setCounty((getCounty()));
-        getEntityDescriptor().getRequest().getPatient().getData().setDentalRecallDate(getDentalRecallDate());
-        getEntityDescriptor().getRequest().getPatient().getData().setDOB(getDOB());
-        getEntityDescriptor().getRequest().getPatient().getData().setForenames(getForenames());
-        getEntityDescriptor().getRequest().getPatient().getData().setGender(getGender());
-        getEntityDescriptor().getRequest().getPatient().getData().setDentalRecallDate(getDentalRecallDate());
-        getEntityDescriptor().getRequest().getPatient().getData().setDentalRecallFrequency(getDentalRecallFrequency());
-        getEntityDescriptor().getRequest().getPatient().getData().setIsGuardianAPatient(getIsGuardianAPatient());
-        getEntityDescriptor().getRequest().getPatient().getData().setLine1(getLine1());
-        getEntityDescriptor().getRequest().getPatient().getData().setLine2(getLine2());
-        getEntityDescriptor().getRequest().getPatient().getData().setNotes(getNotes());
-        getEntityDescriptor().getRequest().getPatient().getData().setPhone1(getPhone1());
-        getEntityDescriptor().getRequest().getPatient().getData().setPhone2(getPhone2());
-        getEntityDescriptor().getRequest().getPatient().getData().setPostcode(getPostcode());
-        getEntityDescriptor().getRequest().getPatient().getData().setSurname(getSurname());
-        getEntityDescriptor().getRequest().getPatient().getData().setTitle(getPatientTitle());
-        getEntityDescriptor().getRequest().getPatient().getData().setTown(getTown());
+        ThePatient patient = (ThePatient)cmbSelectPatient.getSelectedItem();
+        patient.getAddress().setCounty((getCounty()));
+        patient.getRecall().setDentalDate(getDentalRecallDate());
+        patient.setDOB(getDOB());
+        patient.getName().setForenames(getForenames());
+        patient.setGender(getGender());
+        patient.getRecall().setDentalDate(getDentalRecallDate());
+        patient.getRecall().setDentalFrequency(getDentalRecallFrequency());
+        patient.setIsGuardianAPatient(getIsGuardianAPatient());
+        patient.getAddress().setLine1(getLine1());
+        patient.getAddress().setLine2(getLine2());
+        patient.setNotes(getNotes());
+        patient.setPhone1(getPhone1());
+        patient.setPhone2(getPhone2());
+        patient.getAddress().setPostcode(getPostcode());
+        patient.getName().setSurname(getSurname());
+        patient.getName().setTitle(getPatientTitle());
+        patient.getAddress().setTown(getTown());
         if (getGuardian() != null){
-            getEntityDescriptor().getRequest().setGuardian(getGuardian());
+            patient.setGuardian(getGuardian());
         }
+        getEntityDescriptor().getRequest().setThePatient(patient);
         
             
         
@@ -876,15 +932,15 @@ public class PatientView extends View{
             cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.No);
         }
     }
-    private EntityDescriptor.Patient getGuardian(){
+    private ThePatient getGuardian(){
         if (cmbSelectGuardian.getSelectedIndex() == -1){
             return null;
         }
         else {
-            return (EntityDescriptor.Patient)cmbSelectGuardian.getSelectedItem();
+            return (ThePatient)cmbSelectGuardian.getSelectedItem();
         }
     }
-    private void setGuardian(EntityDescriptor.PatientGuardian guardian){
+    private void setGuardian(ThePatient guardian){
         if (guardian == null){
             this.cmbSelectGuardian.setSelectedIndex(-1);
             this.cmbSelectGuardian.setEnabled(false);
@@ -935,7 +991,7 @@ public class PatientView extends View{
     private void initComponents() {
 
         jPanel3 = new javax.swing.JPanel();
-        cmbSelectPatient = new javax.swing.JComboBox<EntityDescriptor.Patient>();
+        cmbSelectPatient = new javax.swing.JComboBox<ThePatient>();
         btnClearPatientSelection = new javax.swing.JButton();
         pnlContactDetails = new javax.swing.JPanel();
         lblSurname = new javax.swing.JLabel();
@@ -968,7 +1024,7 @@ public class PatientView extends View{
         ;
         lblAge = new javax.swing.JLabel();
         pnlGuardianDetails = new javax.swing.JPanel();
-        cmbSelectGuardian = new javax.swing.JComboBox<EntityDescriptor.Patient>();
+        cmbSelectGuardian = new javax.swing.JComboBox<ThePatient>();
         lblGuardianPatientName = new javax.swing.JLabel();
         lblGuardianIsAPatient = new javax.swing.JLabel();
         cmbIsGuardianAPatient = new javax.swing.JComboBox<YesNoItem>();
@@ -1003,7 +1059,7 @@ public class PatientView extends View{
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         cmbSelectPatient.setEditable(false);
-        cmbSelectPatient.setModel(new DefaultComboBoxModel<EntityDescriptor.Patient>());
+        cmbSelectPatient.setModel(new DefaultComboBoxModel<ThePatient>());
         cmbSelectPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbSelectPatientActionPerformed(evt);
@@ -1237,7 +1293,7 @@ public class PatientView extends View{
 
         cmbSelectGuardian.addItemListener(itemSelectGuardianListener);
         cmbSelectGuardian.setEditable(false);
-        cmbSelectGuardian.setModel(new DefaultComboBoxModel<EntityDescriptor.Patient>());
+        cmbSelectGuardian.setModel(new DefaultComboBoxModel<ThePatient>());
         cmbSelectGuardian.setMinimumSize(new java.awt.Dimension(175, 22));
         cmbSelectGuardian.setPreferredSize(new java.awt.Dimension(194, 22));
         cmbSelectGuardian.addActionListener(new java.awt.event.ActionListener() {
@@ -1702,8 +1758,8 @@ public class PatientView extends View{
     private javax.swing.JButton btnRequestNotificationEditorForPatient;
     private javax.swing.JComboBox<GenderItem> cmbGender;
     private javax.swing.JComboBox<YesNoItem> cmbIsGuardianAPatient;
-    private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectGuardian;
-    private javax.swing.JComboBox<EntityDescriptor.Patient> cmbSelectPatient;
+    private javax.swing.JComboBox<ThePatient> cmbSelectGuardian;
+    private javax.swing.JComboBox<ThePatient> cmbSelectPatient;
     private javax.swing.JComboBox<TitleItem> cmbTitle;
     private com.github.lgooddatepicker.components.DatePicker dobDatePicker;
     private javax.swing.JLabel jLabel2;
@@ -1793,6 +1849,18 @@ public class PatientView extends View{
     }
     
     private void cmbSelectPatientActionPerformed(){
+        if (this.cmbSelectPatient.getSelectedItem()!=null){
+            ThePatient patient = 
+                    (ThePatient)this.cmbSelectPatient.getSelectedItem();
+            getEntityDescriptor().getRequest().setThePatient(patient);
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
+            this.getMyController().actionPerformed(actionEvent);
+        }
+    } 
+    
+    private void cmbSelectPatientActionPerformedx(){
         if (this.cmbSelectPatient.getSelectedItem()!=null){
             EntityDescriptor.Patient patient = 
                     (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();

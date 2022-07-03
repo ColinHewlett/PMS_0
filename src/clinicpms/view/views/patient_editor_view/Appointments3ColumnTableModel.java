@@ -5,6 +5,7 @@
  */
 package clinicpms.view.views.patient_editor_view;
 
+import clinicpms.model.TheAppointment;
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -20,17 +21,17 @@ import javax.swing.table.TableModel;
  * -- replaces extension  from DefaultTableModel to AbstractTableModel
  */
 public class Appointments3ColumnTableModel extends AbstractTableModel{
-    public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
+    public ArrayList<TheAppointment> appointments = new ArrayList<>();
     //public static ArrayList<EntityDescriptor.Appointment> appointments = null;
     private enum COLUMN{From,Duration,Notes};
     private final Class[] columnClass = new Class[] {
         LocalDateTime.class, Duration.class,String.class};
     
-    public ArrayList<EntityDescriptor.Appointment> getAppointments(){
+    public ArrayList<TheAppointment> getAppointments(){
         return appointments;
     }
     
-    public void addElement(EntityDescriptor.Appointment a){
+    public void addElement(TheAppointment a){
         appointments.add(a);
     }
     
@@ -67,7 +68,7 @@ public class Appointments3ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        EntityDescriptor.Appointment appointment = getAppointments().get(row);
+        TheAppointment appointment = getAppointments().get(row);
         for (COLUMN column: COLUMN.values()){
             if (column.ordinal() == columnIndex){
                 if (appointment == null){
@@ -76,13 +77,13 @@ public class Appointments3ColumnTableModel extends AbstractTableModel{
                 else{
                     switch (column){
                         case Duration:
-                            result = appointment.getData().getDuration();
+                            result = appointment.getDuration();
                             break;
                         case From:
-                            result = appointment.getData().getStart();
+                            result = appointment.getStart();
                             break;
                         case Notes:
-                            result = appointment.getData().getNotes();
+                            result = appointment.getNotes();
                             break;
                     }
                     break;

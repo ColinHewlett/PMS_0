@@ -2158,15 +2158,21 @@ public class AccessStore extends Store {
     private TheAppointment get(TheAppointment.Collection collection, ResultSet rs)throws StoreException{
         ArrayList<TheAppointment> appointments = new ArrayList<>(); 
         AppointmentDelegate delegate = new AppointmentDelegate();
-        PatientDelegate pDelegate = new PatientDelegate();
+        PatientDelegate pDelegate = null;
         try{
             if (!rs.wasNull()) {
                 while (rs.next()) {
                     int key = rs.getInt("pid");
+                    LocalDateTime start = rs.getObject("Start", LocalDateTime.class);
+                    Duration duration = Duration.ofMinutes(rs.getLong("Duration"));
+                    String notes = rs.getString("Notes");
+                    int patientKey = rs.getInt("PatientKey");
+                    delegate = new AppointmentDelegate();
                     delegate.setStart(rs.getObject("Start", LocalDateTime.class));
                     delegate.setDuration(Duration.ofMinutes(rs.getLong("Duration")));
                     delegate.setNotes(rs.getString("Notes"));
                     delegate.setAppointmentKey(rs.getInt("pid"));
+                    pDelegate = new PatientDelegate();
                     pDelegate.setPatientKey(rs.getInt("PatientKey"));
                     delegate.setPatient(pDelegate);
                     appointments.add(delegate);
@@ -2459,7 +2465,7 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-    private ThePatient.Collection get(ThePatient.Collection collection, ResultSet rs) throws StoreException {
+    private ThePatient get(ThePatient.Collection collection, ResultSet rs) throws StoreException {
         ArrayList<ThePatient> patients = new ArrayList<>();
         ThePatient motherPatient = new ThePatient();
         try {
@@ -2472,7 +2478,7 @@ public class AccessStore extends Store {
                 }
                 motherPatient.getCollection().set(patients);
             }
-            return motherPatient.getCollection();
+            return motherPatient;
         } catch (SQLException ex) {
             throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
                     + "StoreException -> raised in Access::get(ThePatient.Collection,ResultSet)",
@@ -3134,18 +3140,27 @@ public class AccessStore extends Store {
         PatientDelegate delegate = null;
         PatientDelegate gDelegate = null;
         delegate = new PatientDelegate(patient);
-        gDelegate = new PatientDelegate(delegate.getGuardian());
-        gDelegate.setPatientKey(0);
+
         try{
+            getPMSStoreConnection().setAutoCommit(true);
             if (!patient.getIsKeyDefined()){
-                if (delegate.getIsGuardianAPatient()) gDelegate.setPatientKey(key);
-                delegate.setGuardian(gDelegate);
-                 
+                if (delegate.getIsGuardianAPatient()){
+                    gDelegate = new PatientDelegate(delegate.getGuardian());
+                    gDelegate.setPatientKey(key);
+                }
+                else{
+                    gDelegate = new PatientDelegate();
+                    gDelegate.setPatientKey(0);
+                }
                 entity = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_NEXT_HIGHEST_KEY, new ThePatient());
                 if (entity.getIsTableRowValue())
                     delegate.setPatientKey(((TableRowValue) entity).getValue() + 1);
+            }else{
+                delegate.setPatientKey(key);
+                gDelegate = new PatientDelegate();
+                gDelegate.setPatientKey(0);
             }
-            getPMSStoreConnection().setAutoCommit(true);
+            delegate.setGuardian(gDelegate);           
             runSQL(EntitySQL.PATIENT,PMSSQL.INSERT_PATIENT, delegate);
             result =  delegate.getPatientKey();
         }catch (SQLException ex){
@@ -3689,15 +3704,16 @@ public class AccessStore extends Store {
 
     @Override
     public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
+        ThePatient patient = null;
         EntityStoreType value = null;
         ThePatient.Collection result = null;
         try {
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             value = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENTS,null);
             if (value!=null){
-                if (value.getIsPatients()){
-                    result = (ThePatient.Collection)value;
-                    return result;
+                if (value.getIsPatient()){
+                    patient = (ThePatient)value;
+                    return patient.getCollection();
                 }else{
                     throw new StoreException(
                         "StoreException raised -> unexpected data type returned from persistent store "

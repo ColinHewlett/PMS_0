@@ -31,7 +31,7 @@ final class PatientDelegate extends ThePatient {
     
     private void copyPatientState(ThePatient patient){
         super.getAddress().setLine1(patient.getAddress().getLine1());
-        super.getAddress().setLine2(patient.getAddress().getLine1());
+        super.getAddress().setLine2(patient.getAddress().getLine2());
         super.getAddress().setTown(patient.getAddress().getTown());
         super.getAddress().setCounty(patient.getAddress().getCounty());
         super.getAddress().setPostcode(patient.getAddress().getPostcode());

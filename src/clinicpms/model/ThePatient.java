@@ -9,6 +9,7 @@ import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class ThePatient extends EntityStoreType {
     private LocalDate dob = null;
     private ThePatient guardian = null;
     private String gender = null;
-    private Boolean isGuardianAPatent = null;
+    private Boolean isGuardianAPatient = null;
     private Integer key  = null;
     private String notes = null;
     private String phone1 = null;
@@ -159,7 +160,10 @@ public class ThePatient extends EntityStoreType {
         address = new Address();
         recall = new Recall();
         appointmentHistory = new AppointmentHistory();
-        collection = new Collection();
+        collection = new Collection(this);
+        setIsGuardianAPatient(false);
+        getAppointmentHistory().set(new ArrayList<TheAppointment>());
+        setIsKeyDefined(false);
         this.setIsPatient(true);
     } 
     
@@ -169,7 +173,9 @@ public class ThePatient extends EntityStoreType {
             recall = new Recall();
             appointmentHistory = new AppointmentHistory();
             collection = new Collection();
-            this.key = key;
+            setKey(key);
+            setIsGuardianAPatient(false);
+            getAppointmentHistory().set(new ArrayList<TheAppointment>());
             this.setIsPatient(true);
     } 
     
@@ -204,6 +210,7 @@ public class ThePatient extends EntityStoreType {
     /**
      * the read method interrogates the Patient object returned from store, thus
      * -- if its getIsGuardianAKey() method returns true it reads the patient's guardian object in as well
+     * -- the returned patient AppointmentHistory's fetchDentalAppointments() method is called to include all appointments associated with this patient 
      * @return a fully initialised Patient object appropriately with or without a guardian if one exists
      * @throws StoreException 
      */
@@ -217,6 +224,7 @@ public class ThePatient extends EntityStoreType {
             guardian = store.read(guardian, guardian.getKey());
             patient.setGuardian(guardian);
         }
+        patient.getAppointmentHistory().fetchDentalAppointments();
         return patient;
     }
 
@@ -350,20 +358,31 @@ public class ThePatient extends EntityStoreType {
     
     public class AppointmentHistory{
 
+        private ArrayList<TheAppointment> dentalAppointments = null;
         /**
-         * At this stage of app development appointments.readForPatient expects a Patient object, not a ThePatient object
-         * @return
+         * method constructs a new appointment object 
+         * -- with this patient defined as the appointee
+         * -- and calls the appointment's collection inner class read method to fetch all appointments associated with this patient
+         * -- the dental appointments returned from the appointment object are then accessed via the AppointmentHistory's get(0 and set() methods 
          * @throws StoreException 
          */
-        public ArrayList<Appointment> getDentalAppointments()throws StoreException{
+        public void fetchDentalAppointments()throws StoreException{
             if (ThePatient.this.getKey()!=null) {
-                Appointments appointments = new Appointments();
-                Patient patient = new Patient(ThePatient.this.getKey());
-                appointments.readForPatient(
-                    patient,Appointment.Category.DENTAL);
-                return appointments;
+                TheAppointment appointment = new TheAppointment();
+                appointment.setPatient(new ThePatient(ThePatient.this.getKey()));
+                appointment.getCollection().setScope(TheAppointment.Scope.FOR_PATIENT);
+                appointment.getCollection().read();
+                set(appointment.getCollection().get());
             }
-            else return null;
+            else set(new ArrayList<TheAppointment>());
+        }
+        
+        public void set(ArrayList<TheAppointment> value){
+            dentalAppointments = value;
+        }
+        
+        public ArrayList<TheAppointment> get(){
+            return dentalAppointments;
         }
         
         public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
@@ -437,11 +456,20 @@ public class ThePatient extends EntityStoreType {
         this.phone2 = phone2;
     }
     
-    public Boolean getIsGuardianAPatient(){
-        return isGuardianAPatent;
+    private int getAge(LocalDate dob){
+        return Period.between(dob, LocalDate.now()).getYears();
     }
+    
+    public Boolean getIsGuardianAPatient(){
+        if (getDOB()!=null){
+            if (getAge(getDOB()) >= 18) return false;
+            else return isGuardianAPatient;
+        }
+        else return isGuardianAPatient;
+    }
+    
     public void setIsGuardianAPatient(Boolean isGuardianAPatient){
-        this.isGuardianAPatent = isGuardianAPatient;
+        this.isGuardianAPatient = isGuardianAPatient;
     }
     
     public ThePatient getGuardian(){
@@ -495,7 +523,7 @@ public class ThePatient extends EntityStoreType {
         String cappedLine2 = "";
         String cappedTown = "";
         String cappedCounty = "";
-        
+
         if (getAddress().getLine1() == null) getAddress().setLine1("");
         if (getAddress().getLine1().length()>0){
             //cappedLine1 = getAddress().getLine1().strip();
@@ -674,9 +702,22 @@ public class ThePatient extends EntityStoreType {
     }
     public class Collection extends EntityStoreType{
         private ArrayList<ThePatient> collection = null;
+        private ThePatient patient = null;
         
         private Collection(){
             this.setIsPatients(true);
+        }
+        
+        private Collection(ThePatient patient){
+            
+        }
+        
+        public ThePatient getPatient(){
+            return patient;
+        }
+        
+        public void setPatient(ThePatient p){
+            patient = p;
         }
         
         public ArrayList<ThePatient> get(){
@@ -714,7 +755,6 @@ public class ThePatient extends EntityStoreType {
             switch (pf){
                 case KEY:
                     patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));
-                    //if (patient.getKey() == 10791) isSelectedKey = true;
                     break;
                 case TITLE:
                     if (!dbfPatientRow[pf.ordinal()].isEmpty()){
