@@ -172,7 +172,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
             initialiseViewFromED();
         }
         else if (e.getPropertyName().equals(
-            EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+            EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SCHEDULE_ERROR_RECEIVED.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             ViewController.displayErrorMessage(ed.getError(),
                                                "Appointment editor dialog error",
@@ -555,15 +555,15 @@ public class AppointmentCreatorEditorModalViewer extends View {
                     case CREATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
-                            EntityDescriptor.AppointmentViewDialogActionEvent.
-                            APPOINTMENT_VIEW_CREATE_REQUEST.toString());
+                            EntityDescriptor.AppointmentViewControllerActionEvent.
+                            APPOINTMENT_CREATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
                         break;
                     case UPDATE:
                         evt = new ActionEvent(AppointmentCreatorEditorModalViewer.this,
                             ActionEvent.ACTION_PERFORMED,
-                            EntityDescriptor.AppointmentViewDialogActionEvent.
-                            APPOINTMENT_VIEW_UPDATE_REQUEST.toString());
+                            EntityDescriptor.AppointmentViewControllerActionEvent.
+                            APPOINTMENT_UPDATE_REQUEST.toString());
                         AppointmentCreatorEditorModalViewer.this.getMyController().actionPerformed(evt);
                         break;
                 }

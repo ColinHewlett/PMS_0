@@ -642,9 +642,12 @@ public class ThePatient extends EntityStoreType {
                 return true; 
 
             // checks if the comparison involves 2 objecs of the same type 
-            if(obj == null || obj.getClass()!= this.getClass()) 
-                return false; 
-
+            /**
+             * issue arise if one of the objects is an entity (for example a Patient) and the other object is its delegate sub class
+             */
+            //if(obj == null || obj.getClass()!= this.getClass()) 
+                //return false; 
+            if (obj == null) return false;
             // type casting of the argument.  
             ThePatient patient = (ThePatient) obj; 
 

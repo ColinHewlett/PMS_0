@@ -55,6 +55,7 @@ public class EntityDescriptor {
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
                                             APPOINTMENT_FOR_DAY_ERROR,
+                                            APPOINTMENT_SCHEDULE_ERROR_RECEIVED,
                                             SURGERY_DAYS_UPDATE_RECEIVED,
                                             RECEIVED_SURGERY_DAYS_ASSIGNMENT,
                                             NON_SURGERY_DAY_EDIT_RECEIVED
@@ -63,7 +64,9 @@ public class EntityDescriptor {
     public static enum AppointmentViewControllerActionEvent {
                                             APPOINTMENT_CANCEL_REQUEST,/*of selected appt*/
                                             APPOINTMENT_CREATE_VIEW_REQUEST,
+                                              APPOINTMENT_CREATE_REQUEST,
                                             APPOINTMENT_UPDATE_VIEW_REQUEST,/*of selected appt*/
+                                              APPOINTMENT_UPDATE_REQUEST,
                                             APPOINTMENTS_VIEW_CLOSED,
                                             APPOINTMENTS_FOR_DAY_REQUEST,/*triggered by day selection*/
                                             APPOINTMENT_SLOTS_FROM_DATE_REQUEST,

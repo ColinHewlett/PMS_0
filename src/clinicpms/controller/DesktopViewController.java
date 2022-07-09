@@ -278,9 +278,15 @@ public class DesktopViewController extends ViewController{
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
-                PatientViewController pvc = viewControllerIterator.next();               
-                int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
-                if (k1==k2){
+                PatientViewController pvc = viewControllerIterator.next();   
+                /**
+                 * following 2 lines replaced (5/07/2022 8:18)
+                 */
+                //int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
+                //if (k1==k2){
+                ThePatient patient = new ThePatient(k2);
+                //ref 08/07/2022 09:05 if (pvc.getEntityDescriptorFromView().getRequest().getThePatient().equals(patient)){
+                if (pvc.getEntityDescriptorFromView().getThePatient().equals(patient)){    
                     /**
                      * Found patient view controller for patient whose appointment history has been changed
                      * -- patient view controller's EntityDescriptor.Request.Patient points to appointee

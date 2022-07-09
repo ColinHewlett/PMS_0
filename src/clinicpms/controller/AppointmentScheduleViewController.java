@@ -131,6 +131,13 @@ public class AppointmentScheduleViewController extends ViewController{
             View the_view = (View)e.getSource();
             switch(the_view.getMyViewType()){
                 case APPOINTMENT_SCHEDULE_VIEW:
+                    doPrimaryViewActionRequest(e);
+                    break;
+                default:
+                    doSecondaryViewActionRequest(e);
+                    break;
+                /*
+                case APPOINTMENT_SCHEDULE_VIEW:
                     doAppointmentScheduleViewAction(e);
                     break;
                 case APPOINTMENT_CREATOR_EDITOR_VIEW:
@@ -152,9 +159,348 @@ public class AppointmentScheduleViewController extends ViewController{
                     this.view2 = (View)e.getSource();
                     doSurgeryDaysEditorViewAction(e);
                     break;
+                */
             }
         }
         
+    }
+    
+    private void doAppointmentCancelRequest(){
+        /**
+         * on receipt of APPOINTMENT_CANCEL_REQUEST
+         * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
+         * -- hence: getRequest.getPatient() returns the patient whose appointment has been cancelled
+         */
+        if (getEntityDescriptorFromView().getRequest().getAppointment().getAppointee().getData().getKey()!=null){
+
+            try{
+               /**
+                * The requested appointment is read into memory from the store using the specified appointment key
+                * -- this means the appointee (patient) object is encapsulated in the appointment object
+                * -- knowledge of the patient object is required to maintain consistency between views, which is a responsibility of the desktop view controller
+                * 
+                */
+                Appointment appointment = new Appointment(
+                   getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()).read();
+                appointment.delete();
+               /**
+                * two updates to a new Entity Descriptor required
+                * -- serialise appointments derived from appointments and empty slots for the day
+                * -- serialise the appointment which has just been delete (required for post processing by DesktopViewController)
+                */
+               /*
+                Appointments appointments = null;
+                LocalDate day = getEntityDescriptorFromView().
+                       getRequest().getAppointment().getData().getStart().toLocalDate();
+                initialiseNewEntityDescriptor();
+                appointments = new Appointments();
+                appointments.readForDay(day);
+                ArrayList<Appointment> appointmentSlotsForDay = 
+                        getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
+                appointments.addAll(appointmentSlotsForDay);
+                serialiseAppointmentsToEDCollection(appointments);
+               */
+               LocalDate day = getEntityDescriptorFromView().
+                       getRequest().getAppointment().getData().getStart().toLocalDate();
+               getUpdatedAppointmentSlotsForDay(day);
+               /**
+                * appointment serialisation to ED ensures appointee key is accessible by the desktop view controller
+                */
+                serialiseAppointmentToEDAppointment(appointment);
+               /**
+                * fire event over to APPOINTMENT_SCHEDULE
+                */ 
+                pcSupport.addPropertyChangeListener(this.view);
+                pcEvent = new PropertyChangeEvent(this,
+                   EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                   getOldEntityDescriptor(),getNewEntityDescriptor());
+                pcSupport.firePropertyChange(pcEvent);
+                pcSupport.removePropertyChangeListener(this.view);
+               /**
+                * send APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to Desktop view controller
+                * -- prime the appointment view controller's entity description with the patient that has just been deleted
+                * -- i.e so view controller can reliably let the desktop view controller know which patient has had an appointment deleted
+                */
+                setEntityDescriptorFromView(getNewEntityDescriptor());
+                ActionEvent actionEvent = new ActionEvent(
+                   this,ActionEvent.ACTION_PERFORMED,
+                   DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+                this.myController.actionPerformed(actionEvent);
+            }
+            catch (StoreException ex){
+               String message = ex.getMessage();
+               displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            }
+       }
+    }
+    
+    private void doAppointmentCreateViewRequest(){
+        /**
+         * on receipt of APPOINTMENT_CREATE_VIEW_REQUEST
+         * -- initialises NewEntityDescriptor with the collection of all patients on the system
+         * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
+         */
+        Patients patients = null;
+        initialiseNewEntityDescriptor();
+        try{
+            patients = new Patients();
+            patients.read();
+            serialisePatientsToEDCollection(patients);
+            //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
+            View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
+            this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
+            /**
+             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                   this,ActionEvent.ACTION_PERFORMED,
+                   DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+            this.myController.actionPerformed(actionEvent);
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doAppointmentUpdateViewRequest(){
+        /**
+         * on receipt of APPOINTMENT_UPDATE_VIEW_REQUEST
+         * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
+         * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
+         */
+        Patients patients = null;
+        if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
+            try{
+
+                Appointment appointment = new Appointment(
+                        getEntityDescriptorFromView().getRequest().
+                                getAppointment().getData().getKey()).read();
+
+                patients = new Patients();
+                patients.read();
+                initialiseNewEntityDescriptor();
+                serialiseAppointmentToEDAppointment(appointment);
+                serialisePatientsToEDCollection(patients);
+                View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
+                this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
+                /**
+                 * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+                 * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+                 * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+                 */
+                ActionEvent actionEvent = new ActionEvent(
+                        this,ActionEvent.ACTION_PERFORMED,
+                        DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+                this.myController.actionPerformed(actionEvent);
+            }
+            catch (StoreException ex){
+                String message = ex.getMessage();
+                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            } 
+        }
+    }
+    
+    private void doAppointmentsViewClosedRequest(){
+        /**
+         * APPOINTMENTS_VIEW_CLOSED
+         */
+        ActionEvent actionEvent = new ActionEvent(
+               this,ActionEvent.ACTION_PERFORMED,
+               DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
+        this.myController.actionPerformed(actionEvent); 
+    }
+    
+    private void doAppointmentsForDayRequest(ActionEvent e){
+        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        initialiseNewEntityDescriptor();
+        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+        Appointments appointments = null;
+        try{
+            getUpdatedAppointmentSlotsForDay(day);
+            /*
+            appointments = new Appointments();
+            appointments.readForDay(day);
+
+            //appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
+            ArrayList<Appointment> appointmentSlotsForDay = 
+                    getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
+            appointments.clear();
+            appointments.addAll(appointmentSlotsForDay);
+            serialiseAppointmentsToEDCollection(appointments);
+            */
+            /**
+             * fire event over to APPOINTMENT_SCHEDULE
+             */
+            pcSupport.addPropertyChangeListener(this.view);
+            pcEvent = new PropertyChangeEvent(this,
+                EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                getOldEntityDescriptor(),getNewEntityDescriptor());
+            pcSupport.firePropertyChange(pcEvent);
+            pcSupport.removePropertyChangeListener(this.view);
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+            /*
+            if (ex.getErrorType().toString().equals(Store.ExceptionType.UNDEFINED_DATABASE))
+                JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), message);
+            else 
+                displayErrorMessage(message,"AppointmentScheduleViewController error",JOptionPane.WARNING_MESSAGE);
+            */
+        }
+    }
+    
+    private void doModalViewerActivated(){
+        ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
+        this.myController.actionPerformed(actionEvent);
+    }
+    
+    private void doNonSurgeryDayScheduleViewRequest(){
+        try{
+            setNewEntityDescriptor(new EntityDescriptor());
+            initialiseNewEntityDescriptor();
+            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+            View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
+            this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
+            /**
+             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                   this,ActionEvent.ACTION_PERFORMED,
+                   DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+            this.myController.actionPerformed(actionEvent);
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doSurgeryDayScheduleViewRequest(){
+        try{
+            setNewEntityDescriptor(new EntityDescriptor());
+            initialiseNewEntityDescriptor();
+            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+            View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
+            this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
+            /**
+             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+             */
+            ActionEvent actionEvent = new ActionEvent(
+                   this,ActionEvent.ACTION_PERFORMED,
+                   DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+            this.myController.actionPerformed(actionEvent);
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doPatientAppointmentContactViewRequest(ActionEvent e){
+        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        initialiseNewEntityDescriptor();
+        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
+        Appointments appointments = null;
+        try{
+            appointments = new Appointments();
+            appointments.readForDay(day);
+            serialiseAppointmentsToEDCollection(appointments);
+            View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
+            this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
+            this.desktopView.add(pacView);
+            this.pacView.initialiseView();
+        }
+        catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void doEmptySlotScannerDialogRequest(ActionEvent e){
+        /**
+         * EMPTY_SLOT_SCANNER_DIALOG_REQUEST constructs an EmptySlotScanEditorModalViewer
+         */
+        View.setViewer(View.Viewer.EMPTY_SLOT_SCANNER_VIEW);
+        this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView);
+
+        /**
+         * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
+         * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
+         * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
+         */
+        ActionEvent actionEvent = new ActionEvent(
+                this,ActionEvent.ACTION_PERFORMED,
+                DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
+        this.myController.actionPerformed(actionEvent);
+    }
+
+    private void doPrimaryViewActionRequest(ActionEvent e){
+        EntityDescriptor.AppointmentViewControllerActionEvent actionCommand =
+               EntityDescriptor.AppointmentViewControllerActionEvent.valueOf(e.getActionCommand());
+        switch (actionCommand){
+            case APPOINTMENT_CANCEL_REQUEST:
+                doAppointmentCancelRequest();
+                break;
+            case APPOINTMENT_CREATE_VIEW_REQUEST:
+                doAppointmentCreateViewRequest();
+                break;
+            case APPOINTMENT_UPDATE_VIEW_REQUEST:
+                doAppointmentUpdateViewRequest();
+                break;
+            case APPOINTMENTS_VIEW_CLOSED: 
+                doAppointmentsViewClosedRequest();
+                break;
+            case APPOINTMENTS_FOR_DAY_REQUEST:
+                doAppointmentsForDayRequest(e);
+                break;
+            case MODAL_VIEWER_ACTIVATED://notification from view uts shutting down
+                doModalViewerActivated();
+                break;
+            case NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST:
+                doNonSurgeryDayScheduleViewRequest();
+                break;
+            case SURGERY_DAYS_EDITOR_VIEW_REQUEST:
+                doSurgeryDayScheduleViewRequest();
+                break;
+            case PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST:
+                doPatientAppointmentContactViewRequest(e);
+                break;
+            case EMPTY_SLOT_SCANNER_DIALOG_REQUEST: 
+                doEmptySlotScannerDialogRequest(e);
+                break;     
+        }
+    }
+    
+    private void doSecondaryViewActionRequest(ActionEvent e){
+        this.view2 = (View)e.getSource();
+        setEntityDescriptorFromView(this.view2.getEntityDescriptor());
+        View the_view = (View)e.getSource();
+        switch(the_view.getMyViewType()){
+            case APPOINTMENT_CREATOR_EDITOR_VIEW:
+                doAppointmentCreatorEditorViewAction(e);
+                break;
+            case EMPTY_SLOT_SCANNER_VIEW:
+                doEmptySlotScannerViewAction(e);
+                break;
+            case NON_SURGERY_DAY_EDITOR_VIEW:
+                doNonSurgeryDayScheduleEditorViewAction(e);
+                break;
+            case SCHEDULE_CONTACT_DETAILS_VIEW:
+                break;
+            case SURGERY_DAY_EDITOR_VIEW:
+                doSurgeryDaysEditorViewAction(e);
+                break;
+        }
     }
     
     private void doScheduleContactListView(ActionEvent e){
@@ -319,12 +665,147 @@ public class AppointmentScheduleViewController extends ViewController{
             
         }
     }
+    
+    private Appointment doAppointmentCreateRequest(ActionEvent e, LocalDate day){
+        Appointment result = null;
+        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        day = getEntityDescriptorFromView().getRequest().
+                getAppointment().getData().getStart().toLocalDate();
+        initialiseNewEntityDescriptor();
+        try{
+            result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
+        }catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error on attempt to create a new appointment",JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private Appointment doAppointmentUpdateRequest(ActionEvent e, LocalDate day){
+        Appointment result = null;
+        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        day = getEntityDescriptorFromView().getRequest().
+                getAppointment().getData().getStart().toLocalDate();
+        initialiseNewEntityDescriptor();
+        try{
+            result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
+        }catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error on attempt to update an appointment",JOptionPane.WARNING_MESSAGE);
+        }
+        return result;
+    }
+    
+    private void initialiseAppointmentSchedule(LocalDate day, Appointment result){
+        Appointments appointments = null;
+        try{
+            this.view2.setClosed(true);
+        }
+        catch (PropertyVetoException ex){
+
+        }
+        /**
+         * either an update or create appointment event has occurred, so clear empty slot list
+         * fire event over to APPOINTMENT_SCHEDULE
+         * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
+         */
+        initialiseNewEntityDescriptor();
+        pcEvent = new PropertyChangeEvent(this,
+            EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
+            null,getNewEntityDescriptor());
+        pcSupport.firePropertyChange(pcEvent);
+        pcSupport.removePropertyChangeListener(this.view);
+        /**
+         * initialise entity descriptor
+         * -- with new list of appointments and available slots for the day
+         * -- as well as the appointment instance that's been created or updated
+         */
+        try{
+            getUpdatedAppointmentSlotsForDay(day);
+            /*
+            appointments = new Appointments();
+            appointments.readForDay(day); //throws StoreException
+
+            ArrayList<Appointment> appointmentSlotsForDay = 
+                    getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
+            appointments.clear();
+            appointments.addAll(appointmentSlotsForDay);
+            serialiseAppointmentsToEDCollection(appointments);
+            */
+            /**
+             * Added request to update ED with serialised new or updated appointment
+             */
+            serialiseAppointmentToEDAppointment(result);
+            /**
+             * fire event over to APPOINTMENT_SCHEDULE
+             * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
+             */
+            pcSupport.addPropertyChangeListener(this.view);
+            pcEvent = new PropertyChangeEvent(this,
+                EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
+                getOldEntityDescriptor(),getNewEntityDescriptor());
+            pcSupport.firePropertyChange(pcEvent);
+            /**
+             * send desktop view controller the APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
+             * -- note: important to restore view controller's EntityDescriptorFromView with entity descriptor fetched from APPOINTMENT_CREATE_EDIT_VIEW
+             */
+            setEntityDescriptorFromView(getNewEntityDescriptor());
+            ActionEvent actionEvent = new ActionEvent(
+                    this,ActionEvent.ACTION_PERFORMED,
+                    DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
+            this.myController.actionPerformed(actionEvent);
+        }catch (StoreException ex){
+            String message = ex.getMessage();
+            displayErrorMessage(message,"AppointmentViewController error on "
+                    + "attempt to fetch from store appointments for a specific day",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void sendErrorToAppointmentCreatorEditorView(){
+        /**
+         * fire event over to APPOINTMENT_CREATOR_EDITOR_VIEW
+         */
+        pcSupport.addPropertyChangeListener(this.view2);
+        pcEvent = new PropertyChangeEvent(this,
+           EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SCHEDULE_ERROR_RECEIVED.toString(),
+           getOldEntityDescriptor(),getNewEntityDescriptor());
+        pcSupport.firePropertyChange(pcEvent);
+        pcSupport.removePropertyChangeListener(this.view2);
+    }
+    
+    private void doAppointmentCreatorEditorViewAction(ActionEvent e){
+        Appointment result = null;
+        LocalDate day = null;
+        EntityDescriptor.AppointmentViewControllerActionEvent actionCommand =
+               EntityDescriptor.AppointmentViewControllerActionEvent.valueOf(e.getActionCommand());        
+        switch (actionCommand){
+            case APPOINTMENT_CREATE_REQUEST:
+                day = getEntityDescriptorFromView().getRequest().getAppointment().
+                        getData().getStart().toLocalDate();
+                result = doAppointmentCreateRequest(e, day);
+                if (result!=null) initialiseAppointmentSchedule(day, result);
+                else sendErrorToAppointmentCreatorEditorView();
+                break;
+            case APPOINTMENT_UPDATE_REQUEST:
+                day = getEntityDescriptorFromView().getRequest().getAppointment().
+                        getData().getStart().toLocalDate();
+                result = doAppointmentUpdateRequest(e, day);
+                if (result!=null) initialiseAppointmentSchedule(day,result);
+                else sendErrorToAppointmentCreatorEditorView();
+                break;
+            case MODAL_VIEWER_ACTIVATED:
+                doModalViewerActivated();
+                break;     
+        } 
+    }
+    
     /**
      * on APPOINTMENT_VIEW_CREATE_REQUEST & APPOINTMENT_VIEW_UPDATE_REQUEST
      * -- the view controller expects appointee data in EntityDescriptor.Request.Patient and start, duration and notes in EntityDescriptor.Request.Appointment
      * @param e ActionEvent
      */
-    private void doAppointmentCreatorEditorViewAction(ActionEvent e){
+    private void doAppointmentCreatorEditorViewActionx(ActionEvent e){
         Appointment result = null;
         LocalDate day = null;
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
@@ -1562,5 +2043,16 @@ public class AppointmentScheduleViewController extends ViewController{
         return view;
     }
 
-  
+    private void getUpdatedAppointmentSlotsForDay(LocalDate day)throws StoreException{
+        Appointments appointments = null;
+        
+        initialiseNewEntityDescriptor();
+        appointments = new Appointments();
+        appointments.readForDay(day);
+        ArrayList<Appointment> appointmentSlotsForDay = 
+                getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
+        appointments.clear();
+        appointments.addAll(appointmentSlotsForDay);
+        serialiseAppointmentsToEDCollection(appointments);
+    }
 }
