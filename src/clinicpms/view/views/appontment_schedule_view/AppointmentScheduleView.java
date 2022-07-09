@@ -68,6 +68,34 @@ public class AppointmentScheduleView extends View{
      */ 
     @Override
     public void propertyChange(PropertyChangeEvent e){
+        EntityDescriptor.AppointmentViewControllerPropertyEvent propertyName = 
+                EntityDescriptor.AppointmentViewControllerPropertyEvent.valueOf(e.getPropertyName());
+        setEntityDescriptor((EntityDescriptor)e.getNewValue());
+        switch (propertyName){
+            case APPOINTMENTS_FOR_DAY_RECEIVED:
+                initialiseViewFromEDCollection();
+                break;
+            case SURGERY_DAYS_ASSIGNMENT_RECEIVED:
+                updateDatePickerSettings();
+                break;
+            case NON_SURGERY_DAY_EDIT_RECEIVED:
+                temporarilySuspendDatePickerDateVetoPolicy(getEntityDescriptor().getRequest().getDay());
+                break;
+            case APPOINTMENT_SLOTS_FROM_DAY_RECEIVED:
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+                /**
+                 * without the next lines the appointments table is unconscious of being selected?!)
+                 */
+                getEntityDescriptor().getRequest().setDay(dayDatePicker.getDate());
+                refreshAppointmentTableWithCurrentlySelectedDate();
+                break;
+            case APPOINTMENT_SCHEDULE_ERROR_RECEIVED:
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+                break;
+                
+        }
+        
+        /*
         String propertyName = e.getPropertyName();
         if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
@@ -79,7 +107,7 @@ public class AppointmentScheduleView extends View{
             DatePickerSettings dps = dayDatePicker.getSettings();
             dps.setVetoPolicy(vetoPolicy);
         }
-        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.RECEIVED_SURGERY_DAYS_ASSIGNMENT.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_ASSIGNMENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
             DatePickerSettings dps = dayDatePicker.getSettings();
@@ -93,17 +121,22 @@ public class AppointmentScheduleView extends View{
         else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
-            
-            /**
-             * without the next lines the appointments table is unconscious of being selected?!)
-             */
+
             getEntityDescriptor().getRequest().setDay(dayDatePicker.getDate());
             refreshAppointmentTableWithCurrentlySelectedDate();
         } 
-        else if (propertyName.equals(EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString())){
+        else if (propertyName.equals(EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SCHEDULE_ERROR_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
         }
+        */
+    }
+    
+    private void updateDatePickerSettings(){
+        DatePickerSettings dps = null;
+        this.vetoPolicy = new AppointmentDateVetoPolicy(getEntityDescriptor().getRequest().getSurgeryDaysAssignmentValue());
+        dps = dayDatePicker.getSettings();
+        dps.setVetoPolicy(vetoPolicy);
     }
     
     private void temporarilySuspendDatePickerDateVetoPolicy(LocalDate day){
