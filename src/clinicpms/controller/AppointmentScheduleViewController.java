@@ -72,10 +72,7 @@ public class AppointmentScheduleViewController extends ViewController{
     public AppointmentScheduleViewController(ActionListener controller, DesktopView desktopView, Optional<EntityDescriptor> ed)throws StoreException{
         setMyController(controller);
         this.desktopView = desktopView;
-        //this.owningFrame = desktopView;
         pcSupport = new PropertyChangeSupport(this);
-        //setNewEntityDescriptor(new EntityDescriptor());
-        //getNewEntityDescriptor().getRequest().setDay(LocalDate.now());
         EntityDescriptor e = ed.orElse(new EntityDescriptor());
         setNewEntityDescriptor(e);
         setOldEntityDescriptor(getNewEntityDescriptor());
@@ -90,7 +87,6 @@ public class AppointmentScheduleViewController extends ViewController{
             this.view.addInternalFrameClosingListener(); 
             this.view.initialiseView();
             pcSupport.removePropertyChangeListener(this.view);
-            //this.day = getNewEntityDescriptor().getRequest().getDay();
         }
         catch (StoreException ex){
             displayErrorMessage(ex.getMessage(),"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
@@ -578,7 +574,7 @@ public class AppointmentScheduleViewController extends ViewController{
                  */
                 pcSupport.addPropertyChangeListener(view);
                 pcEvent = new PropertyChangeEvent(this,
-                    EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_UPDATE_RECEIVED.toString(),
+                    EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_ASSIGNMENT_RECEIVED.toString(),
                     getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupport.firePropertyChange(pcEvent);
                 pcSupport.removePropertyChangeListener(view);
@@ -710,7 +706,7 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
          */
         initialiseNewEntityDescriptor();
-        //
+        //09/07/2022 07:02
         pcSupport.addPropertyChangeListener(view);
         pcEvent = new PropertyChangeEvent(this,
             EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
@@ -914,7 +910,7 @@ public class AppointmentScheduleViewController extends ViewController{
                      */
                     pcSupport.addPropertyChangeListener(this.view2);
                     pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_VIEW_ERROR.toString(),
+                        EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_ASSIGNMENT_RECEIVED.toString(),
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                     pcSupport.firePropertyChange(pcEvent);
                     pcSupport.removePropertyChangeListener(this.view2);

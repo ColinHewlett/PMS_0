@@ -51,13 +51,13 @@ public class EntityDescriptor {
                                 NOTES}
     
     public static enum AppointmentViewControllerPropertyEvent {
-                                            APPOINTMENT_CANCEL_COMPLETE,
+                                            //APPOINTMENT_CANCEL_COMPLETE,
                                             APPOINTMENTS_FOR_DAY_RECEIVED,
                                             APPOINTMENT_SLOTS_FROM_DAY_RECEIVED,
-                                            APPOINTMENT_FOR_DAY_ERROR,
+                                            //APPOINTMENT_FOR_DAY_ERROR,
                                             APPOINTMENT_SCHEDULE_ERROR_RECEIVED,
-                                            SURGERY_DAYS_UPDATE_RECEIVED,
-                                            RECEIVED_SURGERY_DAYS_ASSIGNMENT,
+                                            //SURGERY_DAYS_UPDATE_RECEIVED,
+                                            SURGERY_DAYS_ASSIGNMENT_RECEIVED,
                                             NON_SURGERY_DAY_EDIT_RECEIVED
                                             }
     
@@ -87,8 +87,8 @@ public class EntityDescriptor {
                                             APPOINTMENT_VIEW_UPDATE_REQUEST,
                                             }
     public static enum AppointmentViewDialogPropertyEvent {
-                                            APPOINTMENT_RECEIVED,
-                                            APPOINTMENT_VIEW_ERROR
+                                            //APPOINTMENT_RECEIVED,
+                                            //APPOINTMENT_VIEW_ERROR
                                             }
     
     public static enum PatientField {

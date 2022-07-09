@@ -166,12 +166,14 @@ public class AppointmentCreatorEditorModalViewer extends View {
     
     @Override
     public void propertyChange(PropertyChangeEvent e){
+        /*
         if (e.getPropertyName().equals(
-                EntityDescriptor.AppointmentViewDialogPropertyEvent.APPOINTMENT_RECEIVED.toString())){
+                EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_RECEIVED.toString())){
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             initialiseViewFromED();
         }
-        else if (e.getPropertyName().equals(
+        */
+        if (e.getPropertyName().equals(
             EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SCHEDULE_ERROR_RECEIVED.toString())){
             EntityDescriptor ed = (EntityDescriptor)e.getNewValue();
             ViewController.displayErrorMessage(ed.getError(),
