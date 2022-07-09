@@ -710,6 +710,8 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
          */
         initialiseNewEntityDescriptor();
+        //
+        pcSupport.addPropertyChangeListener(view);
         pcEvent = new PropertyChangeEvent(this,
             EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
             null,getNewEntityDescriptor());
