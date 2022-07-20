@@ -11,6 +11,7 @@ import clinicpms.view.views.appontment_schedule_view.AppointmentsTableLocalDateT
 import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
+import clinicpms.model.TheAppointment;
 import clinicpms.view.View;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Iterator;
+import java.util.ArrayList;
 import javax.swing.JInternalFrame;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
@@ -51,7 +53,7 @@ public class ScheduleContactDetailsView extends View {
         this.myController = myController;
         this.entityDescriptor = value;
         initComponents();
-        this.populatePatientAppointmentContactsTable(getEntityDescriptor().getAppointments());
+        this.populatePatientAppointmentContactsTable(getEntityDescriptor().getTheAppointments());
     }
     
     /**
@@ -114,7 +116,7 @@ public class ScheduleContactDetailsView extends View {
         return this.myController;
     }
     
-    private void populatePatientAppointmentContactsTable(EntityDescriptor.Appointments a){
+    private void populatePatientAppointmentContactsTable(ArrayList<TheAppointment> a){
         PatientAppointmentContactView6ColumnTableModel model;
         if (this.tblPatientAppointmentContacts!=null){
             this.scrPatientAppointmentContactView.remove(this.tblPatientAppointmentContacts);   
@@ -125,7 +127,7 @@ public class ScheduleContactDetailsView extends View {
         model = (PatientAppointmentContactView6ColumnTableModel)this.tblPatientAppointmentContacts.getModel();
         model.removeAllElements();
 //model.fireTableDataChanged();
-        Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        Iterator<TheAppointment> it = a.iterator();
         while (it.hasNext()){
             ((PatientAppointmentContactView6ColumnTableModel)this.tblPatientAppointmentContacts.getModel()).addElement(it.next());
         }

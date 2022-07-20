@@ -6,6 +6,8 @@
 package clinicpms.view.views.appontment_schedule_view;
 
 import clinicpms.controller.EntityDescriptor;
+import clinicpms.model.TheAppointment;
+import clinicpms.model.ThePatient;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,20 +26,21 @@ import javax.swing.table.AbstractTableModel;
  * -- with -> public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
  */
 public class Appointments5ColumnTableModel extends AbstractTableModel{
-    public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
+    public ArrayList<TheAppointment> appointments = new ArrayList<>();
     private enum COLUMN{Patient, From,To,Duration,Notes};
     private final Class[] columnClass = new Class[] {
-        EntityDescriptor.Patient.class, 
+        //EntityDescriptor.Patient.class, 
+        ThePatient.class,
         LocalTime.class, 
         LocalTime.class, 
         Duration.class, 
         String.class};
     
-    public ArrayList<EntityDescriptor.Appointment> getAppointments(){
+    public ArrayList<TheAppointment> getAppointments(){
         return this.appointments;
     }
     
-    public void addElement(EntityDescriptor.Appointment a){
+    public void addElement(TheAppointment a){
         appointments.add(a);
     }
     
@@ -46,7 +49,7 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
         this.fireTableDataChanged();
     }
     
-    public EntityDescriptor.Appointment getElementAt(int row){
+    public TheAppointment getElementAt(int row){
         return appointments.get(row);
     }
 
@@ -78,19 +81,22 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        EntityDescriptor.Appointment appointment = getAppointments().get(row);
+        TheAppointment appointment = getAppointments().get(row);
         for (COLUMN column: COLUMN.values()){
             if (column.ordinal() == columnIndex){
                 if (appointment == null){
                     return null;
                 }
                 else{
-                    LocalDateTime start = appointment.getData().getStart();
-                    long minutes = appointment.getData().getDuration().toMinutes();
-                    Duration duration = appointment.getData().getDuration();
+                    //LocalDateTime start = appointment.getData().getStart();
+                    //long minutes = appointment.getData().getDuration().toMinutes();
+                    //Duration duration = appointment.getData().getDuration();
+                    LocalDateTime start = appointment.getStart();
+                    long minutes = appointment.getDuration().toMinutes();
+                    Duration duration = appointment.getDuration();
                     switch (column){
                         case Patient:
-                            result = appointment.getAppointee();
+                            result = appointment.getPatient();
                             break;
                         case From:
                             result = start.toLocalTime();
@@ -102,7 +108,7 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
                             result = duration;
                             break;
                         case Notes:
-                            result = appointment.getData().getNotes(); 
+                            result = appointment.getNotes(); 
                             break;
                     }
                     break;

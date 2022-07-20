@@ -3589,6 +3589,7 @@ public class AccessStore extends Store {
     
     @Override
     public TheAppointment read(TheAppointment.Collection entity, Integer key)throws StoreException{
+        boolean isAppointmentsForDay = false;
         PatientDelegate delegate = null;
         EntityStoreType result = null;
         PMSSQL sqlStatement = null;
@@ -3598,6 +3599,7 @@ public class AccessStore extends Store {
                 break;
             case FOR_DAY:
                 sqlStatement = PMSSQL.READ_APPOINTMENTS_FOR_DAY;
+                isAppointmentsForDay = true;
                 break;
             case FOR_PATIENT:
                 delegate = new PatientDelegate(key);
@@ -3609,6 +3611,15 @@ public class AccessStore extends Store {
                 break;       
         }
         result = runSQL(EntitySQL.APPOINTMENT, sqlStatement, entity );
+        if (isAppointmentsForDay){
+            Iterator<TheAppointment> it = ((TheAppointment)result).getCollection().get().iterator();
+            while (it.hasNext()){
+                TheAppointment appointment = it.next();
+                Integer theKey = ((PatientDelegate)appointment.getPatient()).getPatientKey();
+                ThePatient patient = new ThePatient(((PatientDelegate)appointment.getPatient()).getPatientKey());
+                appointment.setPatient(patient.read());
+            }
+        }
         return (TheAppointment)result;
     }
     

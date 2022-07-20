@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ import java.util.List;
  */
 public class TheAppointment extends EntityStoreType{
     public static enum Status{BOOKED,UNBOOKED};
+    private Boolean isKeyDefined = false;
     private Integer key = null;
     private LocalDateTime start = null;
     private Duration duration  = null;
@@ -98,12 +100,25 @@ public class TheAppointment extends EntityStoreType{
     public void setNotes(String notes) {
         this.notes = notes;
     }
+    
+    public Boolean getIsKeyDefined(){
+        return isKeyDefined;
+    }
+    
+    public void setIsKeyDefined(Boolean value){
+        isKeyDefined = value;
+    }
+    
 
     protected Integer getKey() {
         return key;
     }
     protected void setKey(Integer key) {
         this.key = key;
+        if (key!=null)
+            if (key!=0) setIsKeyDefined(true);
+            else setIsKeyDefined(false);
+        else setIsKeyDefined(false);  
     }
     public TheAppointment.Status getStatus(){
         return this.status;
@@ -152,6 +167,8 @@ public class TheAppointment extends EntityStoreType{
     
     public TheAppointment read() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
+        //TheAppointment appointment = store.read(this, getKey());
+        //return appointment;
         return store.read(this,getKey());
     }
     
@@ -212,6 +229,14 @@ public class TheAppointment extends EntityStoreType{
                     key = getAppointment().getPatient().getKey();      
             }
             set(store.read(this, key).getCollection().get());
+            /*
+            Iterator<TheAppointment> it = get().iterator();
+            while (it.hasNext()){
+                TheAppointment appointment = it.next();
+                ThePatient patient = new ThePatient(appointment.getPatient().getKey());
+                appointment.setPatient(patient.read());
+            }
+            */
         }
         
         public ArrayList<TheAppointment> get(){

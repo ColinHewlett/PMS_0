@@ -5,6 +5,8 @@
  */
 package clinicpms.view.views.schedule_contact_details_view;
 
+import clinicpms.model.TheAppointment;
+import clinicpms.model.ThePatient;
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -32,19 +34,19 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
     }
         
     public class AppointmentPlus{
-        private EntityDescriptor.Patient patient = null;
+        private ThePatient patient = null;
         private LocalDateTime start = null;
         private Duration duration = null;
         private String notes = null;
         private Boolean hasBeenContacted = false;
         
-        public AppointmentPlus(EntityDescriptor.Appointment a){
-            patient = a.getAppointee();
-            start = a.getData().getStart();
-            duration = a.getData().getDuration();
-            notes = a.getData().getNotes();   
+        public AppointmentPlus(TheAppointment a){
+            patient = a.getPatient();
+            start = a.getStart();
+            duration = a.getDuration();
+            notes = a.getNotes();   
         }
-        public EntityDescriptor.Patient getPatient(){
+        public ThePatient getPatient(){
             return patient;
         }
         public LocalDateTime getStart(){
@@ -64,7 +66,7 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
         return appointments;
     }
     
-    public void addElement(EntityDescriptor.Appointment a){
+    public void addElement(TheAppointment a){
         AppointmentPlus aPlus = new AppointmentPlus(a);
         appointments.add(aPlus);
     }
@@ -126,8 +128,8 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
                     LocalDateTime start = appointment.getStart();
                     long minutes = appointment.getDuration().toMinutes();
                     Duration duration = appointment.getDuration();
-                    String phone1 = appointment.getPatient().getData().getPhone1();
-                    String phone2 = appointment.getPatient().getData().getPhone2();
+                    String phone1 = appointment.getPatient().getPhone1();
+                    String phone2 = appointment.getPatient().getPhone2();
                     String contactDetails = null;
                     contactDetails = "{Phone 1} " + phone1 + "; ";
                     contactDetails = contactDetails + "{Phone 2} " + phone2;

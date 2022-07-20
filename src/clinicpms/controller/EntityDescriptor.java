@@ -5,10 +5,10 @@
  */
 package clinicpms.controller;
 
+import clinicpms.model.TheAppointment;
 import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.SurgeryDaysAssignment;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -23,20 +23,22 @@ import java.util.HashMap;
  */
 public class EntityDescriptor {
     
-    private ArrayList<PatientNotification> patientNotifications = null;
     private PatientNotification patientNotification;
+    private ArrayList<PatientNotification> patientNotifications = null; 
+    private TheAppointment theAppointment = null;
+    private ArrayList<TheAppointment> theAppointments = null;
+    private ThePatient thePatient = null;
+    private ArrayList<ThePatient> thePatients = null;
+    private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
+    
     private EntityDescriptor.Appointment appointment = null;
     private EntityDescriptor.Patient patient = null;
-    private ThePatient thePatient = null;
     private EntityDescriptor.Patient patientGuardian = null;
     private EntityDescriptor.PatientAppointmentHistory patientAppointmentHistory = null;
     private EntityDescriptor.Request request= null;
     private EntityDescriptor.Appointments appointments = null;
     private EntityDescriptor.Patients patients = null;
-    //private clinicpms.model.Patients thePatients = null;
-    private ArrayList<ThePatient> thePatients = null;
-    private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
-    //private EntityDescriptor.MigrationDescriptor migrationDescriptor = null;
+
     private String error = null;
     private Integer tableRowCount = null;
     private String appointmentCSVPath = null;
@@ -259,6 +261,14 @@ public class EntityDescriptor {
     protected void setError(String message){
         error = message;
     }
+    
+    public TheAppointment getTheAppointment() {
+        return theAppointment;
+    }
+    
+    protected void setTheAppointment(TheAppointment value) {
+        theAppointment = value;
+    }
 
     public EntityDescriptor.Appointment getAppointment() {
         return appointment;
@@ -297,6 +307,14 @@ public class EntityDescriptor {
 
     public EntityDescriptor.Request getRequest(){
         return request;
+    }
+    
+    public ArrayList<TheAppointment> getTheAppointments(){
+        return theAppointments;
+    }
+    
+    public void setTheAppointments(ArrayList<TheAppointment> value){
+        theAppointments = value;
     }
     
     public EntityDescriptor.Appointments getAppointments(){
@@ -698,8 +716,10 @@ public class EntityDescriptor {
 
 
         protected Request() {
+            
             appointment = new EntityDescriptor.Appointment();
             patient = new EntityDescriptor.Patient();
+            theAppointment = new TheAppointment();
             thePatient = new ThePatient();
             theGuardian = new ThePatient();
             guardian = new EntityDescriptor.Patient();
@@ -715,6 +735,14 @@ public class EntityDescriptor {
         
         public void setTheGuardian(ThePatient patient){
             theGuardian = patient;
+        }
+        
+        public TheAppointment getTheAppointment(){
+            return theAppointment;
+        }
+        
+        public void setTheAppointment(TheAppointment value){
+            theAppointment = value;
         }
         
         public ThePatient getThePatient(){

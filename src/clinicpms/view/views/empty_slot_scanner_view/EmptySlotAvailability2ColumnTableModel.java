@@ -7,6 +7,7 @@ package clinicpms.view.views.empty_slot_scanner_view;
 
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
+import clinicpms.model.TheAppointment;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -23,7 +24,8 @@ import javax.swing.table.AbstractTableModel;
  * @author colin
  */
 public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
-    public ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
+    //public ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
+    public ArrayList<TheAppointment> emptySlots = new ArrayList<>();
     private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private enum COLUMN{EmptySlot, Duration};
     private final Class[] columnClass = new Class[] { 
@@ -31,11 +33,11 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         String.class};
     
     
-    public ArrayList<EntityDescriptor.Appointment> getEmptySlots(){
+    public ArrayList<TheAppointment> getEmptySlots(){
         return this.emptySlots;
     }
     
-    public void addElement(EntityDescriptor.Appointment a){
+    public void addElement(TheAppointment a){
         emptySlots.add(a);
     }
     
@@ -44,7 +46,7 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         this.fireTableDataChanged();
     }
     
-    public EntityDescriptor.Appointment getElementAt(int row){
+    public TheAppointment getElementAt(int row){
         return emptySlots.get(row);
     }
 
@@ -81,14 +83,15 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        EntityDescriptor.Appointment slot = getEmptySlots().get(row);
+        //EntityDescriptor.Appointment slot = getEmptySlots().get(row);
+        TheAppointment slot = getEmptySlots().get(row);
         switch (columnIndex){
             case 0:
-                result = slot.getData().getStart().format(emptySlotFormat);  
+                result = slot.getStart().format(emptySlotFormat);  
                 break;   
             case 1:
                 result = convertSlotDurationToString(
-                    slot.getData().getDuration(), slot.getData().getStart().toLocalDate());   
+                    slot.getDuration(), slot.getStart().toLocalDate());   
                 break; 
         }
         return (String)result;

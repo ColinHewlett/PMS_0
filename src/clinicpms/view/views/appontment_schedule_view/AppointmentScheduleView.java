@@ -4,6 +4,9 @@
  * and open the template in the editor.
  */
 package clinicpms.view.views.appontment_schedule_view;
+
+import clinicpms.model.TheAppointment;
+import clinicpms.model.ThePatient;
 import clinicpms.view.AppointmentDateVetoPolicy;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.views.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
@@ -57,7 +60,7 @@ public class AppointmentScheduleView extends View{
     private EntityDescriptor entityDescriptor = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private DatePickerSettings settings = null;
-    private ArrayList<EntityDescriptor.Appointment> appointments = null;
+    private ArrayList<TheAppointment> appointments = null;
     private DateTimeFormatter emptySlotStartFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private DateTimeFormatter appointmentScheduleFormat = DateTimeFormatter.ofPattern("EEEE, MMMM dd yyyy ");
     private AppointmentDateVetoPolicy vetoPolicy = null;
@@ -82,7 +85,7 @@ public class AppointmentScheduleView extends View{
                 temporarilySuspendDatePickerDateVetoPolicy(getEntityDescriptor().getRequest().getDay());
                 break;
             case APPOINTMENT_SLOTS_FROM_DAY_RECEIVED:
-                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getTheAppointments());
                 /**
                  * without the next lines the appointments table is unconscious of being selected?!)
                  */
@@ -90,7 +93,7 @@ public class AppointmentScheduleView extends View{
                 refreshAppointmentTableWithCurrentlySelectedDate();
                 break;
             case APPOINTMENT_SCHEDULE_ERROR_RECEIVED:
-                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getTheAppointments());
                 break;
                 
         }
@@ -196,7 +199,8 @@ public class AppointmentScheduleView extends View{
         this.entityDescriptor = value;
     }   
     private void initialiseViewFromEDCollection(){
-        appointments = getEntityDescriptor().getAppointments().getData();
+        //appointments = getEntityDescriptor().getAppointments().getData();
+        appointments = getEntityDescriptor().getTheAppointments();
         populateAppointmentsForDayTable();
     }
     /**
@@ -205,7 +209,7 @@ public class AppointmentScheduleView extends View{
      * update 30/07/2021 19:53
      */
     private void initialiseEDRequestFromView(int row){
-        getEntityDescriptor().getRequest().setAppointment(tableModel.getElementAt(row));    
+        getEntityDescriptor().getRequest().setTheAppointment(tableModel.getElementAt(row));    
     }
 
     /**
@@ -322,12 +326,12 @@ public class AppointmentScheduleView extends View{
      * Update 30/07/2021 19:53
      * @param row selected row in table
      */
-    private void doEmptySlotAvailabilityTableRowSelection(int row){
+    private void doEmptySlotAvailabilityTableRowSelectionx(int row){
         /*
         String appointmentDate = (String)this.tblEmptySlotAvailability.getModel().getValueAt(row, 0);
         LocalDate start = LocalDateTime.parse(appointmentDate, emptySlotStartFormat).toLocalDate();
         */
-        
+        /*
         EntityDescriptor.Appointment appointment = 
                 ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).getElementAt(row);
         LocalDate start = appointment.getData().getStart().toLocalDate();
@@ -335,23 +339,34 @@ public class AppointmentScheduleView extends View{
         if (!dps.getVetoPolicy().isDateAllowed(start)){
             temporarilySuspendDatePickerDateVetoPolicy(appointment.getData().getStart().toLocalDate());
         }
-        dayDatePicker.setDate(start);
-        
-        
+        dayDatePicker.setDate(start); 
+        */
     }
+    
+    private void doEmptySlotAvailabilityTableRowSelection(int row){
+        TheAppointment appointment = 
+                ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).getElementAt(row);
+        LocalDate start = appointment.getStart().toLocalDate();
+        DatePickerSettings dps = dayDatePicker.getSettings();
+        if (!dps.getVetoPolicy().isDateAllowed(start)){
+            temporarilySuspendDatePickerDateVetoPolicy(appointment.getStart().toLocalDate());
+        }
+        dayDatePicker.setDate(start);   
+    }
+    
     private void populateAppointmentsForDayTable(){
         //Appointments5ColumnTableModel.appointments = appointments;
         //int appointmentsCount = appointments.size();
         if (tableModel == null) tableModel = new Appointments5ColumnTableModel();
         tableModel.removeAllElements();
-        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
+        Iterator<TheAppointment> it = appointments.iterator();
         while (it.hasNext()){
             tableModel.addElement(it.next());
         }
         
         this.tblAppointments.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointments.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        this.tblAppointments.setDefaultRenderer(EntityDescriptor.Patient.class, new AppointmentsTablePatientRenderer());
+        this.tblAppointments.setDefaultRenderer(ThePatient.class, new AppointmentsTablePatientRenderer());
         this.tblAppointments.setModel(tableModel);
         this.tblAppointments.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
@@ -923,7 +938,7 @@ public class AppointmentScheduleView extends View{
         return this.myViewType;
     }
     
-    private void populateEmptySlotAvailabilityTable(EntityDescriptor.Appointments a){
+    private void populateEmptySlotAvailabilityTable(ArrayList<TheAppointment> a){
         EmptySlotAvailability2ColumnTableModel model;
         if (this.tblEmptySlotAvailability!=null){
             jScrollPane1.remove(this.tblEmptySlotAvailability);   
@@ -934,7 +949,8 @@ public class AppointmentScheduleView extends View{
         model = (EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel();
         model.removeAllElements();
 //model.fireTableDataChanged();
-        Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        //Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        Iterator<TheAppointment> it = a.iterator();
         while (it.hasNext()){
             ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).addElement(it.next());
         }
@@ -949,4 +965,35 @@ public class AppointmentScheduleView extends View{
         columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
         //this.tblEmptySlotAvailability.repaint();
     }
+    
+    private void populateEmptySlotAvailabilityTablex(EntityDescriptor.Appointments a){
+        /*
+        EmptySlotAvailability2ColumnTableModel model;
+        if (this.tblEmptySlotAvailability!=null){
+            jScrollPane1.remove(this.tblEmptySlotAvailability);   
+        }
+        this.tblEmptySlotAvailability = new JTable(new EmptySlotAvailability2ColumnTableModel());
+        jScrollPane1.setViewportView(this.tblEmptySlotAvailability);
+        setEmptySlotAvailabilityTableListener();
+        model = (EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel();
+        model.removeAllElements();
+//model.fireTableDataChanged();
+        //Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        Iterator<EntityDescriptor.Appointment> it = a.getData().iterator();
+        while (it.hasNext()){
+            ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).addElement(it.next());
+        }
+        //model.fireTableDataChanged();
+        JTableHeader tableHeader = this.tblEmptySlotAvailability.getTableHeader();
+        tableHeader.setBackground(new Color(220,220,220));
+        //tableHeader.setBackground(new Color(0,0,0));
+        tableHeader.setOpaque(true);
+        
+        TableColumnModel columnModel = this.tblEmptySlotAvailability.getColumnModel();
+        columnModel.getColumn(0).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+        columnModel.getColumn(1).setHeaderRenderer(new TableHeaderCellBorderRenderer(Color.LIGHT_GRAY));
+        //this.tblEmptySlotAvailability.repaint();
+*/
+    }
+
 }
