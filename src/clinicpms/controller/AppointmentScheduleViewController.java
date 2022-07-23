@@ -862,7 +862,7 @@ public class AppointmentScheduleViewController extends ViewController{
     
     private TheAppointment doAppointmentUpdateRequest(ActionEvent e, LocalDate day){
         TheAppointment result = null;
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         day = getEntityDescriptorFromView().getRequest().
                 getTheAppointment().getStart().toLocalDate();
         initialiseNewEntityDescriptor();
@@ -876,6 +876,10 @@ public class AppointmentScheduleViewController extends ViewController{
     }
     
     private void initialiseAppointmentSchedule(LocalDate day, TheAppointment result){
+        
+        //22/07/2022 08:56 save copy of EntityDescriptorFromView; could be overwritten
+        EntityDescriptor ed = getEntityDescriptorFromView();
+        //TheAppointment a = ed.getRequest().getTheAppointment();
         TheAppointment.Collection appointments = null;
         try{
             this.view2.setClosed(true);
@@ -903,7 +907,14 @@ public class AppointmentScheduleViewController extends ViewController{
                 getOldEntityDescriptor(),getNewEntityDescriptor());
             pcSupport.firePropertyChange(pcEvent);
             
-            setEntityDescriptorFromView(getNewEntityDescriptor());
+            
+            //setEntityDescriptorFromView(getNewEntityDescriptor());
+            //Desktop VC know the changed /new appointment is defined the the EntityDescriptorFromView.Request.TheAppointment
+            //EntityDescriptor ed = getEntityDescriptorFromView();
+            //TheAppointment a = ed.getRequest().getTheAppointment();
+            //22/07/2022 08:56
+            setEntityDescriptorFromView(ed);
+            //getNewEntityDescriptor().setTheAppointment(result);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
@@ -2395,7 +2406,7 @@ public class AppointmentScheduleViewController extends ViewController{
         return appointment;
     }
 
-    private EntityDescriptor getNewEntityDescriptor(){
+    public EntityDescriptor getNewEntityDescriptor(){
         return this.newEntityDescriptor;
     }
     private void setNewEntityDescriptor(EntityDescriptor value){

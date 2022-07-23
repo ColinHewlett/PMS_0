@@ -273,8 +273,18 @@ public class DesktopViewController extends ViewController{
              * -- desktop view controller can check if any active patient view controllers refer to the same appointee
              * -- if so: controller sends them an APPOINTMENT_HISTORY_CHANGE_NOTIFICATION to refresh their appointment history
              */
-            EntityDescriptor edOfPatientWithAppointmentHistoryChange = ((AppointmentScheduleViewController)e.getSource()).getEntityDescriptorFromView();
-            int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getAppointee().getData().getKey();
+            
+            /*
+            EntityDescriptor edOfPatientWithAppointmentHistoryChange = 
+                    ((AppointmentScheduleViewController)e.getSource()).getEntityDescriptorFromView();
+            */
+            EntityDescriptor edOfPatientWithAppointmentHistoryChange = 
+                    ((AppointmentScheduleViewController)e.getSource()).getEntityDescriptorFromView();
+            TheAppointment a = edOfPatientWithAppointmentHistoryChange.getRequest().getTheAppointment();
+            //21/07/2022 08:39
+            //int k2 = edOfPatientWithAppointmentHistoryChange.getTheAppointment().getPatient().getKey();
+            //ThePatient patient = edOfPatientWithAppointmentHistoryChange.getRequest().getTheAppointment().getPatient();
+            ThePatient patient = edOfPatientWithAppointmentHistoryChange.getTheAppointment().getPatient();
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
@@ -284,7 +294,7 @@ public class DesktopViewController extends ViewController{
                  */
                 //int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
                 //if (k1==k2){
-                ThePatient patient = new ThePatient(k2);
+                //ThePatient patient = new ThePatient(k2);
                 //ref 08/07/2022 09:05 if (pvc.getEntityDescriptorFromView().getRequest().getThePatient().equals(patient)){
                 if (pvc.getEntityDescriptorFromView().getThePatient().equals(patient)){    
                     /**

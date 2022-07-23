@@ -210,7 +210,9 @@ public class PatientViewController extends ViewController {
     }
     
     private void doAppointmentHistoryChangeNotification(){
-        ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
+        //22/07/2022 08:56
+        //ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
+        ThePatient patient = getEntityDescriptorFromView().getThePatient();
         if (patient.getIsKeyDefined()){
             try{
                 ThePatient p = patient.read();
