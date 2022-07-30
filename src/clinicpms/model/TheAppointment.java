@@ -80,6 +80,36 @@ public class TheAppointment extends EntityStoreType{
         collection = value;
     }
     
+    public String getAppointeeNamePlusSlotStartTime(){
+        String result = getAppointeeName();
+        LocalTime start = getStart().toLocalTime();
+        result = result + " which starts at " + start.format(DateTimeFormatter.ofPattern("HH:mm"));
+        return result;
+    }
+  
+    public String getAppointeeName(){
+        String title;
+        String forenames;
+        String surname;
+        
+        title = getPatient().getName().getTitle();
+        forenames = getPatient().getName().getForenames();
+        surname = getPatient().getName().getSurname();
+        if (title.length()==0) title = "?";
+        if (forenames.length() == 0) forenames = "<...>";
+        if (surname.length() == 0) surname = "<...>";
+       
+        return title + " " + forenames + " " + surname;
+    }
+    
+    public LocalDateTime getSlotStartTime(){
+        return this.getStart();
+    }
+    
+    public LocalDateTime getSlotEndTime(){
+        return getStart().plusMinutes(getDuration().toMinutes());
+    }
+    
     public LocalDateTime getStart() {
         return start;
     }
@@ -151,13 +181,15 @@ public class TheAppointment extends EntityStoreType{
      * @throws StoreException 
      */
     public void insert() throws StoreException{
+        Integer key = null;
         IStoreAction store = Store.FACTORY(this);
-        store.insert(this, getPatient().getKey());  
+        key = store.insert(this, getPatient().getKey()); 
+        setKey(key);
     }
     
     public void delete() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        store.delete(this);
+        store.delete(this, getKey());
     }
     
     public void drop() throws StoreException{
@@ -175,6 +207,29 @@ public class TheAppointment extends EntityStoreType{
     public void update() throws StoreException{ 
         IStoreAction store = Store.FACTORY(this);
         store.update(this, getKey(), getPatient().getKey());
+    }
+    
+    @Override
+    public boolean equals(Object obj) 
+    { 
+        // if both the object references are  
+        // referring to the same object. 
+        if(this == obj) 
+            return true; 
+
+        // checks if the comparison involves 2 objecs of the same type 
+        /**
+         * issue arise if one of the objects is an entity (for example a Patient) and the other object is its delegate sub class
+         */
+        //if(obj == null || obj.getClass()!= this.getClass()) 
+            //return false; 
+        if (obj == null) return false;
+        // type casting of the argument.  
+        TheAppointment appointment = (TheAppointment) obj; 
+
+        // comparing the state of argument with  
+        // the state of 'this' Object. 
+        return (appointment.getKey().equals(this.getKey())); 
     }
     
     public class Collection extends EntityStoreType{

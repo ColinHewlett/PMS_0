@@ -3110,9 +3110,15 @@ public class AccessStore extends Store {
                     PMSSQL.READ_PATIENT_NOTIFICATION_NEXT_HIGHEST_KEY,pn);
             delegate = new PatientNotificationDelegate(pn);
             delegate.setKey(((TableRowValue) entity).getValue() + 1);
+            //30/07/2022 09:26
+            runSQL(Store.EntitySQL.PATIENT_NOTIFICATION,
+                    PMSSQL.INSERT_PATIENT_NOTIFICATION, delegate);
+            return delegate.getKey();
+            /*
             key = runSQL(Store.EntitySQL.PATIENT_NOTIFICATION,
                     PMSSQL.INSERT_PATIENT_NOTIFICATION, delegate);
             return ((TableRowValue)key).getValue();
+            */
         } catch (SQLException ex) {
             message = message + "SQLException message -> " + ex.getMessage() + "\n";
             throw new StoreException(
@@ -3307,8 +3313,25 @@ public class AccessStore extends Store {
         }
     }
 */
-    public void delete(TheAppointment a) throws StoreException {
-        
+    /**
+     * 
+     * @param a
+     * @throws StoreException 
+     */
+    @Override
+    public void delete(TheAppointment appointment, Integer key) throws StoreException {
+        AppointmentDelegate delegate = new AppointmentDelegate(appointment);
+        delegate.setAppointmentKey(key);
+        try {
+            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
+            runSQL(EntitySQL.APPOINTMENT, PMSSQL.DELETE_APPOINTMENT, appointment);
+        } catch (SQLException ex) {
+            message = message + "SQLException message -> " + ex.getMessage() + "\n";
+            throw new StoreException(
+                    message + "StoreException raised in method AccessStore::delete(Appointment a)\n"
+                    + "Cause -> exception raised in call to setConnectionMode(AUTO_COMMIT_OFF)",
+                    StoreException.ExceptionType.SQL_EXCEPTION);
+        } 
     }
     @Override
     /**
@@ -5547,6 +5570,11 @@ public class AccessStore extends Store {
                         + "notes char);";
                 doCreateAppointmentTable(sql);
                 break;
+            case DELETE_APPOINTMENT:
+                sql = "DELETE FROM Appointment WHERE pid = ?;";
+                doCancelAppointment(sql, entity);
+                break;
+                
             case INSERT_APPOINTMENT:
                 sql = "INSERT INTO Appointment "
                         + "(PatientKey, Start, Duration, Notes,pid) "
@@ -6380,6 +6408,21 @@ public class AccessStore extends Store {
             throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
         }
             
+    }
+    
+    private void doCancelAppointment(String sql, EntityStoreType entity)throws StoreException{
+        if (entity.getIsAppointment()){
+            AppointmentDelegate delegate = (AppointmentDelegate)entity;
+            try{
+                PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
+                preparedStatement.setInt(1, ((AppointmentDelegate)delegate).getAppointmentKey());
+                preparedStatement.executeUpdate();
+            }catch (SQLException ex){
+                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doCancelAppointment(String sql, EntityStoreType entity)",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+            }
+        }
     }
     
     private void doInsertAppointment(String sql, EntityStoreType entity)throws StoreException{

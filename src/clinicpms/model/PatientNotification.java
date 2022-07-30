@@ -120,7 +120,7 @@ public class PatientNotification extends EntityStoreType {
      */
     public void insert() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        store.insert(this);
+        setKey(store.insert(this));
     }
     
     /**
@@ -148,11 +148,11 @@ public class PatientNotification extends EntityStoreType {
         private PatientNotification patientNotification = null;
         
         private Collection(){
-            this.setIsPatients(true);
+            this.setIsPatientNotifications(true);
         }
         
         private Collection(PatientNotification pn){
-            this.setIsPatients(true);
+            this.setIsPatientNotifications(true);
             setPatientNotification(pn);
         }
         
@@ -197,7 +197,10 @@ public class PatientNotification extends EntityStoreType {
          */
         public void read()throws StoreException{
             IStoreAction store = Store.FACTORY(this);
-            set(store.read(this, getPatient().getKey()).get());
+            //30/07/2022 09:26
+            if (getPatient()!=null) set(store.read(this, getPatient().getKey()).get());
+            else set(store.read(this, null).get());
+            //set(store.read(this, getPatient().getKey()).get());
             Iterator it = get().iterator();
             switch(getScope()){
                 case ALL_FOR_PATIENT:

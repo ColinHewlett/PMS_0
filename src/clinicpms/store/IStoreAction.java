@@ -7,15 +7,11 @@ package clinicpms.store;
 
 import clinicpms.model.Appointment;
 import clinicpms.model.TheAppointment;
-import clinicpms.model.AppointmentTable;
 import clinicpms.model.Appointments;
-import clinicpms.model.IEntityStoreType;
 import clinicpms.model.EntityStoreType;
 import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
-import clinicpms.model.PatientTable;
 import clinicpms.model.Patients;
-import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.ThePatient;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.time.LocalDate;
@@ -45,7 +41,7 @@ public interface IStoreAction {
     public void create(SurgeryDaysAssignment s)throws StoreException;
     
     public void delete(Appointment a) throws StoreException;
-    public void delete(TheAppointment a) throws StoreException;
+    public void delete(TheAppointment a, Integer key) throws StoreException;
     public void delete(Patient p) throws StoreException;
     public void delete(ThePatient p) throws StoreException;
     

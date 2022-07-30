@@ -19,8 +19,8 @@ public class EntityStoreType{
     private Boolean isAppointmentTableRowValue = false;
     private Boolean isPatient = false;
     private Boolean isPatientNotification = false;
-    //private Boolean isPatientNotifications = false;
-    private Boolean isPatientNotificationCollection = false;
+    private Boolean isPatientNotifications = false;
+    //private Boolean isPatientNotificationCollection = false;
     private Boolean isPatients = false;
     private Boolean isPatientTable = false;
     private Boolean isTableRowValue = false;
@@ -35,7 +35,7 @@ public class EntityStoreType{
         setIsAppointmentTableRowValue(false);
         setIsPatient(false);
         setIsPatientNotification(false);
-        setIsPatientNotificationCollection(false);
+        setIsPatientNotifications(false);
         setIsPatients(false);
         setIsPMSStore(false);
         setIsPatientTable(false);
@@ -65,7 +65,7 @@ public class EntityStoreType{
         return isPatientNotification;
     }
     public Boolean getIsPatientNotifications(){
-        return isPatientNotificationCollection;
+        return isPatientNotifications;
     }
     public Boolean getIsPatients(){
         return isPatients;
@@ -111,9 +111,9 @@ public class EntityStoreType{
         if (value) resetAll();
         isPatientNotification = value;
     }
-    public void setIsPatientNotificationCollection(Boolean value){
+    public void setIsPatientNotifications(Boolean value){
         if (value) resetAll();
-        isPatientNotificationCollection = value;
+        isPatientNotifications = value;
     }
     public void setIsPatients(Boolean value){
         if (value) resetAll();

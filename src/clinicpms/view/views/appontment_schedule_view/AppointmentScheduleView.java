@@ -674,7 +674,9 @@ public class AppointmentScheduleView extends View{
         if (row == -1){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
         }
-        else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
+        //30/07/2022 09:26
+        else if (!((Appointments5ColumnTableModel)this.tblAppointments.getModel()).getElementAt(row).getPatient().getIsKeyDefined()){
+        //else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
         }
         else{
@@ -729,9 +731,9 @@ public class AppointmentScheduleView extends View{
         if (row == -1){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for cancellation");
         }
-        //20/07/2022 08:16 update
-        //else if (getEntityDescriptor().getAppointments().getData().get(row).getData().IsEmptySlot()){
-        else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
+        //30/07/2022 09:26
+        else if (!((Appointments5ColumnTableModel)this.tblAppointments.getModel()).getElementAt(row).getPatient().getIsKeyDefined()){
+        //else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for cancellation");
         }
         else{

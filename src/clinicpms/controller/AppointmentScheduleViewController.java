@@ -6,12 +6,8 @@
 package clinicpms.controller;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
-//import clinicpms.model.Appointments;
-//import clinicpms.model.Appointment;
 import clinicpms.model.TheAppointment;
 import clinicpms.model.ThePatient;
-//import clinicpms.model.Patient;
-//import clinicpms.model.Patients;
 import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import clinicpms.view.views.DesktopView;
@@ -41,8 +37,8 @@ import javax.swing.JOptionPane;
  */
 public class AppointmentScheduleViewController extends ViewController{
 
-    private enum RequestedAppointmentState{ STARTS_AFTER_PREVIOUS_SLOT,
-                                            ENDS_AFTER_PREVIOUS_SLOT,
+    private enum RequestedAppointmentState{ REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT,
+                                            REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME,
                                             APPOINTMENT_ADDED_TO_SCHEDULE,
                                             ERROR_ADDING_APPOINTMENT_TO_SCHEDULE}
 
@@ -50,17 +46,10 @@ public class AppointmentScheduleViewController extends ViewController{
     private PropertyChangeSupport pcSupport = null;
     private View view = null;
     private View view2 = null;
-    //private ArrayList<TheAppointment> appointments = null;  
     private EntityDescriptor newEntityDescriptor = null;
     private EntityDescriptor oldEntityDescriptor = null;
     private EntityDescriptor entityDescriptorFromView = null;
-    //private LocalDate day = null;
     private PropertyChangeEvent pcEvent = null;
-    //private JFrame owningFrame = null;
-    //private ViewController.ViewMode viewMode = null;
-    //private AppointmentEditorDialog dialog = null;
-    //private AppointmentViewDialog dialog = null;
-    //private InternalFrameAdapter internalFrameAdapter = null;
     private View pacView = null;
     private DesktopView desktopView = null;
     
@@ -134,30 +123,6 @@ public class AppointmentScheduleViewController extends ViewController{
                 default:
                     doSecondaryViewActionRequest(e);
                     break;
-                /*
-                case APPOINTMENT_SCHEDULE_VIEW:
-                    doAppointmentScheduleViewAction(e);
-                    break;
-                case APPOINTMENT_CREATOR_EDITOR_VIEW:
-                    this.view2 = (View)e.getSource();
-                    doAppointmentCreatorEditorViewAction(e);
-                    break;
-                case EMPTY_SLOT_SCANNER_VIEW:
-                    this.view2 = (View)e.getSource();
-                    doEmptySlotScannerViewAction(e);
-                    break;
-                case NON_SURGERY_DAY_EDITOR_VIEW:
-                    this.view2 = (View)e.getSource();
-                    doNonSurgeryDayScheduleEditorViewAction(e);
-                    break;
-                case SCHEDULE_CONTACT_DETAILS_VIEW:
-                    doScheduleContactListView(e);
-                    break;
-                case SURGERY_DAY_EDITOR_VIEW:
-                    this.view2 = (View)e.getSource();
-                    doSurgeryDaysEditorViewAction(e);
-                    break;
-                */
             }
         }
         
@@ -167,9 +132,7 @@ public class AppointmentScheduleViewController extends ViewController{
         /**
          * on receipt of APPOINTMENT_CANCEL_REQUEST
          * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
-         * -- hence: getRequest.getPatient() returns the patient whose appointment has been cancelled
          */
-        //if (getEntityDescriptorFromView().getRequest().getAppointment().getAppointee().getData().getKey()!=null){
         if (getEntityDescriptorFromView().getRequest().getTheAppointment().getPatient().getIsKeyDefined()){
             try{
                /**
@@ -178,39 +141,14 @@ public class AppointmentScheduleViewController extends ViewController{
                 * -- knowledge of the patient object is required to maintain consistency between views, which is a responsibility of the desktop view controller
                 * 
                 */
-               /*
-                TheAppointment appointment = new TheAppointment(
-                   getEntityDescriptorFromView().getRequest().getTheAppointment().getData().getKey()).read();
-                appointment.delete();
-               */
                TheAppointment appointment = getEntityDescriptorFromView().getRequest().getTheAppointment();
                appointment.delete();
-               /**
-                * two updates to a new Entity Descriptor required
-                * -- serialise appointments derived from appointments and empty slots for the day
-                * -- serialise the appointment which has just been delete (required for post processing by DesktopViewController)
-                */
-               /*
-                Appointments appointments = null;
-                LocalDate day = getEntityDescriptorFromView().
-                       getRequest().getAppointment().getData().getStart().toLocalDate();
-                initialiseNewEntityDescriptor();
-                appointments = new Appointments();
-                appointments.readForDay(day);
-                ArrayList<Appointment> appointmentSlotsForDay = 
-                        getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
-                appointments.addAll(appointmentSlotsForDay);
-                serialiseAppointmentsToEDCollection(appointments);
-               */
                LocalDate day = getEntityDescriptorFromView().
-                       getRequest().getAppointment().getData().getStart().toLocalDate();
+                       getRequest().getTheAppointment().getStart().toLocalDate();
                getUpdatedAppointmentSlotsForDay(day);
                
                getNewEntityDescriptor().setTheAppointment(appointment);
-               /**
-                * appointment serialisation to ED ensures appointee key is accessible by the desktop view controller
-                */
-                //serialiseAppointmentToEDAppointment(appointment);
+
                /**
                 * fire event over to APPOINTMENT_SCHEDULE
                 */ 
@@ -250,8 +188,6 @@ public class AppointmentScheduleViewController extends ViewController{
             patients = new ThePatient().getCollection();
             patients.read();
             getNewEntityDescriptor().setThePatients(patients.get());
-            //serialisePatientsToEDCollection(patients);
-            //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
             View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
             this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
             /**
@@ -268,43 +204,6 @@ public class AppointmentScheduleViewController extends ViewController{
             String message = ex.getMessage();
             displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
         }
-    }
-    
-    private void doAppointmentCreateViewRequestx(){
-        /**
-         * on receipt of APPOINTMENT_CREATE_VIEW_REQUEST
-         * -- initialises NewEntityDescriptor with the collection of all patients on the system
-         * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
-         */
-        
-        /*
-        Patients patients = null;
-        initialiseNewEntityDescriptor();
-        try{
-            patients = new Patients();
-            patients.read();
-            serialisePatientsToEDCollection(patients);
-            //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
-            View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
-            this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
-        */
-            /**
-             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-             */
-            
-            /*
-            ActionEvent actionEvent = new ActionEvent(
-                   this,ActionEvent.ACTION_PERFORMED,
-                   DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-            this.myController.actionPerformed(actionEvent);
-        }
-        catch (StoreException ex){
-            String message = ex.getMessage();
-            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-        }
-            */
     }
     
     private void doAppointmentUpdateViewRequest(){
@@ -314,7 +213,6 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
          */
         ThePatient.Collection patients = null;
-        //if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
         if (getEntityDescriptorFromView().getRequest().getTheAppointment().getIsKeyDefined()){
             try{
 
@@ -326,8 +224,6 @@ public class AppointmentScheduleViewController extends ViewController{
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().setTheAppointment(appointment);
                 getNewEntityDescriptor().setThePatients(patients.get());
-                //serialiseAppointmentToEDAppointment(appointment);
-                //serialisePatientsToEDCollection(patients);
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
                 /**
@@ -345,45 +241,6 @@ public class AppointmentScheduleViewController extends ViewController{
                 displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
             } 
         }
-    }
-    
-    private void doAppointmentUpdateViewRequestx(){
-        /**
-         * on receipt of APPOINTMENT_UPDATE_VIEW_REQUEST
-         * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
-         * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
-         */
-        /*
-        Patients patients = null;
-        if (getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey() != null){
-            try{
-
-                Appointment appointment = new Appointment(
-                        getEntityDescriptorFromView().getRequest().
-                                getAppointment().getData().getKey()).read();
-
-                patients = new Patients();
-                patients.read();
-                initialiseNewEntityDescriptor();
-                serialiseAppointmentToEDAppointment(appointment);
-                serialisePatientsToEDCollection(patients);
-                View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
-                this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
-        */
-
-                /*
-                ActionEvent actionEvent = new ActionEvent(
-                        this,ActionEvent.ACTION_PERFORMED,
-                        DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                this.myController.actionPerformed(actionEvent);
-            }
-            catch (StoreException ex){
-                String message = ex.getMessage();
-                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-            } 
-        }
-                */
-
     }
     
     private void doAppointmentsViewClosedRequest(){
@@ -417,35 +274,6 @@ public class AppointmentScheduleViewController extends ViewController{
             String message = ex.getMessage();
             displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
         }
-    }
-    
-    private void doAppointmentsForDayRequestx(ActionEvent e){
-        /*
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        initialiseNewEntityDescriptor();
-        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        Appointments appointments = null;
-        try{
-            getUpdatedAppointmentSlotsForDay(day);
-        */
-            
-            /**
-             * fire event over to APPOINTMENT_SCHEDULE
-             */
-            /*
-            pcSupport.addPropertyChangeListener(this.view);
-            pcEvent = new PropertyChangeEvent(this,
-                EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupport.firePropertyChange(pcEvent);
-            pcSupport.removePropertyChangeListener(this.view);
-        }
-        catch (StoreException ex){
-            String message = ex.getMessage();
-            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-
-        }
-            */
     }
     
     private void doModalViewerActivated(){
@@ -521,28 +349,6 @@ public class AppointmentScheduleViewController extends ViewController{
             String message = ex.getMessage();
             displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
         }
-    }
-    
-    private void doPatientAppointmentContactViewRequestx(ActionEvent e){
-        /*
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        initialiseNewEntityDescriptor();
-        LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        Appointments appointments = null;
-        try{
-            appointments = new Appointments();
-            appointments.readForDay(day);
-            serialiseAppointmentsToEDCollection(appointments);
-            View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
-            this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
-            this.desktopView.add(pacView);
-            this.pacView.initialiseView();
-        }
-        catch (StoreException ex){
-            String message = ex.getMessage();
-            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-        }
-        */
     }
     
     private void doEmptySlotScannerDialogRequest(ActionEvent e){
@@ -748,7 +554,6 @@ public class AppointmentScheduleViewController extends ViewController{
                 ArrayList<TheAppointment> availableSlotsOfDuration =  
                         getAvailableSlotsOfDuration(
                                 appointments.get(),duration,day);
-                //serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
                 getNewEntityDescriptor().setTheAppointments(availableSlotsOfDuration);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE view
@@ -790,64 +595,12 @@ public class AppointmentScheduleViewController extends ViewController{
                 this.myController.actionPerformed(actionEvent);
                 break;        
         }
-        
-        //NOTE: FOLLOWING TO BE DELATED TO END OF METHOD WHEN UPDATE CHECKED
-        /*
-        if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewControllerActionEvent.APPOINTMENT_SLOTS_FROM_DATE_REQUEST.toString())){
-            setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-            
-            try{
-                this.view2.setClosed(true);
-
-                
-            }
-            catch (PropertyVetoException ex){
-                
-            }
-            initialiseNewEntityDescriptor();
-            LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-            Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
-            Appointments appointments = null;
-            try{
-                appointments = new Appointments();
-                appointments.readFromDay(day);
-                if (appointments.isEmpty()){
-                    JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
-                }
-                else{
-                    ArrayList<Appointment> availableSlotsOfDuration =  
-                            getAvailableSlotsOfDuration(
-                                    appointments,duration,day);
-                    serialiseAppointmentsToEDCollection(availableSlotsOfDuration);
-
-                    pcSupport.addPropertyChangeListener(view);
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(view);
-
-                }
-            }
-            catch (StoreException ex){
-                //UnspecifiedError action
-            }
-            
-        }
-        else if (e.getActionCommand().equals(
-                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
-            this.myController.actionPerformed(actionEvent); 
-            
-        }
-        */
     }
     
     private TheAppointment doAppointmentCreateRequest(ActionEvent e, LocalDate day){
         TheAppointment result = null;
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
+        TheAppointment rSlot = getEntityDescriptorFromView().getRequest().getTheAppointment();
         day = getEntityDescriptorFromView().getRequest().
                 getTheAppointment().getStart().toLocalDate();
         initialiseNewEntityDescriptor();
@@ -906,12 +659,7 @@ public class AppointmentScheduleViewController extends ViewController{
                 EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
                 getOldEntityDescriptor(),getNewEntityDescriptor());
             pcSupport.firePropertyChange(pcEvent);
-            
-            
-            //setEntityDescriptorFromView(getNewEntityDescriptor());
-            //Desktop VC know the changed /new appointment is defined the the EntityDescriptorFromView.Request.TheAppointment
-            //EntityDescriptor ed = getEntityDescriptorFromView();
-            //TheAppointment a = ed.getRequest().getTheAppointment();
+
             //22/07/2022 08:56
             setEntityDescriptorFromView(ed);
             //getNewEntityDescriptor().setTheAppointment(result);
@@ -926,75 +674,7 @@ public class AppointmentScheduleViewController extends ViewController{
                     JOptionPane.WARNING_MESSAGE);
         }
     }
-    
-    private void initialiseAppointmentSchedulex(LocalDate day){
-        //Appointments appointments = null;
-        try{
-            this.view2.setClosed(true);
-        }
-        catch (PropertyVetoException ex){
 
-        }
-        /**
-         * either an update or create appointment event has occurred, so clear empty slot list
-         * fire event over to APPOINTMENT_SCHEDULE
-         * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
-         */
-        initialiseNewEntityDescriptor();
-        //09/07/2022 07:02
-        pcSupport.addPropertyChangeListener(view);
-        pcEvent = new PropertyChangeEvent(this,
-            EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-            null,getNewEntityDescriptor());
-        pcSupport.firePropertyChange(pcEvent);
-        pcSupport.removePropertyChangeListener(this.view);
-        /**
-         * initialise entity descriptor
-         * -- with new list of appointments and available slots for the day
-         * -- as well as the appointment instance that's been created or updated
-         */
-        try{
-            getUpdatedAppointmentSlotsForDay(day);
-            /*
-            appointments = new Appointments();
-            appointments.readForDay(day); //throws StoreException
-
-            ArrayList<Appointment> appointmentSlotsForDay = 
-                    getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day);
-            appointments.clear();
-            appointments.addAll(appointmentSlotsForDay);
-            serialiseAppointmentsToEDCollection(appointments);
-            */
-            /**
-             * Added request to update ED with serialised new or updated appointment
-             */
-            //serialiseAppointmentToEDAppointment(result);
-            /**
-             * fire event over to APPOINTMENT_SCHEDULE
-             * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
-             */
-            pcSupport.addPropertyChangeListener(this.view);
-            pcEvent = new PropertyChangeEvent(this,
-                EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                getOldEntityDescriptor(),getNewEntityDescriptor());
-            pcSupport.firePropertyChange(pcEvent);
-            /**
-             * send desktop view controller the APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
-             * -- note: important to restore view controller's EntityDescriptorFromView with entity descriptor fetched from APPOINTMENT_CREATE_EDIT_VIEW
-             */
-            setEntityDescriptorFromView(getNewEntityDescriptor());
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
-            this.myController.actionPerformed(actionEvent);
-        }catch (StoreException ex){
-            String message = ex.getMessage();
-            displayErrorMessage(message,"AppointmentViewController error on "
-                    + "attempt to fetch from store appointments for a specific day",
-                    JOptionPane.WARNING_MESSAGE);
-        }
-    }
-    
     private void sendErrorToAppointmentCreatorEditorView(){
         /**
          * fire event over to APPOINTMENT_CREATOR_EDITOR_VIEW
@@ -1032,444 +712,7 @@ public class AppointmentScheduleViewController extends ViewController{
                 break;     
         } 
     }
-    
-    private void doAppointmentCreatorEditorViewActionx(ActionEvent e){
-        /*
-        Appointment result = null;
-        LocalDate day = null;
-        EntityDescriptor.AppointmentViewControllerActionEvent actionCommand =
-               EntityDescriptor.AppointmentViewControllerActionEvent.valueOf(e.getActionCommand());        
-        switch (actionCommand){
-            case APPOINTMENT_CREATE_REQUEST:
-                day = getEntityDescriptorFromView().getRequest().getTheAppointment().
-                        getStart().toLocalDate();
-                result = doAppointmentCreateRequest(e, day);
-                if (result!=null) initialiseAppointmentSchedule(day, result);
-                else sendErrorToAppointmentCreatorEditorView();
-                break;
-            case APPOINTMENT_UPDATE_REQUEST:
-                day = getEntityDescriptorFromView().getRequest().getTheAppointment().
-                        getStart().toLocalDate();
-                result = doAppointmentUpdateRequest(e, day);
-                if (result!=null) initialiseAppointmentSchedule(day,result);
-                else sendErrorToAppointmentCreatorEditorView();
-                break;
-            case MODAL_VIEWER_ACTIVATED:
-                doModalViewerActivated();
-                break;     
-        } 
-        */
-    }
-    
-    /**
-     * on APPOINTMENT_VIEW_CREATE_REQUEST & APPOINTMENT_VIEW_UPDATE_REQUEST
-     * -- the view controller expects appointee data in EntityDescriptor.Request.Patient and start, duration and notes in EntityDescriptor.Request.Appointment
-     * @param e ActionEvent
-     */
-    private void doAppointmentCreatorEditorViewActionxx(ActionEvent e){
-        /*
-        Appointment result = null;
-        LocalDate day = null;
-        setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        EntityDescriptor edFromAppointmentCreateEditView = getEntityDescriptorFromView();
-        try{
-            if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewDialogActionEvent.
-                    APPOINTMENT_VIEW_CREATE_REQUEST.toString())){
-                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-                day = getEntityDescriptorFromView().getRequest().
-                        getAppointment().getData().getStart().toLocalDate();
-                initialiseNewEntityDescriptor();
-                result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
-            }
-            else if (e.getActionCommand().equals(EntityDescriptor.AppointmentViewDialogActionEvent.
-                    APPOINTMENT_VIEW_UPDATE_REQUEST.toString())){
-                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-                day = getEntityDescriptorFromView().getRequest().
-                        getAppointment().getData().getStart().toLocalDate();
-                initialiseNewEntityDescriptor();
-                result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
-            }
-            else if (e.getActionCommand().equals(
-                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){ 
-        */
-        
-        
-            /**
-             * DISABLE_CONTROLS_REQUEST requests DesktopViewController to disable menu options in its view
-             */
-            
-            /*
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString());
-            this.myController.actionPerformed(actionEvent); 
-            
-            }
-            */
-            
-            
-            /**
-             * if current view request is not a DISABLE_DESKTOP_CONTROLS_REQUEST
-             * -- process "result" variable
-             * ---- if "result" not null
-             * ------ close APPOINTMENT_CREATOR_EDITOR_VIEW (this.view2)
-             * ------ fire updated appointment list to APPOINTMENT_SCHEDULE view (this.view) as a property change APPOINTMENTS_FOR_DAY_RECEIVED event
-             * ------ fire a blank list of appointment slots to APPOINTMENT_SCHEDULE view as a property change APPOINTMENTS_FOR_DAY_RECEIVED event
-             * ---- else fire error message to APPOINTMENT_CREATOR_EDITOR_VIEW to report APPOINTMENT_VIEW_ERROR as a property change event
-             */
-            
-            /*
-            
-            Appointments appointments = null;
-            if (!e.getActionCommand().equals(
-                EntityDescriptor.AppointmentViewControllerActionEvent.MODAL_VIEWER_ACTIVATED.toString())){
-                if (result!=null){
-                    try{
-                        this.view2.setClosed(true);
-                    }
-                    catch (PropertyVetoException ex){
 
-                    }
-            */
-                    
-                    /**
-                     * either an update or create appointment event has occurred, so clear empty slot list
-                     * fire event over to APPOINTMENT_SCHEDULE
-                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
-                     */
-                    
-                    /*
-                    initialiseNewEntityDescriptor();
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENT_SLOTS_FROM_DAY_RECEIVED.toString(),
-                        null,getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(this.view);
-                    */
-                    
-                    
-                    /**
-                     * initialise entity descriptor
-                     * -- with new list of appointments and available slots for the day
-                     * -- as well as the fully instanciated appointment that's been created or updated
-                     */
-                    
-                    /*
-                    appointments = new Appointments();
-                    appointments.readForDay(day);
-                    appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
-                    serialiseAppointmentsToEDCollection(appointments);
-                    */
-                    
-                    
-                    /**
-                     * Added request to update ED with serialised new or updated appointment
-                     */
-                    
-                    /*
-                    serialiseAppointmentToEDAppointment(result);
-                    */
-                    
-                    /**
-                     * fire event over to APPOINTMENT_SCHEDULE
-                     * -- note: this action will overwrite the APPOINTMENT_CREATE_EDIT_VIEW entity descriptor with that of APPOINTMENT_SCHEDULE_VIEW entity descriptor
-                     */
-                    
-                    /*
-                    pcSupport.addPropertyChangeListener(this.view);
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                     */   
-                    
-                    /**
-                     * send desktop view controller the APPOINTMENT_HISTORY_CHANGE_NOTIFICATION
-                     * -- note: important to restore view controller's EntityDescriptorFromView with entity descriptor fetched from APPOINTMENT_CREATE_EDIT_VIEW
-                     */
-                    
-                    /*
-                    setEntityDescriptorFromView(getNewEntityDescriptor());
-                    ActionEvent actionEvent = new ActionEvent(
-                            this,ActionEvent.ACTION_PERFORMED,
-                            DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
-                    this.myController.actionPerformed(actionEvent);
-
-                }
-                else{
-                    */
-                    
-                    
-                    /**
-                     * fire event over to APPOINTMENT_CREATOR_EDITOR_VIEW
-                     */
-                    
-                    /*
-                    
-                    pcSupport.addPropertyChangeListener(this.view2);
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.SURGERY_DAYS_ASSIGNMENT_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(this.view2);
-                }
-            }
-            
-        }
-        catch (StoreException ex){
-            String message = ex.getMessage();
-            displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-        }
-                    */
-    }
-    
-    private void doAppointmentScheduleViewActionx(ActionEvent e){
-        EntityDescriptor.AppointmentViewControllerActionEvent actionCommand =
-               EntityDescriptor.AppointmentViewControllerActionEvent.valueOf(e.getActionCommand());        
-        switch (actionCommand){
-            case APPOINTMENTS_VIEW_CLOSED:
-                ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSED_NOTIFICATION.toString());
-                this.myController.actionPerformed(actionEvent);
-                break;
-            case MODAL_VIEWER_ACTIVATED:
-                //do nothing
-                break;
-            case NON_SURGERY_DAY_SCHEDULE_VIEW_REQUEST:
-                try{
-                    setNewEntityDescriptor(new EntityDescriptor());
-                    initialiseNewEntityDescriptor();
-                    getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
-                    View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
-                    this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
-                    /**
-                     * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-                     * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-                     * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-                     */
-                    actionEvent = new ActionEvent(
-                           this,ActionEvent.ACTION_PERFORMED,
-                           DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                    this.myController.actionPerformed(actionEvent);
-                }
-                catch (StoreException ex){
-                    String message = ex.getMessage();
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                }
-                break;
-            case SURGERY_DAYS_EDITOR_VIEW_REQUEST:
-                try{
-                    setNewEntityDescriptor(new EntityDescriptor());
-                    initialiseNewEntityDescriptor();
-                    getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
-                    View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
-                    this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
-                    /**
-                     * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-                     * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-                     * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-                     */
-                    actionEvent = new ActionEvent(
-                           this,ActionEvent.ACTION_PERFORMED,
-                           DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                    this.myController.actionPerformed(actionEvent);
-                }
-                catch (StoreException ex){
-                    String message = ex.getMessage();
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                }
-                break;
-            case PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST:
-                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-                initialiseNewEntityDescriptor();
-                LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-                TheAppointment.Collection appointments = null;
-                try{
-                    appointments = new TheAppointment().getCollection();
-                    appointments.setScope(TheAppointment.Scope.FOR_DAY);
-                    appointments.getAppointment().setStart(day.atStartOfDay());
-                    appointments.read();
-                    getNewEntityDescriptor().setTheAppointments(appointments.get());
-                    View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
-                    this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
-                    this.desktopView.add(pacView);
-                    this.pacView.initialiseView();
-                }
-                catch (StoreException ex){
-                    String message = ex.getMessage();
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                }
-                break;
-            case EMPTY_SLOT_SCANNER_DIALOG_REQUEST:
-                View.setViewer(View.Viewer.EMPTY_SLOT_SCANNER_VIEW);
-                this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView);
-            
-            /**
-             * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-             * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-             * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-             */
-                actionEvent = new ActionEvent(
-                        this,ActionEvent.ACTION_PERFORMED,
-                        DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                this.myController.actionPerformed(actionEvent);
-                break;
-            case APPOINTMENTS_FOR_DAY_REQUEST:
-                setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-                initialiseNewEntityDescriptor();
-                day = getEntityDescriptorFromView().getRequest().getDay();
-                appointments = null;
-                try{
-                    getUpdatedAppointmentSlotsForDay(day);
-                    /**
-                     * fire event over to APPOINTMENT_SCHEDULE
-                     */
-                    pcSupport.addPropertyChangeListener(this.view);
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(this.view);
-                }
-                catch (StoreException ex){
-                    String message = ex.getMessage();
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                    /*
-                    if (ex.getErrorType().toString().equals(Store.ExceptionType.UNDEFINED_DATABASE))
-                        JOptionPane.showInternalMessageDialog(desktopView.getContentPane(), message);
-                    else 
-                        displayErrorMessage(message,"AppointmentScheduleViewController error",JOptionPane.WARNING_MESSAGE);
-                    */
-                }
-                break;
-            case APPOINTMENT_UPDATE_VIEW_REQUEST:
-                /**
-             * on receipt of APPOINTMENT_UPDATE_VIEW_REQUEST
-             * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
-             * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
-             */
-                ThePatient.Collection patients = null;
-                if (getEntityDescriptorFromView().getRequest().getTheAppointment().getIsKeyDefined() != null){
-                    try{
-/*
-                        Appointment appointment = new Appointment(
-                                getEntityDescriptorFromView().getRequest().
-                                        getAppointment().getData().getKey()).read();
-
-                        patients = new Patients();
-                        patients.read();
-                        initialiseNewEntityDescriptor();
-                        serialiseAppointmentToEDAppointment(appointment);
-                        serialisePatientsToEDCollection(patients);
-                        View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
-                        this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
-                        */
-                        /**
-                         * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-                         * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-                         * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-                         */
-                        actionEvent = new ActionEvent(
-                                this,ActionEvent.ACTION_PERFORMED,
-                                DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                        this.myController.actionPerformed(actionEvent);
-                    }
-                   // catch (StoreException ex){
-                   catch(Exception ex){
-                        String message = ex.getMessage();
-                        displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                    } 
-                }
-                break;
-            case APPOINTMENT_CREATE_VIEW_REQUEST:  
-                 /**
-             * on receipt of APPOINTMENT_CREATE_VIEW_REQUEST
-             * -- initialises NewEntityDescriptor with the collection of all patients on the system
-             * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
-             */
-                /*
-            Patients patients = null;
-            initialiseNewEntityDescriptor();
-            try{
-                patients = new Patients();
-                patients.read();
-                serialisePatientsToEDCollection(patients);
-                //Window window = SwingUtilities.windowForComponent(this.desktopView.getContentPane());
-                View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
-                this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
-                */
-                
-        
-                /**
-                 * ENABLE_CONTROLS_REQUEST requests DesktopViewController to enable menu options in its view
-                 * -- note: View.factory when opening a modal JInternalFrame does not return until the JInternalFrame has been closed
-                 * -- at which stage its appropriate to re-enable the View menu on the Desktop View Controller's view
-                 */
-                
-                /*
-                ActionEvent actionEvent = new ActionEvent(
-                       this,ActionEvent.ACTION_PERFORMED,
-                       DesktopViewController.DesktopViewControllerActionEvent.MODAL_VIEWER_CLOSED.toString());
-                this.myController.actionPerformed(actionEvent);
-            }
-            catch (StoreException ex){
-                String message = ex.getMessage();
-                displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-            }
-            */
-                break;
-            case APPOINTMENT_CANCEL_REQUEST:
-
-            
-            /*
-            if (getEntityDescriptorFromView().getRequest().getAppointment().getAppointee().getData().getKey()!=null){
-                
-                try{
-
-                    Appointment appointment = new Appointment(
-                        getEntityDescriptorFromView().getRequest().getAppointment().getData().getKey()).read();
-                    appointment.delete();
-                */
-                    /**
-                     * two updates to a new Entity Descriptor required
-                     * -- serialise appointments derived from appointments and empty slots for the day
-                     * -- serialise the appointment which has just been delete (required for post processing by DesktopViewController)
-                     */
-                /*
-                    Appointments appointments = null;
-                    LocalDate day = getEntityDescriptorFromView().
-                            getRequest().getAppointment().getData().getStart().toLocalDate();
-                    initialiseNewEntityDescriptor();
-                    appointments = new Appointments();
-                    appointments.readForDay(day);
-                    appointments.addAll(getAppointmentsForSelectedDayIncludingEmptySlots(appointments,day));
-                    serialiseAppointmentsToEDCollection(appointments);
-
-                    serialiseAppointmentToEDAppointment(appointment);
- 
-                    pcSupport.addPropertyChangeListener(this.view);
-                    pcEvent = new PropertyChangeEvent(this,
-                        EntityDescriptor.AppointmentViewControllerPropertyEvent.APPOINTMENTS_FOR_DAY_RECEIVED.toString(),
-                        getOldEntityDescriptor(),getNewEntityDescriptor());
-                    pcSupport.firePropertyChange(pcEvent);
-                    pcSupport.removePropertyChangeListener(this.view);
-
-                    setEntityDescriptorFromView(getNewEntityDescriptor());
-                    ActionEvent actionEvent = new ActionEvent(
-                        this,ActionEvent.ACTION_PERFORMED,
-                        DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
-                    this.myController.actionPerformed(actionEvent);
-                }
-                catch (StoreException ex){
-                    String message = ex.getMessage();
-                    displayErrorMessage(message,"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
-                }
-            }*/
-        }
-  
-  
-    }
     private void doDesktopViewControllerAction(ActionEvent e){
         if (e.getActionCommand().equals(DesktopViewController.DesktopViewControllerActionEvent.VIEW_CLOSE_REQUEST.toString())){
             try{
@@ -1499,12 +742,6 @@ public class AppointmentScheduleViewController extends ViewController{
         title = slot.getPatient().getName().getTitle();
         forenames = slot.getPatient().getName().getForenames();
         surname = slot.getPatient().getName().getSurname();
-        //result = slot.getPatient().getName().getTitle();
-        /*
-        if (title.strip().length()==0) title = "?";
-        if (forenames.strip().length() == 0) forenames = "<...>";
-        if (surname.strip().length() == 0) surname = "<...>";
-        */
         if (title.length()==0) title = "?";
         if (forenames.length() == 0) forenames = "<...>";
         if (surname.length() == 0) surname = "<...>";
@@ -1512,6 +749,111 @@ public class AppointmentScheduleViewController extends ViewController{
         return title + " " + forenames + " " + surname;
     }
     
+    private String appointmentCollisionCheckOnScheduleChangeRequest(
+            TheAppointment requestedSlot,
+            ArrayList<TheAppointment> appointments, ViewMode mode){
+        String result = null;
+        RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT;
+        Iterator<TheAppointment> appointmentsForDay = appointments.iterator();
+        while (appointmentsForDay.hasNext()){
+            TheAppointment nextScheduledSlot = appointmentsForDay.next();
+            switch(state){
+                case REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME:
+                    /**
+                     * requested slot updated end time is later than the previous scheduled slot
+                     * -- check if its end time is not after next scheduled slot start time
+                     * ---- its not; so state = APPOINTMENT_ADDED_TO_SCHEDULE
+                     * ---- else check if requested slot and overlapped next scheduled slot refer to same appointment (currently being updated) 
+                     * ------ not the same appointment; state = ERROR_ADDING_APPOINTMENT_TO_SCHEDULE and create error content
+                     *
+                     */
+                    if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
+                        /**
+                         * -- if requested slot end time is not after next scheduled end time 
+                         * ---- check requested and next scheduled slot refer to the same appointment
+                         * ------ yes; means appointment is being correctly updated
+                         * ------ change state to APPOINTMENT_ADDED_TO_SCHEDULE 
+                         */
+                        if (requestedSlot.equals(nextScheduledSlot)){
+                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                        }
+                        else{
+                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                            result = 
+                                    "The new appointment for " + requestedSlot.getAppointeeName()
+                                    + " overwrites existing appointment for " 
+                                    + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                        }      
+                    }else //do nothing and retain state = REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME
+                    break;
+                case REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT:
+                    if(!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime())){
+                        /**
+                         * requested slot fits into empty slot space prior to scheduled slot so can add to schedule
+                         */
+                        result = null;
+                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                        break;
+                    }
+                    else if (!requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotEndTime())){
+                        /**
+                         * --requested slot starts after end of scheduled slot
+                         * --do nothing, state (STARTS_AFTER_PREVIOUS_SLOT) remains the same
+                         */
+                    }
+                    else {//means requested slot overlaps next scheduled slot
+                        switch (mode){
+                            case CREATE:
+                                /**
+                                 * --requested Slot overlaps next scheduled appointment so cannot be created 
+                                 * --abort attempt to create a new appointment and post error
+                                 * -- check if overlapped next scheduled appointment is for the same patient
+                                 * -- let user know if this is the case and suggest an update request is required
+                                 */
+                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                if (requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
+                                    result = "The requested new appointment for "
+                                            + requestedSlot.getAppointeeName()  
+                                            + " overlaps a scheduled appointment for the same patient.\n"
+                                            + "Rather than creating a new appointment for "
+                                            + requestedSlot.getAppointeeName() 
+                                            + " update the scheduled appointment." ;
+                                }else {
+                                result = 
+                                        "The new appointment for " + requestedSlot.getAppointeeName()
+                                        + " overwrites existing appointment for " + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                                }
+                                break;
+                            case UPDATE:
+                                //-- requested slot overlaps next scheduled slot
+                                if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
+                                    /**
+                                     * -- if requested slot end time is not after next scheduled end time 
+                                     * ---- check requested and next scheduled slot refer to the same appointment
+                                     * ------ yes; means appointment is being correctly updated
+                                     * ------ change state to APPOINTMENT_ADDED_TO_SCHEDULE 
+                                     */
+                                    if (requestedSlot.equals(nextScheduledSlot)){
+                                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                    }
+                                    else{
+                                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                        result = 
+                                                "The new appointment for " + requestedSlot.getAppointeeName()
+                                                + " overwrites existing appointment for " 
+                                                + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                                    }      
+                                }else  state = RequestedAppointmentState.REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME;
+                                break;
+                        }
+                    }        
+            }
+        }
+        return result;
+        
+    }
+    
+    /*
     private String appointmentCollisionChangingSchedule(
             TheAppointment rSlot, 
             ArrayList<TheAppointment> appointments, ViewMode mode){
@@ -1519,47 +861,36 @@ public class AppointmentScheduleViewController extends ViewController{
         LocalDateTime sSlotEnd;
         LocalDateTime rSlotEnd = rSlot.getStart().plusMinutes(rSlot.getDuration().toMinutes());
         Iterator<TheAppointment> it = appointments.iterator();
-        RequestedAppointmentState state = RequestedAppointmentState.STARTS_AFTER_PREVIOUS_SLOT;
+        RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT;
         while(it.hasNext()){
             TheAppointment sSlot = it.next();
             sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
             switch (state){
-                case STARTS_AFTER_PREVIOUS_SLOT:
+                case REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT:
                     if(!rSlotEnd.isAfter(sSlot.getStart())){
-                        /**
-                         * requested slot is prior to scheduled slot so can add to schedule
-                         */
+       
                         result = null;
                         state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
                         break;
                     }
                     else if (!rSlot.getStart().isBefore(sSlotEnd)){
-                        /**
-                         * --requested slot starts after end of scheduled slot
-                         * --do nothing, state remains the same
-                         */
+
                     }
                     else {//must mean rSlot overlaps sSlot
                         switch (mode){
                             case CREATE:
-                                /**
-                                 * --rSlot overlaps scheduled appointment so cannot be created 
-                                 * --abort attempt to create a new appointment and post error
-                                 */
+           
                                 state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                 result = 
                                         "The new appointment for " + getNameOfSlotOwner(rSlot)
                                         + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
                                 break;
                             case UPDATE:
-                                /**
-                                 * requested slot starts before schedule lot ends
-                                 */
-                                if (!rSlot.getIsKeyDefined().equals(sSlot.getIsKeyDefined())){
-                                    /**
-                                     * --requested slot and scheduled slot are different appointment records
-                                     * --abort attempt to update requested slot and register error
-                                     */
+                                //24/07/2022 13:42
+                                //if (!rSlot.getIsKeyDefined().equals(sSlot.getIsKeyDefined())){
+                                //26/07/2022 11:37
+                                if (!rSlot.equals(sSlot)){
+     
                                     state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                     result = 
                                             "The new appointment for " + getNameOfSlotOwner(rSlot)
@@ -1567,20 +898,11 @@ public class AppointmentScheduleViewController extends ViewController{
                                     break;
                                 }
                                 else if (rSlotEnd.isAfter(sSlotEnd)){
-                                    /**
-                                     * --requested slot is an updated version of scheduled slot 
-                                     * --starts before the end of the scheduled slot
-                                     * --and ends after end scheduled slot
-                                     * --change state accordingly
-                                     */
+      
                                     state = RequestedAppointmentState.ENDS_AFTER_PREVIOUS_SLOT;
                                 }
                                 else{
-                                    /**
-                                     * --requested slot is an updated version of scheduled slot
-                                     * --and starts and ends before or by the end of the scheduled slot
-                                     * --permit update
-                                     */
+
                                     result = null;
                                     break;
                                 }
@@ -1589,24 +911,15 @@ public class AppointmentScheduleViewController extends ViewController{
                     }
                     break;
                 case ENDS_AFTER_PREVIOUS_SLOT:
-                    /**
-                     * --requested slot is an updated version of the previous slot to scheduled appointment
-                     */
+
                    if (!rSlotEnd.isAfter(sSlot.getStart())){
-                       /**
-                        * --end of requested slot is before the start of the scheduled slot
-                        * --means requested slot update is allowed since it doesn't overlap next scheduled slot
-                        */
+
                        result = null;
                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
                        break;
                    }
                    else{
-                        /**
-                         * --requested slot ends after the start of the scheduled slot 
-                         * --but requested slot cannot be an updated version of 2 separate appointment slots
-                         * --abort update process
-                         */
+
                         state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                         result = 
                                             "The new appointment for " + getNameOfSlotOwner(rSlot)
@@ -1620,94 +933,7 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         return result;   
     }
-    
-    
-    /**
-     * method identifies if requested slot can be added to schedule or not
-     * @param rSlot Appointment, the requested appointment
-     * @param appointments ArrayList of scheduled appointments for the day in question
-     * @param mode ViewMode, determines if request is CREATE a new appointment or UPDATE a scheduled appointment
-     * @return String, contains error message if a collision occurs, else null
-     */
-    /*private String appointmentCollisionChangingSchedulex(
-            TheAppointment rSlot, 
-            ArrayList<TheAppointment> appointments, ViewMode mode){
-       
-        String result = null;
-        LocalDateTime sSlotEnd;
-        LocalDateTime rSlotEnd = rSlot.getStart().plusMinutes(rSlot.getDuration().toMinutes());
-        Iterator<Appointment> it = appointments.iterator();
-        RequestedAppointmentState state = RequestedAppointmentState.STARTS_AFTER_PREVIOUS_SLOT;
-        while(it.hasNext()){
-            Appointment sSlot = it.next();
-            sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
-            switch (state){
-                case STARTS_AFTER_PREVIOUS_SLOT:
-                    if(!rSlotEnd.isAfter(sSlot.getStart())){
-
-                        result = null;
-                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                        break;
-                    }
-                    else if (!rSlot.getStart().isBefore(sSlotEnd)){
-
-                    }
-                    else {//must mean rSlot overlaps sSlot
-                        switch (mode){
-                            case CREATE:
-  
-                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                result = 
-                                        "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                        + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
-                                break;
-                            case UPDATE:
-                              
-                                if (!rSlot.getKey().equals(sSlot.getKey())){
-                     
-                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                    result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
-                                    break;
-                                }
-                                else if (rSlotEnd.isAfter(sSlotEnd)){
-                  
-                                    state = RequestedAppointmentState.ENDS_AFTER_PREVIOUS_SLOT;
-                                }
-                                else{
-                        
-                                    result = null;
-                                    break;
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                case ENDS_AFTER_PREVIOUS_SLOT:
-      
-                   if (!rSlotEnd.isAfter(sSlot.getStart())){
-     
-                       result = null;
-                       state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                       break;
-                   }
-                   else{
-  
-                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                        result = 
-                                            "The new appointment for " + getNameOfSlotOwner(rSlot)
-                                            + " overwrites existing appointment for " + getNameOfSlotOwnerPlusSlotStart(sSlot);
-                        //result = 
-                        //        "Attempt to overwrite two separate appointments disallowed";
-                        break;
-                   }
-
-            }
-        }
-        return result;  
-    }*/
-    
+    */
     private TheAppointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
         String error;
         TheAppointment result = null;
@@ -1737,9 +963,9 @@ public class AppointmentScheduleViewController extends ViewController{
             }
         }
         else{
-            switch (mode){//one or more appointmwent already exist so check the CREATE or UPGRADE make sense
+            switch (mode){//one or more appointments already exist so check the CREATE or UPGRADE make sense
                 case CREATE:
-                    error = appointmentCollisionChangingSchedule(rSlot, appts.get(), mode);
+                    error = appointmentCollisionCheckOnScheduleChangeRequest(rSlot, appts.get(), mode);
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
@@ -1748,7 +974,7 @@ public class AppointmentScheduleViewController extends ViewController{
                     }
                     break;
                 case UPDATE:
-                    error = appointmentCollisionChangingSchedule(rSlot, appts.get(), mode);
+                    error = appointmentCollisionCheckOnScheduleChangeRequest(rSlot, appts.get(), mode);
                     getNewEntityDescriptor().setError(error);
                     if (error==null){
                         //no collision results
@@ -1761,62 +987,6 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;
     }
     
-    /**
-     * Attempts to CREATE/UPDATE an appointment according to ED request
-     * @param mode:ViewMode; either an appointment CREATE or UPDATE 
-     * @return Appointment if the CREATE or UPSATE is successful; else null if not
-     * @throws StoreException 
-     */
-    /*
-    private TheAppointment requestToChangeAppointmentSchedulex(ViewMode mode) throws StoreException{
-        
-        String error;
-        Appointment result = null;
-        Appointment rSlot = makeAppointmentFromEDRequest();
-        LocalDate day = rSlot.getStart().toLocalDate();
-        
-        //NOTE: changed "appointments" to "appts" because former hid a previous definition of "appointments"
-        Appointments appts = new Appointments();
-        appts.readForDay(day);
-        if (appts.isEmpty()){
-
-            switch (mode){
-                case CREATE:
-                    rSlot.insert();
-                    result = rSlot.read();
-                    break;
-                case UPDATE://this shouldn't be ever the case
-                    rSlot.update();
-                    result = rSlot.read();
-                    break;
-            }
-        }
-        else{
-            switch (mode){//one or more appointmwent already exist so check the CREATE or UPGRADE make sense
-                case CREATE:
-                    error = appointmentCollisionChangingSchedule(rSlot, appts, mode);
-                    getNewEntityDescriptor().setError(error);
-                    if (error==null){
-                        //no collision results
-                        rSlot.insert(); //was rslot.create()
-                        result = rSlot.read();
-                    }
-                    break;
-                case UPDATE:
-                    error = appointmentCollisionChangingSchedule(rSlot, appts, mode);
-                    getNewEntityDescriptor().setError(error);
-                    if (error==null){
-                        //no collision results
-                        rSlot.update();
-                        result = rSlot.read();
-                    }
-                    break;
-            }
-        }
-        return result;
-        
-    }
-   */
     private ArrayList<TheAppointment> getAvailableSlotsOfDuration(
             ArrayList<TheAppointment> appointments, Duration duration, LocalDate searchStartDay){
         ArrayList<TheAppointment> result = new ArrayList<>();
@@ -1837,8 +1007,6 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         appointmentsGroupedByDay.add(appointmentsForSingleDay);
         Iterator<ArrayList<TheAppointment>> it1 = appointmentsGroupedByDay.iterator();
-        //appointmentsForSingleDay.clear();
-        
         /**
          * -- current search date initialised to start day of search
          * -- for each collection of appointments for a given day (appointmentsForSingleDay)
@@ -2000,166 +1168,7 @@ public class AppointmentScheduleViewController extends ViewController{
         return finalisedResult;
         
     }
-
-    /*
-    private ArrayList<Appointment> getAvailableSlotsOfDurationx(
-            
-            
-            ArrayList<Appointment> appointments,Duration duration, LocalDate searchStartDay){
-        
-        
-        ArrayList<Appointment> result = new ArrayList<>();
-        ArrayList<Appointment> appointmentsForSingleDay = new ArrayList<>();
-        ArrayList<ArrayList<Appointment>> appointmentsGroupedByDay = new ArrayList<>();
-        LocalDate currentDate = null;
-        Iterator<Appointment> it = appointments.iterator();
-        while(it.hasNext()){
-            Appointment appointment = it.next();
-            if (currentDate==null) currentDate = appointment.getStart().toLocalDate();
-            if (appointment.getStart().toLocalDate().equals(currentDate)) appointmentsForSingleDay.add(appointment);
-            else {
-                appointmentsGroupedByDay.add(appointmentsForSingleDay);
-                currentDate = appointment.getStart().toLocalDate();
-                appointmentsForSingleDay = new ArrayList<>();
-                appointmentsForSingleDay.add(appointment);
-            }
-        }
-        appointmentsGroupedByDay.add(appointmentsForSingleDay);
-        Iterator<ArrayList<Appointment>> it1 = appointmentsGroupedByDay.iterator();
-        
-        currentDate = searchStartDay;
-        while(it1.hasNext()){
-            appointmentsForSingleDay = it1.next();
-            LocalDate appointmentsForSingleDayDate = appointmentsForSingleDay.get(0).getStart().toLocalDate();
-            while(currentDate.isBefore(appointmentsForSingleDayDate)){
-                if(currentDate.getDayOfWeek().equals(DayOfWeek.TUESDAY) 
-                            || currentDate.getDayOfWeek().equals(DayOfWeek.THURSDAY)
-                            || currentDate.getDayOfWeek().equals(DayOfWeek.FRIDAY))
-                        result.add(this.createEmptyAppointmentSlot(
-                              currentDate.atTime(ViewController.FIRST_APPOINTMENT_SLOT))); 
-                currentDate = currentDate.plusDays(1); 
-            }
-            ArrayList<Appointment> slotsForDay = 
-                    getAppointmentsForSelectedDayIncludingEmptySlots(
-                            appointmentsForSingleDay, appointmentsForSingleDayDate); 
-            Iterator<Appointment> it2 = slotsForDay.iterator();
-            //currentDate = null;
-            while(it2.hasNext()){
-                Appointment slot = it2.next();
-                if (slot.getStatus().equals(Appointment.Status.UNBOOKED)){
-                    long slotDuration = slot.getDuration().toMinutes();
-                    if (slotDuration >= duration.toMinutes()){
-                        result.add(slot);
-                    }
-                }
-            } 
-            currentDate = currentDate.plusDays(1);
-        } 
-
-        
-        boolean multiDayIntervalHasStarted = false;
-        Appointment multiDayIntervalWithNoAppointments = null;
-        ArrayList<Appointment> finalisedResult = new ArrayList<>();
-        //LocalDate thisDate = result.get(0).getStart().toLocalDate();
-        it = result.iterator();
-        int count = 0;
-        
-        if (duration.toHours()==8){//empty slot scan duration is all day
-            while (it.hasNext()){
-                count = count + 1;
-                if (count == 23){
-                    count = 19;                    
-                }
-                Appointment appointment = it.next();
-                if (finalisedResult.isEmpty()&&multiDayIntervalWithNoAppointments==null){//start of procedure on entry
-                    //multiDayIntervalHasStarted = true;
-                    multiDayIntervalWithNoAppointments = new Appointment();
-                    multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                    multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                    multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
-                }
-                else{
-                    //LocalDate appointmentDate = appointment.getStart().toLocalDate();
-                    if (areTheseSlotsOnConsecutivePracticeDays(multiDayIntervalWithNoAppointments,appointment)){
-                        if (multiDayIntervalWithNoAppointments!=null){
-                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                        }
-                    }
-                    else{
-                        if (multiDayIntervalWithNoAppointments!=null){
-                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                            finalisedResult.add(multiDayIntervalWithNoAppointments);
-                            multiDayIntervalWithNoAppointments = new Appointment();
-                            multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                            multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
-                        }
-                    }
-                }
-            }
-            if (multiDayIntervalWithNoAppointments!=null){
-                Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                finalisedResult.add(multiDayIntervalWithNoAppointments);
-            }
-        }
-        else{// this is not a scan of all day slots
-            while(it.hasNext()){
-                Appointment appointment = it.next();
-
-                if (appointment.getDuration().toHours() == 8){
-                    //WHAT HAPPENS WHEN APPOINTMENT CHANGES MULTIDAYINTERVALHASSTARTED SLOT
-                    if (!multiDayIntervalHasStarted) {
-                        multiDayIntervalHasStarted = true;
-                        multiDayIntervalWithNoAppointments = new Appointment();
-                        multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                        multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
-                    }
-                    else if (areTheseSlotsOnConsecutivePracticeDays(
-                            multiDayIntervalWithNoAppointments,appointment)){
-                            if (multiDayIntervalWithNoAppointments!=null){
-                                duration = multiDayIntervalWithNoAppointments.getDuration();
-                                multiDayIntervalWithNoAppointments.setDuration(duration.plusHours(8));
-                            }
-                    }
-                    else{
-                        if (multiDayIntervalWithNoAppointments!=null){
-                            Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                            multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                            finalisedResult.add(multiDayIntervalWithNoAppointments);
-                            multiDayIntervalWithNoAppointments = new Appointment();
-                            multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
-                            multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
-                        }
-                    }
-                }
-                else if (multiDayIntervalHasStarted){
-                    if (multiDayIntervalWithNoAppointments!=null){
-                        Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                        multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                        finalisedResult.add(multiDayIntervalWithNoAppointments);
-                        multiDayIntervalHasStarted = false;
-                        finalisedResult.add(appointment);
-                    }
-                }
-                else finalisedResult.add(appointment);  
-            } 
-            if (multiDayIntervalHasStarted){
-                if (multiDayIntervalWithNoAppointments!=null){
-                    Duration d = multiDayIntervalWithNoAppointments.getDuration();
-                    multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
-                    finalisedResult.add(multiDayIntervalWithNoAppointments);
-                }
-            }
-        }
-        
-        return finalisedResult;       
-    }
-    */
+    
     private LocalDate getPracticeDayOnWhichSlotEnds(TheAppointment slot){
         
         long intervalHours = slot.getDuration().toHours();
@@ -2195,24 +1204,6 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         return result;
     }
-    
-    /*
-    private boolean areTheseDatesConsecutivePracticeDays(LocalDate d1, LocalDate d2){
-        boolean result = false;
-        LocalDate nextDay = d1;
-        do{
-            nextDay = nextDay.plusDays(1);
-            
-        }while (nextDay.getDayOfWeek()==DayOfWeek.SATURDAY||
-                nextDay.getDayOfWeek()==DayOfWeek.SUNDAY||
-                nextDay.getDayOfWeek()==DayOfWeek.MONDAY||
-                nextDay.getDayOfWeek()==DayOfWeek.WEDNESDAY);
-        if (nextDay.isEqual(d2)){
-            result = true;
-        }
-        return result;
-    }
-    */
     
     private ArrayList<TheAppointment> getAppointmentsForSelectedDayIncludingEmptySlots(
             ArrayList<TheAppointment> appointments, LocalDate day) {
@@ -2299,73 +1290,6 @@ public class AppointmentScheduleViewController extends ViewController{
         return appointment;
     }
     
-    /*
-    private Patient makePatientFrom(EntityDescriptor.Patient eP){
-        Patient p = new Patient();
-        for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
-            switch (pf){
-                case KEY:
-                    p.setKey(eP.getData().getKey());
-                    break;
-                case TITLE:
-                    p.getName().setTitle(eP.getData().getTitle());
-                    break;
-                case FORENAMES:
-                    p.getName().setForenames(eP.getData().getForenames());
-                    break;
-                case SURNAME:
-                    p.getName().setSurname(eP.getData().getSurname());
-                    break;
-                case LINE1:
-                    p.getAddress().setLine1(eP.getData().getLine1());
-                    break;
-                case LINE2:
-                    p.getAddress().setLine2(eP.getData().getLine2());
-                    break;
-                case TOWN:
-                    p.getAddress().setTown(eP.getData().getTown());
-                    break;
-                case COUNTY:
-                    p.getAddress().setCounty(eP.getData().getCounty());
-                    break;
-                case POSTCODE:
-                    p.getAddress().setPostcode(eP.getData().getPostcode());
-                    break;
-                case DENTAL_RECALL_DATE:
-                    p.getRecall().setDentalDate(eP.getData().getDentalRecallDate());
-                    break;
-                case HYGIENE_RECALL_DATE:
-                    p.getRecall().setHygieneDate(eP.getData().getHygieneRecallDate());
-                    break;
-                case HYGIENE_RECALL_FREQUENCY:
-                    p.getRecall().setHygieneFrequency(eP.getData().getHygieneRecallFrequency());
-                    break;
-                case DENTAL_RECALL_FREQUENCY:
-                    p.getRecall().setDentalFrequency(eP.getData().getDentalRecallFrequency());
-                    break;
-                case GENDER:
-                    p.setGender(eP.getData().getGender());
-                    break;
-                case PHONE1:
-                    p.setPhone1(eP.getData().getPhone1());
-                    break;
-                case PHONE2:
-                    p.setPhone2(eP.getData().getPhone2());
-                    break;
-                case DOB:
-                    p.setDOB(eP.getData().getDOB());
-                    break;
-                case NOTES:
-                    p.setNotes(eP.getData().getNotes());
-                    break;
-                case IS_GUARDIAN_A_PATIENT:
-                    p.setIsGuardianAPatient(eP.getData().getIsGuardianAPatient());
-                    break;
-            }
-        }
-        return p;
-    }
-    */
     /**
      * Method fethes the appointmnt defined in the AppointmentCreatorEditorModalViewer in its EntityDescriptor.
      * -- if this appointment has a key defined its change arises from an u,pdate of an existing appointment
@@ -2393,16 +1317,8 @@ public class AppointmentScheduleViewController extends ViewController{
             appointment.setDuration(getEntityDescriptorFromView().getRequest().getTheAppointment().getDuration());
             appointment.setStart(getEntityDescriptorFromView().getRequest().getTheAppointment().getStart());
             appointment.setNotes(getEntityDescriptorFromView().getRequest().getTheAppointment().getNotes());
-            appointment.setPatient(getEntityDescriptorFromView().getRequest().getTheAppointment().getPatient());
-            //appointment.setPatient(makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient()));  
+            appointment.setPatient(getEntityDescriptorFromView().getRequest().getTheAppointment().getPatient());  
         }
-        /*
-        else appointment = new TheAppointment();
-        appointment.setDuration(getEntityDescriptorFromView().getRequest().getTheAppointment().getDuration());
-        appointment.setStart(getEntityDescriptorFromView().getRequest().getTheAppointment().getStart());
-        appointment.setNotes(getEntityDescriptorFromView().getRequest().getTheAppointment().getNotes());
-        appointment.setPatient(makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient()));
-        */
         return appointment;
     }
 
@@ -2437,201 +1353,10 @@ public class AppointmentScheduleViewController extends ViewController{
         setNewEntityDescriptor(new EntityDescriptor());
         getNewEntityDescriptor().getRequest().setDay(getOldEntityDescriptor().getRequest().getDay());
     }
-    
-    /**
-     * serialiseAppointmentToEDAppointment method flattens the model appointment object
-     * -- EntityDescriptor.Appointment.Data = renderAppointment(appointment) -> initialises Data with the key, start, duration and note fields from the model appointment object
-     * -- -- EntityDescriptor.Appointment.Appointee = renderPatient(appointment.getPatient()) -> initialises Data with the model patient field values; else null of this is an empty appointment slot
-     * -- -- EntityDescriptor.Patient = Appointee
-     * -- -- for convenience an additional Appointment.Data.EmptySlot is initialised true or false as appropriate
-     * -- -- this is a duplication of the significance of the EntityDescriptor.Appointment.Appointee and EntityDescriptor.Patient values; a null value of which indicates EmptySlot = true
-     * @param model appointment object
-     */
-    /*
-    private void serialiseAppointmentToEDAppointmentx(Appointment appointment){
-        RenderedAppointment renderedAppointment = renderAppointment(appointment);
-        RenderedPatient renderedPatient;
-        if (appointment.getPatient() != null){
-            renderedAppointment.IsEmptySlot(false);
-            renderedPatient = renderPatient(appointment.getPatient());
-            getNewEntityDescriptor().setAppointment(new EntityDescriptor().getAppointment());
-            getNewEntityDescriptor().getAppointment().setData(renderedAppointment);
-            getNewEntityDescriptor().getAppointment().getAppointee().setData(renderedPatient);
-            getNewEntityDescriptor().setPatient(getNewEntityDescriptor().getAppointment().getAppointee());
-        }
-        else {
-            renderedAppointment.IsEmptySlot(true);
-            getNewEntityDescriptor().getAppointment().setData(renderedAppointment);
-            getNewEntityDescriptor().getAppointment().setAppointee(null);
-            getNewEntityDescriptor().setPatient(null);
-        }
-    }
-    */
-    /**
-     * Produces a flattened version of the model.Patient object which does not include a reference to a patient object if the legal guardian of this patient is also a patient of the practice.
-     * -- fields in the EntityDescriptor.Patient object include both a Data object (the rendered patient) as well as an Appointee object (a rendered patient object)
-     * @param p
-     * @return 
-     */
-    /*
-    private RenderedPatient renderPatient(Patient p){
-        RenderedPatient result = null;
-        if (p!=null){
-            RenderedPatient vp = new RenderedPatient();
-            for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
-                switch(pf){
-                    case KEY:
-                        vp.setKey(p.getKey());
-                        break;
-                    case TITLE:
-                        vp.setTitle((p.getName().getTitle()));
-                        break;
-                    case FORENAMES:
-                        vp.setForenames((p.getName().getForenames()));
-                        break;
-                    case SURNAME:
-                        vp.setSurname((p.getName().getSurname()));
-                        break;
-                    case LINE1:
-                        vp.setLine1((p.getAddress().getLine1()));
-                        break;
-                    case LINE2:
-                        vp.setLine2((p.getAddress().getLine2()));
-                        break;
-                    case TOWN:
-                        vp.setTown((p.getAddress().getTown()));
-                        break;
-                    case COUNTY:
-                        vp.setCounty((p.getAddress().getCounty()));
-                        break;
-                    case POSTCODE:
-                        vp.setPostcode((p.getAddress().getPostcode()));
-                        break;
-                    case DENTAL_RECALL_DATE:
-                        vp.setDentalRecallDate((p.getRecall().getDentalDate()));
-                        break;
-                    case HYGIENE_RECALL_DATE:
-                        vp.setHygieneRecallDate((p.getRecall().getHygieneDate()));
-                        break;
-                    case DENTAL_RECALL_FREQUENCY:
-                        vp.setHygieneRecallFrequency((p.getRecall().getDentalFrequency()));
-                        break;
-                    case HYGIENE_RECALL_FREQUENCY:
-                        vp.setDentalRecallFrequency((p.getRecall().getDentalFrequency()));
-                        break;
-                    case DOB:
-                        vp.setDOB((p.getDOB()));
-                        break;
-                    case GENDER:
-                        p.setGender((p.getGender()));
-                        break;
-                    case PHONE1:
-                        vp.setPhone1((p.getPhone1()));
-                        break;
-                    case PHONE2:
-                        vp.setPhone2((p.getPhone2()));
-                        break;
-                    case IS_GUARDIAN_A_PATIENT:
-                        vp.setIsGuardianAPatient((p.getIsGuardianAPatient()));
-                        break;
-                    case NOTES:
-                        vp.setNotes((p.getNotes()));
-                        break;
-                }
-            }
-            result = vp;
-        }
-        return result;
-    }
-    */
-    /**
-     * Produces a flattened version of the model.Appointment object which does not include a reference to a patient object if an appointee exists.
-     * -- fields in the EntityDescriptor.Appointment object include both a Data object (the rendered appointment) as well as an Appointee object (a rendered patient object)
-     * @param a model.Appointment object
-     * @return 
-     */
-    /*
-    private RenderedAppointment renderAppointment(Appointment a){
-        RenderedAppointment ra = new RenderedAppointment();
-        for (EntityDescriptor.AppointmentField af: EntityDescriptor.AppointmentField.values()){
-            switch(af){
-                case KEY:
-                    ra.setKey(a.getKey());
-                    break;
-                case DURATION:
-                    ra.setDuration(a.getDuration());
-                    break;
-                case NOTES:
-                    ra.setNotes(a.getNotes());
-                    break;
-                case START:
-                    ra.setStart(a.getStart()); 
-                    break;
-            }  
-        }
-        return ra;
-    }
-    */
-    /**
-     * Method serialises the specified collection of Appointment objects into
-     * EntityDescriptor.Collection of serialised Appointment objects.This collection
-     * is emptied of entries on entry to the method. The booked/unbooked status 
-     * of the appointment object being serialised is checked to see if an  
-     * encapsulated patient object,the appointee, exists. If it does the patient
-     * object is serialised
-     * @param appointments, collection of model Appointment objects 
-     */
-    /*
-    private void serialiseAppointmentsToEDCollection(ArrayList<Appointment> appointments){
-        getNewEntityDescriptor().getAppointments().getData().clear();
-        Iterator<Appointment> appointmentsIterator = appointments.iterator();
-        while(appointmentsIterator.hasNext()){
-            Appointment appointment = appointmentsIterator.next();
-            RenderedAppointment renderedAppointment = renderAppointment(appointment);
-            EntityDescriptor.Appointment edAppointment = new EntityDescriptor().getAppointment();
-            edAppointment.setData(renderedAppointment);
-            if (appointment.getStatus() == Appointment.Status.BOOKED){
-                edAppointment.getData().IsEmptySlot(false);
-                if (appointment.getPatient()!=null){
-                    RenderedPatient appointee = renderPatient(appointment.getPatient());
-                    EntityDescriptor.Patient edPatient = new EntityDescriptor().getPatient();
-                    edPatient.setData(appointee);
-                    edAppointment.setAppointee(edPatient);
-                }
-            }
-            else{
-                edAppointment.setAppointee(null);
-                edAppointment.getData().IsEmptySlot(true);
-            }
-            getNewEntityDescriptor().getAppointments().getData().add(edAppointment);
-        }    
-    }
-   */
-    /*
-    private void serialisePatientsToEDCollection(ArrayList<Patient> patients) throws StoreException{
-        getNewEntityDescriptor().getPatients().getData().clear();
-        Iterator<Patient> patientsIterator = patients.iterator();
-        while(patientsIterator.hasNext()){
-            Patient patient = patientsIterator.next();
-            RenderedPatient renderedPatient = renderPatient(patient);
-            getNewEntityDescriptor().setPatient(new EntityDescriptor().getPatient());
-            getNewEntityDescriptor().getPatient().setData(renderedPatient);
-            //getNewEntityDescriptor().setPatientGuardian(new EntityDescriptor().getPatientGuardian());
-            //update 30/07/2021 09:05
-            getNewEntityDescriptor().getPatient().setPatientGuardian(new EntityDescriptor().getPatient().getPatientGuardian());
-            getNewEntityDescriptor().setPatientAppointmentHistory(null);
-            getNewEntityDescriptor().getPatients().getData().add(getNewEntityDescriptor().getPatient());
-        }
-    }
-*/
+
     private void setMyController(ActionListener myController ){
         this.myController = myController;
     }
-    
-    /*public JInternalFrame getView( ){
-        return view;
-    }
-    */
 
     public JInternalFrame getView( ){
         return view;
@@ -2649,6 +1374,5 @@ public class AppointmentScheduleViewController extends ViewController{
         appts.get().clear();
         appts.get().addAll(appointmentSlotsForDay);
         getNewEntityDescriptor().setTheAppointments(appts.get());
-        //serialiseAppointmentsToEDCollection(appointments);
     }
 }

@@ -280,8 +280,14 @@ public class AppointmentCreatorEditorModalViewer extends View {
                     getEntityDescriptor().getTheAppointment());
         //update this from current state of view
         
+        //24/07/2022 13:42 (1c)
+        /*
         getEntityDescriptor().getRequest().setThePatient(
                 (ThePatient)this.cmbSelectPatient.getSelectedItem());
+        */
+        getEntityDescriptor().getRequest().getTheAppointment().setPatient(
+                (ThePatient)this.cmbSelectPatient.getSelectedItem());
+        
         getEntityDescriptor().getRequest().getTheAppointment().
                 setStart((LocalDateTime)this.cmbSelectStartTime.getSelectedItem());
         getEntityDescriptor().getRequest().getTheAppointment().
