@@ -102,7 +102,7 @@ public class ThePatient extends EntityStoreType {
         return result;
     }
     
-    private Patient updateGender(Patient patient){
+    private ThePatient updateGender(ThePatient patient){
         switch (patient.getGender()){
             case "M":
                 patient.setGender("Male");
@@ -385,15 +385,8 @@ public class ThePatient extends EntityStoreType {
             return dentalAppointments;
         }
         
-        public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
-            /**
-            if (Patient.this.getKey()!=null){ 
-                Appointments appointments = new Appointments();
-                appointments.readForPatient(Patient.this, Appointment.Category.HYGIENE);
-                return appointments;
-            }
-            else return null;
-            */
+        public ArrayList<TheAppointment> getHygieneAppointments()throws StoreException{
+            
             return null;
         }
     }

@@ -5,18 +5,9 @@
  */
 package clinicpms.store;
 
-import clinicpms.model.Appointment;
-import clinicpms.model.Appointments;
 import clinicpms.model.ThePatient;
-import clinicpms.model.Patient;
-import clinicpms.model.Patients;
-import clinicpms.model.AppointmentTable;
-import clinicpms.model.IEntityStoreType;
-import clinicpms.model.PatientNotification;
-import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysAssignmentTable;
-//import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.SurgeryDaysAssignment;
+import clinicpms.model.PatientNotification;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.Dictionary;
@@ -46,54 +37,20 @@ public class SQLExpressStore  {
     public void insert(PatientNotification pn)throws StoreException{
         
     }
-    
-    /*
-    
-    public void insert(PatientTable p, Patient patient) throws StoreException{
-        
-    }
-    */
-    
-    public void insert(Appointment a) throws StoreException{
-        
-    }
-    
+
     
     public void insert(ThePatient p) throws StoreException{
         
     }
-    
-    
-    public void insert(Patient p) throws StoreException{
-        
-    }
-    
-    
-    public void delete(Appointment a) throws StoreException{
-        
-    }
-    
-    
+
     public void delete(ThePatient p) throws StoreException{
         
     }
-    
-    
-    public void delete(Patient p) throws StoreException{
-        
-    }
-    
-    
+
     public String read(Store.SelectedTargetStore db)throws StoreException{
         return null;
     }
-    
-    
-    public Appointment read(Appointment a) throws StoreException{
-        return null;
-    }
-    
-    
+
     public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
         return null;
     }
@@ -102,12 +59,7 @@ public class SQLExpressStore  {
     public ThePatient read(ThePatient p) throws StoreException{
         return null;
     }
-    
-    
-    public Patient read(Patient p) throws StoreException{
-        return null;
-    }
-    
+
     
     public PatientNotification read(PatientNotification value)throws StoreException{
         return null;
@@ -118,37 +70,6 @@ public class SQLExpressStore  {
         return null;
     }
 
-    
-    /**
-     * Automatic transaction processing enabled
-     * -- reads all appointments stored on the system
-     * @return ArrayList<Appointment>
-     * @throws StoreException 
-     */
-    public Appointments readAppointments() throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointmentsFor(LocalDate day) throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointments(Patient p, Appointment.Category c) throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointmentsFrom(LocalDate day) throws StoreException{
-        return null;
-    }
-    
-    
-    public Patients readPatients() throws StoreException{
-        return null;
-    }
-    
     
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
         
@@ -164,16 +85,7 @@ public class SQLExpressStore  {
         
     }
     
-    
-    public void update(Patient p) throws StoreException{
-        
-    }
-    
-    
-    public void update(Appointment a) throws StoreException{
-        
-    }
-    
+ 
     
     
 
@@ -214,23 +126,7 @@ public class SQLExpressStore  {
         return 0;
     }
     */
-    /*
-    
-    public int countRowsIn(SurgeryDaysAssignmentTable p){
-        return 0;
-    }
-    */
-    
-    public int countRowsIn(Patients p){
-        return 0;
-    }
-    
-    
-    public int countRowsIn(Appointments p){
-        return 0;
-    }
-    
-    
+
     /**
      * Creates an appointment table in the migration store
      * @param table:AppointmentTable)
@@ -390,60 +286,19 @@ public class SQLExpressStore  {
         return null;
     }
     
-    /*
     
-    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table){
-        return null;
-    }
-    
-    
-    public Appointments read(AppointmentTable table){
-        return null;
-    }
-    
-    
-    public Patients read(PatientTable table){
-        return null;
-    }
-    */
-    public void insert(Appointments appointments) throws StoreException{
-        
-    }
-    
-    public void insert(Patients patients) throws StoreException{
-        
-    }
-    
-    
-    
-    public void drop(Appointment a)throws StoreException{
-        
-    }
+
     public void drop(ThePatient p)throws StoreException{
         
     }
-    public void drop(Patient p)throws StoreException{
-        
-    }
-    
-    public void create(Appointment a)throws StoreException{
-        
-    }
+
     public void create(PatientNotification pn)throws StoreException{
         
     }
     public void create(ThePatient p)throws StoreException{
         
     }
-    public void create(Patient p)throws StoreException{
-        
-    }
-    
-    
-    public List<String[]> importFromCSV1(IEntityStoreType entity)throws StoreException{
-        return null;
-    }
-    
+
     
     public File initialiseTargetStore(File path)throws StoreException{
         return null;

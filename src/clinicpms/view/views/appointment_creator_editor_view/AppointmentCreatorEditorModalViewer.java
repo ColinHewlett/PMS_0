@@ -542,7 +542,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         * check if a non zero duration value has been defined
         * check if no notes have been defined if still ok to save appointment
         */
-        if (getEntityDescriptor().getRequest().getPatient()== null){
+        if (getEntityDescriptor().getRequest().getThePatient()== null){
             JOptionPane.showMessageDialog(this, "A patient has not been selected for this appointment");
         }
         else if (getEntityDescriptor().getTheAppointment().getDuration().isZero()){

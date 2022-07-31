@@ -10,7 +10,6 @@ import clinicpms.model.IAppointments;
 import clinicpms.model.IEntity;
 import clinicpms.model.IPatients;
 import clinicpms.model.IStoreManager;
-import clinicpms.model.ITable;
 import clinicpms.model.EntityStoreType;
 
 /**

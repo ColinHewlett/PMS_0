@@ -1289,38 +1289,6 @@ public class AppointmentScheduleViewController extends ViewController{
         //appointment.setEnd(appointment.getStart().plusMinutes(duration.toMinutes()));
         return appointment;
     }
-    
-    /**
-     * Method fethes the appointmnt defined in the AppointmentCreatorEditorModalViewer in its EntityDescriptor.
-     * -- if this appointment has a key defined its change arises from an u,pdate of an existing appointment
-     * -- else if the key is not defined the change arises from the attempt to create a new appointment
-     * 
-     * Pause for thought
-     * -- this method is redundant
-     * -- caller can get the appointment via following statement
-     * ---- appointment = getEntityDescriptorFromView().getRequest().getTheAppointment();
-     * @return Appointment defined in the view's EntityDescriptor object
-     */
-    private TheAppointment makeAppointmentFromEDRequest(){
-        TheAppointment appointment;
-        /*
-        if (getEntityDescriptorFromView().getRequest().getTheAppointment().getIsKeyDefined()!=null){
-            appointment = new Appointment(getEntityDescriptorFromView().getAppointment().getData().getKey());
-        }
-        else appointment = new Appointment();
-        */
-        if (getEntityDescriptorFromView().getRequest().getTheAppointment().getIsKeyDefined()!=null){//update request
-            appointment = getEntityDescriptorFromView().getRequest().getTheAppointment();
-        }
-        else{//create new appointment request
-            appointment = new TheAppointment();
-            appointment.setDuration(getEntityDescriptorFromView().getRequest().getTheAppointment().getDuration());
-            appointment.setStart(getEntityDescriptorFromView().getRequest().getTheAppointment().getStart());
-            appointment.setNotes(getEntityDescriptorFromView().getRequest().getTheAppointment().getNotes());
-            appointment.setPatient(getEntityDescriptorFromView().getRequest().getTheAppointment().getPatient());  
-        }
-        return appointment;
-    }
 
     public EntityDescriptor getNewEntityDescriptor(){
         return this.newEntityDescriptor;

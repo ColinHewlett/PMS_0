@@ -12,6 +12,7 @@ import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRe
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.model.TheAppointment;
+import clinicpms.model.ThePatient;
 import clinicpms.view.View;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -138,7 +139,7 @@ public class ScheduleContactDetailsView extends View {
         
         this.tblPatientAppointmentContacts.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblPatientAppointmentContacts.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        this.tblPatientAppointmentContacts.setDefaultRenderer(EntityDescriptor.Patient.class, new AppointmentsTablePatientRenderer());
+        this.tblPatientAppointmentContacts.setDefaultRenderer(ThePatient.class, new AppointmentsTablePatientRenderer());
         
         /**
          * configure table header & column widths

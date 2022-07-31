@@ -4,11 +4,7 @@
  * and open the template in the editor.
  */
 package clinicpms.model;
-import clinicpms.model.Appointment;
-import clinicpms.model.Appointment.Category;
-import clinicpms.model.Patient;
 import clinicpms.store.StoreException;
-import java.util.ArrayList;
 import java.time.LocalDate;
 /**
  *
@@ -18,7 +14,7 @@ public interface IAppointments {
     public Integer count()throws StoreException;
     public void read() throws StoreException;
     public void readForDay(LocalDate day) throws StoreException;
-    public void readForPatient(Patient p,Category c ) throws StoreException;
+    //public void readForPatient(Patient p,Category c ) throws StoreException;
     public void readFromDay(LocalDate day) throws StoreException;
     public void insert() throws StoreException;
     

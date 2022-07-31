@@ -7,7 +7,6 @@ package clinicpms.view.views.patient_notification_editor_view;
 
 //import clinicpms.view.views.schedule_contact_details_view.*;
 import clinicpms.view.views.patient_notifications_view.*;
-import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import clinicpms.controller.EntityDescriptor;
 import java.time.format.DateTimeFormatter;

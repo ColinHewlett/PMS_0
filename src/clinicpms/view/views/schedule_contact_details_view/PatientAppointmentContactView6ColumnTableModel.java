@@ -20,9 +20,9 @@ import javax.swing.table.DefaultTableModel;
  */
 public class PatientAppointmentContactView6ColumnTableModel extends DefaultTableModel{
     private ArrayList<PatientAppointmentContactView6ColumnTableModel.AppointmentPlus> appointments = null;
-    private enum COLUMN{Patient, From,To,Duration,Contacts,Contacted};
+    private enum COLUMN{ThePatient, From,To,Duration,Contacts,Contacted};
     private final Class[] columnClass = new Class[] {
-        EntityDescriptor.Patient.class, 
+        ThePatient.class, 
         LocalTime.class, 
         LocalTime.class, 
         Duration.class, 
@@ -136,7 +136,7 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
                     Boolean contactStatus = appointment.getHasBeenContacted();
                     
                     switch (column){
-                        case Patient:
+                        case ThePatient:
                             result = appointment.getPatient();
                             break;
                         case From:

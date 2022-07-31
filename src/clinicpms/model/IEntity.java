@@ -16,6 +16,6 @@ public interface IEntity {
     public void drop() throws StoreException;
     public void delete() throws StoreException;
     public void insert() throws StoreException;
-    public IEntityStoreType read() throws StoreException;
+    public EntityStoreType read() throws StoreException;
     public void update() throws StoreException;
 }

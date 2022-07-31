@@ -5,14 +5,11 @@
  */
 package clinicpms.view.views.patient_editor_view;
 
-import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.views.appontment_schedule_view.AppointmentsTableLocalDateTimeRenderer;
 import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.controller.RenderedPatient;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;
-import clinicpms.view.views.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
 import clinicpms.model.ThePatient;
 import clinicpms.model.TheAppointment;
 import clinicpms.view.exceptions.CrossCheckErrorException; 
@@ -249,20 +246,6 @@ public class PatientView extends View{
         selector.setSelectedIndex(-1);
     }
     
-    private void populatePatientSelectorx(JComboBox<EntityDescriptor.Patient> selector){
-        DefaultComboBoxModel<EntityDescriptor.Patient> model = 
-                new DefaultComboBoxModel<>();
-        ArrayList<EntityDescriptor.Patient> patients = 
-                getEntityDescriptor().getPatients().getData();
-        Iterator<EntityDescriptor.Patient> it = patients.iterator();
-        while (it.hasNext()){
-            EntityDescriptor.Patient patient = it.next();
-            model.addElement(patient);
-        }
-        selector.setModel(model);
-        selector.setSelectedIndex(-1);
-    }
-    
     private PatientView.ViewMode getViewMode(){
         return viewMode;
     }
@@ -343,7 +326,7 @@ public class PatientView extends View{
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor oldEntity = (EntityDescriptor)e.getOldValue();
             try{
-                crossCheck(getEntityDescriptor().getPatient(),oldEntity.getPatient());
+                crossCheck(getEntityDescriptor().getThePatient(),oldEntity.getThePatient());
             }
             catch (CrossCheckErrorException ex){
                 //UnpecifiedError action
@@ -351,8 +334,8 @@ public class PatientView extends View{
         }
     }
 
-    private void crossCheck(EntityDescriptor.Patient newPatientValues, 
-            EntityDescriptor.Patient oldPatientValues) throws CrossCheckErrorException {
+    private void crossCheck(ThePatient newPatientValues, 
+            ThePatient oldPatientValues) throws CrossCheckErrorException {
         String errorMessage = null;
         boolean isCrossCheckError = false;
         String errorType = null;
@@ -383,92 +366,86 @@ public class PatientView extends View{
             for (EntityDescriptor.PatientField pf: EntityDescriptor.PatientField.values()){
                 switch (pf){
                     case TITLE:
-                        if (newPatientValues.getData().getTitle().equals(
-                            oldPatientValues.getData().getTitle())){isTitle = true;}
+                        if (newPatientValues.getName().getTitle().equals(
+                            oldPatientValues.getName().getTitle())){isTitle = true;}
                         break;
                     case FORENAMES:
-                        if (newPatientValues.getData().getForenames().equals(
-                            oldPatientValues.getData().getForenames())){isForenames = true;
+                        if (newPatientValues.getName().getForenames().equals(
+                            oldPatientValues.getName().getForenames())){isForenames = true;
                         }
                         break;
                     case SURNAME:
-                        if (newPatientValues.getData().getSurname().equals(
-                            oldPatientValues.getData().getSurname())){isSurname = true;
+                        if (newPatientValues.getName().getSurname().equals(
+                            oldPatientValues.getName().getSurname())){isSurname = true;
                         }
                         break;
                     case LINE1:
-                        if (newPatientValues.getData().getLine1().equals(
-                            oldPatientValues.getData().getLine1())){isLine1 = true;
+                        if (newPatientValues.getAddress().getLine1().equals(
+                            oldPatientValues.getAddress().getLine1())){isLine1 = true;
                         }
                         break;
                     case LINE2: 
-                        if (newPatientValues.getData().getLine2().equals(
-                            oldPatientValues.getData().getLine2())){isLine2 = true;
+                        if (newPatientValues.getAddress().getLine2().equals(
+                            oldPatientValues.getAddress().getLine2())){isLine2 = true;
                         }
                         break;
                     case TOWN:
-                        if (newPatientValues.getData().getTown().equals(
-                            oldPatientValues.getData().getTown())){isTown = true;
+                        if (newPatientValues.getAddress().getTown().equals(
+                            oldPatientValues.getAddress().getTown())){isTown = true;
                         };
                         break;
                     case COUNTY:
-                        if (newPatientValues.getData().getCounty().equals(
-                            oldPatientValues.getData().getCounty())){isCounty = true;
+                        if (newPatientValues.getAddress().getCounty().equals(
+                            oldPatientValues.getAddress().getCounty())){isCounty = true;
                         }
                         break;
                     case POSTCODE:
-                        if (newPatientValues.getData().getPostcode().equals(
-                            oldPatientValues.getData().getPostcode())){isPostcode = true;
+                        if (newPatientValues.getAddress().getPostcode().equals(
+                            oldPatientValues.getAddress().getPostcode())){isPostcode = true;
                         }
                         break;
                     case PHONE1:
-                        if (newPatientValues.getData().getPhone1().equals(
-                            oldPatientValues.getData().getPhone1())){isPhone1 = true;
+                        if (newPatientValues.getPhone1().equals(
+                            oldPatientValues.getPhone1())){isPhone1 = true;
                         }
                         break;
-                    case PHONE2:if (newPatientValues.getData().getPhone2().equals(
-                            oldPatientValues.getData().getPhone2())){isPhone2 = true;
+                    case PHONE2:if (newPatientValues.getPhone2().equals(
+                            oldPatientValues.getPhone2())){isPhone2 = true;
                     }
                     break;
                     case GENDER:
-                        if (newPatientValues.getData().getGender().equals(
-                            oldPatientValues.getData().getGender())){isGender = true;
+                        if (newPatientValues.getGender().equals(
+                            oldPatientValues.getGender())){isGender = true;
                         }
                         break;
                     case DOB:
-                        if ((newPatientValues.getData().getDOB().compareTo(
-                            oldPatientValues.getData().getDOB())) == 0){isDOB = true;
+                        if ((newPatientValues.getDOB().compareTo(
+                            oldPatientValues.getDOB())) == 0){isDOB = true;
                         }
                         break;
                     case IS_GUARDIAN_A_PATIENT:
-                        if (newPatientValues.getData().getIsGuardianAPatient() &&
-                            oldPatientValues.getData().getIsGuardianAPatient()){isGuardianAPatient = true;
+                        if (newPatientValues.getIsGuardianAPatient() &&
+                            oldPatientValues.getIsGuardianAPatient()){isGuardianAPatient = true;
                         }
                         break;
                     case NOTES:
-                        if (newPatientValues.getData().getNotes().equals(
-                            oldPatientValues.getData().getNotes())){isNotes = true;
+                        if (newPatientValues.getNotes().equals(
+                            oldPatientValues.getNotes())){isNotes = true;
                         }
                         break;
                     case DENTAL_RECALL_DATE:
-                        if (newPatientValues.getData().getDentalRecallDate().equals(
-                            oldPatientValues.getData().getDentalRecallDate())){isDentalRecallDate = true;
+                        if (newPatientValues.getRecall().getDentalDate().equals(
+                            oldPatientValues.getRecall().getDentalDate())){isDentalRecallDate = true;
                         }
                         break;
                     case HYGIENE_RECALL_DATE:
-                        if (newPatientValues.getData().getHygieneRecallDate().equals(
-                            oldPatientValues.getData().getHygieneRecallDate())){isHygieneRecallDate = true;
-                        }
                         break;
                     case DENTAL_RECALL_FREQUENCY:
-                        if (newPatientValues.getData().getDentalRecallFrequency()==
-                            oldPatientValues.getData().getDentalRecallFrequency()){isDentalRecallFrequency = true;
+                        if (newPatientValues.getRecall().getDentalFrequency()==
+                            oldPatientValues.getRecall().getDentalFrequency()){isDentalRecallFrequency = true;
                         }
                         break;
                     case HYGIENE_RECALL_FREQUENCY:
-                        if (newPatientValues.getData().getHygieneRecallFrequency()==
-                            oldPatientValues.getData().getHygieneRecallFrequency()){isHygieneRecallFrequency = true;
-                        }
                         break;
 
                 }
@@ -529,7 +506,7 @@ public class PatientView extends View{
             /**
              * break process anyway if there is no guardian details to process 
              */
-            if (!newPatientValues.getData().getIsGuardianAPatient()){
+            if (!newPatientValues.getIsGuardianAPatient()){
                 break;
             }
             
@@ -581,14 +558,9 @@ public class PatientView extends View{
             this.cmbSelectGuardian.setEnabled(true);
             
             if (this.cmbSelectGuardian.getSelectedIndex()==-1){
-                if (getEntityDescriptor().getPatient().getPatientGuardian()!=null){
-                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getPatientGuardian());
-                }
-                
-                //if (getEntityDescriptor().getPatientGuardian()!=null){
-                    //this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatientGuardian());
-                //}
-                
+                if (getEntityDescriptor().getThePatient().getIsGuardianAPatient()){
+                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getThePatient().getGuardian());
+                }   
             }
         }
         else{//under 18 patient does not have a guardian who is also a patient
@@ -611,95 +583,9 @@ public class PatientView extends View{
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     }
-    
-    private void populateAppointmentsHistoryTablex(ArrayList<EntityDescriptor.Appointment> appointments, String header){
-        Appointments3ColumnTableModel tableModel = 
-                (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
-        tableModel.removeAllElements();
-        Iterator<EntityDescriptor.Appointment> it = appointments.iterator();
-        while (it.hasNext()){
-            //tableModel.addElement(it.next());
-        }
-        this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
-        this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
-        this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    }
-    
-    private void initialisePatientAppointmentHistoryViewFromEDx(){
-        /*
-        ArrayList<TheAppointment> appointments = new ArrayList<>();
-        String headerTitle = null;
-        appointments = 
-                    getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
-                headerTitle =  "Dental appointments";
-        switch (category){
-            case DENTAL:
-                appointments = 
-                    getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
-                headerTitle =  "Dental appointments";
-                break;
-            case HYGIENE:
-                appointments = 
-                    getEntityDescriptor().getPatientAppointmentHistory().getHygieneAppointments();
-                headerTitle = "Hygiene appointments";
-                break; 
-        }
-        populateAppointmentsHistoryTable(appointments, headerTitle);
-        */
-    }
-    /**
-     * The method initialises the patient view's appointment history view 
-     * component from the EntityDescriptor.Patient object
-     */
-    private void initialisePatientAppointmentHistoryViewFromEDx(PatientView.Category category){
-        /*
-        ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
-        String headerTitle = null;
-        switch (category){
-            case DENTAL:
-                appointments = 
-                    getEntityDescriptor().getPatientAppointmentHistory().getDentalAppointments();
-                headerTitle =  "Dental appointments";
-                break;
-            case HYGIENE:
-                appointments = 
-                    getEntityDescriptor().getPatientAppointmentHistory().getHygieneAppointments();
-                headerTitle = "Hygiene appointments";
-                break; 
-        }
-        populateAppointmentsHistoryTable(appointments, headerTitle);
-        */
-    }
+   
     private int getAge(LocalDate dob){
         return Period.between(dob, LocalDate.now()).getYears();
-    }
-    private void clearViewForCreateNewPatient(){
-        setViewMode(PatientView.ViewMode.Create_new_patient);
-        this.cmbSelectPatient.setSelectedIndex(-1);
-        populateAppointmentsHistoryTable(null);
-        this.setTitle(null);
-        setSurname(null);
-        setForenames(null);
-        setPhone1(null);
-        setPhone2(null);
-        setDOB(null);
-        setGender(null);
-        setLine1(null);
-        setLine2(null);
-        setTown(null);
-        setCounty(null);
-        setPostcode(null);
-        setRecallDate(null);
-        setDentalRecallFrequency(null);
-        setIsGuardianAPatient(false);
-        this.pnlGuardianDetails.setEnabled(false);
-        this.cmbIsGuardianAPatient.setEnabled(false);
-        this.cmbSelectGuardian.setSelectedIndex(-1);
-        setNotes(null);
-        setPatientTitle(null);
-        
-               
-        
     }
     
     /**
@@ -1859,18 +1745,6 @@ public class PatientView extends View{
             this.getMyController().actionPerformed(actionEvent);
         }
     } 
-    
-    private void cmbSelectPatientActionPerformedx(){
-        if (this.cmbSelectPatient.getSelectedItem()!=null){
-            EntityDescriptor.Patient patient = 
-                    (EntityDescriptor.Patient)this.cmbSelectPatient.getSelectedItem();
-            getEntityDescriptor().getRequest().setPatient(patient);
-            ActionEvent actionEvent = new ActionEvent(
-                    this,ActionEvent.ACTION_PERFORMED,
-                    EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString());
-            this.getMyController().actionPerformed(actionEvent);
-        }
-    }
 
     private void setMyViewType(View.Viewer value){
         this.myViewType = value;

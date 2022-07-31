@@ -46,25 +46,6 @@ public class PatientViewController extends ViewController {
         }
     }
     
-    
-    /**
-     * On entry view controller's EntityFromView.Selection.Patient contains the 
-     * view's currently selected patient. This is deserialised into a model Patient
-     * object
-     * @return model Patient object
-     */
-    /*
-    private Patient deserialisePatientFromEDRequest(){
-        Patient patient = makePatientFrom(getEntityDescriptorFromView().getRequest().getPatient());
-        if (getEntityDescriptorFromView().getRequest().getPatient().getData().getIsGuardianAPatient()){
-            if (getEntityDescriptorFromView().getRequest().getPatientGuardian()!=null){
-                patient.setGuardian(makePatientFrom(
-                        getEntityDescriptorFromView().getRequest().getPatientGuardian()));
-            }
-        }
-        return patient;
-    }
-    */
     private void setEntityDescriptor(EntityDescriptor value){
         this.newEntityDescriptor = value; 
     }

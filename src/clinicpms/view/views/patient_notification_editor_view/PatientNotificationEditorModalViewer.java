@@ -7,7 +7,6 @@ package clinicpms.view.views.patient_notification_editor_view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
-import clinicpms.model.Patient;
 import clinicpms.model.ThePatient;
 import clinicpms.model.PatientNotification;
 import clinicpms.view.TableHeaderCellBorderRenderer;

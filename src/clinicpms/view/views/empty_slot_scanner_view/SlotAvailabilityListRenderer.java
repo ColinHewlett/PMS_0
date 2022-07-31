@@ -6,6 +6,7 @@
 package clinicpms.view.views.empty_slot_scanner_view;
 
 import clinicpms.controller.EntityDescriptor;
+import clinicpms.model.TheAppointment;
 import java.awt.Component;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +18,8 @@ import javax.swing.ListCellRenderer;
  *
  * @author colin
  */
-public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<EntityDescriptor.Appointment>{
+public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<TheAppointment>{
+//public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<EntityDescriptor.Appointment>{
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     
     public SlotAvailabilityListRenderer(){
@@ -26,16 +28,16 @@ public class SlotAvailabilityListRenderer extends JLabel implements ListCellRend
     
     
     @Override
-    public Component getListCellRendererComponent(JList<? extends EntityDescriptor.Appointment> list,
-                                                   EntityDescriptor.Appointment value,
+    public Component getListCellRendererComponent(JList<? extends TheAppointment> list,
+                                                   TheAppointment value,
                                                    int index,
                                                    boolean isSelected,
                                                    boolean cellHasFocus) {
         
         
-        EntityDescriptor.Appointment appointment = value;
+        TheAppointment appointment = value;
         
-        setText(appointment.getData().getStart().format(dmyhhmmFormat));
+        setText(appointment.getStart().format(dmyhhmmFormat));
         if (isSelected) {
             setBackground(list.getSelectionBackground());
             setForeground(list.getSelectionForeground());

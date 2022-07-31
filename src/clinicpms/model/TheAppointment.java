@@ -349,7 +349,7 @@ public class TheAppointment extends EntityStoreType{
         date = d + "/" + month + "/" + year;
         
         ArrayList<TheAppointment> appointmentsForThisDBFRecord = null;
-        Patient patient = null;
+        ThePatient patient = null;
         LocalDateTime start = null;
         Duration duration = null;
         String notes = null;

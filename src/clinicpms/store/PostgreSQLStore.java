@@ -5,22 +5,20 @@
  */
 package clinicpms.store;
 
-import clinicpms.model.Appointment;
-import clinicpms.model.Appointments;
+//import clinicpms.model.Appointment;
+//import clinicpms.model.Appointments;
 import clinicpms.model.ThePatient;
-import clinicpms.model.Patient;
-import clinicpms.model.Patients;
-import clinicpms.model.AppointmentTable;
-import clinicpms.model.IEntityStoreType;
+//import clinicpms.model.Patient;
+//import clinicpms.model.Patients;
+//import clinicpms.model.AppointmentTable;
+//import clinicpms.model.IEntityStoreType;
 import clinicpms.model.PatientNotification;
-import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysAssignmentTable;
+//import clinicpms.model.PatientTable;
 //import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.io.File;
 import java.util.List;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Dictionary;
 
 /**
@@ -50,42 +48,22 @@ import java.util.Dictionary;
 
 
 
-    public void insert(Appointment a) throws StoreException{
-        
-    }
-
     public void insert(ThePatient p) throws StoreException{
         
     }
 
-    public void insert(Patient p) throws StoreException{
-        
-    }
-    
-    
-    public void delete(Appointment a) throws StoreException{
-        
-    }
     
     
     public void delete(ThePatient p) throws StoreException{
         
     }
-    
-    
-    public void delete(Patient p) throws StoreException{
-        
-    }
+
     
     
     public String read(Store.SelectedTargetStore db)throws StoreException{
         return null;
     }
-    
-    
-    public Appointment read(Appointment a) throws StoreException{
-        return null;
-    }
+
     
     
     public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
@@ -96,44 +74,7 @@ import java.util.Dictionary;
     public ThePatient read(ThePatient p) throws StoreException{
         return null;
     }
-    
-    
-    public Patient read(Patient p) throws StoreException{
-        return null;
-    }
 
-    
-    /**
-     * Automatic transaction processing enabled
-     * -- reads all appointments stored on the system
-     * @return ArrayList<Appointment>
-     * @throws StoreException 
-     */
-    public Appointments readAppointments() throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointmentsFor(LocalDate day) throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointments(Patient p, Appointment.Category c) throws StoreException{
-        return null;
-    }
-    
-    
-    public Appointments readAppointmentsFrom(LocalDate day) throws StoreException{
-        return null;
-    }
-    
-    
-    public Patients readPatients() throws StoreException{
-        return null;
-    }
-    
-    
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
         
     }
@@ -147,16 +88,7 @@ import java.util.Dictionary;
     public void update(ThePatient p) throws StoreException{
         
     }
-    
-    
-    public void update(Patient p) throws StoreException{
-        
-    }
-    
-    
-    public void update(Appointment a) throws StoreException{
-        
-    }
+
     
     
     
@@ -175,19 +107,7 @@ import java.util.Dictionary;
      */
 
 
-    
-    
-    
-    public int countRowsIn(Appointments a){
-        return 0;
-    }
-    
-    
-    public int countRowsIn(Patients p){
-        return 0;
-    }
 
-    
     /**
      * Fetches the selected storage type used by the app
      * @return String representing the storage type
@@ -277,46 +197,14 @@ import java.util.Dictionary;
         return null;
     }
 
-    
-    public void insert(Appointments appointments) throws StoreException{
-        
-    }
-    
-    public void insert(Patients patients) throws StoreException{
-        
-    }
-    
-    
-    
-    public void drop(Appointment a)throws StoreException{
-        
-    }
     public void drop(ThePatient p)throws StoreException{
         
     }
-    public void drop(Patient p)throws StoreException{
-        
-    }
-    
-    public void create(Appointment a)throws StoreException{
-        
-    }
+
     public void create(ThePatient p)throws StoreException{
         
     }
-    public void create(Patient p)throws StoreException{
-        
-    }
-    
-    
-    public IEntityStoreType importFromCSV(IEntityStoreType entity)throws StoreException{
-        return null;
-    }
-    
-    public List<String[]> importFromCSV1(IEntityStoreType entity)throws StoreException{
-        return null;
-    }
-    
+
     
     public File initialiseTargetStore(File path)throws StoreException{
         return null;

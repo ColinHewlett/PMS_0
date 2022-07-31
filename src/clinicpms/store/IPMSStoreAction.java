@@ -6,22 +6,11 @@
 package clinicpms.store;
 
 import clinicpms.model.PatientNotification;
-import clinicpms.model.PatientTable;
-import clinicpms.model.SurgeryDaysAssignmentTable;
+
 //import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.SurgeryDaysAssignment;
-import clinicpms.model.AppointmentTable;
-import clinicpms.model.Appointment;
 import clinicpms.model.TheAppointment;
-import clinicpms.model.Appointment.Category;
-import clinicpms.model.Appointments;
-import clinicpms.model.Patient;
 import clinicpms.model.ThePatient;
-import clinicpms.model.Patients;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Defines simple interface for a CVS database to support the following breadth
@@ -39,38 +28,38 @@ import java.util.HashMap;
  */
 public interface IPMSStoreAction {
     public Integer count(TheAppointment.Collection entity)throws StoreException;
-    public void create(Appointment a) throws StoreException;
-    public void create(Patient p) throws StoreException;
+    //public void create(Appointment a) throws StoreException;
+    //public void create(Patient p) throws StoreException;
     public void create(ThePatient p )throws StoreException;
     //public void create(SurgeryDaysAssignmentx s)throws StoreException;
     public void create(SurgeryDaysAssignment s)throws StoreException;
-    public void insert(Appointment a) throws StoreException;
-    public void insert(Patient p) throws StoreException;
+    //public void insert(Appointment a) throws StoreException;
+    //public void insert(Patient p) throws StoreException;
     public void insert(ThePatient p) throws StoreException;
     public void insert(PatientNotification pn) throws StoreException;
     //public void insert(SurgeryDaysAssignmentx p) throws StoreException;
     public void insert(SurgeryDaysAssignment p) throws StoreException;
-    public void delete(Appointment a) throws StoreException;
-    public void delete(Patient p) throws StoreException;
+    //public void delete(Appointment a) throws StoreException;
+    //public void delete(Patient p) throws StoreException;
     public void delete(ThePatient p) throws StoreException;
     public PatientNotification read(PatientNotification value)throws StoreException;
     public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException;
     //public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentx value) throws StoreException;
     public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
-    public Appointment read(Appointment a) throws StoreException;
-    public Patient read(Patient p) throws StoreException;
+    //public Appointment read(Appointment a) throws StoreException;
+    //public Patient read(Patient p) throws StoreException;
     public ThePatient read(ThePatient p) throws StoreException;
     public ThePatient.Collection read(ThePatient.Collection value)throws StoreException;
     public String read(Store.SelectedTargetStore db)throws StoreException;
-    public void update(Appointment a) throws StoreException;
+    //public void update(Appointment a) throws StoreException;
     //public void update(SurgeryDaysAssignmentx value) throws StoreException;
     public void update(SurgeryDaysAssignment value) throws StoreException;
-    public void update(Patient p) throws StoreException;
+    //public void update(Patient p) throws StoreException;
     public void update(ThePatient p) throws StoreException;
     public void update(PatientNotification pn)throws StoreException;
     public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException;
-    public void drop(Appointment a)throws StoreException;
-    public void drop(Patient p)throws StoreException;
+    //public void drop(Appointment a)throws StoreException;
+    //public void drop(Patient p)throws StoreException;
     public void drop(ThePatient p)throws StoreException;
     //public void drop(SurgeryDaysAssignmentx s)throws StoreException;
     public void drop(SurgeryDaysAssignment s)throws StoreException;
