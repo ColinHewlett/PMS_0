@@ -10,8 +10,8 @@ import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRe
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;
-import clinicpms.model.ThePatient;
-import clinicpms.model.TheAppointment;
+import clinicpms.model.Patient;
+import clinicpms.model.Appointment;
 import clinicpms.view.exceptions.CrossCheckErrorException; 
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
@@ -232,14 +232,14 @@ public class PatientView extends View{
         } 
     };
     
-    private void populatePatientSelector(JComboBox<ThePatient> selector){
-        DefaultComboBoxModel<ThePatient> model = 
+    private void populatePatientSelector(JComboBox<Patient> selector){
+        DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
-        ArrayList<ThePatient> patients = 
+        ArrayList<Patient> patients = 
                 getEntityDescriptor().getThePatients();
-        Iterator<ThePatient> it = patients.iterator();
+        Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
-            ThePatient patient = it.next();
+            Patient patient = it.next();
             model.addElement(patient);
         }
         selector.setModel(model);
@@ -334,8 +334,8 @@ public class PatientView extends View{
         }
     }
 
-    private void crossCheck(ThePatient newPatientValues, 
-            ThePatient oldPatientValues) throws CrossCheckErrorException {
+    private void crossCheck(Patient newPatientValues, 
+            Patient oldPatientValues) throws CrossCheckErrorException {
         String errorMessage = null;
         boolean isCrossCheckError = false;
         String errorType = null;
@@ -569,12 +569,12 @@ public class PatientView extends View{
         }
     }
     
-    private void populateAppointmentsHistoryTable(ThePatient patient){
+    private void populateAppointmentsHistoryTable(Patient patient){
         Appointments3ColumnTableModel tableModel = 
                 (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
         tableModel.removeAllElements();
         if (patient!=null){//if patient data in view has just been cleared
-            Iterator<TheAppointment> it = patient.getAppointmentHistory().get().iterator();
+            Iterator<Appointment> it = patient.getAppointmentHistory().get().iterator();
             while (it.hasNext()){
                 tableModel.addElement(it.next());
             }
@@ -594,7 +594,7 @@ public class PatientView extends View{
      */
     private void initialisePatientViewComponentFromED(){  
         EntityDescriptor ed = getEntityDescriptor();
-        ThePatient patient = getEntityDescriptor().getThePatient();
+        Patient patient = getEntityDescriptor().getThePatient();
         this.setTitle(getSurname()); //Internal frame title
         setPatientTitle(patient.getName().getTitle());
         setForenames(patient.getName().getForenames());
@@ -621,7 +621,7 @@ public class PatientView extends View{
         //initialisePatientAppointmentHistoryViewFromED(PatientView.Category.DENTAL);
     }
     private void initialiseEntityFromView(){
-        ThePatient patient = (ThePatient)cmbSelectPatient.getSelectedItem();
+        Patient patient = (Patient)cmbSelectPatient.getSelectedItem();
         patient.getAddress().setCounty((getCounty()));
         patient.getRecall().setDentalDate(getDentalRecallDate());
         patient.setDOB(getDOB());
@@ -818,15 +818,15 @@ public class PatientView extends View{
             cmbIsGuardianAPatient.setSelectedItem(PatientView.YesNoItem.No);
         }
     }
-    private ThePatient getGuardian(){
+    private Patient getGuardian(){
         if (cmbSelectGuardian.getSelectedIndex() == -1){
             return null;
         }
         else {
-            return (ThePatient)cmbSelectGuardian.getSelectedItem();
+            return (Patient)cmbSelectGuardian.getSelectedItem();
         }
     }
-    private void setGuardian(ThePatient guardian){
+    private void setGuardian(Patient guardian){
         if (guardian == null){
             this.cmbSelectGuardian.setSelectedIndex(-1);
             this.cmbSelectGuardian.setEnabled(false);
@@ -877,7 +877,7 @@ public class PatientView extends View{
     private void initComponents() {
 
         jPanel3 = new javax.swing.JPanel();
-        cmbSelectPatient = new javax.swing.JComboBox<ThePatient>();
+        cmbSelectPatient = new javax.swing.JComboBox<Patient>();
         btnClearPatientSelection = new javax.swing.JButton();
         pnlContactDetails = new javax.swing.JPanel();
         lblSurname = new javax.swing.JLabel();
@@ -910,7 +910,7 @@ public class PatientView extends View{
         ;
         lblAge = new javax.swing.JLabel();
         pnlGuardianDetails = new javax.swing.JPanel();
-        cmbSelectGuardian = new javax.swing.JComboBox<ThePatient>();
+        cmbSelectGuardian = new javax.swing.JComboBox<Patient>();
         lblGuardianPatientName = new javax.swing.JLabel();
         lblGuardianIsAPatient = new javax.swing.JLabel();
         cmbIsGuardianAPatient = new javax.swing.JComboBox<YesNoItem>();
@@ -945,7 +945,7 @@ public class PatientView extends View{
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
         cmbSelectPatient.setEditable(false);
-        cmbSelectPatient.setModel(new DefaultComboBoxModel<ThePatient>());
+        cmbSelectPatient.setModel(new DefaultComboBoxModel<Patient>());
         cmbSelectPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbSelectPatientActionPerformed(evt);
@@ -1179,7 +1179,7 @@ public class PatientView extends View{
 
         cmbSelectGuardian.addItemListener(itemSelectGuardianListener);
         cmbSelectGuardian.setEditable(false);
-        cmbSelectGuardian.setModel(new DefaultComboBoxModel<ThePatient>());
+        cmbSelectGuardian.setModel(new DefaultComboBoxModel<Patient>());
         cmbSelectGuardian.setMinimumSize(new java.awt.Dimension(175, 22));
         cmbSelectGuardian.setPreferredSize(new java.awt.Dimension(194, 22));
         cmbSelectGuardian.addActionListener(new java.awt.event.ActionListener() {
@@ -1644,8 +1644,8 @@ public class PatientView extends View{
     private javax.swing.JButton btnRequestNotificationEditorForPatient;
     private javax.swing.JComboBox<GenderItem> cmbGender;
     private javax.swing.JComboBox<YesNoItem> cmbIsGuardianAPatient;
-    private javax.swing.JComboBox<ThePatient> cmbSelectGuardian;
-    private javax.swing.JComboBox<ThePatient> cmbSelectPatient;
+    private javax.swing.JComboBox<Patient> cmbSelectGuardian;
+    private javax.swing.JComboBox<Patient> cmbSelectPatient;
     private javax.swing.JComboBox<TitleItem> cmbTitle;
     private com.github.lgooddatepicker.components.DatePicker dobDatePicker;
     private javax.swing.JLabel jLabel2;
@@ -1736,8 +1736,8 @@ public class PatientView extends View{
     
     private void cmbSelectPatientActionPerformed(){
         if (this.cmbSelectPatient.getSelectedItem()!=null){
-            ThePatient patient = 
-                    (ThePatient)this.cmbSelectPatient.getSelectedItem();
+            Patient patient = 
+                    (Patient)this.cmbSelectPatient.getSelectedItem();
             getEntityDescriptor().getRequest().setThePatient(patient);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,

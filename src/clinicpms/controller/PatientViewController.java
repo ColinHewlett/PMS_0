@@ -6,7 +6,7 @@
 package clinicpms.controller;
 
 import clinicpms.controller.DesktopViewController.DesktopViewControllerActionEvent;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import clinicpms.view.views.DesktopView;
 import clinicpms.view.View;
 import clinicpms.view.interfaces.IView;
@@ -127,10 +127,10 @@ public class PatientViewController extends ViewController {
     private void doAppointmentHistoryChangeNotification(){
         //22/07/2022 08:56
         //ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
-        ThePatient patient = getEntityDescriptorFromView().getThePatient();
+        Patient patient = getEntityDescriptorFromView().getThePatient();
         if (patient.getIsKeyDefined()){
             try{
-                ThePatient p = patient.read();
+                Patient p = patient.read();
                 this.initialiseNewEntityDescriptor();
                 //serialisePatientToEDPatient(p);
                 getNewEntityDescriptor().setThePatient(p);
@@ -174,7 +174,7 @@ public class PatientViewController extends ViewController {
     
     private void doThePatientViewCreateRequest(){
         setEntityDescriptorFromView(view.getEntityDescriptor());
-        ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
+        Patient patient = getEntityDescriptorFromView().getRequest().getThePatient();
         if (!patient.getIsKeyDefined()){
             try{
                 patient.insert();
@@ -187,7 +187,7 @@ public class PatientViewController extends ViewController {
                         getOldEntityDescriptor(),getNewEntityDescriptor());
                 pcSupportForView.firePropertyChange(pcEvent);
                 
-                ThePatient.Collection patients = patient.getCollection();
+                Patient.Collection patients = patient.getCollection();
                 initialiseNewEntityDescriptor();
                 patients.read();
                 getNewEntityDescriptor().setThePatients(patients.get());
@@ -209,7 +209,7 @@ public class PatientViewController extends ViewController {
     
     private void doThePatientViewUpdateRequest(){
         setEntityDescriptorFromView(view.getEntityDescriptor()); 
-        ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
+        Patient patient = getEntityDescriptorFromView().getRequest().getThePatient();
         if (patient.getIsKeyDefined()){
             try{
                 patient.update();
@@ -234,10 +234,10 @@ public class PatientViewController extends ViewController {
     
     private void doThePatientRequest(ActionEvent e){
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        ThePatient patient = getEntityDescriptorFromView().getRequest().getThePatient();
+        Patient patient = getEntityDescriptorFromView().getRequest().getThePatient();
         if (patient.getIsKeyDefined()){
             try{
-                ThePatient p = patient.read();
+                Patient p = patient.read();
                 this.initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().setThePatient(p);
                 PropertyChangeListener[] pcls = pcSupportForView.getPropertyChangeListeners();
@@ -259,7 +259,7 @@ public class PatientViewController extends ViewController {
     
     private void doNullThePatientRequest(){
         initialiseNewEntityDescriptor();
-        ThePatient patient = new ThePatient();
+        Patient patient = new Patient();
         getNewEntityDescriptor().setThePatient(patient);
         pcEvent = new PropertyChangeEvent(this,
                     EntityDescriptor.PatientViewControllerPropertyEvent.
@@ -288,7 +288,7 @@ public class PatientViewController extends ViewController {
         pcSupportForView = new PropertyChangeSupport(this);
         this.newEntityDescriptor = new EntityDescriptor();
         this.oldEntityDescriptor = new EntityDescriptor();
-        ThePatient patient = new ThePatient();
+        Patient patient = new Patient();
         patient.getCollection().read();
         getNewEntityDescriptor().setThePatients(patient.getCollection().get());
         View.setViewer(View.Viewer.PATIENT_VIEW);

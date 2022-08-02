@@ -11,8 +11,8 @@ import clinicpms.view.views.appontment_schedule_view.AppointmentsTableLocalDateT
 import clinicpms.view.views.appontment_schedule_view.AppointmentsTableDurationRenderer;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import clinicpms.view.View;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -54,7 +54,7 @@ public class ScheduleContactDetailsView extends View {
         this.myController = myController;
         this.entityDescriptor = value;
         initComponents();
-        this.populatePatientAppointmentContactsTable(getEntityDescriptor().getTheAppointments());
+        this.populatePatientAppointmentContactsTable(getEntityDescriptor().getAppointments());
     }
     
     /**
@@ -117,7 +117,7 @@ public class ScheduleContactDetailsView extends View {
         return this.myController;
     }
     
-    private void populatePatientAppointmentContactsTable(ArrayList<TheAppointment> a){
+    private void populatePatientAppointmentContactsTable(ArrayList<Appointment> a){
         PatientAppointmentContactView6ColumnTableModel model;
         if (this.tblPatientAppointmentContacts!=null){
             this.scrPatientAppointmentContactView.remove(this.tblPatientAppointmentContacts);   
@@ -128,7 +128,7 @@ public class ScheduleContactDetailsView extends View {
         model = (PatientAppointmentContactView6ColumnTableModel)this.tblPatientAppointmentContacts.getModel();
         model.removeAllElements();
 //model.fireTableDataChanged();
-        Iterator<TheAppointment> it = a.iterator();
+        Iterator<Appointment> it = a.iterator();
         while (it.hasNext()){
             ((PatientAppointmentContactView6ColumnTableModel)this.tblPatientAppointmentContacts.getModel()).addElement(it.next());
         }
@@ -139,7 +139,7 @@ public class ScheduleContactDetailsView extends View {
         
         this.tblPatientAppointmentContacts.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblPatientAppointmentContacts.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        this.tblPatientAppointmentContacts.setDefaultRenderer(ThePatient.class, new AppointmentsTablePatientRenderer());
+        this.tblPatientAppointmentContacts.setDefaultRenderer(Patient.class, new AppointmentsTablePatientRenderer());
         
         /**
          * configure table header & column widths

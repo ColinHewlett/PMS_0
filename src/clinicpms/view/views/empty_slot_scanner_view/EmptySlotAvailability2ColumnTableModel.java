@@ -7,7 +7,7 @@ package clinicpms.view.views.empty_slot_scanner_view;
 
 import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.model.TheAppointment;
+import clinicpms.model.Appointment;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ import javax.swing.table.AbstractTableModel;
  * @author colin
  */
 public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
-    public ArrayList<TheAppointment> emptySlots = new ArrayList<>();
+    public ArrayList<Appointment> emptySlots = new ArrayList<>();
     private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private enum COLUMN{EmptySlot, Duration};
     private final Class[] columnClass = new Class[] { 
@@ -32,11 +32,11 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         String.class};
     
     
-    public ArrayList<TheAppointment> getEmptySlots(){
+    public ArrayList<Appointment> getEmptySlots(){
         return this.emptySlots;
     }
     
-    public void addElement(TheAppointment a){
+    public void addElement(Appointment a){
         emptySlots.add(a);
     }
     
@@ -45,7 +45,7 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
         this.fireTableDataChanged();
     }
     
-    public TheAppointment getElementAt(int row){
+    public Appointment getElementAt(int row){
         return emptySlots.get(row);
     }
 
@@ -82,7 +82,7 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        TheAppointment slot = getEmptySlots().get(row);
+        Appointment slot = getEmptySlots().get(row);
         switch (columnIndex){
             case 0:
                 result = slot.getStart().format(emptySlotFormat);  

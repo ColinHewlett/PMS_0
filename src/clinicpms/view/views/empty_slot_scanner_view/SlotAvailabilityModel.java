@@ -5,7 +5,7 @@
  */
 package clinicpms.view.views.empty_slot_scanner_view;
 
-import clinicpms.model.TheAppointment;
+import clinicpms.model.Appointment;
 import clinicpms.controller.EntityDescriptor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import javax.swing.ListModel;
  * @author colin
  */
 public class SlotAvailabilityModel implements ListModel{
-    private LinkedList<TheAppointment> data;
+    private LinkedList<Appointment> data;
     private LinkedList<ListDataListener> listeners;
 
     public SlotAvailabilityModel() {
@@ -26,7 +26,7 @@ public class SlotAvailabilityModel implements ListModel{
         listeners = new LinkedList<>();
     }
     
-    public void addElement(TheAppointment element){
+    public void addElement(Appointment element){
         data.add(element);
     }
     

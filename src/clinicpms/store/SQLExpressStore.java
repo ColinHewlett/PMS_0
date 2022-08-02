@@ -5,7 +5,7 @@
  */
 package clinicpms.store;
 
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.model.PatientNotification;
 import java.io.File;
@@ -32,11 +32,11 @@ public class SQLExpressStore  {
     }
 
     
-    public void insert(ThePatient p) throws StoreException{
+    public void insert(Patient p) throws StoreException{
         
     }
 
-    public void delete(ThePatient p) throws StoreException{
+    public void delete(Patient p) throws StoreException{
         
     }
 
@@ -44,12 +44,12 @@ public class SQLExpressStore  {
         return null;
     }
 
-    public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
+    public Patient.Collection read(Patient.Collection p) throws StoreException{
         return null;
     }
     
     
-    public ThePatient read(ThePatient p) throws StoreException{
+    public Patient read(Patient p) throws StoreException{
         return null;
     }
 
@@ -74,7 +74,7 @@ public class SQLExpressStore  {
     }
     
     
-    public void update(ThePatient p) throws StoreException{
+    public void update(Patient p) throws StoreException{
         
     }
     
@@ -281,14 +281,14 @@ public class SQLExpressStore  {
     
     
 
-    public void drop(ThePatient p)throws StoreException{
+    public void drop(Patient p)throws StoreException{
         
     }
 
     public void create(PatientNotification pn)throws StoreException{
         
     }
-    public void create(ThePatient p)throws StoreException{
+    public void create(Patient p)throws StoreException{
         
     }
 

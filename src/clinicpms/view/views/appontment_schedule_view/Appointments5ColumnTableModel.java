@@ -6,8 +6,8 @@
 package clinicpms.view.views.appontment_schedule_view;
 
 import clinicpms.controller.EntityDescriptor;
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,21 +26,20 @@ import javax.swing.table.AbstractTableModel;
  * -- with -> public ArrayList<EntityDescriptor.Appointment> appointments = new ArrayList<>();
  */
 public class Appointments5ColumnTableModel extends AbstractTableModel{
-    public ArrayList<TheAppointment> appointments = new ArrayList<>();
-    private enum COLUMN{Patient, From,To,Duration,Notes};
+    public ArrayList<Appointment> appointments = new ArrayList<>();
+    private enum COLUMN{ThePatient, From,To,Duration,Notes};
     private final Class[] columnClass = new Class[] {
-        //EntityDescriptor.Patient.class, 
-        ThePatient.class,
+        Patient.class,
         LocalTime.class, 
         LocalTime.class, 
         Duration.class, 
         String.class};
     
-    public ArrayList<TheAppointment> getAppointments(){
+    public ArrayList<Appointment> getAppointments(){
         return this.appointments;
     }
     
-    public void addElement(TheAppointment a){
+    public void addElement(Appointment a){
         appointments.add(a);
     }
     
@@ -49,7 +48,7 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
         this.fireTableDataChanged();
     }
     
-    public TheAppointment getElementAt(int row){
+    public Appointment getElementAt(int row){
         return appointments.get(row);
     }
 
@@ -81,7 +80,7 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        TheAppointment appointment = getAppointments().get(row);
+        Appointment appointment = getAppointments().get(row);
         for (COLUMN column: COLUMN.values()){
             if (column.ordinal() == columnIndex){
                 if (appointment == null){
@@ -95,7 +94,7 @@ public class Appointments5ColumnTableModel extends AbstractTableModel{
                     long minutes = appointment.getDuration().toMinutes();
                     Duration duration = appointment.getDuration();
                     switch (column){
-                        case Patient:
+                        case ThePatient:
                             result = appointment.getPatient();
                             break;
                         case From:

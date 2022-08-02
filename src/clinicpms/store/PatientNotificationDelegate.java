@@ -6,7 +6,7 @@
 package clinicpms.store;
 
 import clinicpms.model.PatientNotification;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 
 /**
  *

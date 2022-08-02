@@ -280,11 +280,11 @@ public class DesktopViewController extends ViewController{
             */
             EntityDescriptor edOfPatientWithAppointmentHistoryChange = 
                     ((AppointmentScheduleViewController)e.getSource()).getEntityDescriptorFromView();
-            TheAppointment a = edOfPatientWithAppointmentHistoryChange.getRequest().getTheAppointment();
+            Appointment a = edOfPatientWithAppointmentHistoryChange.getRequest().getAppointment();
             //21/07/2022 08:39
-            //int k2 = edOfPatientWithAppointmentHistoryChange.getTheAppointment().getPatient().getKey();
-            //ThePatient patient = edOfPatientWithAppointmentHistoryChange.getRequest().getTheAppointment().getPatient();
-            ThePatient patient = edOfPatientWithAppointmentHistoryChange.getTheAppointment().getPatient();
+            //int k2 = edOfPatientWithAppointmentHistoryChange.getAppointment().getPatient().getKey();
+            //ThePatient patient = edOfPatientWithAppointmentHistoryChange.getRequest().getAppointment().getPatient();
+            Patient patient = edOfPatientWithAppointmentHistoryChange.getAppointment().getPatient();
             Iterator<PatientViewController> viewControllerIterator = 
                     this.patientViewControllers.iterator();
             while(viewControllerIterator.hasNext()){
@@ -294,7 +294,7 @@ public class DesktopViewController extends ViewController{
                  */
                 //int k1 = pvc.getEntityDescriptorFromView().getRequest().getPatient().getData().getKey();
                 //if (k1==k2){
-                //ThePatient patient = new ThePatient(k2);
+                //ThePatient patient = new Patient(k2);
                 //ref 08/07/2022 09:05 if (pvc.getEntityDescriptorFromView().getRequest().getThePatient().equals(patient)){
                 if (pvc.getEntityDescriptorFromView().getThePatient().equals(patient)){    
                     /**
@@ -408,7 +408,7 @@ public class DesktopViewController extends ViewController{
             case IMPORT_EXPORT_PATIENT_DATA:
                 try{
                     if (PMSStore.isSelected()) 
-                        startBackgroundThread(new ThePatient(), this);
+                        startBackgroundThread(new Patient(), this);
                 }catch (StoreException ex){
                     displayErrorMessage(ex.getMessage() + "\nException handled"
                             + " in case EXPORT_MIGRATED_PATIENTS inside "
@@ -421,7 +421,7 @@ public class DesktopViewController extends ViewController{
             case IMPORT_EXPORT_APPOINTMENT_DATA:
                 try{
                     if (PMSStore.isSelected()) 
-                        startBackgroundThread(new TheAppointment(), this);
+                        startBackgroundThread(new Appointment(), this);
                 }catch (StoreException ex){
                     displayErrorMessage(ex.getMessage() + "\nException handled"
                             + " in case EXPORT_MIGRATED_APPOINTMENTS inside "
@@ -983,14 +983,14 @@ public class DesktopViewController extends ViewController{
                         file = storeManager.createStore(file);
                         String pmsStorePath = storeManager.getPMSStorePath();
                         storeManager.setPMSStorePath(file.getPath());
-                        ThePatient patientTable = new ThePatient();
+                        Patient patientTable = new Patient();
                         patientTable.create();
                         PatientNotification patientNotificationTable = new PatientNotification();
                         patientNotificationTable.create();
                         SurgeryDaysAssignment surgeryDaysAssignmentTable = new SurgeryDaysAssignment();
                         surgeryDaysAssignmentTable.create();
                         surgeryDaysAssignmentTable.insert();
-                        TheAppointment appointmentTable = new TheAppointment();
+                        Appointment appointmentTable = new Appointment();
                         appointmentTable.create();
                         storeManager.setPMSStorePath(pmsStorePath);
                        JOptionPane.showMessageDialog(getView(),
@@ -1037,14 +1037,14 @@ public class DesktopViewController extends ViewController{
                     if (!file.exists()){
                         file = storeManager.createStore(file);
                         storeManager.setPMSStorePath(file.getPath());
-                        ThePatient patientTable = new ThePatient();
+                        Patient patientTable = new Patient();
                         patientTable.create();
                         PatientNotification patientNotificationTable = new PatientNotification();
                         patientNotificationTable.create();
                         SurgeryDaysAssignment surgeryDaysAssignmentTable = new SurgeryDaysAssignment();
                         surgeryDaysAssignmentTable.create();
                         surgeryDaysAssignmentTable.insert();
-                        TheAppointment appointmentTable = new TheAppointment();
+                        Appointment appointmentTable = new Appointment();
                         appointmentTable.create();
                        JOptionPane.showMessageDialog(getView(),
                             file.getPath() + " store file has been successfully created",
@@ -1579,7 +1579,7 @@ public class DesktopViewController extends ViewController{
                 String result = null;
                 int count = 0;
                 if (entity.getIsPatient()){
-                    ThePatient patientTable = (ThePatient)entity;
+                    Patient patientTable = (Patient)entity;
                     //patientTable.create();
                     List<String[]>dbfRecords = patientTable.importEntityFromCSV();
                     count = dbfRecords.size();
@@ -1587,7 +1587,7 @@ public class DesktopViewController extends ViewController{
                     int recordCount = 0;
                     
                     while(dbfRecordsIt.hasNext()){
-                        ThePatient patient = patientTable.convertDBFToPatient((String[])dbfRecordsIt.next());
+                        Patient patient = patientTable.convertDBFToPatient((String[])dbfRecordsIt.next());
                         patient.reformat();
                         try{
                             patient.insert();
@@ -1609,7 +1609,7 @@ public class DesktopViewController extends ViewController{
                 }
                 
                 else if (entity.getIsAppointment()){
-                    TheAppointment appointmentTable = (TheAppointment)entity;
+                    Appointment appointmentTable = (Appointment)entity;
                     //appointmentTable.create();
                     List<String[]> dbfRecords = appointmentTable.importEntityFromCSV();
                     setCount(dbfRecords.size());
@@ -1631,9 +1631,9 @@ public class DesktopViewController extends ViewController{
                 return result; 
             }
             
-            private void insertAppointments(ArrayList<TheAppointment> appointments,
-                    TheAppointment appointmentTable) throws StoreException {
-                for(TheAppointment appointment : appointments){
+            private void insertAppointments(ArrayList<Appointment> appointments,
+                    Appointment appointmentTable) throws StoreException {
+                for(Appointment appointment : appointments){
                     appointment.insert();
                     if (getRecordCount() <= getCount()){
                         Integer percentage = getRecordCount()*100/getCount();
@@ -1709,8 +1709,8 @@ public class DesktopViewController extends ViewController{
     
     private Integer doAppointmentTableCountRequest(){
         Integer result = null;
-        TheAppointment.Collection collection = new TheAppointment().getCollection();
-        collection.setScope(TheAppointment.Scope.ALL);
+        Appointment.Collection collection = new Appointment().getCollection();
+        collection.setScope(Appointment.Scope.ALL);
         try{
             result = collection.count();
         }catch (StoreException ex){
@@ -1723,7 +1723,7 @@ public class DesktopViewController extends ViewController{
     
     private Integer doPatientTableCountRequest(){
         Integer result = null;
-        ThePatient.Collection collection = new ThePatient().getCollection();
+        Patient.Collection collection = new Patient().getCollection();
         try{
             result = collection.count();
         }catch (StoreException ex){

@@ -5,8 +5,8 @@
  */
 package clinicpms.view.views.schedule_contact_details_view;
 
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
     private ArrayList<PatientAppointmentContactView6ColumnTableModel.AppointmentPlus> appointments = null;
     private enum COLUMN{ThePatient, From,To,Duration,Contacts,Contacted};
     private final Class[] columnClass = new Class[] {
-        ThePatient.class, 
+        Patient.class, 
         LocalTime.class, 
         LocalTime.class, 
         Duration.class, 
@@ -34,19 +34,19 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
     }
         
     public class AppointmentPlus{
-        private ThePatient patient = null;
+        private Patient patient = null;
         private LocalDateTime start = null;
         private Duration duration = null;
         private String notes = null;
         private Boolean hasBeenContacted = false;
         
-        public AppointmentPlus(TheAppointment a){
+        public AppointmentPlus(Appointment a){
             patient = a.getPatient();
             start = a.getStart();
             duration = a.getDuration();
             notes = a.getNotes();   
         }
-        public ThePatient getPatient(){
+        public Patient getPatient(){
             return patient;
         }
         public LocalDateTime getStart(){
@@ -66,7 +66,7 @@ public class PatientAppointmentContactView6ColumnTableModel extends DefaultTable
         return appointments;
     }
     
-    public void addElement(TheAppointment a){
+    public void addElement(Appointment a){
         AppointmentPlus aPlus = new AppointmentPlus(a);
         appointments.add(aPlus);
     }

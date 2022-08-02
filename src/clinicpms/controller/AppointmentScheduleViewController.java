@@ -6,8 +6,8 @@
 package clinicpms.controller;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.StoreException;
 import clinicpms.view.views.DesktopView;
@@ -133,7 +133,7 @@ public class AppointmentScheduleViewController extends ViewController{
          * on receipt of APPOINTMENT_CANCEL_REQUEST
          * -- assumes on entry EntityDescriptorFromView has been initialised (by view)
          */
-        if (getEntityDescriptorFromView().getRequest().getTheAppointment().getPatient().getIsKeyDefined()){
+        if (getEntityDescriptorFromView().getRequest().getAppointment().getPatient().getIsKeyDefined()){
             try{
                /**
                 * The requested appointment is read into memory from the store using the specified appointment key
@@ -141,13 +141,13 @@ public class AppointmentScheduleViewController extends ViewController{
                 * -- knowledge of the patient object is required to maintain consistency between views, which is a responsibility of the desktop view controller
                 * 
                 */
-               TheAppointment appointment = getEntityDescriptorFromView().getRequest().getTheAppointment();
+               Appointment appointment = getEntityDescriptorFromView().getRequest().getAppointment();
                appointment.delete();
                LocalDate day = getEntityDescriptorFromView().
-                       getRequest().getTheAppointment().getStart().toLocalDate();
+                       getRequest().getAppointment().getStart().toLocalDate();
                getUpdatedAppointmentSlotsForDay(day);
                
-               getNewEntityDescriptor().setTheAppointment(appointment);
+               getNewEntityDescriptor().setAppointment(appointment);
 
                /**
                 * fire event over to APPOINTMENT_SCHEDULE
@@ -182,10 +182,10 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- initialises NewEntityDescriptor with the collection of all patients on the system
          * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
          */
-        ThePatient.Collection patients = null;
+        Patient.Collection patients = null;
         initialiseNewEntityDescriptor();
         try{
-            patients = new ThePatient().getCollection();
+            patients = new Patient().getCollection();
             patients.read();
             getNewEntityDescriptor().setThePatients(patients.get());
             View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
@@ -212,17 +212,17 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
          * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
          */
-        ThePatient.Collection patients = null;
-        if (getEntityDescriptorFromView().getRequest().getTheAppointment().getIsKeyDefined()){
+        Patient.Collection patients = null;
+        if (getEntityDescriptorFromView().getRequest().getAppointment().getIsKeyDefined()){
             try{
 
-                TheAppointment appointment = getEntityDescriptorFromView().
-                        getRequest().getTheAppointment();
+                Appointment appointment = getEntityDescriptorFromView().
+                        getRequest().getAppointment();
 
-                patients = new ThePatient().getCollection();
+                patients = new Patient().getCollection();
                 patients.read();
                 initialiseNewEntityDescriptor();
-                getNewEntityDescriptor().setTheAppointment(appointment);
+                getNewEntityDescriptor().setAppointment(appointment);
                 getNewEntityDescriptor().setThePatients(patients.get());
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
@@ -257,7 +257,7 @@ public class AppointmentScheduleViewController extends ViewController{
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         try{
             getUpdatedAppointmentSlotsForDay(day);
             /**
@@ -333,13 +333,13 @@ public class AppointmentScheduleViewController extends ViewController{
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         try{
-            appointments = new TheAppointment().getCollection();
-            appointments.setScope(TheAppointment.Scope.FOR_DAY);
+            appointments = new Appointment().getCollection();
+            appointments.setScope(Appointment.Scope.FOR_DAY);
             appointments.getAppointment().setStart(day.atStartOfDay());
             appointments.read();
-            getNewEntityDescriptor().setTheAppointments(appointments.get());
+            getNewEntityDescriptor().setAppointments(appointments.get());
             View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
             this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
             this.desktopView.add(pacView);
@@ -541,20 +541,20 @@ public class AppointmentScheduleViewController extends ViewController{
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
         Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         try{
-            appointments = new TheAppointment().getCollection();
-            appointments.setScope(TheAppointment.Scope.FROM_DAY);
+            appointments = new Appointment().getCollection();
+            appointments.setScope(Appointment.Scope.FROM_DAY);
             appointments.getAppointment().setStart(day.atStartOfDay());
             appointments.read();
             if (appointments.get().isEmpty()){
                 JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
             }
             else{
-                ArrayList<TheAppointment> availableSlotsOfDuration =  
+                ArrayList<Appointment> availableSlotsOfDuration =  
                         getAvailableSlotsOfDuration(
                                 appointments.get(),duration,day);
-                getNewEntityDescriptor().setTheAppointments(availableSlotsOfDuration);
+                getNewEntityDescriptor().setAppointments(availableSlotsOfDuration);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE view
                  */
@@ -597,12 +597,12 @@ public class AppointmentScheduleViewController extends ViewController{
         }
     }
     
-    private TheAppointment doAppointmentCreateRequest(ActionEvent e, LocalDate day){
-        TheAppointment result = null;
+    private Appointment doAppointmentCreateRequest(ActionEvent e, LocalDate day){
+        Appointment result = null;
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
-        TheAppointment rSlot = getEntityDescriptorFromView().getRequest().getTheAppointment();
+        Appointment rSlot = getEntityDescriptorFromView().getRequest().getAppointment();
         day = getEntityDescriptorFromView().getRequest().
-                getTheAppointment().getStart().toLocalDate();
+                getAppointment().getStart().toLocalDate();
         initialiseNewEntityDescriptor();
         try{
             result = requestToChangeAppointmentSchedule(ViewMode.CREATE); 
@@ -613,11 +613,11 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;
     }
     
-    private TheAppointment doAppointmentUpdateRequest(ActionEvent e, LocalDate day){
-        TheAppointment result = null;
+    private Appointment doAppointmentUpdateRequest(ActionEvent e, LocalDate day){
+        Appointment result = null;
         //setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         day = getEntityDescriptorFromView().getRequest().
-                getTheAppointment().getStart().toLocalDate();
+                getAppointment().getStart().toLocalDate();
         initialiseNewEntityDescriptor();
         try{
             result = requestToChangeAppointmentSchedule(ViewMode.UPDATE);
@@ -628,12 +628,12 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;
     }
     
-    private void initialiseAppointmentSchedule(LocalDate day, TheAppointment result){
+    private void initialiseAppointmentSchedule(LocalDate day, Appointment result){
         
         //22/07/2022 08:56 save copy of EntityDescriptorFromView; could be overwritten
         EntityDescriptor ed = getEntityDescriptorFromView();
-        //TheAppointment a = ed.getRequest().getTheAppointment();
-        TheAppointment.Collection appointments = null;
+        //Appointment a = ed.getRequest().getAppointment();
+        Appointment.Collection appointments = null;
         try{
             this.view2.setClosed(true);
         }
@@ -662,7 +662,7 @@ public class AppointmentScheduleViewController extends ViewController{
 
             //22/07/2022 08:56
             setEntityDescriptorFromView(ed);
-            //getNewEntityDescriptor().setTheAppointment(result);
+            //getNewEntityDescriptor().setAppointment(result);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     DesktopViewController.DesktopViewControllerActionEvent.APPOINTMENT_HISTORY_CHANGE_NOTIFICATION.toString());
@@ -688,20 +688,20 @@ public class AppointmentScheduleViewController extends ViewController{
     }
     
     private void doAppointmentCreatorEditorViewAction(ActionEvent e){
-        TheAppointment result = null;
+        Appointment result = null;
         LocalDate day = null;
         EntityDescriptor.AppointmentViewControllerActionEvent actionCommand =
                EntityDescriptor.AppointmentViewControllerActionEvent.valueOf(e.getActionCommand());        
         switch (actionCommand){
             case APPOINTMENT_CREATE_REQUEST:
-                day = getEntityDescriptorFromView().getRequest().getTheAppointment().
+                day = getEntityDescriptorFromView().getRequest().getAppointment().
                         getStart().toLocalDate();
                 result = doAppointmentCreateRequest(e, day);
                 if (result!=null) initialiseAppointmentSchedule(day, result);
                 else sendErrorToAppointmentCreatorEditorView();
                 break;
             case APPOINTMENT_UPDATE_REQUEST:
-                day = getEntityDescriptorFromView().getRequest().getTheAppointment().
+                day = getEntityDescriptorFromView().getRequest().getAppointment().
                         getStart().toLocalDate();
                 result = doAppointmentUpdateRequest(e, day);
                 if (result!=null) initialiseAppointmentSchedule(day,result);
@@ -727,14 +727,14 @@ public class AppointmentScheduleViewController extends ViewController{
         }
     }
     
-    private String getNameOfSlotOwnerPlusSlotStart(TheAppointment slot){
+    private String getNameOfSlotOwnerPlusSlotStart(Appointment slot){
         String result = getNameOfSlotOwner(slot);
         LocalTime start = slot.getStart().toLocalTime();
         result = result + " which starts at " + start.format(DateTimeFormatter.ofPattern("HH:mm"));
         return result;
     }
   
-    private String getNameOfSlotOwner(TheAppointment slot){
+    private String getNameOfSlotOwner(Appointment slot){
         String title;
         String forenames;
         String surname;
@@ -750,13 +750,13 @@ public class AppointmentScheduleViewController extends ViewController{
     }
     
     private String appointmentCollisionCheckOnScheduleChangeRequest(
-            TheAppointment requestedSlot,
-            ArrayList<TheAppointment> appointments, ViewMode mode){
+            Appointment requestedSlot,
+            ArrayList<Appointment> appointments, ViewMode mode){
         String result = null;
         RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT;
-        Iterator<TheAppointment> appointmentsForDay = appointments.iterator();
+        Iterator<Appointment> appointmentsForDay = appointments.iterator();
         while (appointmentsForDay.hasNext()){
-            TheAppointment nextScheduledSlot = appointmentsForDay.next();
+            Appointment nextScheduledSlot = appointmentsForDay.next();
             switch(state){
                 case REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME:
                     /**
@@ -855,15 +855,15 @@ public class AppointmentScheduleViewController extends ViewController{
     
     /*
     private String appointmentCollisionChangingSchedule(
-            TheAppointment rSlot, 
-            ArrayList<TheAppointment> appointments, ViewMode mode){
+            Appointment rSlot, 
+            ArrayList<Appointment> appointments, ViewMode mode){
         String result = null;
         LocalDateTime sSlotEnd;
         LocalDateTime rSlotEnd = rSlot.getStart().plusMinutes(rSlot.getDuration().toMinutes());
-        Iterator<TheAppointment> it = appointments.iterator();
+        Iterator<Appointment> it = appointments.iterator();
         RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT;
         while(it.hasNext()){
-            TheAppointment sSlot = it.next();
+            Appointment sSlot = it.next();
             sSlotEnd = sSlot.getStart().plusMinutes(sSlot.getDuration().toMinutes());
             switch (state){
                 case REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT:
@@ -934,18 +934,18 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;   
     }
     */
-    private TheAppointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
+    private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
         String error;
-        TheAppointment result = null;
-        //TheAppointment rSlot = makeAppointmentFromEDRequest();
-        TheAppointment rSlot = getEntityDescriptorFromView().getRequest().getTheAppointment();
+        Appointment result = null;
+        //Appointment rSlot = makeAppointmentFromEDRequest();
+        Appointment rSlot = getEntityDescriptorFromView().getRequest().getAppointment();
         LocalDate day = rSlot.getStart().toLocalDate();
         
         //NOTE: changed "appointments" to "appts" because former hid a previous definition of "appointments"
-        TheAppointment.Collection appts = new TheAppointment().getCollection();
-        TheAppointment appointment = appts.getAppointment();
+        Appointment.Collection appts = new Appointment().getCollection();
+        Appointment appointment = appts.getAppointment();
         appointment.setStart(day.atStartOfDay());
-        appts.setScope(TheAppointment.Scope.FOR_DAY);
+        appts.setScope(Appointment.Scope.FOR_DAY);
         appts.read();
         if (appts.get().isEmpty()){
             /**
@@ -987,15 +987,15 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;
     }
     
-    private ArrayList<TheAppointment> getAvailableSlotsOfDuration(
-            ArrayList<TheAppointment> appointments, Duration duration, LocalDate searchStartDay){
-        ArrayList<TheAppointment> result = new ArrayList<>();
-        ArrayList<TheAppointment> appointmentsForSingleDay = new ArrayList<>();
-        ArrayList<ArrayList<TheAppointment>> appointmentsGroupedByDay = new ArrayList<>();
+    private ArrayList<Appointment> getAvailableSlotsOfDuration(
+            ArrayList<Appointment> appointments, Duration duration, LocalDate searchStartDay){
+        ArrayList<Appointment> result = new ArrayList<>();
+        ArrayList<Appointment> appointmentsForSingleDay = new ArrayList<>();
+        ArrayList<ArrayList<Appointment>> appointmentsGroupedByDay = new ArrayList<>();
         LocalDate currentDate = null;
-        Iterator<TheAppointment> it = appointments.iterator();
+        Iterator<Appointment> it = appointments.iterator();
         while(it.hasNext()){
-            TheAppointment appointment = it.next();
+            Appointment appointment = it.next();
             if (currentDate==null) currentDate = appointment.getStart().toLocalDate();
             if (appointment.getStart().toLocalDate().equals(currentDate)) appointmentsForSingleDay.add(appointment);
             else {
@@ -1006,7 +1006,7 @@ public class AppointmentScheduleViewController extends ViewController{
             }
         }
         appointmentsGroupedByDay.add(appointmentsForSingleDay);
-        Iterator<ArrayList<TheAppointment>> it1 = appointmentsGroupedByDay.iterator();
+        Iterator<ArrayList<Appointment>> it1 = appointmentsGroupedByDay.iterator();
         /**
          * -- current search date initialised to start day of search
          * -- for each collection of appointments for a given day (appointmentsForSingleDay)
@@ -1036,14 +1036,14 @@ public class AppointmentScheduleViewController extends ViewController{
                               currentDate.atTime(ViewController.FIRST_APPOINTMENT_SLOT))); 
                 currentDate = currentDate.plusDays(1); 
             }
-            ArrayList<TheAppointment> slotsForDay = 
+            ArrayList<Appointment> slotsForDay = 
                     getAppointmentsForSelectedDayIncludingEmptySlots(
                             appointmentsForSingleDay, appointmentsForSingleDayDate); 
-            Iterator<TheAppointment> it2 = slotsForDay.iterator();
+            Iterator<Appointment> it2 = slotsForDay.iterator();
             //currentDate = null;
             while(it2.hasNext()){
-                TheAppointment slot = it2.next();
-                if (slot.getStatus().equals(TheAppointment.Status.UNBOOKED)){
+                Appointment slot = it2.next();
+                if (slot.getStatus().equals(Appointment.Status.UNBOOKED)){
                     long slotDuration = slot.getDuration().toMinutes();
                     if (slotDuration >= duration.toMinutes()){
                         result.add(slot);
@@ -1062,8 +1062,8 @@ public class AppointmentScheduleViewController extends ViewController{
          */
         
         boolean multiDayIntervalHasStarted = false;
-        TheAppointment multiDayIntervalWithNoAppointments = null;
-        ArrayList<TheAppointment> finalisedResult = new ArrayList<>();
+        Appointment multiDayIntervalWithNoAppointments = null;
+        ArrayList<Appointment> finalisedResult = new ArrayList<>();
         //LocalDate thisDate = result.get(0).getStart().toLocalDate();
         it = result.iterator();
         int count = 0;
@@ -1074,13 +1074,13 @@ public class AppointmentScheduleViewController extends ViewController{
                 if (count == 23){
                     count = 19;                    
                 }
-                TheAppointment appointment = it.next();
+                Appointment appointment = it.next();
                 if (finalisedResult.isEmpty()&&multiDayIntervalWithNoAppointments==null){//start of procedure on entry
                     //multiDayIntervalHasStarted = true;
-                    multiDayIntervalWithNoAppointments = new TheAppointment();
+                    multiDayIntervalWithNoAppointments = new Appointment();
                     multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                     multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                    multiDayIntervalWithNoAppointments.setStatus(TheAppointment.Status.UNBOOKED);
+                    multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                 }
                 else{
                     //LocalDate appointmentDate = appointment.getStart().toLocalDate();
@@ -1095,10 +1095,10 @@ public class AppointmentScheduleViewController extends ViewController{
                             Duration d = multiDayIntervalWithNoAppointments.getDuration();
                             multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
                             finalisedResult.add(multiDayIntervalWithNoAppointments);
-                            multiDayIntervalWithNoAppointments = new TheAppointment();
+                            multiDayIntervalWithNoAppointments = new Appointment();
                             multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                             multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(TheAppointment.Status.UNBOOKED);
+                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                         }
                     }
                 }
@@ -1111,7 +1111,7 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         else{// this is not a scan of all day slots
             while(it.hasNext()){
-                TheAppointment appointment = it.next();
+                Appointment appointment = it.next();
                 /*
                 if (appointment.getStart().toLocalDate().isEqual(LocalDate.of(2021,7, 16))){
                     LocalDate test = appointment.getStart().toLocalDate();
@@ -1121,10 +1121,10 @@ public class AppointmentScheduleViewController extends ViewController{
                     //WHAT HAPPENS WHEN APPOINTMENT CHANGES MULTIDAYINTERVALHASSTARTED SLOT
                     if (!multiDayIntervalHasStarted) {
                         multiDayIntervalHasStarted = true;
-                        multiDayIntervalWithNoAppointments = new TheAppointment();
+                        multiDayIntervalWithNoAppointments = new Appointment();
                         multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                         multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                        multiDayIntervalWithNoAppointments.setStatus(TheAppointment.Status.UNBOOKED);
+                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                     }
                     else if (areTheseSlotsOnConsecutivePracticeDays(
                             multiDayIntervalWithNoAppointments,appointment)){
@@ -1138,10 +1138,10 @@ public class AppointmentScheduleViewController extends ViewController{
                             Duration d = multiDayIntervalWithNoAppointments.getDuration();
                             multiDayIntervalWithNoAppointments.setDuration(d.plusHours(8));
                             finalisedResult.add(multiDayIntervalWithNoAppointments);
-                            multiDayIntervalWithNoAppointments = new TheAppointment();
+                            multiDayIntervalWithNoAppointments = new Appointment();
                             multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                             multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(TheAppointment.Status.UNBOOKED);
+                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                         }
                     }
                 }
@@ -1169,7 +1169,7 @@ public class AppointmentScheduleViewController extends ViewController{
         
     }
     
-    private LocalDate getPracticeDayOnWhichSlotEnds(TheAppointment slot){
+    private LocalDate getPracticeDayOnWhichSlotEnds(Appointment slot){
         
         long intervalHours = slot.getDuration().toHours();
         long intervalDays = intervalHours/8;
@@ -1187,7 +1187,7 @@ public class AppointmentScheduleViewController extends ViewController{
                             || day.getDayOfWeek().equals(DayOfWeek.THURSDAY)
                             || day.getDayOfWeek().equals(DayOfWeek.FRIDAY));
     }
-    private boolean areTheseSlotsOnConsecutivePracticeDays(TheAppointment slot1, TheAppointment slot2){
+    private boolean areTheseSlotsOnConsecutivePracticeDays(Appointment slot1, Appointment slot2){
         boolean result = false;
         LocalDate d1 = getPracticeDayOnWhichSlotEnds(slot1);
         LocalDate d2 = slot2.getStart().toLocalDate();
@@ -1205,13 +1205,13 @@ public class AppointmentScheduleViewController extends ViewController{
         return result;
     }
     
-    private ArrayList<TheAppointment> getAppointmentsForSelectedDayIncludingEmptySlots(
-            ArrayList<TheAppointment> appointments, LocalDate day) {
+    private ArrayList<Appointment> getAppointmentsForSelectedDayIncludingEmptySlots(
+            ArrayList<Appointment> appointments, LocalDate day) {
         LocalDateTime nextEmptySlotStartTime;
         nextEmptySlotStartTime = LocalDateTime.of(day, 
                                                   ViewController.FIRST_APPOINTMENT_SLOT);
-        ArrayList<TheAppointment> apptsForDayIncludingEmptySlots = new ArrayList<>();      
-        Iterator<TheAppointment> it = appointments.iterator();
+        ArrayList<Appointment> apptsForDayIncludingEmptySlots = new ArrayList<>();      
+        Iterator<Appointment> it = appointments.iterator();
         /**
          * check for no appointments on this day if no appointment create a
          * single empty slot for whole day
@@ -1227,7 +1227,7 @@ public class AppointmentScheduleViewController extends ViewController{
          */
         else { 
             while (it.hasNext()) {
-                TheAppointment appointment = it.next();
+                Appointment appointment = it.next();
                 Duration durationToNextSlot = Duration.between(
                         nextEmptySlotStartTime,appointment.getStart() );
                 /**
@@ -1248,7 +1248,7 @@ public class AppointmentScheduleViewController extends ViewController{
                  *    the current appointment
                  */
                 else {
-                    TheAppointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime,
+                    Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime,
                             Duration.between(nextEmptySlotStartTime, appointment.getStart()).abs());
                     apptsForDayIncludingEmptySlots.add(emptySlot);
                     apptsForDayIncludingEmptySlots.add(appointment);
@@ -1257,35 +1257,35 @@ public class AppointmentScheduleViewController extends ViewController{
                 }
             }
         }
-        TheAppointment lastAppointment = 
+        Appointment lastAppointment = 
                 apptsForDayIncludingEmptySlots.get(apptsForDayIncludingEmptySlots.size()-1);
-        if (lastAppointment.getStatus().equals(TheAppointment.Status.BOOKED)){
+        if (lastAppointment.getStatus().equals(Appointment.Status.BOOKED)){
             //check if bookable time after last appointment
             Duration durationToDayEnd = 
                     Duration.between(nextEmptySlotStartTime.toLocalTime(), ViewController.LAST_APPOINTMENT_SLOT).abs();
             if (!durationToDayEnd.isZero()) {
-                TheAppointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime);
+                Appointment emptySlot = createEmptyAppointmentSlot(nextEmptySlotStartTime);
                 apptsForDayIncludingEmptySlots.add(emptySlot);
             }
         }
         return apptsForDayIncludingEmptySlots;
     }
-    private TheAppointment createEmptyAppointmentSlot(LocalDateTime start){
-        TheAppointment appointment = new TheAppointment();
+    private Appointment createEmptyAppointmentSlot(LocalDateTime start){
+        Appointment appointment = new Appointment();
         appointment.setPatient(null);
         appointment.setStart(start);
         appointment.setDuration(Duration.between(start.toLocalTime(), 
                                                 ViewController.LAST_APPOINTMENT_SLOT));
-        appointment.setStatus(TheAppointment.Status.UNBOOKED);
+        appointment.setStatus(Appointment.Status.UNBOOKED);
         return appointment;
     }
 
-    private TheAppointment createEmptyAppointmentSlot(LocalDateTime start, Duration duration){
-        TheAppointment appointment = new TheAppointment();
+    private Appointment createEmptyAppointmentSlot(LocalDateTime start, Duration duration){
+        Appointment appointment = new Appointment();
         appointment.setPatient(null);
         appointment.setStart(start);
         appointment.setDuration(duration);
-        appointment.setStatus(TheAppointment.Status.UNBOOKED);
+        appointment.setStatus(Appointment.Status.UNBOOKED);
         //appointment.setEnd(appointment.getStart().plusMinutes(duration.toMinutes()));
         return appointment;
     }
@@ -1331,16 +1331,16 @@ public class AppointmentScheduleViewController extends ViewController{
     }
 
     private void getUpdatedAppointmentSlotsForDay(LocalDate day)throws StoreException{
-        TheAppointment appointment = new TheAppointment();
-        TheAppointment.Collection appts = appointment.getCollection();
+        Appointment appointment = new Appointment();
+        Appointment.Collection appts = appointment.getCollection();
         initialiseNewEntityDescriptor();
         appointment.setStart(day.atStartOfDay());
-        appts.setScope(TheAppointment.Scope.FOR_DAY);
+        appts.setScope(Appointment.Scope.FOR_DAY);
         appts.read();
-        ArrayList<TheAppointment> appointmentSlotsForDay =
+        ArrayList<Appointment> appointmentSlotsForDay =
                 getAppointmentsForSelectedDayIncludingEmptySlots(appts.get(),appointment.getStart().toLocalDate());
         appts.get().clear();
         appts.get().addAll(appointmentSlotsForDay);
-        getNewEntityDescriptor().setTheAppointments(appts.get());
+        getNewEntityDescriptor().setAppointments(appts.get());
     }
 }

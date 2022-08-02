@@ -6,14 +6,14 @@
 package clinicpms.store;
 
 
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 
 /**
  *
  * @author colin
  */
-final class PatientDelegate extends ThePatient {
-    private ThePatient patient;
+final class PatientDelegate extends Patient {
+    private Patient patient;
     
     protected PatientDelegate(){
         super();
@@ -24,12 +24,12 @@ final class PatientDelegate extends ThePatient {
         setPatientKey(key);
     }
 
-    protected PatientDelegate(ThePatient patient){
+    protected PatientDelegate(Patient patient){
         super();
         copyPatientState(patient);
     }
     
-    private void copyPatientState(ThePatient patient){
+    private void copyPatientState(Patient patient){
         super.getAddress().setLine1(patient.getAddress().getLine1());
         super.getAddress().setLine2(patient.getAddress().getLine2());
         super.getAddress().setTown(patient.getAddress().getTown());

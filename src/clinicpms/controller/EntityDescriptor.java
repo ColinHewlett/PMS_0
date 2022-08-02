@@ -5,8 +5,8 @@
  */
 package clinicpms.controller;
 
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.util.ArrayList;
@@ -23,10 +23,10 @@ public class EntityDescriptor {
     
     private PatientNotification patientNotification;
     private ArrayList<PatientNotification> patientNotifications = null; 
-    private TheAppointment theAppointment = null;
-    private ArrayList<TheAppointment> theAppointments = null;
-    private ThePatient thePatient = null;
-    private ArrayList<ThePatient> thePatients = null;
+    private Appointment theAppointment = null;
+    private ArrayList<Appointment> theAppointments = null;
+    private Patient thePatient = null;
+    private ArrayList<Patient> thePatients = null;
     private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
     private EntityDescriptor.Request request= null;
 
@@ -246,11 +246,11 @@ public class EntityDescriptor {
         error = message;
     }
     
-    public TheAppointment getTheAppointment() {
+    public Appointment getAppointment() {
         return theAppointment;
     }
     
-    protected void setTheAppointment(TheAppointment value) {
+    protected void setAppointment(Appointment value) {
         theAppointment = value;
     }
 
@@ -258,20 +258,20 @@ public class EntityDescriptor {
         return request;
     }
     
-    public ArrayList<TheAppointment> getTheAppointments(){
+    public ArrayList<Appointment> getAppointments(){
         return theAppointments;
     }
     
-    public void setTheAppointments(ArrayList<TheAppointment> value){
+    public void setAppointments(ArrayList<Appointment> value){
         theAppointments = value;
     }
     
-    public ThePatient getThePatient() {
+    public Patient getThePatient() {
         return thePatient;
     }
     
    
-    protected void setThePatient(ThePatient value){
+    protected void setThePatient(Patient value){
         thePatient = value;
     }
     
@@ -281,7 +281,7 @@ public class EntityDescriptor {
         return patients;
     }
     */
-    public ArrayList<ThePatient> getThePatients(){
+    public ArrayList<Patient> getThePatients(){
         return thePatients;
     }
     
@@ -290,14 +290,14 @@ public class EntityDescriptor {
         patients = value;
     }
     */
-    public void setThePatients (ArrayList<ThePatient> value){
+    public void setThePatients (ArrayList<Patient> value){
         thePatients = value;
     }
     
     
     public class Request {
-        private ThePatient thePatient = null;
-        private ThePatient theGuardian = null;
+        private Patient thePatient = null;
+        private Patient theGuardian = null;
         private LocalDate day = null;
         private Duration duration = null;
         private String databaseLocation = null;
@@ -309,37 +309,36 @@ public class EntityDescriptor {
 
 
         protected Request() {
-            theAppointment = new TheAppointment();
-            thePatient = new ThePatient();
-            theGuardian = new ThePatient();
-            //guardian = new EntityDescriptor.Patient();
+            theAppointment = new Appointment();
+            thePatient = new Patient();
+            theGuardian = new Patient();
             day = LocalDate.now();
             duration = Duration.ZERO; 
             HashMap<DayOfWeek,Boolean> surgeryDaysAssignmentValue = new HashMap<>();
             
         }
         
-        public ThePatient getTheGuardian(){
+        public Patient getTheGuardian(){
             return theGuardian;
         }
         
-        public void setTheGuardian(ThePatient patient){
+        public void setTheGuardian(Patient patient){
             theGuardian = patient;
         }
         
-        public TheAppointment getTheAppointment(){
+        public Appointment getAppointment(){
             return theAppointment;
         }
         
-        public void setTheAppointment(TheAppointment value){
+        public void setAppointment(Appointment value){
             theAppointment = value;
         }
         
-        public ThePatient getThePatient(){
+        public Patient getThePatient(){
             return thePatient;
         }
         
-        public void setThePatient(ThePatient patient){
+        public void setThePatient(Patient patient){
             thePatient = patient;
         }
         

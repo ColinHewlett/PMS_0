@@ -9,7 +9,7 @@ import clinicpms.constants.ClinicPMS;
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
 import clinicpms.view.View;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
 import java.awt.Component;
@@ -205,11 +205,11 @@ public class AppointmentCreatorEditorModalViewer extends View {
         
         if (getViewMode().equals(ViewController.ViewMode.UPDATE)){
             this.cmbSelectStartTime.setSelectedItem(
-                    getEntityDescriptor().getTheAppointment().getStart());
-            this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getTheAppointment().getDuration().toMinutes()));
-            this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getTheAppointment().getDuration().toMinutes()));
-            this.txaNotes.setText(getEntityDescriptor().getTheAppointment().getNotes());
-            this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getTheAppointment().getPatient());
+                    getEntityDescriptor().getAppointment().getStart());
+            this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getDuration().toMinutes()));
+            this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getDuration().toMinutes()));
+            this.txaNotes.setText(getEntityDescriptor().getAppointment().getNotes());
+            this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getAppointment().getPatient());
         }
         
         else this.cmbSelectStartTime.setSelectedIndex(0);
@@ -260,7 +260,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         this.viewMode = value;
     }
     private void initialiseViewMode(){
-        if (getEntityDescriptor().getTheAppointment().getIsKeyDefined()){
+        if (getEntityDescriptor().getAppointment().getIsKeyDefined()){
             setViewMode(ViewController.ViewMode.UPDATE);
             this.btnCreateUpdateAppointment.setText(UPDATE_BUTTON);
         }
@@ -276,23 +276,22 @@ public class AppointmentCreatorEditorModalViewer extends View {
      */
     private void initialiseEntityDescriptorFromView(){
         //get the appointment with  which the view was initialised (in particular the appointment key)
-        getEntityDescriptor().getRequest().setTheAppointment(
-                    getEntityDescriptor().getTheAppointment());
+        getEntityDescriptor().getRequest().setAppointment(
+                    getEntityDescriptor().getAppointment());
         //update this from current state of view
         
         //24/07/2022 13:42 (1c)
         /*
         getEntityDescriptor().getRequest().setThePatient(
-                (ThePatient)this.cmbSelectPatient.getSelectedItem());
+                (Patient)this.cmbSelectPatient.getSelectedItem());
         */
-        getEntityDescriptor().getRequest().getTheAppointment().setPatient(
-                (ThePatient)this.cmbSelectPatient.getSelectedItem());
+        getEntityDescriptor().getRequest().getAppointment().setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
         
-        getEntityDescriptor().getRequest().getTheAppointment().
+        getEntityDescriptor().getRequest().getAppointment().
                 setStart((LocalDateTime)this.cmbSelectStartTime.getSelectedItem());
-        getEntityDescriptor().getRequest().getTheAppointment().
+        getEntityDescriptor().getRequest().getAppointment().
                 setDuration(getDurationFromView());
-        getEntityDescriptor().getRequest().getTheAppointment().
+        getEntityDescriptor().getRequest().getAppointment().
                 setNotes(this.txaNotes.getText());
     }
     private Duration getDurationFromView(){
@@ -305,13 +304,13 @@ public class AppointmentCreatorEditorModalViewer extends View {
      */
     private void initialiseViewFromED(){
         DateTimeFormatter hhmmFormat = DateTimeFormatter.ofPattern("HH:mm");
-        //this.spnStartTime.setValue(getEntityDescriptor().getTheAppointment().getData().getStart().format(hhmmFormat)); 
-        this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getTheAppointment().getDuration().toMinutes()));
-        this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getTheAppointment().getDuration().toMinutes()));
-        this.txaNotes.setText(getEntityDescriptor().getTheAppointment().getNotes());
+        //this.spnStartTime.setValue(getEntityDescriptor().getAppointment().getData().getStart().format(hhmmFormat)); 
+        this.spnDurationHours.setValue(getHoursFromDuration(getEntityDescriptor().getAppointment().getDuration().toMinutes()));
+        this.spnDurationMinutes.setValue(getMinutesFromDuration(getEntityDescriptor().getAppointment().getDuration().toMinutes()));
+        this.txaNotes.setText(getEntityDescriptor().getAppointment().getNotes());
         populatePatientSelector(this.cmbSelectPatient);
-        if (getEntityDescriptor().getTheAppointment().getPatient().getIsKeyDefined()){
-            this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getTheAppointment().getPatient());
+        if (getEntityDescriptor().getAppointment().getPatient().getIsKeyDefined()){
+            this.cmbSelectPatient.setSelectedItem(getEntityDescriptor().getAppointment().getPatient());
         }
     }
     private Integer getHoursFromDuration(long duration){
@@ -320,14 +319,14 @@ public class AppointmentCreatorEditorModalViewer extends View {
     private Integer getMinutesFromDuration(long duration){
         return (int)duration % 60;
     }
-    private void populatePatientSelector(JComboBox<ThePatient> selector){
-        DefaultComboBoxModel<ThePatient> model = 
+    private void populatePatientSelector(JComboBox<Patient> selector){
+        DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
-        ArrayList<ThePatient> patients = 
+        ArrayList<Patient> patients = 
                 getEntityDescriptor().getThePatients();
-        Iterator<ThePatient> it = patients.iterator();
+        Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
-            ThePatient patient = it.next();
+            Patient patient = it.next();
             model.addElement(patient);
         }
         selector.setModel(model);
@@ -350,7 +349,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         spnDurationMinutes = new javax.swing.JSpinner(new SpinnerNumberModel(0,0,55,5));
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        cmbSelectPatient = new javax.swing.JComboBox<ThePatient>();
+        cmbSelectPatient = new javax.swing.JComboBox<Patient>();
         cmbSelectStartTime = new javax.swing.JComboBox<LocalDateTime>();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -402,7 +401,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
                 .addContainerGap(22, Short.MAX_VALUE))
         );
 
-        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<ThePatient>());
+        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<Patient>());
         cmbSelectPatient.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         cmbSelectStartTime.setModel(new javax.swing.DefaultComboBoxModel<LocalDateTime>());
@@ -545,11 +544,11 @@ public class AppointmentCreatorEditorModalViewer extends View {
         if (getEntityDescriptor().getRequest().getThePatient()== null){
             JOptionPane.showMessageDialog(this, "A patient has not been selected for this appointment");
         }
-        else if (getEntityDescriptor().getTheAppointment().getDuration().isZero()){
+        else if (getEntityDescriptor().getAppointment().getDuration().isZero()){
             JOptionPane.showMessageDialog(this, "Defined duration for appointment must be longer than zero minutes");
         }
         else {
-            if (getEntityDescriptor().getRequest().getTheAppointment().getNotes().isEmpty()){
+            if (getEntityDescriptor().getRequest().getAppointment().getNotes().isEmpty()){
                 String[] options = {"Yes", "No"};
                 OKToSaveAppointment = JOptionPane.showOptionDialog(this,
                     "No notes defined for appointment. Save anyway?",null,
@@ -593,7 +592,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnCreateUpdateAppointment;
-    private javax.swing.JComboBox<ThePatient> cmbSelectPatient;
+    private javax.swing.JComboBox<Patient> cmbSelectPatient;
     private javax.swing.JComboBox<LocalDateTime> cmbSelectStartTime;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

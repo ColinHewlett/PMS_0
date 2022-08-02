@@ -6,7 +6,7 @@
 package clinicpms.view.views.patient_notifications_view;
 
 //import clinicpms.view.views.schedule_contact_details_view.*;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import clinicpms.controller.EntityDescriptor;
 import java.time.format.DateTimeFormatter;
@@ -21,10 +21,10 @@ import javax.swing.table.DefaultTableModel;
 public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
     private DateTimeFormatter ddmmyy = DateTimeFormatter.ofPattern("dd/MM/yy");
     private ArrayList<PatientNotification> patientNotifications = null;
-    private enum COLUMN{Date, Patient,Phone,Notification};
+    private enum COLUMN{Date, ThePatient,Phone,Notification};
     private final Class[] columnClass = new Class[] {
         LocalDate.class,
-        ThePatient.class, 
+        Patient.class, 
         String.class,
         String.class};
     
@@ -100,7 +100,7 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
                 }
                 else{
                     LocalDate date = patientNotification.getNotificationDate();
-                    ThePatient patient = patientNotification.getPatient();
+                    Patient patient = patientNotification.getPatient();
                     String phone = null;
                     //if (!patient.getPhone1().isEmpty())phone = patient.getPhone1();
                     if (patient.getPhone1()!= null)phone = patient.getPhone1();
@@ -113,7 +113,7 @@ public class PatientNotificationView4ColumnTableModel extends DefaultTableModel{
                     String notification = patientNotification.getNotificationText();
                     
                     switch (column){
-                        case Patient:
+                        case ThePatient:
                             result = patient;
                             break;
                         case Date:

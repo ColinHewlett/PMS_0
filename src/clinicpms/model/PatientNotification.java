@@ -19,7 +19,7 @@ import java.util.Iterator;
 public class PatientNotification extends EntityStoreType {
     private PatientNotification.Collection collection = null;
     private Integer key = null;
-    private ThePatient patient = null;
+    private Patient patient = null;
     private LocalDate date = null;
     private String notification = null;
     private Boolean isActioned = false;
@@ -71,7 +71,7 @@ public class PatientNotification extends EntityStoreType {
         return notification;
     }
     
-    public ThePatient getPatient(){
+    public Patient getPatient(){
         return patient;
     }
     
@@ -95,7 +95,7 @@ public class PatientNotification extends EntityStoreType {
         notification = value;
     }
     
-    public void setPatient(ThePatient value){
+    public void setPatient(Patient value){
         patient = value;
     }
     
@@ -133,7 +133,7 @@ public class PatientNotification extends EntityStoreType {
     public PatientNotification read() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
         PatientNotification patientNotification = store.read(this, getKey());
-        ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
+        Patient patient = new Patient(patientNotification.getPatient().getKey());
         patientNotification.setPatient(patient.read());
         return patientNotification;
     }
@@ -180,7 +180,7 @@ public class PatientNotification extends EntityStoreType {
             collection = value;
         }
         
-        public ThePatient getPatient(){
+        public Patient getPatient(){
             return PatientNotification.this.getPatient();
         }
         
@@ -212,7 +212,7 @@ public class PatientNotification extends EntityStoreType {
                 default:
                     while(it.hasNext()){
                         PatientNotification patientNotification = (PatientNotification)it.next();
-                        ThePatient patient = new ThePatient(patientNotification.getPatient().getKey());
+                        Patient patient = new Patient(patientNotification.getPatient().getKey());
                         patientNotification.setPatient(patient.read());
                     }
                     break;        

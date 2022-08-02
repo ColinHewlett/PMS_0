@@ -5,7 +5,7 @@
  */
 package clinicpms.view.views.patient_editor_view;
 
-import clinicpms.model.TheAppointment;
+import clinicpms.model.Appointment;
 import clinicpms.controller.EntityDescriptor;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -21,16 +21,16 @@ import javax.swing.table.TableModel;
  * -- replaces extension  from DefaultTableModel to AbstractTableModel
  */
 public class Appointments3ColumnTableModel extends AbstractTableModel{
-    public ArrayList<TheAppointment> appointments = new ArrayList<>();
+    public ArrayList<Appointment> appointments = new ArrayList<>();
     private enum COLUMN{From,Duration,Notes};
     private final Class[] columnClass = new Class[] {
         LocalDateTime.class, Duration.class,String.class};
     
-    public ArrayList<TheAppointment> getAppointments(){
+    public ArrayList<Appointment> getAppointments(){
         return appointments;
     }
     
-    public void addElement(TheAppointment a){
+    public void addElement(Appointment a){
         appointments.add(a);
     }
     
@@ -67,7 +67,7 @@ public class Appointments3ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        TheAppointment appointment = getAppointments().get(row);
+        Appointment appointment = getAppointments().get(row);
         for (COLUMN column: COLUMN.values()){
             if (column.ordinal() == columnIndex){
                 if (appointment == null){

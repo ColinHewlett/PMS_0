@@ -20,16 +20,16 @@ import java.util.List;
  *
  * @author colin
  */
-public class TheAppointment extends EntityStoreType{
+public class Appointment extends EntityStoreType{
     public static enum Status{BOOKED,UNBOOKED};
     private Boolean isKeyDefined = false;
     private Integer key = null;
     private LocalDateTime start = null;
     private Duration duration  = null;
     private String notes = null;
-    private ThePatient patient;
+    private Patient patient;
     private Category category = null;
-    private Status status = TheAppointment.Status.BOOKED;
+    private Status status = Appointment.Status.BOOKED;
     
     
     public enum Scope {ALL, FOR_PATIENT, FOR_DAY, FROM_DAY};
@@ -49,30 +49,30 @@ public class TheAppointment extends EntityStoreType{
                                 A_120,A_121,A_122,A_123,A_124,A_125,A_126,A_127,A_128,A_129,
                                 A_130,A_131,_132,A_133,A_134,A_135,A_136,A_137,A_138,A_139,
                                 A_140,A_141,A_142,A_143,A_144}
-    private TheAppointment.Collection collection = null;
+    private Appointment.Collection collection = null;
     private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public static enum Category{DENTAL, HYGIENE, ALL}
     
-    public TheAppointment(){
+    public Appointment(){
         super.setIsAppointment(true);
-        collection = new TheAppointment.Collection(this);
+        collection = new Appointment.Collection(this);
     } //constructor creates a new Appointment record
 
     /**
      * 
      * @param key 
      */
-    public TheAppointment( int key) {
+    public Appointment( int key) {
         this.key = key;
         collection = new Collection(this);
         super.setIsAppointment(true);
     }
     
-    public TheAppointment.Collection getCollection(){
+    public Appointment.Collection getCollection(){
         return collection;
     }
     
-    public void setCollection(TheAppointment.Collection value){
+    public void setCollection(Appointment.Collection value){
         collection = value;
     }
     
@@ -146,24 +146,24 @@ public class TheAppointment extends EntityStoreType{
             else setIsKeyDefined(false);
         else setIsKeyDefined(false);  
     }
-    public TheAppointment.Status getStatus(){
+    public Appointment.Status getStatus(){
         return this.status;
     }
-    public void setStatus(TheAppointment.Status value){
+    public void setStatus(Appointment.Status value){
         this.status = value;
     }       
 
-    public ThePatient getPatient() {
+    public Patient getPatient() {
         return patient;
     }
-    public void setPatient(ThePatient patient) {
+    public void setPatient(Patient patient) {
         this.patient = patient;
     }
     
-    public TheAppointment.Category getCategory() {
+    public Appointment.Category getCategory() {
         return category;
     }
-    public void setCategory(TheAppointment.Category category) {
+    public void setCategory(Appointment.Category category) {
         this.category = category;
     }
     
@@ -193,9 +193,9 @@ public class TheAppointment extends EntityStoreType{
         store.drop(this);        
     }
     
-    public TheAppointment read() throws StoreException{
+    public Appointment read() throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        //TheAppointment appointment = store.read(this, getKey());
+        //Appointment appointment = store.read(this, getKey());
         //return appointment;
         return store.read(this,getKey());
     }
@@ -221,7 +221,7 @@ public class TheAppointment extends EntityStoreType{
             //return false; 
         if (obj == null) return false;
         // type casting of the argument.  
-        TheAppointment appointment = (TheAppointment) obj; 
+        Appointment appointment = (Appointment) obj; 
 
         // comparing the state of argument with  
         // the state of 'this' Object. 
@@ -229,24 +229,24 @@ public class TheAppointment extends EntityStoreType{
     }
     
     public class Collection extends EntityStoreType{
-        private TheAppointment appointment = null; 
-        private ArrayList<TheAppointment> collection = null;
-        private TheAppointment.Scope readScope = null;
+        private Appointment appointment = null; 
+        private ArrayList<Appointment> collection = null;
+        private Appointment.Scope readScope = null;
         
         private Collection(){
             super.setIsAppointments(true);  
         }
         
-        private Collection(TheAppointment appointment){
+        private Collection(Appointment appointment){
             super.setIsAppointments(true);
             setAppointment(appointment);   
         }
         
-        public TheAppointment getAppointment(){
+        public Appointment getAppointment(){
             return appointment;
         }
         
-        public void setAppointment(TheAppointment a){
+        public void setAppointment(Appointment a){
             this.appointment = a;
         }
          
@@ -274,7 +274,7 @@ public class TheAppointment extends EntityStoreType{
          */
         public void read()throws StoreException{
             Integer key = null;
-            IStoreAction store = Store.FACTORY(TheAppointment.this); 
+            IStoreAction store = Store.FACTORY(Appointment.this); 
             switch (getScope()){
                 case FOR_PATIENT:
                     key = getAppointment().getPatient().getKey();      
@@ -282,16 +282,16 @@ public class TheAppointment extends EntityStoreType{
             set(store.read(this, key).getCollection().get());
         }
         
-        public ArrayList<TheAppointment> get(){
+        public ArrayList<Appointment> get(){
             return collection;
         }
-        public void set(ArrayList<TheAppointment> value){
+        public void set(ArrayList<Appointment> value){
             collection = value;
         }
-        public TheAppointment.Scope getScope(){
+        public Appointment.Scope getScope(){
             return readScope;
         }
-        public void setScope(TheAppointment.Scope value){
+        public void setScope(Appointment.Scope value){
             readScope = value;
         }
     }
@@ -301,7 +301,7 @@ public class TheAppointment extends EntityStoreType{
         return store.importEntityFromCSV(this);
     }
     
-    public ArrayList<TheAppointment> convertDBFRecordToAppointments(String[] dbfAppointmentRow)throws StoreException{
+    public ArrayList<Appointment> convertDBFRecordToAppointments(String[] dbfAppointmentRow)throws StoreException{
         String date = null;
         String year;
         String month;
@@ -335,8 +335,8 @@ public class TheAppointment extends EntityStoreType{
         d = date.substring(4);
         date = d + "/" + month + "/" + year;
         
-        ArrayList<TheAppointment> appointmentsForThisDBFRecord = null;
-        ThePatient patient = null;
+        ArrayList<Appointment> appointmentsForThisDBFRecord = null;
+        Patient patient = null;
         LocalDateTime start = null;
         Duration duration = null;
         String notes = null;
@@ -345,7 +345,7 @@ public class TheAppointment extends EntityStoreType{
         int appointmentStartTimeRowIndex = 0;
         int appointmentEndTimeRowIndex = 0;
         boolean isRowEnd = false;
-        TheAppointment appointment = null;
+        Appointment appointment = null;
         
         int rowIndex = DenAppField.A_1.ordinal();
         appointmentsForThisDBFRecord = new ArrayList<>();
@@ -418,19 +418,19 @@ public class TheAppointment extends EntityStoreType{
      * @param patientKey
      * @return 
      */
-    private static TheAppointment getAppointmentFrom(String[] row, 
+    private static Appointment getAppointmentFrom(String[] row, 
                                                   String date, 
                                                   int startSlot, 
                                                   int endSlot, 
                                                   Integer patientKey){
-        ThePatient patient;
+        Patient patient;
         LocalDateTime start; 
         Duration duration;
         String notes = "";
         LocalTime startTime = getAppointmentStartTime(startSlot);
         LocalDate day = LocalDate.parse(date,ddMMyyyyFormat);
         start = LocalDateTime.of(day, startTime);
-        patient = new ThePatient(patientKey);
+        patient = new Patient(patientKey);
         duration = Duration.ofMinutes((endSlot-startSlot)*5);
         int index = startSlot + 1;
         String keyString = String.valueOf(patient.getKey());
@@ -445,7 +445,7 @@ public class TheAppointment extends EntityStoreType{
                 }
             }
         }
-        TheAppointment appointment = new TheAppointment();
+        Appointment appointment = new Appointment();
         
         appointment.setPatient(patient);
         appointment.setStart(start);
@@ -482,7 +482,7 @@ public class TheAppointment extends EntityStoreType{
     }
     
     private static LocalTime getAppointmentStartTime(int startRowIndex){
-        int slotCountFromDayStart = startRowIndex - TheAppointment.DenAppField.A_1.ordinal();
+        int slotCountFromDayStart = startRowIndex - Appointment.DenAppField.A_1.ordinal();
         LocalTime firstSlotTimeForDay = LocalTime.of(8, 0); //= 8am
         return firstSlotTimeForDay.plusMinutes(slotCountFromDayStart * 5);
     }

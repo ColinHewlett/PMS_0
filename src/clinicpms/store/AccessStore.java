@@ -18,8 +18,8 @@ import clinicpms.model.TableRowValue;
 //import clinicpms.model.SurgeryDaysAssignmentx;
 import clinicpms.model.SurgeryDaysAssignment;
 import clinicpms.store.Store.SelectedTargetStore;
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import java.io.IOException;
 import java.io.File;
 import java.sql.*;
@@ -332,7 +332,7 @@ public class AccessStore extends Store {
         return result;
     }
     
-    private TheAppointment get(TheAppointment appointment, ResultSet rs) throws StoreException {
+    private Appointment get(Appointment appointment, ResultSet rs) throws StoreException {
         AppointmentDelegate delegate = new AppointmentDelegate();
         PatientDelegate pDelegate = new PatientDelegate();
         try {
@@ -349,7 +349,7 @@ public class AccessStore extends Store {
                     delegate.setNotes(notes);
                     pDelegate.setPatientKey(patientKey);
                     delegate.setPatient(pDelegate);
-                    delegate.setStatus(TheAppointment.Status.BOOKED);
+                    delegate.setStatus(Appointment.Status.BOOKED);
                 }
             }
             return delegate;
@@ -426,8 +426,8 @@ public class AccessStore extends Store {
         }
     }
 
-    private TheAppointment get(TheAppointment.Collection collection, ResultSet rs)throws StoreException{
-        ArrayList<TheAppointment> appointments = new ArrayList<>(); 
+    private Appointment get(Appointment.Collection collection, ResultSet rs)throws StoreException{
+        ArrayList<Appointment> appointments = new ArrayList<>(); 
         AppointmentDelegate delegate = new AppointmentDelegate();
         PatientDelegate pDelegate = null;
         try{
@@ -463,10 +463,10 @@ public class AccessStore extends Store {
      * method
      * @param patient
      * @param rs
-     * @return ThePatient for Patient and - if getIsAGuardian() returns true - another delegate class for the guardian
+     * @return Patient for Patient and - if getIsAGuardian() returns true - another delegate class for the guardian
      * @throws SQLException 
      */
-    private ThePatient getThePatientDetails(PatientDelegate delegate, ResultSet rs) throws SQLException {
+    private Patient getThePatientDetails(PatientDelegate delegate, ResultSet rs) throws SQLException {
         int key = rs.getInt("pid");
         String title = rs.getString("title");
         String forenames = rs.getString("forenames");
@@ -520,61 +520,8 @@ public class AccessStore extends Store {
         return delegate;
     }
 
-    /*
-    private Patient getPatientDetails(Patient patient, ResultSet rs) throws SQLException {
-        int key = rs.getInt("pid");
-        String title = rs.getString("title");
-        String forenames = rs.getString("forenames");
-        String surname = rs.getString("surname");
-        String line1 = rs.getString("line1");
-        String line2 = rs.getString("line2");
-        String town = rs.getString("town");
-        String county = rs.getString("county");
-        String postcode = rs.getString("postcode");
-        String phone1 = rs.getString("phone1");
-        String phone2 = rs.getString("phone2");
-        String gender = rs.getString("gender");
-        String notes = rs.getString("notes");
-        LocalDate dob = rs.getObject("dob", LocalDate.class);
-        if (dob.getYear() == 1899) {
-            dob = null;
-        }
-        int recallFrequency = rs.getInt("recallFrequency");
-        LocalDate recallDate = rs.getObject("recallDate", LocalDate.class);
-        if (recallDate.getYear() == 1899) {
-            recallDate = null;
-        }
-        boolean isGuardianAPatient = rs.getBoolean("isGuardianAPatient");
-
-        patient.setKey(key);
-        patient.getName().setTitle(title);
-        patient.getName().setForenames(forenames);
-        patient.getName().setSurname(surname);
-        patient.getAddress().setLine1(line1);
-        patient.getAddress().setLine2(line2);
-        patient.getAddress().setTown(town);
-        patient.getAddress().setCounty(county);
-        patient.getAddress().setPostcode(postcode);
-        patient.setGender(gender);
-        patient.setDOB(dob);
-        patient.setPhone1(phone1);
-        patient.setPhone2(phone2);
-        patient.getRecall().setDentalDate(recallDate);
-        patient.getRecall().setDentalFrequency(recallFrequency);
-        patient.setNotes(notes);
-        patient.setIsGuardianAPatient(isGuardianAPatient);
-        if (patient.getIsGuardianAPatient()) {
-            int guardianKey = rs.getInt("guardianKwey");
-            if (guardianKey > 0) {
-                Patient p = new Patient(guardianKey);
-                patient.setGuardian(p);
-            }
-        }
-        return patient;
-    }
-   */ 
-    private ThePatient get(PatientDelegate patient, ResultSet rs) throws SQLException {
-        ThePatient result = null;
+    private Patient get(PatientDelegate patient, ResultSet rs) throws SQLException {
+        Patient result = null;
         if (!rs.wasNull()) {
             if (rs.next()) {
                 result = getThePatientDetails(patient, rs);
@@ -584,63 +531,6 @@ public class AccessStore extends Store {
         }
         return result;
     }
-
-    /*
-    private Patient get(Patient patient, ResultSet rs) throws SQLException {
-        Patient result = null;
-        if (!rs.wasNull()) {
-            if (rs.next()) {
-                patient = getPatientDetails(patient, rs);
-                result = patient;
-            }
-        } else {
-            result = null;
-        }
-        return result;
-    }
-*/
-    /*
-    private SurgeryDaysAssignmentx get(SurgeryDaysAssignmentx surgeryDaysAssignment, ResultSet rs) throws StoreException {
-        
-        String day = null;
-        try {
-            if (!rs.wasNull()) {
-                while (rs.next()) {
-                    day = rs.getString("Day");
-                    switch (day) {
-                        case "Monday":
-                            surgeryDaysAssignment.put(DayOfWeek.MONDAY, rs.getBoolean("isSurgery"));
-                            break;
-                        case "Tuesday":
-                            surgeryDaysAssignment.put(DayOfWeek.TUESDAY, rs.getBoolean("isSurgery"));
-                        case "Wednesday":
-                            surgeryDaysAssignment.put(DayOfWeek.WEDNESDAY, rs.getBoolean("isSurgery"));
-                            break;
-                        case "Thursday":
-                            surgeryDaysAssignment.put(DayOfWeek.THURSDAY, rs.getBoolean("isSurgery"));
-                            break;
-                        case "Friday":
-                            surgeryDaysAssignment.put(DayOfWeek.FRIDAY, rs.getBoolean("isSurgery"));
-                            break;
-                        case "Saturday":
-                            surgeryDaysAssignment.put(DayOfWeek.SATURDAY, rs.getBoolean("isSurgery"));
-                            break;
-                        case "Sunday":
-                            surgeryDaysAssignment.put(DayOfWeek.SUNDAY, rs.getBoolean("isSurgery"));
-                            break;
-                    }
-                }
-
-            }
-            return surgeryDaysAssignment;
-        } catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException -> raised in Access::get(SurgeryDaysAssignment,ResultSet)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-        
-    }
-    */
     
     private SurgeryDaysAssignment get(SurgeryDaysAssignment surgeryDaysAssignment, ResultSet rs) throws StoreException {
         String day = null;
@@ -683,23 +573,23 @@ public class AccessStore extends Store {
     }
     
     /**
-     * method decodes the ResultSet for persistent storage into a ThePatient.Collection object
-     * -- the resulting collection of ThePatient child objects is used to initialise a mother ThePatient.Collection object
-     * -- the information contained in ThePatient object is either in the values of its state fields, excepting its collection field;
-     * -- or the information is contained in its Collection inner class
-     * -- This is possibly ambiguous, and can be overcome by making a separate class responsible for the collection
+     * method decodes the ResultSet for persistent storage into a Patient.Collection object
+ -- the resulting collection of Patient child objects is used to initialise a mother Patient.Collection object
+ -- the information contained in Patient object is either in the values of its state fields, excepting its collection field;
+ -- or the information is contained in its Collection inner class
+ -- This is possibly ambiguous, and can be overcome by making a separate class responsible for the collection
      * @param collection
      * @param rs
      * @return
      * @throws StoreException 
      */
-    private ThePatient.Collection getPatientCollectionDelegate(ThePatient.Collection collection, ResultSet rs) throws StoreException {
-        ArrayList<ThePatient> patients = new ArrayList<>();
-        ThePatient motherPatient = new ThePatient();
+    private Patient.Collection getPatientCollectionDelegate(Patient.Collection collection, ResultSet rs) throws StoreException {
+        ArrayList<Patient> patients = new ArrayList<>();
+        Patient motherPatient = new Patient();
         try {
             if (!rs.wasNull()) {
                 while (rs.next()) {
-                    ThePatient childPatient = getThePatientDetails(new PatientDelegate(), rs);
+                    Patient childPatient = getThePatientDetails(new PatientDelegate(), rs);
                     patients.add(childPatient);
                 }
                 motherPatient.getCollection().set(patients);
@@ -711,15 +601,15 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-    private ThePatient get(ThePatient.Collection collection, ResultSet rs) throws StoreException {
-        ArrayList<ThePatient> patients = new ArrayList<>();
-        ThePatient motherPatient = new ThePatient();
+    private Patient get(Patient.Collection collection, ResultSet rs) throws StoreException {
+        ArrayList<Patient> patients = new ArrayList<>();
+        Patient motherPatient = new Patient();
         try {
             if (!rs.wasNull()) {
                 while (rs.next()) {
-                    //ThePatient childPatient = new ThePatient();
+                    //ThePatient childPatient = new Patient();
                     //childPatient = getThePatientDetails(childPatient, rs);
-                    ThePatient childPatient = getThePatientDetails(new PatientDelegate(), rs);
+                    Patient childPatient = getThePatientDetails(new PatientDelegate(), rs);
                     patients.add(childPatient);
                 }
                 motherPatient.getCollection().set(patients);
@@ -857,7 +747,7 @@ public class AccessStore extends Store {
      * @throws StoreException 
      */
     @Override
-    public Integer insert(TheAppointment appointment,Integer appointeeKey) throws StoreException {
+    public Integer insert(Appointment appointment,Integer appointeeKey) throws StoreException {
         Integer result = null;
         AppointmentDelegate delegate = new AppointmentDelegate(appointment);
         PatientDelegate pDelegate = new PatientDelegate(delegate.getPatient());
@@ -944,7 +834,7 @@ public class AccessStore extends Store {
      * @return Integer specifying the key value of the new value created
      */
     @Override
-    public Integer insert(ThePatient patient, Integer key) throws StoreException{ 
+    public Integer insert(Patient patient, Integer key) throws StoreException{ 
         EntityStoreType entity = null;
         Integer result = null;
         PatientDelegate delegate = null;
@@ -962,7 +852,7 @@ public class AccessStore extends Store {
                     gDelegate = new PatientDelegate();
                     gDelegate.setPatientKey(0);
                 }
-                entity = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_NEXT_HIGHEST_KEY, new ThePatient());
+                entity = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENT_NEXT_HIGHEST_KEY, new Patient());
                 if (entity.getIsTableRowValue())
                     delegate.setPatientKey(((TableRowValue) entity).getValue() + 1);
             }else{
@@ -983,7 +873,7 @@ public class AccessStore extends Store {
         return result;
     }
 
-   public void delete(ThePatient patient){
+   public void delete(Patient patient){
        
    }
     /**
@@ -992,7 +882,7 @@ public class AccessStore extends Store {
      * @throws StoreException 
      */
     @Override
-    public void delete(TheAppointment appointment, Integer key) throws StoreException {
+    public void delete(Appointment appointment, Integer key) throws StoreException {
         AppointmentDelegate delegate = new AppointmentDelegate(appointment);
         delegate.setAppointmentKey(key);
         try {
@@ -1181,7 +1071,7 @@ public class AccessStore extends Store {
         return result.getValue();
     }
     
-    public Integer count(TheAppointment.Collection entity, Integer patientKey) throws StoreException{
+    public Integer count(Appointment.Collection entity, Integer patientKey) throws StoreException{
         TableRowValue result = null;
         PMSSQL sqlStatement = null;
         switch(entity.getScope()){
@@ -1192,7 +1082,7 @@ public class AccessStore extends Store {
                 sqlStatement = PMSSQL.COUNT_APPOINTMENTS_FOR_DAY;
                 break;
             case FOR_PATIENT:
-                TheAppointment.Collection appointments = (TheAppointment.Collection)entity;
+                Appointment.Collection appointments = (Appointment.Collection)entity;
                 PatientDelegate delegate = new PatientDelegate();
                 delegate.setPatientKey(patientKey);
                 appointments.getAppointment().setPatient(delegate);
@@ -1206,7 +1096,7 @@ public class AccessStore extends Store {
         return result.getValue();
     }
 
-    public Integer count(ThePatient.Collection patients)throws StoreException{
+    public Integer count(Patient.Collection patients)throws StoreException{
         TableRowValue result = null;
         result = (TableRowValue)runSQL(EntitySQL.PATIENT, PMSSQL.COUNT_PATIENTS, patients );
         return result.getValue();
@@ -1220,7 +1110,7 @@ public class AccessStore extends Store {
     }
     
     @Override
-    public TheAppointment read(TheAppointment.Collection entity, Integer key)throws StoreException{
+    public Appointment read(Appointment.Collection entity, Integer key)throws StoreException{
         boolean isAppointmentsForDay = false;
         PatientDelegate delegate = null;
         EntityStoreType result = null;
@@ -1244,23 +1134,23 @@ public class AccessStore extends Store {
         }
         result = runSQL(EntitySQL.APPOINTMENT, sqlStatement, entity );
         if (isAppointmentsForDay){
-            Iterator<TheAppointment> it = ((TheAppointment)result).getCollection().get().iterator();
+            Iterator<Appointment> it = ((Appointment)result).getCollection().get().iterator();
             while (it.hasNext()){
-                TheAppointment appointment = it.next();
+                Appointment appointment = it.next();
                 Integer theKey = ((PatientDelegate)appointment.getPatient()).getPatientKey();
-                ThePatient patient = new ThePatient(((PatientDelegate)appointment.getPatient()).getPatientKey());
+                Patient patient = new Patient(((PatientDelegate)appointment.getPatient()).getPatientKey());
                 appointment.setPatient(patient.read());
             }
         }
-        return (TheAppointment)result;
+        return (Appointment)result;
     }
     
-    public TheAppointment read(TheAppointment appointment, Integer key)throws StoreException{
+    public Appointment read(Appointment appointment, Integer key)throws StoreException{
         AppointmentDelegate delegate = new AppointmentDelegate();
         delegate.setAppointmentKey(key);
         EntityStoreType result = null;
         result = runSQL(EntitySQL.APPOINTMENT, PMSSQL.READ_APPOINTMENT, delegate);
-        return (TheAppointment)result;
+        return (Appointment)result;
     }
     
    
@@ -1273,7 +1163,7 @@ public class AccessStore extends Store {
      * @throws StoreException 
      */
     @Override
-    public ThePatient read(ThePatient patient, Integer key) throws StoreException { 
+    public Patient read(Patient patient, Integer key) throws StoreException { 
         PatientDelegate gDelegate = null;
         PatientDelegate delegate = new PatientDelegate(key);
         EntityStoreType entity = null;
@@ -1290,7 +1180,7 @@ public class AccessStore extends Store {
                                 + "AccessStore::read(ThePatient, Integer key, Integer guardianKey )",
                         StoreException.ExceptionType.KEY_NOT_FOUND_EXCEPTION);
             } 
-            return (ThePatient)entity;
+            return (Patient)entity;
         } catch (SQLException ex) {
             message = "SQLException -> " + ex.getMessage() + "\n";
             throw new StoreException(message + "StoreException -> unexpected error accessing AutoCommit/commit/rollback setting in AccessStore::read(ThePatient p)",
@@ -1299,16 +1189,16 @@ public class AccessStore extends Store {
     }
 
     @Override
-    public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
-        ThePatient patient = null;
+    public Patient.Collection read(Patient.Collection p) throws StoreException{
+        Patient patient = null;
         EntityStoreType value = null;
-        ThePatient.Collection result = null;
+        Patient.Collection result = null;
         try {
             setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
             value = runSQL(EntitySQL.PATIENT,PMSSQL.READ_PATIENTS,null);
             if (value!=null){
                 if (value.getIsPatient()){
-                    patient = (ThePatient)value;
+                    patient = (Patient)value;
                     return patient.getCollection();
                 }else{
                     throw new StoreException(
@@ -1477,7 +1367,7 @@ public class AccessStore extends Store {
      * @param appointeeKey Integer value of the appointment's appointee key
      * @throws StoreException 
      */
-    public void update(TheAppointment appointment, Integer key, Integer appointeeKey) throws StoreException {
+    public void update(Appointment appointment, Integer key, Integer appointeeKey) throws StoreException {
         AppointmentDelegate delegate = new AppointmentDelegate(appointment);
         PatientDelegate pDelegate = new PatientDelegate(delegate.getPatient());
         delegate.setAppointmentKey(key);
@@ -1496,7 +1386,7 @@ public class AccessStore extends Store {
     }
     
     @Override
-    public void update(ThePatient patient, Integer key, Integer guardianKey) throws StoreException {
+    public void update(Patient patient, Integer key, Integer guardianKey) throws StoreException {
         PatientDelegate delegate = new PatientDelegate(patient);
         delegate.setPatientKey(key);
         if (delegate.getIsGuardianAPatient()){
@@ -1557,33 +1447,7 @@ public class AccessStore extends Store {
         }
     }
     
- 
-/*
-    public void tidyPatientImportedDate() throws StoreException {
-        Patients patients = (Patients) runSQL(PMSSQL.READ_PATIENTS,
-                new Patient());
-        Iterator<Patient> patientsIT = patients.iterator();
-        while (patientsIT.hasNext()) {
-            Patient patient = patientsIT.next();
-            Patient patient1 = doCapitaliseFirstLetterOnly(patient);
-            patient.getName().setForenames(patient1.getName().getForenames());
-            patient.getName().setSurname(patient1.getName().getSurname());
-            patient.getName().setTitle(patient1.getName().getTitle());
-            patient.getAddress().setLine1(patient1.getAddress().getLine1());
-            patient.getAddress().setLine2(patient1.getAddress().getLine2());
-            patient.getAddress().setTown(patient1.getAddress().getTown());
-            patient.getAddress().setCounty(patient1.getAddress().getCounty());
-            if (patient.getGender() == null) {
-                patient.setGender("");
-            }
-            patient1 = updateGender(patient);
-            patient.setGender(patient1.getGender());
-            runSQL(PMSSQL.UPDATE_PATIENT, patient);
-        }
-    }
-*/
-
-    public void create(TheAppointment table) throws StoreException { 
+    public void create(Appointment table) throws StoreException { 
         boolean result = false;
         try {
             getPMSStoreConnection().setAutoCommit(true);
@@ -1615,7 +1479,7 @@ public class AccessStore extends Store {
     
     
     @Override
-    public void create(ThePatient table) throws StoreException{
+    public void create(Patient table) throws StoreException{
         boolean result = false;
         try {
             getPMSStoreConnection().setAutoCommit(true);
@@ -1646,14 +1510,14 @@ public class AccessStore extends Store {
         }
     }
 
-    public void drop(TheAppointment table)throws StoreException{
+    public void drop(Appointment table)throws StoreException{
         
     }
     
     
     
     @Override
-    public void drop(ThePatient table) throws StoreException {
+    public void drop(Patient table) throws StoreException {
     
     }
 
@@ -1868,7 +1732,7 @@ public class AccessStore extends Store {
         }
     }
 */
-    public int countRowsIn(ThePatient table) throws StoreException {
+    public int countRowsIn(Patient table) throws StoreException {
         return 0;
     }
     
@@ -1892,29 +1756,6 @@ public class AccessStore extends Store {
         patientCount = value;
     }
 
-    /*
-    public void migratedPatientsTidied()throws StoreException{
-        Patients patients = null;
-        IEntityStoreType entity = runSQL(Store.MigrationSQL.PATIENT_TABLE_READ,new Patient());
-        if (entity.isPatients()) patients = (Patients)entity; 
-        Iterator<Patient> patientsIT = patients.iterator();
-        while (patientsIT.hasNext()){
-            Patient patient = patientsIT.next();
-            Patient patient1 = doCapitaliseFirstLetterOnly(patient);
-            patient.getName().setForenames(patient1.getName().getForenames());
-            patient.getName().setSurname(patient1.getName().getSurname());
-            patient.getName().setTitle(patient1.getName().getTitle());
-            patient.getAddress().setLine1(patient1.getAddress().getLine1());
-            patient.getAddress().setLine2(patient1.getAddress().getLine2());
-            patient.getAddress().setTown(patient1.getAddress().getTown());
-            patient.getAddress().setCounty(patient1.getAddress().getCounty());
-            if(patient.getGender()==null) patient.setGender("");
-            patient1 = updateGender(patient);
-            patient.setGender(patient1.getGender());
-            runSQL(Store.MigrationSQL.PATIENT_TABLE_UPDATE, patient);
-        } 
-    }
-     */
     public int getNonExistingPatientsReferencedByAppointmentsCount() {
         return nonExistingPatientsReferencedByAppointmentsCount;
     }
@@ -2404,7 +2245,7 @@ public class AccessStore extends Store {
         PatientDelegate delegate = null;
         if (entity != null) {
             if (entity.getIsPatient()) {
-                //thePatient = (ThePatient)entity;
+                //thePatient = (Patient)entity;
                 delegate = (PatientDelegate)entity;
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
@@ -2515,7 +2356,7 @@ public class AccessStore extends Store {
         try {
             PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
-            ThePatient patient = new ThePatient();
+            Patient patient = new Patient();
             result = get(patient.getCollection(), rs);
             return result;
         } catch (SQLException ex) {
@@ -2528,7 +2369,7 @@ public class AccessStore extends Store {
     private EntityStoreType doReadPatientWithKey(String sql, EntityStoreType entity)throws StoreException{
         PatientDelegate delegate = null;
         EntityStoreType result = null;
-        ThePatient patient = null;
+        Patient patient = null;
         if (entity != null){
             if (entity.getIsPatient()){
                 delegate  = (PatientDelegate)entity;
@@ -2556,10 +2397,10 @@ public class AccessStore extends Store {
     
     private EntityStoreType doReadPatientWithKeyx(String sql, EntityStoreType entity)throws StoreException{
         EntityStoreType result = null;
-        ThePatient patient = null;
+        Patient patient = null;
         if (entity != null){
             if (entity.getIsPatient()){
-                patient = (ThePatient)entity;
+                patient = (Patient)entity;
                 
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
@@ -3033,17 +2874,17 @@ public class AccessStore extends Store {
         }
     }
         
-    private TheAppointment doReadAppointmentWithKey(String sql, EntityStoreType entity) throws StoreException{
-        TheAppointment appointment = null;
+    private Appointment doReadAppointmentWithKey(String sql, EntityStoreType entity) throws StoreException{
+        Appointment appointment = null;
         if (entity!=null){
             if (entity.getIsAppointment()){
-                //appointment = (TheAppointment)entity;
+                //appointment = (Appointment)entity;
                 AppointmentDelegate delegate = (AppointmentDelegate)entity;
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, delegate.getAppointmentKey());
                     ResultSet rs = preparedStatement.executeQuery();
-                    appointment = get(new TheAppointment(), rs);
+                    appointment = get(new Appointment(), rs);
                     
                 } catch (SQLException ex) {
                     throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
@@ -3076,10 +2917,10 @@ public class AccessStore extends Store {
     private EntityStoreType doReadAppointments(String sql, EntityStoreType entity)throws StoreException{
         EntityStoreType result = null;
         Integer value = null;
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointments = (TheAppointment.Collection)entity;
+                appointments = (Appointment.Collection)entity;
                 try{
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     ResultSet rs = preparedStatement.executeQuery();
@@ -3107,10 +2948,10 @@ public class AccessStore extends Store {
     private EntityStoreType doReadAppointmentsForDay(String sql, EntityStoreType entity)throws StoreException{
         EntityStoreType result = null;
         Integer value = null;
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointments = (TheAppointment.Collection)entity;
+                appointments = (Appointment.Collection)entity;
                 try{
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     LocalDate day = appointments.getAppointment().getStart().toLocalDate();
@@ -3142,10 +2983,10 @@ public class AccessStore extends Store {
     private EntityStoreType doReadAppointmentsFromDay(String sql, EntityStoreType entity)throws StoreException{
         EntityStoreType result = null;
         Integer value = null;
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointments = (TheAppointment.Collection)entity;
+                appointments = (Appointment.Collection)entity;
                 try{
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     LocalDate day = appointments.getAppointment().getStart().toLocalDate();
@@ -3175,10 +3016,10 @@ public class AccessStore extends Store {
     private EntityStoreType doReadAppointmentsForPatient(String sql, EntityStoreType entity)throws StoreException{
         EntityStoreType result = null;
         Integer value = null;
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointments = (TheAppointment.Collection)entity;
+                appointments = (Appointment.Collection)entity;
                 try{
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, 
@@ -3207,10 +3048,10 @@ public class AccessStore extends Store {
     
     private EntityStoreType doCountAppointmentsForPatient(String sql, EntityStoreType entity)throws StoreException{
         Integer value = null;
-        TheAppointment.Collection appointments = null;
+        Appointment.Collection appointments = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointments = (TheAppointment.Collection)entity;
+                appointments = (Appointment.Collection)entity;
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, 
@@ -3241,10 +3082,10 @@ public class AccessStore extends Store {
     
     private EntityStoreType doCountAppointmentsFromDay(String sql, EntityStoreType entity)throws StoreException{
         Integer value = null;
-        TheAppointment appointment = null;
+        Appointment appointment = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointment = (TheAppointment)entity; 
+                appointment = (Appointment)entity; 
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setDate(1, 
@@ -3273,11 +3114,11 @@ public class AccessStore extends Store {
         }
     }
     private EntityStoreType doCountAppointmentsForDay(String sql, EntityStoreType entity)throws StoreException{
-        TheAppointment appointment = null;
+        Appointment appointment = null;
         Integer value = null;
         if (entity != null) {
             if (entity.getIsAppointments()){
-                appointment = (TheAppointment)entity;
+                appointment = (Appointment)entity;
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setInt(1, appointment.getStart().getYear());

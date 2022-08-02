@@ -5,7 +5,7 @@
  */
 package clinicpms.view.views.appontment_schedule_view;
 
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import java.awt.Component;
 import java.awt.Font;
 import javax.swing.JLabel;
@@ -30,7 +30,7 @@ public class AppointmentsTablePatientRenderer  extends JLabel implements TableCe
         boolean hasFocus, int row, int column)
     {
         
-        ThePatient patient = (ThePatient)value;
+        Patient patient = (Patient)value;
         if (patient == null) {
             super.setText("NOT BOOKED");
             super.setHorizontalAlignment(JLabel.CENTER);

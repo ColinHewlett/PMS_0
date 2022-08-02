@@ -18,11 +18,11 @@ import java.util.List;
  *
  * @author colin
  */
-public class ThePatient extends EntityStoreType {
+public class Patient extends EntityStoreType {
     
     private Boolean isPatientKeyDefined = null;
     private LocalDate dob = null;
-    private ThePatient guardian = null;
+    private Patient guardian = null;
     private String gender = null;
     private Boolean isGuardianAPatient = null;
     private Integer key  = null;
@@ -31,11 +31,11 @@ public class ThePatient extends EntityStoreType {
     private String phone2 = null;
     private InsertOperation insertOperation = null;
 
-    private ThePatient.AppointmentHistory appointmentHistory = null;
-    private ThePatient.Address address = null;
-    private ThePatient.Name name = null;
-    private ThePatient.Recall recall = null;
-    private ThePatient.Collection collection = null;
+    private Patient.AppointmentHistory appointmentHistory = null;
+    private Patient.Address address = null;
+    private Patient.Name name = null;
+    private Patient.Recall recall = null;
+    private Patient.Collection collection = null;
     
     enum DenPatField {KEY,
                               TITLE,
@@ -102,7 +102,7 @@ public class ThePatient extends EntityStoreType {
         return result;
     }
     
-    private ThePatient updateGender(ThePatient patient){
+    private Patient updateGender(Patient patient){
         switch (patient.getGender()){
             case "M":
                 patient.setGender("Male");
@@ -155,19 +155,19 @@ public class ThePatient extends EntityStoreType {
                                             }
                                 }
     
-    public ThePatient(){
+    public Patient(){
         name = new Name();
         address = new Address();
         recall = new Recall();
         appointmentHistory = new AppointmentHistory();
         collection = new Collection(this);
         setIsGuardianAPatient(false);
-        getAppointmentHistory().set(new ArrayList<TheAppointment>());
+        getAppointmentHistory().set(new ArrayList<Appointment>());
         setIsKeyDefined(false);
         this.setIsPatient(true);
     } 
     
-    public ThePatient(Integer key) {
+    public Patient(Integer key) {
             name = new Name();
             address = new Address();
             recall = new Recall();
@@ -175,7 +175,7 @@ public class ThePatient extends EntityStoreType {
             collection = new Collection();
             setKey(key);
             setIsGuardianAPatient(false);
-            getAppointmentHistory().set(new ArrayList<TheAppointment>());
+            getAppointmentHistory().set(new ArrayList<Appointment>());
             this.setIsPatient(true);
     } 
     
@@ -214,9 +214,9 @@ public class ThePatient extends EntityStoreType {
      * @return a fully initialised Patient object appropriately with or without a guardian if one exists
      * @throws StoreException 
      */
-    public ThePatient read() throws StoreException{
-        ThePatient patient = null;
-        ThePatient guardian = null;
+    public Patient read() throws StoreException{
+        Patient patient = null;
+        Patient guardian = null;
         IStoreAction store = Store.FACTORY((EntityStoreType) this);
         patient = store.read(this, getKey()); 
         if (patient.getIsGuardianAPatient()){
@@ -358,7 +358,7 @@ public class ThePatient extends EntityStoreType {
     
     public class AppointmentHistory{
 
-        private ArrayList<TheAppointment> dentalAppointments = null;
+        private ArrayList<Appointment> dentalAppointments = null;
         /**
          * method constructs a new appointment object 
          * -- with this patient defined as the appointee
@@ -367,25 +367,25 @@ public class ThePatient extends EntityStoreType {
          * @throws StoreException 
          */
         public void fetchDentalAppointments()throws StoreException{
-            if (ThePatient.this.getKey()!=null) {
-                TheAppointment appointment = new TheAppointment();
-                appointment.setPatient(new ThePatient(ThePatient.this.getKey()));
-                appointment.getCollection().setScope(TheAppointment.Scope.FOR_PATIENT);
+            if (Patient.this.getKey()!=null) {
+                Appointment appointment = new Appointment();
+                appointment.setPatient(new Patient(Patient.this.getKey()));
+                appointment.getCollection().setScope(Appointment.Scope.FOR_PATIENT);
                 appointment.getCollection().read();
                 set(appointment.getCollection().get());
             }
-            else set(new ArrayList<TheAppointment>());
+            else set(new ArrayList<Appointment>());
         }
         
-        public void set(ArrayList<TheAppointment> value){
+        public void set(ArrayList<Appointment> value){
             dentalAppointments = value;
         }
         
-        public ArrayList<TheAppointment> get(){
+        public ArrayList<Appointment> get(){
             return dentalAppointments;
         }
         
-        public ArrayList<TheAppointment> getHygieneAppointments()throws StoreException{
+        public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
             
             return null;
         }
@@ -465,46 +465,46 @@ public class ThePatient extends EntityStoreType {
         this.isGuardianAPatient = isGuardianAPatient;
     }
     
-    public ThePatient getGuardian(){
+    public Patient getGuardian(){
         return guardian;
     }
-    public void setGuardian(ThePatient guardian){
+    public void setGuardian(Patient guardian){
         this.guardian = guardian;
     }
     
-    public ThePatient.Name getName(){
+    public Patient.Name getName(){
         return name;
     }
-    public void setName(ThePatient.Name name){
+    public void setName(Patient.Name name){
         this.name = name;
     }
     
-    public ThePatient.Address getAddress(){
+    public Patient.Address getAddress(){
         return address;
     }
-    public void setAddress(ThePatient.Address address){
+    public void setAddress(Patient.Address address){
         this.address = address;
     }
     
-    public ThePatient.Recall getRecall(){
+    public Patient.Recall getRecall(){
         return recall;
     }
-    public void setRecall(ThePatient.Recall recall){
+    public void setRecall(Patient.Recall recall){
         this.recall = recall;
     }
     
-    public ThePatient.AppointmentHistory getAppointmentHistory(){
+    public Patient.AppointmentHistory getAppointmentHistory(){
         return appointmentHistory;
     }
-    public void setAppointmentHistory(ThePatient.AppointmentHistory value){
+    public void setAppointmentHistory(Patient.AppointmentHistory value){
         this.appointmentHistory = value;
     }
     
-    public ThePatient.Collection getCollection(){
+    public Patient.Collection getCollection(){
         return collection;
     }
     
-    public void setCollection(ThePatient.Collection value){
+    public void setCollection(Patient.Collection value){
         collection = value;
     }
     
@@ -642,7 +642,7 @@ public class ThePatient extends EntityStoreType {
                 //return false; 
             if (obj == null) return false;
             // type casting of the argument.  
-            ThePatient patient = (ThePatient) obj; 
+            Patient patient = (Patient) obj; 
 
             // comparing the state of argument with  
             // the state of 'this' Object. 
@@ -697,30 +697,30 @@ public class ThePatient extends EntityStoreType {
         return cappedName;
     }
     public class Collection extends EntityStoreType{
-        private ArrayList<ThePatient> collection = null;
-        private ThePatient patient = null;
+        private ArrayList<Patient> collection = null;
+        private Patient patient = null;
         
         private Collection(){
             this.setIsPatients(true);
         }
         
-        private Collection(ThePatient patient){
+        private Collection(Patient patient){
             
         }
         
-        public ThePatient getPatient(){
+        public Patient getPatient(){
             return patient;
         }
         
-        public void setPatient(ThePatient p){
+        public void setPatient(Patient p){
             patient = p;
         }
         
-        public ArrayList<ThePatient> get(){
+        public ArrayList<Patient> get(){
             return collection;
         }
         
-        public void set(ArrayList<ThePatient> value){
+        public void set(ArrayList<Patient> value){
             collection = value;
         }
 
@@ -745,9 +745,9 @@ public class ThePatient extends EntityStoreType {
         return store.importEntityFromCSV(this);
     }
     
-    public ThePatient convertDBFToPatient(String[] dbfPatientRow){
-        ThePatient patient = new ThePatient();
-        for (ThePatient.DenPatField pf: ThePatient.DenPatField.values()){
+    public Patient convertDBFToPatient(String[] dbfPatientRow){
+        Patient patient = new Patient();
+        for (Patient.DenPatField pf: Patient.DenPatField.values()){
             switch (pf){
                 case KEY:
                     patient.setKey(Integer.parseInt(dbfPatientRow[pf.ordinal()]));

@@ -7,7 +7,7 @@ package clinicpms.view.views.patient_notification_editor_view;
 
 import clinicpms.controller.EntityDescriptor;
 import clinicpms.controller.ViewController;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.View;
@@ -101,14 +101,14 @@ public class PatientNotificationEditorModalViewer extends View {
         }
     }
     
-    private void populatePatientSelector(JComboBox<ThePatient> selector){
-        DefaultComboBoxModel<ThePatient> model = 
+    private void populatePatientSelector(JComboBox<Patient> selector){
+        DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
-        ArrayList<ThePatient> patients = 
+        ArrayList<Patient> patients = 
                 getEntityDescriptor().getThePatients();
-        Iterator<ThePatient> it = patients.iterator();
+        Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
-            ThePatient patient = it.next();
+            Patient patient = it.next();
             model.addElement(patient);
         }
         selector.setModel(model);
@@ -310,7 +310,7 @@ public class PatientNotificationEditorModalViewer extends View {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        cmbSelectPatient = new javax.swing.JComboBox<ThePatient>();
+        cmbSelectPatient = new javax.swing.JComboBox<Patient>();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         dpNotificationDate = new com.github.lgooddatepicker.components.DatePicker();
@@ -334,7 +334,7 @@ public class PatientNotificationEditorModalViewer extends View {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Select patient", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
 
-        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<ThePatient>());
+        cmbSelectPatient.setModel(new javax.swing.DefaultComboBoxModel<Patient>());
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -589,7 +589,7 @@ public class PatientNotificationEditorModalViewer extends View {
                 patientNotification = new PatientNotification();
             else
                 patientNotification = getEntityDescriptor().getPatientNotification();
-            patientNotification.setPatient((ThePatient)this.cmbSelectPatient.getSelectedItem());
+            patientNotification.setPatient((Patient)this.cmbSelectPatient.getSelectedItem());
             patientNotification.setNotificationDate(this.dpNotificationDate.getDate());
             patientNotification.setNotificationText(this.txaNotificationText.getText());
             patientNotification.setIsActioned(rdbNotificationActioned.isSelected());
@@ -603,7 +603,7 @@ public class PatientNotificationEditorModalViewer extends View {
     private javax.swing.JButton btnCreateUpdatePatientNotification;
     private javax.swing.JButton btnDeletePatientNotification;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<ThePatient> cmbSelectPatient;
+    private javax.swing.JComboBox<Patient> cmbSelectPatient;
     private com.github.lgooddatepicker.components.DatePicker dpNotificationDate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

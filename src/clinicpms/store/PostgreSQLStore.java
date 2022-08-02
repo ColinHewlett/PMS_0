@@ -5,7 +5,7 @@
  */
 package clinicpms.store;
 
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 import clinicpms.model.PatientNotification;
 import clinicpms.model.SurgeryDaysAssignment;
 import java.io.File;
@@ -38,13 +38,13 @@ import java.util.Dictionary;
 
 
 
-    public void insert(ThePatient p) throws StoreException{
+    public void insert(Patient p) throws StoreException{
         
     }
 
     
     
-    public void delete(ThePatient p) throws StoreException{
+    public void delete(Patient p) throws StoreException{
         
     }
 
@@ -56,12 +56,12 @@ import java.util.Dictionary;
 
     
     
-    public ThePatient.Collection read(ThePatient.Collection p) throws StoreException{
+    public Patient.Collection read(Patient.Collection p) throws StoreException{
         return null;
     }
     
     
-    public ThePatient read(ThePatient p) throws StoreException{
+    public Patient read(Patient p) throws StoreException{
         return null;
     }
 
@@ -75,7 +75,7 @@ import java.util.Dictionary;
     }
     
     
-    public void update(ThePatient p) throws StoreException{
+    public void update(Patient p) throws StoreException{
         
     }
 
@@ -187,11 +187,11 @@ import java.util.Dictionary;
         return null;
     }
 
-    public void drop(ThePatient p)throws StoreException{
+    public void drop(Patient p)throws StoreException{
         
     }
 
-    public void create(ThePatient p)throws StoreException{
+    public void create(Patient p)throws StoreException{
         
     }
 

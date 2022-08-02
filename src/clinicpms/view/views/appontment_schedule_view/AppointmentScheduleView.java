@@ -5,8 +5,8 @@
  */
 package clinicpms.view.views.appontment_schedule_view;
 
-import clinicpms.model.TheAppointment;
-import clinicpms.model.ThePatient;
+import clinicpms.model.Appointment;
+import clinicpms.model.Patient;
 import clinicpms.view.AppointmentDateVetoPolicy;
 import clinicpms.view.TableHeaderCellBorderRenderer;
 import clinicpms.view.views.empty_slot_scanner_view.EmptySlotAvailability2ColumnTableModel;
@@ -53,13 +53,13 @@ import javax.swing.SwingUtilities;
  */
 public class AppointmentScheduleView extends View{
     private View.Viewer myViewType = null;
-    private enum COLUMN{From,Duration,Patient,Notes};
+    private enum COLUMN{From,Duration,ThePatient,Notes};
     private ActionListener myController = null;
     private Appointments5ColumnTableModel tableModel = null;
     private EntityDescriptor entityDescriptor = null;
     private InternalFrameAdapter internalFrameAdapter = null;
     private DatePickerSettings settings = null;
-    private ArrayList<TheAppointment> appointments = null;
+    private ArrayList<Appointment> appointments = null;
     //private final DateTimeFormatter emptySlotStartFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private final DateTimeFormatter appointmentScheduleFormat = DateTimeFormatter.ofPattern("EEEE, MMMM dd yyyy ");
     private AppointmentDateVetoPolicy vetoPolicy = null;
@@ -84,7 +84,7 @@ public class AppointmentScheduleView extends View{
                 temporarilySuspendDatePickerDateVetoPolicy(getEntityDescriptor().getRequest().getDay());
                 break;
             case APPOINTMENT_SLOTS_FROM_DAY_RECEIVED:
-                populateEmptySlotAvailabilityTable(getEntityDescriptor().getTheAppointments());
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
                 /**
                  * without the next lines the appointments table is unconscious of being selected?!)
                  */
@@ -92,7 +92,7 @@ public class AppointmentScheduleView extends View{
                 refreshAppointmentTableWithCurrentlySelectedDate();
                 break;
             case APPOINTMENT_SCHEDULE_ERROR_RECEIVED:
-                populateEmptySlotAvailabilityTable(getEntityDescriptor().getTheAppointments());
+                populateEmptySlotAvailabilityTable(getEntityDescriptor().getAppointments());
                 break;
                 
         }
@@ -162,7 +162,7 @@ public class AppointmentScheduleView extends View{
         this.entityDescriptor = value;
     }   
     private void initialiseViewFromEDCollection(){
-        appointments = getEntityDescriptor().getTheAppointments();
+        appointments = getEntityDescriptor().getAppointments();
         populateAppointmentsForDayTable();
     }
     /**
@@ -171,7 +171,7 @@ public class AppointmentScheduleView extends View{
      * update 30/07/2021 19:53
      */
     private void initialiseEDRequestFromView(int row){
-        getEntityDescriptor().getRequest().setTheAppointment(tableModel.getElementAt(row));    
+        getEntityDescriptor().getRequest().setAppointment(tableModel.getElementAt(row));    
     }
 
     /**
@@ -283,7 +283,7 @@ public class AppointmentScheduleView extends View{
     }
     
     private void doEmptySlotAvailabilityTableRowSelection(int row){
-        TheAppointment appointment = 
+        Appointment appointment = 
                 ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).getElementAt(row);
         LocalDate start = appointment.getStart().toLocalDate();
         DatePickerSettings dps = dayDatePicker.getSettings();
@@ -296,14 +296,14 @@ public class AppointmentScheduleView extends View{
     private void populateAppointmentsForDayTable(){
         if (tableModel == null) tableModel = new Appointments5ColumnTableModel();
         tableModel.removeAllElements();
-        Iterator<TheAppointment> it = appointments.iterator();
+        Iterator<Appointment> it = appointments.iterator();
         while (it.hasNext()){
             tableModel.addElement(it.next());
         }
         
         this.tblAppointments.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointments.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());
-        this.tblAppointments.setDefaultRenderer(ThePatient.class, new AppointmentsTablePatientRenderer());
+        this.tblAppointments.setDefaultRenderer(Patient.class, new AppointmentsTablePatientRenderer());
         this.tblAppointments.setModel(tableModel);
         this.tblAppointments.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
@@ -676,7 +676,7 @@ public class AppointmentScheduleView extends View{
         }
         //30/07/2022 09:26
         else if (!((Appointments5ColumnTableModel)this.tblAppointments.getModel()).getElementAt(row).getPatient().getIsKeyDefined()){
-        //else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
+        //else if (!getEntityDescriptor().getAppointments().get(row).getPatient().getIsKeyDefined()){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for update");
         }
         else{
@@ -733,7 +733,7 @@ public class AppointmentScheduleView extends View{
         }
         //30/07/2022 09:26
         else if (!((Appointments5ColumnTableModel)this.tblAppointments.getModel()).getElementAt(row).getPatient().getIsKeyDefined()){
-        //else if (!getEntityDescriptor().getTheAppointments().get(row).getPatient().getIsKeyDefined()){
+        //else if (!getEntityDescriptor().getAppointments().get(row).getPatient().getIsKeyDefined()){
             JOptionPane.showMessageDialog(this, "An appointment has not been selected for cancellation");
         }
         else{
@@ -741,11 +741,11 @@ public class AppointmentScheduleView extends View{
             initialiseEDRequestFromView(row);
             //20/07/2022 08:16 update
             //start = getEntityDescriptor().getRequest().getAppointment().getData().getStart();
-            start = getEntityDescriptor().getRequest().getTheAppointment().getStart();
+            start = getEntityDescriptor().getRequest().getAppointment().getStart();
             from = start.toLocalTime();
             //20/07/2022 08:16 update
             //duration = getEntityDescriptor().getRequest().getAppointment().getData().getDuration().toMinutes();
-            duration = getEntityDescriptor().getRequest().getTheAppointment().getDuration().toMinutes();
+            duration = getEntityDescriptor().getRequest().getAppointment().getDuration().toMinutes();
             LocalTime to = from.plusMinutes(duration);
             /**
              * 09/11/2021 16:53 [1.f]log notes -> update below because getRequest().getPatient() no longer initialised 
@@ -753,12 +753,12 @@ public class AppointmentScheduleView extends View{
              */
             //20/07/2022 08:16 update
             //name = getEntityDescriptor().getRequest().getAppointment().getAppointee().getData().getForenames();
-            name = getEntityDescriptor().getRequest().getTheAppointment().getPatient().getName().getForenames();
+            name = getEntityDescriptor().getRequest().getAppointment().getPatient().getName().getForenames();
             //name = getEntityDescriptor().getRequest().getPatient().getData().getForenames();
             if (!name.isEmpty())name = name + " ";
             //20/07/2022 08:16 update
             //name = name + getEntityDescriptor().getRequest().getAppointment().getAppointee().getData().getSurname();
-            name = name + getEntityDescriptor().getRequest().getTheAppointment().getPatient().getName().getSurname();
+            name = name + getEntityDescriptor().getRequest().getAppointment().getPatient().getName().getSurname();
             from.format(DateTimeFormatter.ofPattern("HH:mm"));
             String[] options = {"Yes", "No"};
             OKToCancelAppointment = JOptionPane.showOptionDialog(this,
@@ -852,9 +852,9 @@ public class AppointmentScheduleView extends View{
         return this.myViewType;
     }
     
-    private void populateEmptySlotAvailabilityTable(ArrayList<TheAppointment> a){
+    private void populateEmptySlotAvailabilityTable(ArrayList<Appointment> a){
         //ref 21/07/2022 08:39 update
-        if (a==null) a = new ArrayList<TheAppointment>();
+        if (a==null) a = new ArrayList<Appointment>();
         EmptySlotAvailability2ColumnTableModel model;
         if (this.tblEmptySlotAvailability!=null){
             jScrollPane1.remove(this.tblEmptySlotAvailability);   
@@ -864,7 +864,7 @@ public class AppointmentScheduleView extends View{
         setEmptySlotAvailabilityTableListener();
         model = (EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel();
         model.removeAllElements();
-        Iterator<TheAppointment> it = a.iterator();
+        Iterator<Appointment> it = a.iterator();
         while (it.hasNext()){
             ((EmptySlotAvailability2ColumnTableModel)this.tblEmptySlotAvailability.getModel()).addElement(it.next());
         }

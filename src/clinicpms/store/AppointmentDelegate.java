@@ -5,19 +5,19 @@
  */
 package clinicpms.store;
 
-import clinicpms.model.TheAppointment;
+import clinicpms.model.Appointment;
 
 /**
  *
  * @author colin
  */
-public class AppointmentDelegate extends TheAppointment{
+public class AppointmentDelegate extends Appointment{
     
     protected AppointmentDelegate(){
         super();
     }
     
-    protected AppointmentDelegate(TheAppointment appointment){
+    protected AppointmentDelegate(Appointment appointment){
         super.setDuration(appointment.getDuration());
         super.setNotes(appointment.getNotes());
         super.setPatient(appointment.getPatient());

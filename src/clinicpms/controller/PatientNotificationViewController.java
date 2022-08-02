@@ -13,7 +13,7 @@ import java.beans.PropertyVetoException;
  * -- this removes the need for a separate Patients class
  * -- thus EntityDescriptor.thePatient is also being updated to an ArrayList<ThePatient>
  */
-import clinicpms.model.ThePatient;
+import clinicpms.model.Patient;
 
 import clinicpms.store.StoreException;
 import clinicpms.view.views.DesktopView;
@@ -188,8 +188,8 @@ public class PatientNotificationViewController extends ViewController{
             patients = new Patients();
             patients.read();
             */
-            ThePatient patient = new ThePatient();
-            ThePatient.Collection  patientCollection = patient.getCollection();
+            Patient patient = new Patient();
+            Patient.Collection  patientCollection = patient.getCollection();
             patientCollection.read();
             getNewEntityDescriptor().setThePatients(patientCollection.get());
             View.setViewer(View.Viewer.PATIENT_NOTIFICATION_EDITOR_VIEW);
@@ -215,8 +215,8 @@ public class PatientNotificationViewController extends ViewController{
              * send view collection of all patients on system
              * -- in case user wants to select another patient to update(?)
              */
-            ThePatient patient = new ThePatient();
-            ThePatient.Collection  patientCollection = patient.getCollection();           
+            Patient patient = new Patient();
+            Patient.Collection  patientCollection = patient.getCollection();           
             patientCollection.read();
             getNewEntityDescriptor().setThePatients(patientCollection.get());
             /**
