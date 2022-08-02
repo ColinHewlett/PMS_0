@@ -17,12 +17,8 @@ import java.util.List;
  * @author colin
  */
 public interface IStoreAction {
-    //public int countRowsIn(Appointment table)throws StoreException;
-    //public int countRowsIn(Patient table)throws StoreException;
     public int countRowsIn(ThePatient table)throws StoreException;
-    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException;
-    //public int countRowsIn(SurgeryDaysAssignmentx table)throws StoreException;
-    
+    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException;   
     public Integer count(TheAppointment.Collection collection, Integer appointeeKey)throws StoreException;
     public Integer count(ThePatient.Collection collection)throws StoreException;
     public Integer count(PatientNotification.Collection collection)throws StoreException;

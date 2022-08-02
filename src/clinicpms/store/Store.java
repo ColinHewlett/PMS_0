@@ -6,9 +6,6 @@
 package clinicpms.store;
 
 import clinicpms.store.Store.SelectedTargetStore;
-import clinicpms.model.IAppointments;
-import clinicpms.model.IEntity;
-import clinicpms.model.IPatients;
 import clinicpms.model.IStoreManager;
 import clinicpms.model.EntityStoreType;
 
@@ -17,8 +14,6 @@ import clinicpms.model.EntityStoreType;
  * @author colin
  */
 public abstract class Store implements IStoreAction, 
-                                       IAppointmentsStoreAction,
-                                       IPatientsStoreAction,
                                        ITargetsStoreAction {
     
     protected enum ConnectionMode{ AUTO_COMMIT_OFF, AUTO_COMMIT_ON}
@@ -226,115 +221,7 @@ public abstract class Store implements IStoreAction,
     protected static boolean IS_PATIENTS_STORE_ACTION = false;
     protected static boolean IS_PMS_STORE_ACTION = false;
     protected static boolean IS_TARGETS_STORE_ACTION = false;
-    
-    
-    private static IAppointmentsStoreAction FACTORY_FOR_APPOINTMENTS_STORE()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
-        IAppointmentsStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                //result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                //result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_PMS_STORE_ACTION_STATE(true);
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    
-    /**
-     * Selects the STORAGE class to use (Access, PostgresSQL etc)
- -- ensures STORAGE type and database locator path have been initialised
- -- the concrete Store class getInstance() method ensures a single INSTANCE only of the class exists
- -- IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION flag prevents re-entry of factory during a factory cycle
-     * @return IMigrationStoreAction object
-     * @throws StoreException 
-     */
-    /*
-    private static IMigrationStoreAction FACTORY_FOR_MIGRATION_STORE()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
-        IMigrationStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_MIGRATION_STORE_ACTION_STATE(true);
-        IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    */
-    
-    private static IPatientsStoreAction FACTORY_FOR_PATIENTS_STORE()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
-        IPatientsStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                //result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                //result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_PMS_STORE_ACTION_STATE(true);
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    
-    /**
-     * Selects the STORAGE class to use (Access, PostgresSQL etc)
- -- ensures STORAGE type and database locator path have been initialised
- -- the concrete Store class getInstance() method ensures a single INSTANCE only of the class exists
- -- isStoreCurrentlyUnderConstruction flag prevents re-entry of factory during a factory cycle
-     * @return IPMSStoreAction object
-     * @throws StoreException 
-     */
-    /*
-    private static IPMSStoreAction FACTORY_FOR_PMS_STORE()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
-        IPMSStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_PMS_STORE_ACTION_STATE(true);
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    */
+   
     private static IStoreAction FACTORY_FOR_STORE_ACTION()throws StoreException{
         INITIALISE_DATABASE_LOCATOR_PATH();
         INITIALISE_STORAGE_TYPE();
@@ -502,47 +389,8 @@ public abstract class Store implements IStoreAction,
             FACTORY_FOR_TARGETS_STORE();
         }
     }//store_package_updates_05_12_21_09_17_devDEBUG
-   
-    /**
-     * Getters & setters enabling the Controller to update the path to the input data sources for data migration purposes
-     * -- note; controller access to any Store method is via the model
-     * @return String representing the path to the input data source 
-     */
-    /*
-    protected String getAppointmentCSVPath(){
-        return appointmentCSVPath;
-    }
-    protected String getPatientCSVPath(){
-        return patientCSVPath;
-    }
-    protected void setAppointmentCSVPath(String value){
-        appointmentCSVPath = value;
-    }
-    protected void setPatientCSVPath(String value){
-        patientCSVPath = value;
-    }
-    */
-    
-    public static IAppointmentsStoreAction FACTORY(IAppointments appointments) throws StoreException{
-        return FACTORY_FOR_APPOINTMENTS_STORE();
-    }
-    
-    /*
-    public static IMigrationStoreAction FACTORY(ITable table)throws StoreException{
-        return FACTORY_FOR_MIGRATION_STORE();
-    }
-    */
-    
-    public static IPatientsStoreAction FACTORY(IPatients patients) throws StoreException{
-        return FACTORY_FOR_PATIENTS_STORE();
-    }
     
     public static IStoreAction FACTORY (EntityStoreType entity) throws StoreException{
-        return FACTORY_FOR_STORE_ACTION();
-    }
-   
-   
-    public static IStoreAction FACTORY(IEntity entity)throws StoreException{
         return FACTORY_FOR_STORE_ACTION();
     }
 

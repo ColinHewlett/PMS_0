@@ -19,7 +19,6 @@ import javax.swing.ListCellRenderer;
  * @author colin
  */
 public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<TheAppointment>{
-//public class SlotAvailabilityListRenderer extends JLabel implements ListCellRenderer<EntityDescriptor.Appointment>{
     public DateTimeFormatter dmyhhmmFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     
     public SlotAvailabilityListRenderer(){

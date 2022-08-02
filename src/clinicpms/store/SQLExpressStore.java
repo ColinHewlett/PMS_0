@@ -27,13 +27,6 @@ public class SQLExpressStore  {
         return result;
     }
     
-    /*
-    
-    public void insert(AppointmentTable a, Appointment appointment) throws StoreException{
-        
-    }
-    */
-    
     public void insert(PatientNotification pn)throws StoreException{
         
     }

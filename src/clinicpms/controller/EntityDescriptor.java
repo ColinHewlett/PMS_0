@@ -393,8 +393,6 @@ public class EntityDescriptor {
     }
     
     public class MigrationDescriptorx {
-        //private MigrationDescriptor.Appointment appointment = null;
-        //private MigrationDescriptor.Patient patient = null;
         private Target target = null;
         private Integer appointmentsCount = null;
         private Integer patientsCount = null;

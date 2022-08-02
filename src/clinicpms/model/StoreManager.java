@@ -64,21 +64,11 @@ public class StoreManager implements IStoreManager{
         PMS_Store target = new PMS_Store(this);
         return target.getPatientCSVPath();
     }
-    
-    public void copyFile(File fromFile, File toFile){
-        
-    }
-    
+
     public File createStore(File file)throws StoreException{
         PMS_Store target = new PMS_Store(this);
         return target.createStore(file);
     }
     
-    public void closeConnection()throws StoreException{
-        ITargetsStoreAction store = Store.FACTORY(this);
-        //store.closeMigrationConnection();
-    }
-
-  
 }
 

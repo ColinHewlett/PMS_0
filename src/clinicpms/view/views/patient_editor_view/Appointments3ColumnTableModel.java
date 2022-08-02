@@ -22,7 +22,6 @@ import javax.swing.table.TableModel;
  */
 public class Appointments3ColumnTableModel extends AbstractTableModel{
     public ArrayList<TheAppointment> appointments = new ArrayList<>();
-    //public static ArrayList<EntityDescriptor.Appointment> appointments = null;
     private enum COLUMN{From,Duration,Notes};
     private final Class[] columnClass = new Class[] {
         LocalDateTime.class, Duration.class,String.class};

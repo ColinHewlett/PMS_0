@@ -5,7 +5,6 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IAppointmentsStoreAction;
 import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -59,8 +57,6 @@ public class TheAppointment extends EntityStoreType{
         super.setIsAppointment(true);
         collection = new TheAppointment.Collection(this);
     } //constructor creates a new Appointment record
-    
-    
 
     /**
      * 
@@ -284,14 +280,6 @@ public class TheAppointment extends EntityStoreType{
                     key = getAppointment().getPatient().getKey();      
             }
             set(store.read(this, key).getCollection().get());
-            /*
-            Iterator<TheAppointment> it = get().iterator();
-            while (it.hasNext()){
-                TheAppointment appointment = it.next();
-                ThePatient patient = new ThePatient(appointment.getPatient().getKey());
-                appointment.setPatient(patient.read());
-            }
-            */
         }
         
         public ArrayList<TheAppointment> get(){
@@ -310,7 +298,6 @@ public class TheAppointment extends EntityStoreType{
     
     public List<String[]> importEntityFromCSV()throws StoreException{
         IStoreAction store = Store.FACTORY(this);
-        //setImportedDBFRecords(store.importFromCSV1(this));
         return store.importEntityFromCSV(this);
     }
     

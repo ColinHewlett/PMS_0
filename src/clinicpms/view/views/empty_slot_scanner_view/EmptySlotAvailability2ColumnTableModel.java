@@ -24,7 +24,6 @@ import javax.swing.table.AbstractTableModel;
  * @author colin
  */
 public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
-    //public ArrayList<EntityDescriptor.Appointment> emptySlots = new ArrayList<>();
     public ArrayList<TheAppointment> emptySlots = new ArrayList<>();
     private DateTimeFormatter emptySlotFormat = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm (EEE)");
     private enum COLUMN{EmptySlot, Duration};
@@ -83,7 +82,6 @@ public class EmptySlotAvailability2ColumnTableModel extends AbstractTableModel{
     @Override
     public Object getValueAt(int row, int columnIndex){
         Object result = null;
-        //EntityDescriptor.Appointment slot = getEmptySlots().get(row);
         TheAppointment slot = getEmptySlots().get(row);
         switch (columnIndex){
             case 0:
