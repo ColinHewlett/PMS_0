@@ -16,9 +16,7 @@ import java.util.List;
  *
  * @author colin
  */
-public interface IStoreAction {
-    public int countRowsIn(Patient table)throws StoreException;
-    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException;   
+public interface IStoreActions {  
     public Integer count(Appointment.Collection collection, Integer appointeeKey)throws StoreException;
     public Integer count(Patient.Collection collection)throws StoreException;
     public Integer count(PatientNotification.Collection collection)throws StoreException;
@@ -54,7 +52,7 @@ public interface IStoreAction {
     public SurgeryDaysAssignment read(SurgeryDaysAssignment value) throws StoreException;
 
     
-    public String read(Store.SelectedTargetStore db)throws StoreException;
+    //public String read(Store.SelectedTargetStore db)throws StoreException;
 
     
     public void update(Appointment a, Integer key, Integer appointeeKee) throws StoreException;

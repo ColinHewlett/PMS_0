@@ -8,10 +8,10 @@ package clinicpms.model;
 
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
-import clinicpms.store.IStoreAction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
+import clinicpms.store.IStoreActions;
 /**
  *
  * @author colin
@@ -105,7 +105,7 @@ public class PatientNotification extends EntityStoreType {
     }
     
     public void create() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.create(this);
     }
     
@@ -119,7 +119,7 @@ public class PatientNotification extends EntityStoreType {
      * @throws StoreException 
      */
     public void insert() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         setKey(store.insert(this));
     }
     
@@ -131,7 +131,7 @@ public class PatientNotification extends EntityStoreType {
      * @throws StoreException 
      */
     public PatientNotification read() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         PatientNotification patientNotification = store.read(this, getKey());
         Patient patient = new Patient(patientNotification.getPatient().getKey());
         patientNotification.setPatient(patient.read());
@@ -139,7 +139,7 @@ public class PatientNotification extends EntityStoreType {
     }
     
     public void update()throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.update(this, getKey(), getPatient().getKey());
     }
     
@@ -185,7 +185,7 @@ public class PatientNotification extends EntityStoreType {
         }
         
         public Integer count()throws StoreException{
-            IStoreAction store = Store.FACTORY(this);
+            IStoreActions store = Store.FACTORY(this);
             return store.count(this);
         }
 
@@ -196,7 +196,7 @@ public class PatientNotification extends EntityStoreType {
          * @throws StoreException 
          */
         public void read()throws StoreException{
-            IStoreAction store = Store.FACTORY(this);
+            IStoreActions store = Store.FACTORY(this);
             //30/07/2022 09:26
             if (getPatient()!=null) set(store.read(this, getPatient().getKey()).get());
             else set(store.read(this, null).get());

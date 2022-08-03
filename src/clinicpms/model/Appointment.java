@@ -5,7 +5,6 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.Duration;
@@ -15,6 +14,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import clinicpms.store.IStoreActions;
 
 /**
  *
@@ -168,7 +168,7 @@ public class Appointment extends EntityStoreType{
     }
     
     public void create()throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.create(this);
     }
     
@@ -178,30 +178,30 @@ public class Appointment extends EntityStoreType{
      */
     public void insert() throws StoreException{
         Integer key = null;
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         key = store.insert(this, getPatient().getKey()); 
         setKey(key);
     }
     
     public void delete() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.delete(this, getKey());
     }
     
     public void drop() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.drop(this);        
     }
     
     public Appointment read() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         //Appointment appointment = store.read(this, getKey());
         //return appointment;
         return store.read(this,getKey());
     }
     
     public void update() throws StoreException{ 
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.update(this, getKey(), getPatient().getKey());
     }
     
@@ -258,7 +258,7 @@ public class Appointment extends EntityStoreType{
          */
         public Integer count()throws StoreException{
             Integer key = null;
-            IStoreAction store = Store.FACTORY(this); 
+            IStoreActions store = Store.FACTORY(this); 
             switch (getScope()){
                 case FOR_PATIENT:
                     key = getAppointment().getPatient().getKey();      
@@ -274,7 +274,7 @@ public class Appointment extends EntityStoreType{
          */
         public void read()throws StoreException{
             Integer key = null;
-            IStoreAction store = Store.FACTORY(Appointment.this); 
+            IStoreActions store = Store.FACTORY(Appointment.this); 
             switch (getScope()){
                 case FOR_PATIENT:
                     key = getAppointment().getPatient().getKey();      
@@ -297,7 +297,7 @@ public class Appointment extends EntityStoreType{
     }
     
     public List<String[]> importEntityFromCSV()throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         return store.importEntityFromCSV(this);
     }
     

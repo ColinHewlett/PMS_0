@@ -11,7 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.util.ImportUtil;
-import clinicpms.model.PMS_Store;
+import clinicpms.model.StoreManager;
 import clinicpms.model.PatientNotification;
 //import clinicpms.model.SurgeryDaysAssignmentTable;
 import clinicpms.model.TableRowValue;
@@ -115,78 +115,8 @@ public class AccessStore extends Store {
         return PMSstoreConnection;
         
     }
-    
-    /**
-     * If on entry pms connection is undefined the pms database path is used to
-     * make a new connection -- method assumes on entry the pms database path is
-     * defined
-     *
-     * @return Connection object
-     * @throws StoreException
-     */
-    private Connection getPMSStoreConnectionx() throws StoreException {
-        try {
-            if (this.pmsConnection == null) {
 
-                if (getPMSDatabasePath() == null) {
-                    //readPMSTargetStorePath();
-                }
-                //DEBUG end
-                String url = "jdbc:ucanaccess://" + getPMSDatabasePath() + ";showSchema=true";
-                pmsConnection = DriverManager.getConnection(url);
-            }
 
-        } catch (SQLException ex) {//message handling added
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::getPMSStoreConnection() method",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-
-        return pmsConnection;
-    }//store_package_updates_05_12_21_09_17_devDEBUG
-
-    /**
-     * If on entry migration connection is defined the connection is closed
-     *
-     * @throws StoreException
-     */
-    public void closeMigrationConnection() throws StoreException {
-        try {
-            /**
-             * DEBUG -- use of connection getter avoided to prevent stack
-             * overflow (recursive reentry issue)
-             */
-            if (migrationConnection != null) {
-                migrationConnection.commit();
-                migrationConnection.close();
-            }
-        } catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::closeMigrationConnection() method",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }//store_package_updates_05_12_21_09_17_devDEBUG
-
-    /**
-     * If on entry migration connection is defined the connection is closed
-     *
-     * @throws StoreException
-     */
-    private void closePMSConnection() throws StoreException {
-        try {
-            /**
-             * DEBUG -- use of connection getter avoided to prevent stack
-             * overflow (recursive reentry issue)
-             */
-            if (pmsConnection != null) {
-                pmsConnection.close();
-            }
-        } catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::closePMSConnection() method",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }//store_package_updates_05_12_21_09_17_devDEBUG
 
     /**
      * If on entry target connection is defined the connection is closed
@@ -698,9 +628,6 @@ public class AccessStore extends Store {
      * @throws StoreException
      */
     public AccessStore() throws StoreException {
-        closeMigrationConnection();
-        closePMSConnection();
-        closeTargetConnection();
     }
 
     /**
@@ -1220,94 +1147,8 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
+   
     
-
-    @Override
-    /**
-     * Explicit manual transaction processing enabled -- reads from either the
-     * pms or migration store the current path of the store
-     *
-     * @param db:SelectedTargetStore specifies which target store (pms or
-     * migration) is read
-     * @throws StoreException
-     */
-    public String read(SelectedTargetStore db) throws StoreException {
-        boolean result = false;
-        String location = null;
-        String sql = "Select location from Target WHERE db = ?;";
-        try {
-            if (getTargetConnection().getAutoCommit()) {
-                getTargetConnection().setAutoCommit(false);
-            }
-            try {
-                PreparedStatement preparedStatement = getTargetConnection().prepareStatement(sql);
-                preparedStatement.setString(1, db.toString());
-                ResultSet rs = preparedStatement.executeQuery();
-                if (rs.next()) {
-                    location = rs.getString("location");
-                }
-                result = true;
-                return location;
-            } catch (SQLException ex) {
-                throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                        + "StoreException message -> exception raised during DbLocationStore::read() query",
-                        StoreException.ExceptionType.SQL_EXCEPTION);
-            }
-        } catch (SQLException ex) {
-            message = "SQLException message -> " + ex.getMessage() + "\n";
-            throw new StoreException(
-                    message + "StoreException raised AccessStore.read(SelectedTargetStore))\n"
-                    + "Reason -> unexpected effect when auto commit state disabled",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        } finally {
-            try {
-                /**
-                 * DEBUG - references should be to getTargetConnection
-                 */
-                if (result) {
-                    getTargetConnection().commit();
-                } else {
-                    getTargetConnection().rollback();
-                }
-            } catch (SQLException ex) {
-                message = "SQLException message -> " + ex.getMessage() + "\n";
-                throw new StoreException(
-                        message + "StoreException raised in finally clause of method AccessStore.read(SelectedTargetStore))\n"
-                        + "Reason -> unexpected effect when terminating the current transaction",
-                        StoreException.ExceptionType.SQL_EXCEPTION);
-
-            }
-        }
-    }//store_package_updates_05_12_21_09_17_devDEBUG
-
-    public void update(PMS_Store pmsStore)throws StoreException{
-        EntityStoreType value = null;
-        String url = null;
-        switch (pmsStore.getScope()){
-            case CSV_APPOINTMENT_FILE:
-                runSQL(Store.EntitySQL.PMS_STORE,
-                        PMSSQL.UPDATE_CSV_APPOINTMENT_FILE_LOCATION,pmsStore);
-                break;
-            case CSV_PATIENT_FILE:
-                runSQL(Store.EntitySQL.PMS_STORE,
-                        PMSSQL.UPDATE_CSV_PATIENT_FILE_LOCATION,pmsStore);
-                break;
-            case PMS_STORE:
-                runSQL(Store.EntitySQL.PMS_STORE,
-                        PMSSQL.UPDATE_PMS_STORE_LOCATION,pmsStore);
-                try{
-                    if (!FilenameUtils.getName(pmsStore.get()).equals("")){
-                        url = "jdbc:ucanaccess://" + pmsStore.get() + ";showSchema=true";
-                        PMSstoreConnection = DriverManager.getConnection(url);
-                    }else getPMSStoreConnection().close();
-                }catch (SQLException ex){
-                    throw new StoreException(ex.getMessage() + "\n"
-                            + "StoreException raised in AccessStore::update(PMS_Store)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-                }
-                break;
-        } 
-    }
     
     @Override
     /**
@@ -1658,100 +1499,8 @@ public class AccessStore extends Store {
         } 
     }
    
-    @Override
-    public EntityStoreType read(PMS_Store pmsStore)throws StoreException{
-        EntityStoreType value = null;
-        switch (pmsStore.getScope()){
-            case CSV_APPOINTMENT_FILE:
-                value = runSQL(Store.EntitySQL.PMS_STORE, 
-                        PMSSQL.READ_CSV_APPOINTMENT_FILE_LOCATION,pmsStore);
-                break;
-            case CSV_PATIENT_FILE:
-                value = runSQL(Store.EntitySQL.PMS_STORE, 
-                        PMSSQL.READ_CSV_PATIENT_FILE_LOCATION,pmsStore);
-                break;
-            case PMS_STORE:
-                value = runSQL(Store.EntitySQL.PMS_STORE, 
-                        PMSSQL.READ_PMS_STORE_LOCATION,pmsStore);
-                break;       
-        }
-        return value;
-    }
     
-    /*
-    @Override
-    public String readAppointmentCSVPath() throws StoreException {
-        return read(SelectedTargetStore.CSV_APPOINTMENT_FILE);
-    }
-
-    @Override
-    public String readPatientCSVPath() throws StoreException {
-        return read(SelectedTargetStore.CSV_PATIENT_FILE);
-    }
-    */
-
-    @Override
-    public String getStoreType() {
-        return getStorageType().toString();
-    }
-
-    /*
-    public int countRowsIn(SurgeryDaysAssignmentx table) throws StoreException {
-        return 0;
-    }
-    */
-    public int countRowsIn(SurgeryDaysAssignment table) throws StoreException {
-        return 0;
-    }
     
-    /*
-    public int countRowsIn(SurgeryDaysAssignmentTable table) throws StoreException {
-        int count;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            count = ((AppointmentTableRowValue) runSQL(MigrationSQL.SURGERY_DAYS_TABLE_ROW_COUNT, null)).getValue();
-            return count;
-        } catch (SQLException e) {
-            String text = "SQLException message -> " + e.getMessage() + "\n";
-            throw new StoreException(text + "Exception encountered in AccessStore::countRowsIn(AppointmentTable)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-    /*
-    public int countRowsIn(AppointmentTable table) throws StoreException {
-        int count;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            count = ((AppointmentTableRowValue) runSQL(MigrationSQL.APPOINTMENT_TABLE_ROW_COUNT, null)).getValue();
-            return count;
-        } catch (SQLException e) {
-            String text = "SQLException message -> " + e.getMessage() + "\n";
-            throw new StoreException(text + "Exception encountered in AccessStore::countRowsIn(AppointmentTable)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-    public int countRowsIn(Patient table) throws StoreException {
-        return 0;
-    }
-    
-    /*
-    public int countRowsIn(PatientTable table) throws StoreException {
-        Integer count = null;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            count = ((PatientTableRowValue) runSQL(MigrationSQL.PATIENT_TABLE_ROW_COUNT, null)).getValue();
-            return count;
-        } catch (SQLException e) {
-            String text = "SQLException message -> " + e.getMessage() + "\n";
-            throw new StoreException(text + "Exception encountered in AccessStore::countRowsIn(PatientTable)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-    
-
     public void setPatientCount(int value) {
         patientCount = value;
     }
@@ -1763,166 +1512,8 @@ public class AccessStore extends Store {
     public void setNonExistingPatientsReferencedByAppointmentsCount(int value) {
         nonExistingPatientsReferencedByAppointmentsCount = value;
     }
-/*
-    public Appointments read(AppointmentTable table) throws StoreException {
-        boolean result = false;
-        IEntityStoreType entity = null;
-        Appointments appointments = null;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
-            entity = runSQL(MigrationSQL.APPOINTMENT_TABLE_READ, null);
-            if (entity.isAppointments()) {
-                appointments = (Appointments) entity;
-                result = true;
-                return appointments;
-            } else {
-                throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.APPOINT_TABLE_READ while executing Access::read(AppointmentTable)()",
-                        StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
-            }
-        } catch (SQLException ex) {
-            message = "SQLException message -> " + ex.getMessage() + "\n";
-            throw new StoreException(
-                    message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
-                    + "Reason -> unexpected effect when trying to change the auto commit state",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        } finally {
-            try {
-                setConnectionState(result);
-            } catch (SQLException ex) {
-                message = "SQLException message -> " + ex.getMessage() + "\n";
-                throw new StoreException(
-                        message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
-                        + "Reason -> unexpected effect when terminating the current transaction",
-                        StoreException.ExceptionType.SQL_EXCEPTION);
 
-            }
-        }
-    }
-*/
-/*
-    public Patients read(PatientTable table) throws StoreException {
-        boolean result = false;
-        IEntityStoreType entity = null;
-        Patients patients = null;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_OFF);
-            entity = runSQL(MigrationSQL.PATIENT_TABLE_READ, null);
-            if (entity.isPatients()) {
-                patients = (Patients) entity;
-                result = true;
-                return patients;
-            } else {
-                throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.SURGERY_DAYS_TABLE_READ while executing Access::read(PatientTable)()",
-                        StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
-            }
-        } catch (SQLException ex) {
-            message = "SQLException message -> " + ex.getMessage() + "\n";
-            throw new StoreException(
-                    message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
-                    + "Reason -> unexpected effect when trying to change the auto commit state",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        } finally {
-            try {
-                setConnectionState(result);
-            } catch (SQLException ex) {
-                message = "SQLException message -> " + ex.getMessage() + "\n";
-                throw new StoreException(
-                        message + "StoreException raised in finally clause of method AccessStore.read(PatientsTable))\n"
-                        + "Reason -> unexpected effect when terminating the current transaction",
-                        StoreException.ExceptionType.SQL_EXCEPTION);
-            }
-        }
-    }
-    */
-/*
-    public SurgeryDaysAssignmentx read(SurgeryDaysAssignmentTable table) throws StoreException {
-        boolean result = false;
-        IEntityStoreType entity = null;
-        SurgeryDaysAssignmentx surgeryDaysAssignment = null;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            entity = runSQL(MigrationSQL.SURGERY_DAYS_TABLE_READ, null);
-            if (entity.isSurgeryDaysAssignment()) {
-                surgeryDaysAssignment = (SurgeryDaysAssignmentx) entity;
-                result = true;
-                return surgeryDaysAssignment;
-            } else {
-                throw new StoreException("StoreException raised because unexpected data type returned from runSQL(MigrationSQL.SURGERY_DAYS_TABLE_READ while executing Access::read(SurgeryDaysAssignmentTable)()",
-                        StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
-            }
-        } catch (SQLException ex) {
-            message = "SQLException message -> " + ex.getMessage() + "\n";
-            throw new StoreException(
-                    message + "StoreException raised in method AccessStore.populate(PatientTable)\n"
-                    + "Reason -> unexpected effect when trying to change the auto commit state",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-        
-    }
-    */
-/*
-    @Override
-    public void exportToPMS(Appointments table) throws StoreException {
-        boolean result = false;
-        try {
-            getMigrationConnection().setAutoCommit(true);
-            //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS, table);
-            //setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            //getPMSStoreConnection().setAutoCommit(true);
-            //runSQL(PMSSQL.CREATE_PRIMARY_KEY,table);
-            result = true;
-        } catch (SQLException ex) {
-            String message = ex.getMessage() + "\n";
-            throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(Appointments)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-    /*
-    @Override
-    public void exportToPMS(Patients table) throws StoreException {
-        boolean result = false;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS, table);
-            result = true;
-        } catch (SQLException ex) {
-            String message = ex.getMessage() + "\n";
-            throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(Patients)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-    /*
-    @Override
-    public void exportToPMS(SurgeryDaysAssignmentx table) throws StoreException {
-        boolean result = false;
-        try {
-            setConnectionMode(ConnectionMode.AUTO_COMMIT_ON);
-            runSQL(MigrationSQL.EXPORT_MIGRATED_DATA_TO_PMS, table);
-            result = true;
-        } catch (SQLException ex) {
-            String message = ex.getMessage() + "\n";
-            throw new StoreException("StoreException raised on manipulation if autocommit state in AccessStore::exportToPMS(SurgeryDaysAssignment)",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
-        }
-    }
-*/
-
-    @Override
-    public File initialiseTargetStore(File file) throws StoreException {
-        try {
-            file = setExtensionFor(file, ".accdb");
-            DatabaseBuilder.create(Database.FileFormat.V2016, file);
-            return file;
-        } catch (IOException io) {
-            String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
-            throw new StoreException(message + "\nStoreException raised in "
-                    + "initialiseTargetStore(file = "
-                    + file.toString() + ")", StoreException.ExceptionType.IO_EXCEPTION);
-        }
-    }
+    
 
     /**
      * Ensures specified file has the specified extension -- extract the base
@@ -2495,34 +2086,34 @@ public class AccessStore extends Store {
         switch (q){
             case READ_CSV_APPOINTMENT_FILE_LOCATION:
                 sql = "Select location from Target WHERE db = 'CSV_APPOINTMENT_FILE';";
-                result = (EntityStoreType)doReadFileLocation(sql, (PMS_Store)entity);
+                result = (EntityStoreType)doReadFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
             case READ_CSV_PATIENT_FILE_LOCATION:
                 sql = "Select location from Target WHERE db = 'CSV_PATIENT_FILE';";
-                result = doReadFileLocation(sql, (PMS_Store)entity);
+                result = doReadFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
             case READ_PMS_STORE_LOCATION:
                 sql = "Select location from Target WHERE db = 'STORE_DB';";
-                result = doReadFileLocation(sql, (PMS_Store)entity);
+                result = doReadFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
             case UPDATE_CSV_APPOINTMENT_FILE_LOCATION:
                 sql = "UPDATE Target SET location = ? WHERE db = 'CSV_APPOINTMENT_FILE';";
-                doUpdateFileLocation(sql, (PMS_Store)entity);
+                doUpdateFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
             case UPDATE_CSV_PATIENT_FILE_LOCATION:
                 sql = "UPDATE Target SET location = ? WHERE db = 'CSV_PATIENT_FILE';";
-                doUpdateFileLocation(sql, (PMS_Store)entity);
+                doUpdateFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
             case UPDATE_PMS_STORE_LOCATION:
                 sql = "UPDATE Target SET location = ? WHERE db = 'STORE_DB';";
-                doUpdateFileLocation(sql, (PMS_Store)entity);
+                doUpdateFileLocation(sql, (StoreManager.PMS_Store)entity);
                 break;
         }
         return result;
     }
     
     
-    private void doUpdateFileLocation(String sql, PMS_Store pmsStore)throws StoreException{
+    private void doUpdateFileLocation(String sql, StoreManager.PMS_Store pmsStore)throws StoreException{
         try {
             getTargetConnection().setAutoCommit(true);
             PreparedStatement preparedStatement = getTargetConnection().prepareStatement(sql);
@@ -2535,7 +2126,7 @@ public class AccessStore extends Store {
         }
     }
     
-    private EntityStoreType doReadFileLocation(String sql, PMS_Store pmsStore)throws StoreException{
+    private EntityStoreType doReadFileLocation(String sql, StoreManager.PMS_Store pmsStore)throws StoreException{
         String location = null;
         try {
             getTargetConnection().setAutoCommit(false);
@@ -3163,50 +2754,92 @@ public class AccessStore extends Store {
                     StoreException.ExceptionType.SQL_EXCEPTION);
         }
     }
-    /*
-    private EntityStoreType doCountSurgeryDaysAssignment(String sql)throws StoreException{
-        Integer result = null;
-        try{
-            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())result = rs.getInt("row_count");
-            else result = 0;
-            return new TableRowValue(result);
-        }catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::doCountSurgeryDaysAssignment()",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
+    
+    /**
+     * TargetStoreActions
+     * -- creates a new database at the specified location
+     * -- reads the specified store location
+     * -- updates the specified store location
+     */
+    
+    /**
+     * Creates a database file as per the received specification
+     * @param file; File (database) created according to the received location information
+     * @return
+     * @throws StoreException 
+     */
+    @Override
+    public File initialiseTargetStore(File file) throws StoreException {
+        try {
+            file = setExtensionFor(file, ".accdb");
+            DatabaseBuilder.create(Database.FileFormat.V2016, file);
+            return file;
+        } catch (IOException io) {
+            String message = "IOException -> raised on attempt to create a new Access database in DesktopControllerActionEvent.MIGRATION_DATABASE_CREATION_REQUEST";
+            throw new StoreException(message + "\nStoreException raised in "
+                    + "initialiseTargetStore(file = "
+                    + file.toString() + ")", StoreException.ExceptionType.IO_EXCEPTION);
         }
     }
     
-    private EntityStoreType doCountPatients(String sql)throws StoreException{
-        Integer result = null;
-        try{
-            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())result = rs.getInt("row_count");
-            else result = 0;
-            return new TableRowValue(result);
-        }catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::doCountPatients()",
-                    StoreException.ExceptionType.SQL_EXCEPTION);
+    /**
+     * Reads the PMS store from the specified path
+     * @param pmsStore; PMS_Storex which specified the path of the store to be read
+     * @return
+     * @throws StoreException 
+     */
+    @Override
+    public EntityStoreType read(StoreManager.PMS_Store pmsStore)throws StoreException{
+        EntityStoreType value = null;
+        switch (pmsStore.getScope()){
+            case CSV_APPOINTMENT_FILE:
+                value = runSQL(Store.EntitySQL.PMS_STORE, 
+                        PMSSQL.READ_CSV_APPOINTMENT_FILE_LOCATION,pmsStore);
+                break;
+            case CSV_PATIENT_FILE:
+                value = runSQL(Store.EntitySQL.PMS_STORE, 
+                        PMSSQL.READ_CSV_PATIENT_FILE_LOCATION,pmsStore);
+                break;
+            case PMS_STORE:
+                value = runSQL(Store.EntitySQL.PMS_STORE, 
+                        PMSSQL.READ_PMS_STORE_LOCATION,pmsStore);
+                break;       
         }
+        return value;
     }
-    
-    private EntityStoreType doCountPatientNotifications(String sql) throws StoreException{
-        Integer result = null;
-        try{
-            PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())result = rs.getInt("row_count");
-            else result = 0;
-            return new TableRowValue(result);
-        }catch (SQLException ex) {
-            throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
-                    + "StoreException message -> exception raised in AccessStore::doCountPatients()",
+
+    /**
+     * Updates the store path of the specified store
+     * @param pmsStore; PMS_Storex object specifying the updated store path 
+     * @throws StoreException 
+     */
+    @Override
+    public void update(StoreManager.PMS_Store pmsStore)throws StoreException{
+        EntityStoreType value = null;
+        String url = null;
+        switch (pmsStore.getScope()){
+            case CSV_APPOINTMENT_FILE:
+                runSQL(Store.EntitySQL.PMS_STORE,
+                        PMSSQL.UPDATE_CSV_APPOINTMENT_FILE_LOCATION,pmsStore);
+                break;
+            case CSV_PATIENT_FILE:
+                runSQL(Store.EntitySQL.PMS_STORE,
+                        PMSSQL.UPDATE_CSV_PATIENT_FILE_LOCATION,pmsStore);
+                break;
+            case PMS_STORE:
+                runSQL(Store.EntitySQL.PMS_STORE,
+                        PMSSQL.UPDATE_PMS_STORE_LOCATION,pmsStore);
+                try{
+                    if (!FilenameUtils.getName(pmsStore.get()).equals("")){
+                        url = "jdbc:ucanaccess://" + pmsStore.get() + ";showSchema=true";
+                        PMSstoreConnection = DriverManager.getConnection(url);
+                    }else getPMSStoreConnection().close();
+                }catch (SQLException ex){
+                    throw new StoreException(ex.getMessage() + "\n"
+                            + "StoreException raised in AccessStore::update(PMS_Store)",
                     StoreException.ExceptionType.SQL_EXCEPTION);
-        }
+                }
+                break;
+        } 
     }
-*/
 }

@@ -5,18 +5,18 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.DayOfWeek;
 import java.util.HashMap;
+import clinicpms.store.IStoreActions;
 
 /**
  *
  * @author colin
  */
 public class SurgeryDaysAssignment extends EntityStoreType {
-    private IStoreAction store = null;
+    private IStoreActions store = null;
     private String day = null;
     private boolean isSurgery = false;
     private HashMap<DayOfWeek,Boolean> assignment = new HashMap<>();
@@ -42,17 +42,17 @@ public class SurgeryDaysAssignment extends EntityStoreType {
         //not currently implemented
     }
     public Integer count() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         return store.count(this);
     }
     
     public void create() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.create(this);        
     }
     
     public void drop() throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.drop(this);        
     }
     
@@ -68,7 +68,7 @@ public class SurgeryDaysAssignment extends EntityStoreType {
         get().put(DayOfWeek.FRIDAY, Boolean.TRUE);
         get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
         get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         store.insert(this);
     }
     
@@ -84,7 +84,7 @@ public class SurgeryDaysAssignment extends EntityStoreType {
         get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
         get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
         
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         store.populate(this);
     }
     */
@@ -95,12 +95,12 @@ public class SurgeryDaysAssignment extends EntityStoreType {
 */
     
     public SurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         return store.read(this);
     }
       
     public void update() throws StoreException{
-        IStoreAction store = Store.FACTORY((EntityStoreType)this); 
+        IStoreActions store = Store.FACTORY((EntityStoreType)this); 
         store.update(this);
     }
     

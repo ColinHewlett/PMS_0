@@ -5,7 +5,6 @@
  */
 package clinicpms.model;
 
-import clinicpms.store.IStoreAction;
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.LocalDate;
@@ -13,6 +12,7 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import clinicpms.store.IStoreActions;
 
 /**
  *
@@ -180,13 +180,13 @@ public class Patient extends EntityStoreType {
     } 
     
     public void create()throws StoreException{
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         store.create(this);
     }
 
     public void insert() throws StoreException{
         Integer key = null;
-        IStoreAction store = Store.FACTORY((EntityStoreType) this);
+        IStoreActions store = Store.FACTORY((EntityStoreType) this);
         if (getIsKeyDefined()){
             key = store.insert(this,getKey());
         }
@@ -198,12 +198,12 @@ public class Patient extends EntityStoreType {
     }
 
     public void delete() throws StoreException{
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         store.delete(this);
     }
 
     public void drop() throws StoreException{
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         store.drop(this);        
     }
 
@@ -217,7 +217,7 @@ public class Patient extends EntityStoreType {
     public Patient read() throws StoreException{
         Patient patient = null;
         Patient guardian = null;
-        IStoreAction store = Store.FACTORY((EntityStoreType) this);
+        IStoreActions store = Store.FACTORY((EntityStoreType) this);
         patient = store.read(this, getKey()); 
         if (patient.getIsGuardianAPatient()){
             guardian = patient.getGuardian();
@@ -229,7 +229,7 @@ public class Patient extends EntityStoreType {
     }
 
     public void update() throws StoreException{ 
-        IStoreAction store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((EntityStoreType)this);
         if (getIsGuardianAPatient()) store.update(this, this.getKey(),this.getGuardian().getKey());
         else store.update(this, this.getKey(),null);
     }
@@ -725,12 +725,12 @@ public class Patient extends EntityStoreType {
         }
 
         public Integer count()throws StoreException{
-            IStoreAction store = Store.FACTORY(this);
+            IStoreActions store = Store.FACTORY(this);
             return store.count(this);
         }
         
         public void read()throws StoreException{
-            IStoreAction store = Store.FACTORY(this);
+            IStoreActions store = Store.FACTORY(this);
             /**
              * is the next line of code redundant?
              * -- if the PatientNotification.Collection object is the same as "this" one
@@ -740,7 +740,7 @@ public class Patient extends EntityStoreType {
     }
     
     public List<String[]> importEntityFromCSV()throws StoreException{
-        IStoreAction store = Store.FACTORY(this);
+        IStoreActions store = Store.FACTORY(this);
         //setImportedDBFRecords(store.importFromCSV1(this));
         return store.importEntityFromCSV(this);
     }

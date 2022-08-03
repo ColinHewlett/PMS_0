@@ -13,8 +13,8 @@ import clinicpms.model.EntityStoreType;
  *
  * @author colin
  */
-public abstract class Store implements IStoreAction, 
-                                       ITargetsStoreAction {
+public abstract class Store implements IStoreActions, 
+                                       IStoreManagementActions {
     
     protected enum ConnectionMode{ AUTO_COMMIT_OFF, AUTO_COMMIT_ON}
     
@@ -79,10 +79,6 @@ public abstract class Store implements IStoreAction,
                             READ_SURGERY_DAYS_ASSIGNMENT,
                             INSERT_SURGERY_DAYS_ASSIGNMENT,
                             UPDATE_SURGERY_DAYS_ASSIGNMENT,
-                            }
-    protected enum TargetSQL{
-                            
-        
                             }
 
     protected enum PMSSQL   {
@@ -149,52 +145,8 @@ public abstract class Store implements IStoreAction,
                                 UPDATE_PMS_STORE_LOCATION
     
                                 }
-    
-                                
-    
-    protected enum MigrationSQL {
-                            APPOINTMENT_TABLE_CREATE,
-                            APPOINTMENT_TABLE_ADD_FOREIGN_KEY,
-                            APPOINTMENT_TABLE_DELETE_APPOINTMENT_WITH_PATIENT_KEY,
-                            APPOINTMENT_TABLE_DROP,
-                            APPOINTMENT_TABLE_INSERT_ROW,
-                            APPOINTMENT_TABLE_HIGHEST_KEY,
-                            APPOINTMENT_TABLE_READ,
-                            APPOINTMENT_TABLE_READ_WITH_KEY,
-                            APPOINTMENT_TABLE_ROW_COUNT,
-                            APPOINTMENT_TABLE_START_TIME_NORMALISED,
-                            PATIENT_TABLE_CREATE,
-                            PATIENT_TABLE_DROP,
-                            PATIENT_TABLE_INSERT_ROW,
-                            PATIENT_TABLE_READ,
-                            PATIENT_TABLE_READ_PATIENT,
-                            PATIENT_TABLE_ROW_COUNT,
-                            PATIENT_TABLE_UPDATE,
-                            SURGERY_DAYS_TABLE_CREATE,
-                            SURGERY_DAYS_TABLE_DEFAULT_INITIALISATION,
-                            SURGERY_DAYS_TABLE_DROP,
-                            SURGERY_DAYS_TABLE_READ,
-                            SURGERY_DAYS_TABLE_ROW_COUNT,
-                            EXPORT_MIGRATED_DATA_TO_PMS
-                            }
-
-/*
-    protected enum PatientSQL   {INSERT_PATIENT,
-                                COUNT_PATIENTS,
-                                READ_PATIENTS,
-                                READ_HIGHEST_KEY,
-                                READ_PATIENT,
-                                UPDATE_PATIENT}
-*/    
-    
-    protected enum CSVMigrationMethod  {   
-                                        CSV_APPOINTMENT_FILE_CONVERTER,
-                                        CSV_PATIENT_FILE_CONVERTER
-                                    }
 
     protected enum SelectedTargetStore{
-                                MIGRATION_DB,
-                                PMS_DB,
                                 STORE_DB,
                                 CSV_APPOINTMENT_FILE,
                                 CSV_PATIENT_FILE}
@@ -208,95 +160,14 @@ public abstract class Store implements IStoreAction,
     protected String PMSStorePath = null;
     protected  String migrationDatabasePath = null;
     protected  String pmsDatabasePath = null;
-    //store_package_updates_05_12_21_09_17_devDEBUG
     protected  String appointmentCSVPath = null;
     protected  String patientCSVPath = null;
-    private  SelectedTargetStore selectedTargetStore = null;
     protected static Store INSTANCE = null;
-    private static boolean IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-    private static boolean IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-    private static boolean IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION = false;
     protected static boolean IS_APPOINTMENTS_STORE_ACTION = false;
     protected static boolean IS_MIGRATION_STORE_ACTION = false;
     protected static boolean IS_PATIENTS_STORE_ACTION = false;
     protected static boolean IS_PMS_STORE_ACTION = false;
     protected static boolean IS_TARGETS_STORE_ACTION = false;
-   
-    private static IStoreAction FACTORY_FOR_STORE_ACTION()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        //IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = true;
-        IStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                //result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                //result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_PMS_STORE_ACTION_STATE(true);
-        IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    
-    /**
-     * Selects the STORAGE class to use (Access, PostgresSQL etc)
- -- ensures STORAGE type and database locator path have been initialised
- -- the concrete Store class getInstance() method ensures a single INSTANCE only of the class exists
- -- isStoreCurrentlyUnderConstruction flag prevents re-entry of factory during a factory cycle
-     * @return IPMSStoreAction object
-     * @throws StoreException 
-     */
-    private static ITargetsStoreAction FACTORY_FOR_TARGETS_STORE()throws StoreException{
-        INITIALISE_DATABASE_LOCATOR_PATH();
-        INITIALISE_STORAGE_TYPE();
-        IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION = true;
-        ITargetsStoreAction result = null;
-        switch (STORAGE){
-            case ACCESS: 
-                result = AccessStore.getInstance();
-                break;
-            case POSTGRES:
-                //result = PostgreSQLStore.getInstance();
-                break;
-            case SQL_EXPRESS:
-                //result = SQLExpressStore.getInstance();
-                break;
-                
-        }
-        SET_TARGETS_STORE_ACTION_STATE(true);
-        IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION = false;
-        return result;
-    }
-    
-    private static void SET_MIGRATION_STORE_ACTION_STATE(boolean value){
-        IS_MIGRATION_STORE_ACTION = value;
-        if (value){
-            IS_PMS_STORE_ACTION = false;
-            IS_TARGETS_STORE_ACTION = false;
-        }
-    }
-
-    private static void SET_PMS_STORE_ACTION_STATE(boolean value){
-        IS_PMS_STORE_ACTION = value;
-        if (value){
-            IS_TARGETS_STORE_ACTION = false;
-            IS_MIGRATION_STORE_ACTION = false;
-        }
-    }
-    
-    private static void SET_TARGETS_STORE_ACTION_STATE(boolean value){
-        IS_TARGETS_STORE_ACTION = value;
-        if (value){
-            IS_PMS_STORE_ACTION = false;
-            IS_MIGRATION_STORE_ACTION = false;
-        }
-    }
     
     private static void INITIALISE_DATABASE_LOCATOR_PATH(){
         if (databaseLocatorPath==null) databaseLocatorPath = System.getenv("PMS_TARGETS_STORE_PATH");
@@ -322,8 +193,8 @@ public abstract class Store implements IStoreAction,
      * initialised on first entry to FACTORY method
      * @return Storage enumeration literal signifying which store type is in use 
      */
-    protected  Storage getStorageType(){
-        return STORAGE;
+    public static String GET_STORAGE_TYPE(){
+        return STORAGE.toString();
     } 
     
     /**
@@ -333,70 +204,33 @@ public abstract class Store implements IStoreAction,
     protected   String getDatabaseLocatorPath(){
         return databaseLocatorPath;
     }
-
-    protected String getMigrationDatabasePath(){
-        return migrationDatabasePath;
-    }
     
-    protected String getPMSStorePath(){
-        return PMSStorePath;
-    }
-    
-    /**
-     * update logged 22/11/2021 08:52
-     * The target Migration database path is initialised. If the FACTORY() method is not in mid cycle
-     * -- the current instance of the concrete Store class, if it exists, is nullified
-     * -- this enables the latest migration database path to take effect in the current instance of the app
-     * @param path:String 
-     */
-    protected void setMigrationDatabasePath(String path) throws StoreException{
-        migrationDatabasePath = path;
-        /**
-         * DEBUG -- only if a FACTOTY() method is not currently being executed
-         */
-        if (!IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
-                !IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
-                !IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION){
-            if (INSTANCE != null) INSTANCE = null;
-            FACTORY_FOR_TARGETS_STORE();
-        }
-    }//store_package_updates_05_12_21_09_17_devDEBUG
-    
-    protected void setPMSStorePath(String path) throws StoreException{
-        PMSStorePath = path;
-        FACTORY_FOR_TARGETS_STORE();
-    }
-    protected String getPMSDatabasePath(){
-        return pmsDatabasePath;
-    }
-    
-    /**
-     * update logged 22/11/2021 08:52
-     * The target PMS database path is initialised. If the FACTORY() method is not in mid cycle
-     * -- the current instance of the concrete Store class, if it exists, is nullified
-     * -- this enables the latest PMS database path to take effect in the current instance of the app
-     * @param path:String 
-     */
-    protected void setPMSDatabasePath(String path) throws StoreException{
-        pmsDatabasePath = path;
-        /**
-         * DEBUG -- only if a FACTOTY() method is not currently being executed
-         */
-        if (!IS_PMS_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
-                !IS_MIGRATION_STORE_CURRENTLY_UNDER_CONSTRUCTION&&
-                !IS_TARGETS_STORE_GURRENTLY_UNDER_CONSTRUCTION){
-            if (INSTANCE != null) INSTANCE = null;
-            FACTORY_FOR_TARGETS_STORE();
-        }
-    }//store_package_updates_05_12_21_09_17_devDEBUG
-    
-    public static IStoreAction FACTORY (EntityStoreType entity) throws StoreException{
-        return FACTORY_FOR_STORE_ACTION();
+    public static IStoreActions FACTORY (EntityStoreType entity) throws StoreException{
+        return (IStoreActions)FACTORY();
     }
 
     
-    public static ITargetsStoreAction FACTORY(IStoreManager manager)throws StoreException{
-        return FACTORY_FOR_TARGETS_STORE();
+    public static IStoreManagementActions FACTORY(IStoreManager manager)throws StoreException{
+        return (IStoreManagementActions)FACTORY();
+    }
+    
+    private static Object FACTORY()throws StoreException{
+        INITIALISE_DATABASE_LOCATOR_PATH();
+        INITIALISE_STORAGE_TYPE();
+        Object result = null;
+        switch (STORAGE){
+            case ACCESS: 
+                result = AccessStore.getInstance();
+                break;
+            case POSTGRES:
+                //result = PostgreSQLStore.getInstance();
+                break;
+            case SQL_EXPRESS:
+                //result = SQLExpressStore.getInstance();
+                break;
+                
+        }
+        return result;
     }
 
 }
