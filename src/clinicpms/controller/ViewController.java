@@ -27,8 +27,6 @@ import javax.swing.table.JTableHeader;
  */
 public abstract class ViewController implements ActionListener{
 
-    public static enum Status{BOOKED,UNBOOKED};
-
     public static enum PatientAppointmentContactListViewControllerActionEvent {
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_CLOSED,
                                             PATIENT_APPOINTMENT_CONTACT_VIEW_REQUEST

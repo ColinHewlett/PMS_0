@@ -22,7 +22,8 @@ public class AppointmentDelegate extends Appointment{
         super.setNotes(appointment.getNotes());
         super.setPatient(appointment.getPatient());
         super.setStart(appointment.getStart());
-        super.setStatus(appointment.getStatus());
+        //06/08/2022 08:49
+        //super.setStatus(appointment.getStatus());
     }
     
     protected Integer getAppointmentKey(){
@@ -31,5 +32,7 @@ public class AppointmentDelegate extends Appointment{
     protected void setAppointmentKey(Integer key){
         super.setKey(key);
     }
+    
+    
     
 }

@@ -225,7 +225,7 @@ public class PatientNotificationViewController extends ViewController{
             PatientNotification patientNotification = new PatientNotification();
             patientNotification.setPatient(notification.getPatient());
             PatientNotification.Collection patientNotificationCollection = patientNotification.getCollection();
-            patientNotificationCollection.setScope(PatientNotification.Scope.ALL_FOR_PATIENT);
+            patientNotificationCollection.setScope(PatientNotification.Scope.FOR_PATIENT);
             patientNotificationCollection.read();
             getNewEntityDescriptor().setPatientNotifications(patientNotificationCollection.get());
             View.setViewer(View.Viewer.PATIENT_NOTIFICATION_EDITOR_VIEW);

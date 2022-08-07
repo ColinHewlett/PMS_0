@@ -21,16 +21,13 @@ import clinicpms.store.IStoreActions;
  * @author colin
  */
 public class Appointment extends EntityStoreType{
-    public static enum Status{BOOKED,UNBOOKED};
+    //public static enum Status{BOOKED,UNBOOKED};
     private Boolean isKeyDefined = false;
     private Integer key = null;
     private LocalDateTime start = null;
     private Duration duration  = null;
     private String notes = null;
     private Patient patient;
-    private Category category = null;
-    private Status status = Appointment.Status.BOOKED;
-    
     
     public enum Scope {ALL, FOR_PATIENT, FOR_DAY, FROM_DAY};
     
@@ -51,7 +48,6 @@ public class Appointment extends EntityStoreType{
                                 A_140,A_141,A_142,A_143,A_144}
     private Appointment.Collection collection = null;
     private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    public static enum Category{DENTAL, HYGIENE, ALL}
     
     public Appointment(){
         super.setIsAppointment(true);
@@ -146,25 +142,12 @@ public class Appointment extends EntityStoreType{
             else setIsKeyDefined(false);
         else setIsKeyDefined(false);  
     }
-    public Appointment.Status getStatus(){
-        return this.status;
-    }
-    public void setStatus(Appointment.Status value){
-        this.status = value;
-    }       
 
     public Patient getPatient() {
         return patient;
     }
     public void setPatient(Patient patient) {
         this.patient = patient;
-    }
-    
-    public Appointment.Category getCategory() {
-        return category;
-    }
-    public void setCategory(Appointment.Category category) {
-        this.category = category;
     }
     
     public void create()throws StoreException{

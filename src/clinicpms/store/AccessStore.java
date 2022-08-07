@@ -279,7 +279,7 @@ public class AccessStore extends Store {
                     delegate.setNotes(notes);
                     pDelegate.setPatientKey(patientKey);
                     delegate.setPatient(pDelegate);
-                    delegate.setStatus(Appointment.Status.BOOKED);
+                    //delegate.setStatus(Appointment.Status.BOOKED);
                 }
             }
             return delegate;
@@ -902,7 +902,7 @@ public class AccessStore extends Store {
                                 PMSSQL.READ_PATIENT_NOTIFICATIONS, 
                                 patientNotificationCollection);
                     break;
-                case ALL_FOR_PATIENT:
+                case FOR_PATIENT:
                     delegate = new PatientDelegate(patientNotificationCollection.getPatientNotification().getPatient());
                     delegate.setPatientKey(key);
                     patientNotificationCollection.getPatientNotification().setPatient(delegate);
@@ -1726,11 +1726,7 @@ public class AccessStore extends Store {
         }
         return result;
     }
-    
-    private EntityStoreType doPatientsPMSSQL(PMSSQL q, EntityStoreType entity){
-        return null;
-    }
-    
+
     private EntityStoreType doPatientNotificationPMSSQL(PMSSQL q, EntityStoreType entity) throws StoreException{
         EntityStoreType result = null;
         String sql = null;

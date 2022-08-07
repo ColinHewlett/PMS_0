@@ -1043,7 +1043,9 @@ public class AppointmentScheduleViewController extends ViewController{
             //currentDate = null;
             while(it2.hasNext()){
                 Appointment slot = it2.next();
-                if (slot.getStatus().equals(Appointment.Status.UNBOOKED)){
+                //06/08/2022 08:49
+                if (!getIsBookedStatus(slot)){
+                //if (slot.getStatus().equals(Appointment.Status.UNBOOKED)){
                     long slotDuration = slot.getDuration().toMinutes();
                     if (slotDuration >= duration.toMinutes()){
                         result.add(slot);
@@ -1080,7 +1082,7 @@ public class AppointmentScheduleViewController extends ViewController{
                     multiDayIntervalWithNoAppointments = new Appointment();
                     multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                     multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                    multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                    //multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                 }
                 else{
                     //LocalDate appointmentDate = appointment.getStart().toLocalDate();
@@ -1098,7 +1100,7 @@ public class AppointmentScheduleViewController extends ViewController{
                             multiDayIntervalWithNoAppointments = new Appointment();
                             multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                             multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                            //multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                         }
                     }
                 }
@@ -1124,7 +1126,7 @@ public class AppointmentScheduleViewController extends ViewController{
                         multiDayIntervalWithNoAppointments = new Appointment();
                         multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                         multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                        multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                        //multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                     }
                     else if (areTheseSlotsOnConsecutivePracticeDays(
                             multiDayIntervalWithNoAppointments,appointment)){
@@ -1141,7 +1143,8 @@ public class AppointmentScheduleViewController extends ViewController{
                             multiDayIntervalWithNoAppointments = new Appointment();
                             multiDayIntervalWithNoAppointments.setStart(appointment.getStart());
                             multiDayIntervalWithNoAppointments.setDuration(Duration.ofHours(0));
-                            multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
+                            //06/08/2022 08:49
+                            //multiDayIntervalWithNoAppointments.setStatus(Appointment.Status.UNBOOKED);
                         }
                     }
                 }
@@ -1259,7 +1262,9 @@ public class AppointmentScheduleViewController extends ViewController{
         }
         Appointment lastAppointment = 
                 apptsForDayIncludingEmptySlots.get(apptsForDayIncludingEmptySlots.size()-1);
-        if (lastAppointment.getStatus().equals(Appointment.Status.BOOKED)){
+        //06/08/2022 08:49
+        if (getIsBookedStatus(lastAppointment)){
+        //if (lastAppointment.getStatus().equals(Appointment.Status.BOOKED)){
             //check if bookable time after last appointment
             Duration durationToDayEnd = 
                     Duration.between(nextEmptySlotStartTime.toLocalTime(), ViewController.LAST_APPOINTMENT_SLOT).abs();
@@ -1276,7 +1281,8 @@ public class AppointmentScheduleViewController extends ViewController{
         appointment.setStart(start);
         appointment.setDuration(Duration.between(start.toLocalTime(), 
                                                 ViewController.LAST_APPOINTMENT_SLOT));
-        appointment.setStatus(Appointment.Status.UNBOOKED);
+         //06/08/2022 08:49                                       
+        //appointment.setStatus(Appointment.Status.UNBOOKED);
         return appointment;
     }
 
@@ -1285,7 +1291,7 @@ public class AppointmentScheduleViewController extends ViewController{
         appointment.setPatient(null);
         appointment.setStart(start);
         appointment.setDuration(duration);
-        appointment.setStatus(Appointment.Status.UNBOOKED);
+        //appointment.setStatus(Appointment.Status.UNBOOKED);
         //appointment.setEnd(appointment.getStart().plusMinutes(duration.toMinutes()));
         return appointment;
     }
@@ -1343,4 +1349,10 @@ public class AppointmentScheduleViewController extends ViewController{
         appts.get().addAll(appointmentSlotsForDay);
         getNewEntityDescriptor().setAppointments(appts.get());
     }
+    
+    private Boolean getIsBookedStatus(Appointment appointment){
+        if (appointment.getPatient()==null) return false;
+        if(!appointment.getPatient().getIsKeyDefined())return false;
+        return true;
+    } 
 }

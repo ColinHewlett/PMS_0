@@ -83,55 +83,55 @@ public class EntityStoreType{
         return isSurgeryDaysAssignment;
     }  
     
-    public void setIsAppointment(Boolean value){
+    protected void setIsAppointment(Boolean value){
         if (value) resetAll();
         isAppointment= value;
     }
-    public void setIsAppointmentDate(Boolean value){
+    protected void setIsAppointmentDate(Boolean value){
         if (value) resetAll();
         isAppointmentDate = value;
     }
-    public void setIsAppointments(Boolean value){
+    protected void setIsAppointments(Boolean value){
         if (value) resetAll();
         isAppointments = value;
     }
-    public void setIsAppointmentTable(Boolean value){
+    protected void setIsAppointmentTable(Boolean value){
         if (value) resetAll();
         isAppointmentTable = value;
     }
-    public void setIsAppointmentTableRowValue(Boolean value){
+    protected void setIsAppointmentTableRowValue(Boolean value){
         if (value) resetAll();
         isAppointmentTableRowValue = value;
     }
-    public void setIsPatient(Boolean value){
+    protected void setIsPatient(Boolean value){
         if (value) resetAll();
         isPatient = value;
     }
-    public void setIsPatientNotification(Boolean value){
+    protected void setIsPatientNotification(Boolean value){
         if (value) resetAll();
         isPatientNotification = value;
     }
-    public void setIsPatientNotifications(Boolean value){
+    protected void setIsPatientNotifications(Boolean value){
         if (value) resetAll();
         isPatientNotifications = value;
     }
-    public void setIsPatients(Boolean value){
+    protected void setIsPatients(Boolean value){
         if (value) resetAll();
         isPatients = value;
     }
-    public void setIsPatientTable(Boolean value){
+    protected void setIsPatientTable(Boolean value){
         if (value) resetAll();
         isPatientTable = value;
     }
-    public final void setIsTableRowValue(Boolean value){
+    protected final void setIsTableRowValue(Boolean value){
         if (value) resetAll();
         isTableRowValue = value;
     }
-    public final void setIsPMSStore(Boolean value){
+    protected final void setIsPMSStore(Boolean value){
         if (value) resetAll();
         isPMSStore = value;
     }
-    public void setIsSurgeryDaysAssignment(Boolean value){
+    protected void setIsSurgeryDaysAssignment(Boolean value){
         if (value) resetAll();
         isSurgeryDaysAssignment = value;
     } 

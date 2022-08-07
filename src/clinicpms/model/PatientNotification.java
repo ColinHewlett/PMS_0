@@ -26,7 +26,7 @@ public class PatientNotification extends EntityStoreType {
     private Boolean isDeleted = false;
     private Scope scope = null;
 
-    public enum Scope{ALL,UNACTIONED,ALL_FOR_PATIENT, UNACTIONED_FOR_PATIENT};
+    public enum Scope{ALL,UNACTIONED,FOR_PATIENT};
     
     public PatientNotification getPatientNotification(){
         return this;
@@ -203,7 +203,7 @@ public class PatientNotification extends EntityStoreType {
             //set(store.read(this, getPatient().getKey()).get());
             Iterator it = get().iterator();
             switch(getScope()){
-                case ALL_FOR_PATIENT:
+                case FOR_PATIENT:
                     while(it.hasNext()) {
                         PatientNotification patientNotification = (PatientNotification)it.next();
                         patientNotification.setPatient(PatientNotification.this.getPatient());     
