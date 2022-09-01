@@ -6,6 +6,7 @@
 package clinicpms.controller;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
+import clinicpms.model.Entity.Scope;
 import org.apache.commons.io.FilenameUtils;
 
 import clinicpms.model.*;
@@ -296,7 +297,7 @@ public class DesktopViewController extends ViewController{
                 //if (k1==k2){
                 //ThePatient patient = new Patient(k2);
                 //ref 08/07/2022 09:05 if (pvc.getEntityDescriptorFromView().getRequest().getThePatient().equals(patient)){
-                if (pvc.getEntityDescriptorFromView().getThePatient().equals(patient)){    
+                if (pvc.getEntityDescriptorFromView().getPatient().equals(patient)){    
                     /**
                      * Found patient view controller for patient whose appointment history has been changed
                      * -- patient view controller's EntityDescriptor.Request.Patient points to appointee
@@ -1570,7 +1571,7 @@ public class DesktopViewController extends ViewController{
      * @param entity:IEntityStoreType, which can be interrogated to determine if a collection of appointment or patient objects  have been specified
      * @param desktopViewController references the DesktopViewController object which is referenced in the Action Event sent in the done90 method  
      */
-    private void startBackgroundThread(EntityStoreType entity,DesktopViewController desktopViewController){
+    private void startBackgroundThread(Entity entity,DesktopViewController desktopViewController){
         SwingWorker sw1 = new SwingWorker(){
             
             @Override
@@ -1709,10 +1710,13 @@ public class DesktopViewController extends ViewController{
     
     private Integer doAppointmentTableCountRequest(){
         Integer result = null;
-        Appointment.Collection collection = new Appointment().getCollection();
-        collection.setScope(Appointment.Scope.ALL);
+        //07/08/2022
+        Appointment appointment = new Appointment();
+        appointment.setScope(Scope.ALL);
+        //Appointment.Collection collection = new Appointment().getCollection();
+        //collection.setScope(Scope.ALL);
         try{
-            result = collection.count();
+            result = appointment.count();
         }catch (StoreException ex){
             displayErrorMessage(
                     ex.getMessage() + "\n Exception handled in doAppointmentTableCountRequest()",
@@ -1723,9 +1727,12 @@ public class DesktopViewController extends ViewController{
     
     private Integer doPatientTableCountRequest(){
         Integer result = null;
-        Patient.Collection collection = new Patient().getCollection();
+        //07/08/2022
+        Patient patient = new Patient();
+        patient.setScope(Scope.ALL);
+        //Patient.Collection collection = new Patient().getCollection();
         try{
-            result = collection.count();
+            result = patient.count();
         }catch (StoreException ex){
             displayErrorMessage(
                     ex.getMessage() + "\n Exception handled in doAppointmentTableCountRequest()",
@@ -1736,10 +1743,14 @@ public class DesktopViewController extends ViewController{
     
     private Integer doPatientNotificationTableCountRequest(){
         Integer result = null;
-        PatientNotification.Collection collection = new PatientNotification().getCollection();
+        //07/08/2022
+        //PatientNotification.Collection collection = new PatientNotification().getCollection();
+        PatientNotification patientNotification = new PatientNotification();
         try{
-            collection.setScope(PatientNotification.Scope.ALL);
-            result = collection.count();
+            patientNotification.setScope(Scope.ALL);
+            result = patientNotification.count();
+            //collection.setScope(Scope.ALL);
+            //result = collection.count();
         }catch (StoreException ex){
             displayErrorMessage(
                     ex.getMessage() + "\n Exception handled in doPatientNotificationTableCountRequest()",

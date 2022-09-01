@@ -6,6 +6,7 @@
 package clinicpms.controller;
 
 import static clinicpms.controller.ViewController.displayErrorMessage;
+import clinicpms.model.Entity.Scope;
 import clinicpms.model.Appointment;
 import clinicpms.model.Patient;
 import clinicpms.model.SurgeryDaysAssignment;
@@ -37,10 +38,16 @@ import javax.swing.JOptionPane;
  */
 public class AppointmentScheduleViewController extends ViewController{
 
-    private enum RequestedAppointmentState{ REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT,
+    private enum RequestedAppointmentState{ 
+                                            REQUESTED_SLOT_STATE_UNDEFINED,
+                                            REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT,
                                             REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME,
                                             APPOINTMENT_ADDED_TO_SCHEDULE,
-                                            ERROR_ADDING_APPOINTMENT_TO_SCHEDULE}
+                                            ERROR_ADDING_APPOINTMENT_TO_SCHEDULE,
+                                            COLLISION,
+                                            NO_COLLISION,
+                                            SLOT_START_OK,
+                                            UNDEFINED}
 
     private ActionListener myController = null;
     private PropertyChangeSupport pcSupport = null;
@@ -52,6 +59,7 @@ public class AppointmentScheduleViewController extends ViewController{
     private PropertyChangeEvent pcEvent = null;
     private View pacView = null;
     private DesktopView desktopView = null;
+    private String scheduleErrorMessage = null;
     
     /**
      * 
@@ -70,7 +78,7 @@ public class AppointmentScheduleViewController extends ViewController{
         try{
             SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment();
             //surgeryDaysAssignment.read();
-            surgeryDaysAssignment = surgeryDaysAssignment.readTheSurgeryDaysAssignment();
+            surgeryDaysAssignment = surgeryDaysAssignment.read();
             getNewEntityDescriptor().setSurgeryDaysAssignment(surgeryDaysAssignment.get());
             View.setViewer(View.Viewer.APPOINTMENT_SCHEDULE_VIEW);
             this.view = View.factory(this, getNewEntityDescriptor(), desktopView);
@@ -83,6 +91,9 @@ public class AppointmentScheduleViewController extends ViewController{
             displayErrorMessage(ex.getMessage(),"AppointmentViewController error",JOptionPane.WARNING_MESSAGE);
         }   
     }
+    
+    
+    
     @Override
     public void actionPerformed(ActionEvent e){
         setEntityDescriptorFromView(view.getEntityDescriptor());
@@ -182,12 +193,17 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- initialises NewEntityDescriptor with the collection of all patients on the system
          * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
          */
-        Patient.Collection patients = null;
+        //07/08/2022 08:53
+        Patient patient = null;
+        ArrayList<Patient> patients = null;
+        //Patient.Collection patients = null;
         initialiseNewEntityDescriptor();
         try{
-            patients = new Patient().getCollection();
-            patients.read();
-            getNewEntityDescriptor().setThePatients(patients.get());
+            //patients = new Patient().getCollection();
+            patient = new Patient();
+            patient.setScope(Scope.ALL);
+            patient.read();
+            getNewEntityDescriptor().setPatients(patient.get());
             View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
             this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
             /**
@@ -212,18 +228,21 @@ public class AppointmentScheduleViewController extends ViewController{
          * -- on entry assumes EntityDescriptorFromView has already been initialised from the view's entity descriptor
          * -- launches the APPOINTMENT_CREATOR_EDITOR_VIEW for the selected appointment for update
          */
-        Patient.Collection patients = null;
+        //07/08/2022 08:58
+        //Patient.Collection patients = null;
+        ArrayList<Patient> patients = null;
+        Patient patient = null;
         if (getEntityDescriptorFromView().getRequest().getAppointment().getIsKeyDefined()){
             try{
 
                 Appointment appointment = getEntityDescriptorFromView().
                         getRequest().getAppointment();
-
-                patients = new Patient().getCollection();
-                patients.read();
+                patient = new Patient();
+                patient.setScope(Scope.ALL);
+                patient.read();
                 initialiseNewEntityDescriptor();
                 getNewEntityDescriptor().setAppointment(appointment);
-                getNewEntityDescriptor().setThePatients(patients.get());
+                getNewEntityDescriptor().setPatients(patient.get());
                 View.setViewer(View.Viewer.APPOINTMENT_CREATOR_EDITOR_VIEW);
                 this.view2 = View.factory(this, getNewEntityDescriptor(), this.desktopView);
                 /**
@@ -257,7 +276,9 @@ public class AppointmentScheduleViewController extends ViewController{
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        Appointment.Collection appointments = null;
+        //07/08/2022 08:53
+        //Appointment.Collection appointments = null;
+        ArrayList<Appointment> appointments = null;
         try{
             getUpdatedAppointmentSlotsForDay(day);
             /**
@@ -287,7 +308,7 @@ public class AppointmentScheduleViewController extends ViewController{
         try{
             setNewEntityDescriptor(new EntityDescriptor());
             initialiseNewEntityDescriptor();
-            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().read().get());
             View.setViewer(View.Viewer.NON_SURGERY_DAY_EDITOR_VIEW);
             this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
             /**
@@ -310,7 +331,7 @@ public class AppointmentScheduleViewController extends ViewController{
         try{
             setNewEntityDescriptor(new EntityDescriptor());
             initialiseNewEntityDescriptor();
-            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+            getNewEntityDescriptor().setSurgeryDaysAssignment(new SurgeryDaysAssignment().read().get());
             View.setViewer(View.Viewer.SURGERY_DAY_EDITOR_VIEW);
             this.view2 = View.factory(this, getNewEntityDescriptor(), desktopView); 
             /**
@@ -333,13 +354,22 @@ public class AppointmentScheduleViewController extends ViewController{
         setEntityDescriptorFromView(((IView)e.getSource()).getEntityDescriptor());
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
-        Appointment.Collection appointments = null;
+        //07/08/2022 08:58
+        ArrayList<Appointment> appointments = null;
+        Appointment appointment = null;
+        //Appointment.Collection appointments = null;
         try{
-            appointments = new Appointment().getCollection();
-            appointments.setScope(Appointment.Scope.FOR_DAY);
-            appointments.getAppointment().setStart(day.atStartOfDay());
-            appointments.read();
-            getNewEntityDescriptor().setAppointments(appointments.get());
+            //appointments = new Appointment().getCollection();
+            //appointments.setScope(Scope.FOR_DAY);
+            //appointments.getAppointment().setStart(day.atStartOfDay());
+            //appointments.read();
+            ////getNewEntityDescriptor().setAppointments(appointments.get());
+            appointment = new Appointment();
+            appointment.setStart(day.atStartOfDay());
+            appointment.setScope(Scope.FOR_DAY);
+            appointment.read();
+            getNewEntityDescriptor().setAppointments(appointment.get());
+            
             View.setViewer(View.Viewer.SCHEDULE_CONTACT_DETAILS_VIEW);
             this.pacView = View.factory(this, getNewEntityDescriptor(), desktopView);
             this.desktopView.add(pacView);
@@ -497,7 +527,7 @@ public class AppointmentScheduleViewController extends ViewController{
             try{
                 SurgeryDaysAssignment surgeryDaysAssignment = new SurgeryDaysAssignment(surgeryDaysAssignmentValue);
                 surgeryDaysAssignment.update();
-                getEntityDescriptorFromView().setSurgeryDaysAssignment(new SurgeryDaysAssignment().readTheSurgeryDaysAssignment().get());
+                getEntityDescriptorFromView().setSurgeryDaysAssignment(new SurgeryDaysAssignment().read().get());
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE
                  */
@@ -541,19 +571,26 @@ public class AppointmentScheduleViewController extends ViewController{
         initialiseNewEntityDescriptor();
         LocalDate day = getEntityDescriptorFromView().getRequest().getDay();
         Duration duration = getEntityDescriptorFromView().getRequest().getDuration();
-        Appointment.Collection appointments = null;
+        //07/08/2022 08:53
+        //Appointment.Collection appointments = null;
+        ArrayList<Appointment> appointments = null;
+        Appointment appointment = null;
         try{
-            appointments = new Appointment().getCollection();
-            appointments.setScope(Appointment.Scope.FROM_DAY);
-            appointments.getAppointment().setStart(day.atStartOfDay());
-            appointments.read();
-            if (appointments.get().isEmpty()){
+            //appointments = new Appointment().getCollection();
+            //appointments.setScope(Scope.FROM_DAY);
+            //appointments.getAppointment().setStart(day.atStartOfDay());
+            //appointments.read();
+            appointment = new Appointment();
+            appointment.setScope(Scope.FROM_DAY);
+            appointment.setStart(day.atStartOfDay());
+            appointment.read();
+            if (appointment.get().isEmpty()){
                 JOptionPane.showMessageDialog(null, "No scheduled appointments from selected scan date (" + day.format(dmyFormat) + ")");
             }
             else{
                 ArrayList<Appointment> availableSlotsOfDuration =  
                         getAvailableSlotsOfDuration(
-                                appointments.get(),duration,day);
+                                appointment.get(),duration,day);
                 getNewEntityDescriptor().setAppointments(availableSlotsOfDuration);
                 /**
                  * fire event over to APPOINTMENT_SCHEDULE view
@@ -633,7 +670,7 @@ public class AppointmentScheduleViewController extends ViewController{
         //22/07/2022 08:56 save copy of EntityDescriptorFromView; could be overwritten
         EntityDescriptor ed = getEntityDescriptorFromView();
         //Appointment a = ed.getRequest().getAppointment();
-        Appointment.Collection appointments = null;
+        //Appointment.Collection appointments = null;
         try{
             this.view2.setClosed(true);
         }
@@ -749,110 +786,216 @@ public class AppointmentScheduleViewController extends ViewController{
         return title + " " + forenames + " " + surname;
     }
     
-    private String appointmentCollisionCheckOnScheduleChangeRequest(
+    private ScheduleReport appointmentCollisionCheckOnScheduleChangeRequest(
             Appointment requestedSlot,
             ArrayList<Appointment> appointments, ViewMode mode){
-        String result = null;
-        RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT;
+        ScheduleReport scheduleReport = new ScheduleReport();
+        scheduleReport.setState(RequestedAppointmentState.UNDEFINED);
         Iterator<Appointment> appointmentsForDay = appointments.iterator();
         while (appointmentsForDay.hasNext()){
             Appointment nextScheduledSlot = appointmentsForDay.next();
-            switch(state){
-                case REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME:
-                    /**
-                     * requested slot updated end time is later than the previous scheduled slot
-                     * -- check if its end time is not after next scheduled slot start time
-                     * ---- its not; so state = APPOINTMENT_ADDED_TO_SCHEDULE
-                     * ---- else check if requested slot and overlapped next scheduled slot refer to same appointment (currently being updated) 
-                     * ------ not the same appointment; state = ERROR_ADDING_APPOINTMENT_TO_SCHEDULE and create error content
-                     *
-                     */
-                    if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
-                        /**
-                         * -- if requested slot end time is not after next scheduled end time 
-                         * ---- check requested and next scheduled slot refer to the same appointment
-                         * ------ yes; means appointment is being correctly updated
-                         * ------ change state to APPOINTMENT_ADDED_TO_SCHEDULE 
-                         */
-                        if (requestedSlot.equals(nextScheduledSlot)){
-                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                        }
-                        else{
-                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                            result = 
+            switch(mode){
+                case CREATE:
+                    switch(scheduleReport.getState()){
+                        case SLOT_START_OK:
+                            /**
+                             * In CREATE new appointment mode checks if requested slot overlaps the next scheduled slot 
+                             */
+                            if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime())){
+                                scheduleReport.setState(RequestedAppointmentState.NO_COLLISION);
+                            }
+                            else{
+                                scheduleReport.setState(RequestedAppointmentState.COLLISION);
+                                scheduleReport.setError(
                                     "The new appointment for " + requestedSlot.getAppointeeName()
-                                    + " overwrites existing appointment for " 
-                                    + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
-                        }      
-                    }else //do nothing and retain state = REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME
-                    break;
-                case REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT_AND_BEFORE_NEXT_SCHEDULED_SLOT:
-                    if(!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime())){
-                        /**
-                         * requested slot fits into empty slot space prior to scheduled slot so can add to schedule
-                         */
-                        result = null;
-                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                        break;
-                    }
-                    else if (!requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotEndTime())){
-                        /**
-                         * --requested slot starts after end of scheduled slot
-                         * --do nothing, state (STARTS_AFTER_PREVIOUS_SLOT) remains the same
-                         */
-                    }
-                    else {//means requested slot overlaps next scheduled slot
-                        switch (mode){
-                            case CREATE:
-                                /**
-                                 * --requested Slot overlaps next scheduled appointment so cannot be created 
-                                 * --abort attempt to create a new appointment and post error
-                                 * -- check if overlapped next scheduled appointment is for the same patient
-                                 * -- let user know if this is the case and suggest an update request is required
-                                 */
-                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                if (requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
-                                    result = "The requested new appointment for "
+                                        + " overwrites existing appointment for " 
+                                        + nextScheduledSlot.getAppointeeNamePlusSlotStartTime());
+                            }
+                            /*
+                            else if (!requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
+                                scheduleReport.setState(RequestedAppointmentState.COLLISION);
+                                scheduleReport.setError(
+                                    "The new appointment for " + requestedSlot.getAppointeeName()
+                                        + " overwrites existing appointment for " 
+                                        + nextScheduledSlot.getAppointeeNamePlusSlotStartTime());
+                            }
+                            else {
+                                scheduleReport.setState(RequestedAppointmentState.COLLISION);
+                                scheduleReport.setError(
+                                        "The requested new appointment for "
                                             + requestedSlot.getAppointeeName()  
                                             + " overlaps a scheduled appointment for the same patient.\n"
                                             + "Rather than creating a new appointment for "
                                             + requestedSlot.getAppointeeName() 
-                                            + " update the scheduled appointment." ;
-                                }else {
+                                            + " update the scheduled appointment.");
+                            }
+                            */
+                            break;
+                        case UNDEFINED:
+                            /**
+                             * In CREATE new appointment mode checks if there is an available starting time for the requested appointment
+                             * -- if yes alters requested slot state to START_OK; else state remains undefined
+                             */
+                            if (requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotStartTime())){
+                                scheduleReport.setState(RequestedAppointmentState.SLOT_START_OK);
+                            }
+                            //else requwested slot remains in the UNDEFINED state
+                            break;
+                    }
+                    break;
+                case UPDATE:
+                    switch(scheduleReport.getState()){
+                        case SLOT_START_OK:
+                            /**
+                             * In requested slot UPDATE mode checks if requested slot does not end after the start of the next scheduled slot
+                             * -- if yes requested state = NO COLLISION
+                             * -- else requested state = COLLISION
+                             */
+                            if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime()))
+                                scheduleReport.setState(RequestedAppointmentState.NO_COLLISION);
+                            else {
+                                scheduleReport.setState(RequestedAppointmentState.COLLISION);
+                                scheduleReport.setError(
+                                    "The new appointment for " + requestedSlot.getAppointeeName()
+                                        + " overwrites existing appointment for " 
+                                        + nextScheduledSlot.getAppointeeNamePlusSlotStartTime());
+                            }
+                            break;
+                        case UNDEFINED:
+                            /**
+                             * In UPDATE appointment mode checks if an available start time exists before the next scheduled slot starts
+                             * -- if yes checks if requested slot does not end after the next scheduled slot
+                             * ---- if yes requested slot state made equal to NO_COLLISION
+                             * ---- if no checks if requested slot appointee is same as next scheduled slot appointee
+                             * ------ if yes checks requested slot does not end after the next scheduled slot end time
+                             * --------if yes requested slot state made equal to NO_COLLISION (treated as an update of next scheduled slot)
+                             * --------if no requested slot state made equal to SLOT_START_OK requested appointment overlaps an appointment slot for another patient 
+                             * ------ if no requested state = COLLISION because 
+                             */
+                            if (requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotStartTime())){
+                                if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime()))
+                                    scheduleReport.setState(RequestedAppointmentState.NO_COLLISION);
+                                else if (requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
+                                    if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime()))
+                                        scheduleReport.setState(RequestedAppointmentState.NO_COLLISION);
+                                    else scheduleReport.setState(RequestedAppointmentState.SLOT_START_OK);
+                                }
+                                else{//collides with an appointment for a different patient
+                                    scheduleReport.setState(RequestedAppointmentState.COLLISION);
+                                    scheduleReport.setError(
+                                            "The updated appointment for " + requestedSlot.getAppointeeName()
+                                                + " overwrites existing appointment for " 
+                                                + nextScheduledSlot.getAppointeeNamePlusSlotStartTime());
+                                }
+                            }
+                            else{
+                                if (requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotEndTime())){
+                                    if (!requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
+                                        scheduleReport.setState(RequestedAppointmentState.COLLISION); 
+                                        scheduleReport.setError(
+                                                "The updated appointment for " + requestedSlot.getAppointeeName()
+                                                    + " overwrites existing appointment for " 
+                                                    + nextScheduledSlot.getAppointeeNamePlusSlotStartTime());
+                                    }
+                                    else scheduleReport.setState(RequestedAppointmentState.SLOT_START_OK);
+                                }
+                                else{//remain in UNDEFINED state
+
+                                }
+                            }
+                    }
+                    break;
+            }
+        }
+        return scheduleReport;
+    }
+    
+    /*
+    private String appointmentCollisionCheckOnScheduleChangeRequest1(
+            Appointment requestedSlot,
+            ArrayList<Appointment> appointments, ViewMode mode){
+        String result = null;
+        if (appointments.isEmpty()){
+            RequestedAppointmentState state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+        }
+        else{
+            //RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT;
+            RequestedAppointmentState state = RequestedAppointmentState.REQUESTED_SLOT_STATE_UNDEFINED;
+            Iterator<Appointment> appointmentsForDay = appointments.iterator();
+            while (appointmentsForDay.hasNext()){
+                Appointment nextScheduledSlot = appointmentsForDay.next();
+                switch(state){
+                    case REQUESTED_SLOT_STATE_UNDEFINED:
+
+                    case REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME:
+
+                        if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
+
+                            if (requestedSlot.equals(nextScheduledSlot)){
+                                state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                            }
+                            else{
+                                state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
                                 result = 
                                         "The new appointment for " + requestedSlot.getAppointeeName()
-                                        + " overwrites existing appointment for " + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
-                                }
-                                break;
-                            case UPDATE:
-                                //-- requested slot overlaps next scheduled slot
-                                if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
-                                    /**
-                                     * -- if requested slot end time is not after next scheduled end time 
-                                     * ---- check requested and next scheduled slot refer to the same appointment
-                                     * ------ yes; means appointment is being correctly updated
-                                     * ------ change state to APPOINTMENT_ADDED_TO_SCHEDULE 
-                                     */
-                                    if (requestedSlot.equals(nextScheduledSlot)){
-                                        state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
-                                    }
-                                    else{
-                                        state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
-                                        result = 
-                                                "The new appointment for " + requestedSlot.getAppointeeName()
-                                                + " overwrites existing appointment for " 
-                                                + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
-                                    }      
-                                }else  state = RequestedAppointmentState.REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME;
-                                break;
+                                        + " overwrites existing appointment for " 
+                                        + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                            }      
+                        }else //do nothing and retain state = REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME
+                        break;
+                    case REQUESTED_SLOT_STARTS_AFTER_PREVIOUS_SCHEDULED_SLOT:
+                        if(!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotStartTime())){
+
+                            result = null;
+                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                            break;
                         }
-                    }        
+                        else if (!requestedSlot.getSlotStartTime().isBefore(nextScheduledSlot.getSlotEndTime())){
+
+                        }
+                        else {//means requested slot overlaps next scheduled slot
+                            switch (mode){
+                                case CREATE:
+    
+                                    state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                    if (requestedSlot.getPatient().equals(nextScheduledSlot.getPatient())){
+                                        result = "The requested new appointment for "
+                                                + requestedSlot.getAppointeeName()  
+                                                + " overlaps a scheduled appointment for the same patient.\n"
+                                                + "Rather than creating a new appointment for "
+                                                + requestedSlot.getAppointeeName() 
+                                                + " update the scheduled appointment." ;
+                                    }else {
+                                    result = 
+                                            "The new appointment for " + requestedSlot.getAppointeeName()
+                                            + " overwrites existing appointment for " + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                                    }
+                                    break;
+                                case UPDATE:
+                                    //-- requested slot overlaps next scheduled slot
+                                    if (!requestedSlot.getSlotEndTime().isAfter(nextScheduledSlot.getSlotEndTime())){
+
+                                        if (requestedSlot.equals(nextScheduledSlot)){
+                                            state = RequestedAppointmentState.APPOINTMENT_ADDED_TO_SCHEDULE;
+                                        }
+                                        else{
+                                            state = RequestedAppointmentState.ERROR_ADDING_APPOINTMENT_TO_SCHEDULE;
+                                            result = 
+                                                    "The new appointment for " + requestedSlot.getAppointeeName()
+                                                    + " overwrites existing appointment for " 
+                                                    + nextScheduledSlot.getAppointeeNamePlusSlotStartTime();
+                                        }      
+                                    }else  state = RequestedAppointmentState.REQUESTED_SLOT_END_TIME_UPDATED_TO_LATER_TIME;
+                                    break;
+                            }
+                        }        
+                }
             }
         }
         return result;
         
     }
-    
+    */
     /*
     private String appointmentCollisionChangingSchedule(
             Appointment rSlot, 
@@ -935,54 +1078,28 @@ public class AppointmentScheduleViewController extends ViewController{
     }
     */
     private Appointment requestToChangeAppointmentSchedule(ViewMode mode) throws StoreException{
-        String error;
         Appointment result = null;
-        //Appointment rSlot = makeAppointmentFromEDRequest();
         Appointment rSlot = getEntityDescriptorFromView().getRequest().getAppointment();
         LocalDate day = rSlot.getStart().toLocalDate();
-        
-        //NOTE: changed "appointments" to "appts" because former hid a previous definition of "appointments"
-        Appointment.Collection appts = new Appointment().getCollection();
-        Appointment appointment = appts.getAppointment();
+        Appointment appointment = new Appointment(); 
         appointment.setStart(day.atStartOfDay());
-        appts.setScope(Appointment.Scope.FOR_DAY);
-        appts.read();
-        if (appts.get().isEmpty()){
-            /**
-             * no appointments for selected day so go head and CREATE appointment (no appointment to UPGRADE)
-             */
-            switch (mode){
-                case CREATE:
-                    rSlot.insert();
-                    result = rSlot.read();
-                    break;
-                case UPDATE://this shouldn't be ever the case
-                    rSlot.update();
-                    result = rSlot.read();
-                    break;
-            }
-        }
+        appointment.setScope(Scope.FOR_DAY);
+        appointment.read();
+        ScheduleReport scheduleReport = appointmentCollisionCheckOnScheduleChangeRequest(
+                    rSlot, appointment.get(), mode);
+        if (scheduleReport.getState().equals(RequestedAppointmentState.COLLISION))
+            getNewEntityDescriptor().setError(scheduleReport.getError());
         else{
             switch (mode){//one or more appointments already exist so check the CREATE or UPGRADE make sense
                 case CREATE:
-                    error = appointmentCollisionCheckOnScheduleChangeRequest(rSlot, appts.get(), mode);
-                    getNewEntityDescriptor().setError(error);
-                    if (error==null){
-                        //no collision results
-                        rSlot.insert(); //was rslot.create()
-                        result = rSlot.read();
-                    }
+                    rSlot.insert(); 
                     break;
                 case UPDATE:
-                    error = appointmentCollisionCheckOnScheduleChangeRequest(rSlot, appts.get(), mode);
-                    getNewEntityDescriptor().setError(error);
-                    if (error==null){
-                        //no collision results
-                        rSlot.update();
-                        result = rSlot.read();
-                    }
+                    rSlot.update();
                     break;
             }
+            rSlot.setScope(Scope.SINGLE);
+            result = rSlot.read();
         }
         return result;
     }
@@ -1338,16 +1455,24 @@ public class AppointmentScheduleViewController extends ViewController{
 
     private void getUpdatedAppointmentSlotsForDay(LocalDate day)throws StoreException{
         Appointment appointment = new Appointment();
-        Appointment.Collection appts = appointment.getCollection();
+        //Appointment.Collection appts = appointment.getCollection();
+        //appts.setScope(Scope.FOR_DAY);
+        //appts.read();
         initialiseNewEntityDescriptor();
         appointment.setStart(day.atStartOfDay());
-        appts.setScope(Appointment.Scope.FOR_DAY);
-        appts.read();
+        appointment.setScope(Scope.FOR_DAY);
+        appointment.read();
+        ArrayList<Appointment> appointmentSlotsForDay =
+                getAppointmentsForSelectedDayIncludingEmptySlots(appointment.get(),appointment.getStart().toLocalDate());
+        appointment.get().clear();
+        appointment.get().addAll(appointmentSlotsForDay);
+        /*
         ArrayList<Appointment> appointmentSlotsForDay =
                 getAppointmentsForSelectedDayIncludingEmptySlots(appts.get(),appointment.getStart().toLocalDate());
         appts.get().clear();
         appts.get().addAll(appointmentSlotsForDay);
-        getNewEntityDescriptor().setAppointments(appts.get());
+*/
+        getNewEntityDescriptor().setAppointments(appointment.get());
     }
     
     private Boolean getIsBookedStatus(Appointment appointment){
@@ -1355,4 +1480,25 @@ public class AppointmentScheduleViewController extends ViewController{
         if(!appointment.getPatient().getIsKeyDefined())return false;
         return true;
     } 
+    
+    public class ScheduleReport{
+        private String error = null;
+        private RequestedAppointmentState state = null;
+        
+        private String getError(){
+            return error;
+        }
+        
+        private void setError(String value){
+            error = value;
+        }
+        
+        private RequestedAppointmentState getState(){
+            return state;
+        }
+        
+        private void setState(RequestedAppointmentState value){
+            state = value;
+        }
+    }
 }

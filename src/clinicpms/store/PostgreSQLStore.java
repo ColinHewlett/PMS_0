@@ -42,39 +42,10 @@ import java.util.Dictionary;
         
     }
 
-    
-    
-    public void delete(Patient p) throws StoreException{
-        
-    }
-
-    
-    
-    public String read(Store.SelectedTargetStore db)throws StoreException{
-        return null;
-    }
-
-    
-    
-    public Patient.Collection read(Patient.Collection p) throws StoreException{
-        return null;
-    }
-    
-    
-    public Patient read(Patient p) throws StoreException{
-        return null;
-    }
-
-    public void update(Store.SelectedTargetStore db, String updatedLocation)throws StoreException{
-        
-    }
-    
-    
     public void update(PatientNotification p) throws StoreException{
         
     }
-    
-    
+
     public void update(Patient p) throws StoreException{
         
     }
@@ -179,11 +150,6 @@ import java.util.Dictionary;
     
     
     public PatientNotification read(PatientNotification value)throws StoreException{
-        return null;
-    }
-    
-    
-    public PatientNotification.Collection read(PatientNotification.Collection value)throws StoreException{
         return null;
     }
 

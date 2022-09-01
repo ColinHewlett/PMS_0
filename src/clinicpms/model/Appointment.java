@@ -5,6 +5,7 @@
  */
 package clinicpms.model;
 
+//<editor-fold defaultstate="collapsed" desc="Imports">
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.Duration;
@@ -15,44 +16,50 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import clinicpms.store.IStoreActions;
+//</editor-fold>
 
 /**
  *
- * @author colin
+ * @author colin.hewlett.solutions@gmail.com
  */
-public class Appointment extends EntityStoreType{
-    //public static enum Status{BOOKED,UNBOOKED};
+public class Appointment extends Entity implements IEntityStoreActions{
+    
+//<editor-fold defaultstate="collapsed" desc="Private and protected state">
     private Boolean isKeyDefined = false;
     private Integer key = null;
     private LocalDateTime start = null;
     private Duration duration  = null;
     private String notes = null;
     private Patient patient;
-    
-    public enum Scope {ALL, FOR_PATIENT, FOR_DAY, FROM_DAY};
-    
-    private  enum DenAppField {DATE,A_1,A_2,A_3,A_4,A_5,A_6,A_7,A_8,A_9,
-                                A_10,A_11,A_12,A_13,A_14,A_15,A_16,A_17,A_18,A_19,
-                                A_20,A_21,A_22,A_23,A_24,A_25,A_26,A_27,A_28,A_29,
-                                A_30,A_31,A_32,A_33,A_34,A_35,A_36,A_37,A_38,A_39,
-                                A_40,A_41,A_42,A_43,A_44,A_45,A_46,A_47,A_48,A_49,
-                                A_50,A_51,A_52,A_53,A_54,A_55,A_56,A_57,A_58,A_59,
-                                A_60,A_61,A_62,A_63,A_64,A_65,A_66,A_67,A_68,A_69,
-                                A_70,A_71,A_72,A_73,A_74,A_75,A_76,A_77,A_78,A_79,
-                                A_80,A_81,A_82,A_83,A_84,A_85,A_86,A_87,A_88,A_89,
-                                A_90,A_91,A_92,A_93,A_94,A_95,A_96,A_97,A_98,A_99,
-                                A_100,A_101,A_102,A_103,A_104,A_105,A_106,A_107,A_108,A_109,
-                                A_110,A_111,A_112,A_113,A_114,A_115,A_116,A_117,A_118,A_119,
-                                A_120,A_121,A_122,A_123,A_124,A_125,A_126,A_127,A_128,A_129,
-                                A_130,A_131,_132,A_133,A_134,A_135,A_136,A_137,A_138,A_139,
-                                A_140,A_141,A_142,A_143,A_144}
-    private Appointment.Collection collection = null;
+    private ArrayList<Appointment> collection = null;
     private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    /**
+     * 
+     * @return 
+     */
+    protected Integer getKey() {
+        return key;
+    }
     
+    /**
+     * 
+     * @param key 
+     */
+    protected void setKey(Integer key) {
+        this.key = key;
+        if (key!=null)
+            if (key!=0) setIsKeyDefined(true);
+            else setIsKeyDefined(false);
+        else setIsKeyDefined(false);  
+    }
+//</editor-fold>   
+
+//<editor-fold defaultstate="collapsed" desc="Public interface">
+//<editor-fold defaultstate="collapsed" desc="Public state/behaviour, not including persistent storage related operations">
     public Appointment(){
         super.setIsAppointment(true);
-        collection = new Appointment.Collection(this);
-    } //constructor creates a new Appointment record
+    } 
 
     /**
      * 
@@ -60,18 +67,19 @@ public class Appointment extends EntityStoreType{
      */
     public Appointment( int key) {
         this.key = key;
-        collection = new Collection(this);
         super.setIsAppointment(true);
     }
-    
-    public Appointment.Collection getCollection(){
+    public ArrayList<Appointment> get(){
         return collection;
     }
     
-    public void setCollection(Appointment.Collection value){
+    public void set(ArrayList<Appointment> value){
         collection = value;
     }
-    
+    /**
+     * 
+     * @return 
+     */
     public String getAppointeeNamePlusSlotStartTime(){
         String result = getAppointeeName();
         LocalTime start = getStart().toLocalTime();
@@ -79,6 +87,10 @@ public class Appointment extends EntityStoreType{
         return result;
     }
   
+    /**
+     * 
+     * @return 
+     */
     public String getAppointeeName(){
         String title;
         String forenames;
@@ -94,100 +106,213 @@ public class Appointment extends EntityStoreType{
         return title + " " + forenames + " " + surname;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public LocalDateTime getSlotStartTime(){
         return this.getStart();
     }
     
+    /**
+     * 
+     * @return 
+     */
     public LocalDateTime getSlotEndTime(){
         return getStart().plusMinutes(getDuration().toMinutes());
     }
     
+    /**
+     * 
+     * @return 
+     */
     public LocalDateTime getStart() {
         return start;
     }
+    
+    /**
+     * 
+     * @param start 
+     */
     public void setStart(LocalDateTime start) {
         this.start = start;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public Duration getDuration() {
         return duration;
     }
+    
+    /**
+     * 
+     * @param duration 
+     */
     public void setDuration(Duration  duration) {
         this.duration = duration;
     }
 
+    /**
+     * 
+     * @return 
+     */
     public String getNotes() {
         return notes;
     }
+    
+    /**
+     * 
+     * @param notes 
+     */
     public void setNotes(String notes) {
         this.notes = notes;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public Boolean getIsKeyDefined(){
         return isKeyDefined;
     }
     
+    /**
+     * 
+     * @param value 
+     */
     public void setIsKeyDefined(Boolean value){
         isKeyDefined = value;
     }
-    
 
-    protected Integer getKey() {
-        return key;
-    }
-    protected void setKey(Integer key) {
-        this.key = key;
-        if (key!=null)
-            if (key!=0) setIsKeyDefined(true);
-            else setIsKeyDefined(false);
-        else setIsKeyDefined(false);  
-    }
-
+    /**
+     * 
+     * @return 
+     */
     public Patient getPatient() {
         return patient;
     }
+    
+    /**
+     * 
+     * @param patient 
+     */
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
     
+//</entity-fold>
+    
+
+//</editor-fold>
+    
+// <editor-fold defaultstate="collapsed" desc="Persistent store related operations">
+    /**
+     * request the concrete store class for the number of specified appointment records in persistent store
+     * @return Integer
+     * @throws StoreException 
+     */
+    @Override
+    public Integer count()throws StoreException{
+            Integer key = null;
+            IStoreActions store = Store.FACTORY(this); 
+            switch (getScope()){
+                case FOR_PATIENT:
+                    key = getPatient().getKey();      
+            }
+            return store.count(this, key);
+        }
+    
+    /**
+     * Requests the concrete store class to create a new table for the storage of appointment records in persistent store
+     * @throws StoreException 
+     */
+    @Override
     public void create()throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         store.create(this);
     }
     
     /**
-     * method explicitly declares the appointee's key value
+     * Save this Appointment to persistent store. 
+     * -- The key of the appointment will be undefined because its a new appointment and will be automatically generated in the concrete store class
+     * -- The key of the patient appointee must be specified in the call to the concrete store class
      * @throws StoreException 
      */
+    @Override
     public void insert() throws StoreException{
-        Integer key = null;
+        Integer pid = null;
         IStoreActions store = Store.FACTORY(this);
-        key = store.insert(this, getPatient().getKey()); 
-        setKey(key);
+        pid = store.insert(this, getPatient().getKey()); 
+        setKey(pid);
     }
     
+    /**
+     * This appointment's persistent image in store is deleted
+     * @throws StoreException 
+     */
+    @Override
     public void delete() throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         store.delete(this, getKey());
     }
     
+    /**
+     * Not currently implemented
+     * @throws StoreException 
+     */
+    @Override
     public void drop() throws StoreException{
-        IStoreActions store = Store.FACTORY(this);
-        store.drop(this);        
+        //IStoreActions store = Store.FACTORY(this);
+        //store.drop(this);        
     }
     
+    /**
+     * On entry assumes the scope of the read() operation is defined; the following scopes are checked for in the class
+     * -- SINGLE scope specifies this appointment (key defined) is read from persistent store
+     * -- FOR_PATIENT scope requires a call to the concrete store class specifies the key of the patient (appointee) the requested appointments belong to 
+     * @return -- if SINGLE read scope; Appointment object with atate initialised from the persistent store image fetched
+     *         -- else this Appointment with unaltered state apart from the appointment coollection fetched from persistent store
+     * @throws StoreException 
+     */
+    @Override
     public Appointment read() throws StoreException{
+        Appointment result = null;
         IStoreActions store = Store.FACTORY(this);
-        //Appointment appointment = store.read(this, getKey());
-        //return appointment;
-        return store.read(this,getKey());
+        switch (getScope()){
+            case SINGLE:
+                result = store.read(this,getKey());
+                break;
+            case FOR_PATIENT:
+                key = getPatient().getKey();
+                set(store.read(this, key).get());
+                result = this;
+                break;
+            default:
+                set(store.read(this, key).get());
+                result = this;
+                break;
+        }
+        return result; 
     }
     
+    /**
+     * Updates the current appointment field values to persistent store
+     * @throws StoreException 
+     */
+    @Override
     public void update() throws StoreException{ 
         IStoreActions store = Store.FACTORY(this);
         store.update(this, getKey(), getPatient().getKey());
-    }
+    }//</editor-fold>   
     
+//<editor-fold defaultstate="collapsed" desc="Object level methods overridden in Class">
+    /**
+     * 
+     * @param obj
+     * @return 
+     */
     @Override
     public boolean equals(Object obj) 
     { 
@@ -210,75 +335,10 @@ public class Appointment extends EntityStoreType{
         // the state of 'this' Object. 
         return (appointment.getKey().equals(this.getKey())); 
     }
-    
-    public class Collection extends EntityStoreType{
-        private Appointment appointment = null; 
-        private ArrayList<Appointment> collection = null;
-        private Appointment.Scope readScope = null;
-        
-        private Collection(){
-            super.setIsAppointments(true);  
-        }
-        
-        private Collection(Appointment appointment){
-            super.setIsAppointments(true);
-            setAppointment(appointment);   
-        }
-        
-        public Appointment getAppointment(){
-            return appointment;
-        }
-        
-        public void setAppointment(Appointment a){
-            this.appointment = a;
-        }
-         
-        /**
-         * on entry count() method assumes start field has been defined for date based collections
-         * -- for a count of appointments for a specific patient the patient's key value must be explicitly defined in the call to the store class
-         * @return
-         * @throws StoreException 
-         */
-        public Integer count()throws StoreException{
-            Integer key = null;
-            IStoreActions store = Store.FACTORY(this); 
-            switch (getScope()){
-                case FOR_PATIENT:
-                    key = getAppointment().getPatient().getKey();      
-            }
-            return store.count(this, key);
-        }
-        
-        /**
-         * on entry read() method presumes start date has been defined in the appointment at the time of the call to the store
-         * -- in the case of a read of appointments for a specific patient , the key value of patient must be defined explicitly in the call to the store
-         * -- also presumed on entry is the correct scope of read has been defined 
-         * @throws StoreException 
-         */
-        public void read()throws StoreException{
-            Integer key = null;
-            IStoreActions store = Store.FACTORY(Appointment.this); 
-            switch (getScope()){
-                case FOR_PATIENT:
-                    key = getAppointment().getPatient().getKey();      
-            }
-            set(store.read(this, key).getCollection().get());
-        }
-        
-        public ArrayList<Appointment> get(){
-            return collection;
-        }
-        public void set(ArrayList<Appointment> value){
-            collection = value;
-        }
-        public Appointment.Scope getScope(){
-            return readScope;
-        }
-        public void setScope(Appointment.Scope value){
-            readScope = value;
-        }
-    }
-    
+    //</editor-fold>
+//</editor-fold>   
+
+//<editor-fold defaultstate="collapsed" desc="Data migration code">
     public List<String[]> importEntityFromCSV()throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         return store.importEntityFromCSV(this);
@@ -469,4 +529,27 @@ public class Appointment extends EntityStoreType{
         LocalTime firstSlotTimeForDay = LocalTime.of(8, 0); //= 8am
         return firstSlotTimeForDay.plusMinutes(slotCountFromDayStart * 5);
     }
+    
+    private  enum DenAppField {DATE,A_1,A_2,A_3,A_4,A_5,A_6,A_7,A_8,A_9,
+                                A_10,A_11,A_12,A_13,A_14,A_15,A_16,A_17,A_18,A_19,
+                                A_20,A_21,A_22,A_23,A_24,A_25,A_26,A_27,A_28,A_29,
+                                A_30,A_31,A_32,A_33,A_34,A_35,A_36,A_37,A_38,A_39,
+                                A_40,A_41,A_42,A_43,A_44,A_45,A_46,A_47,A_48,A_49,
+                                A_50,A_51,A_52,A_53,A_54,A_55,A_56,A_57,A_58,A_59,
+                                A_60,A_61,A_62,A_63,A_64,A_65,A_66,A_67,A_68,A_69,
+                                A_70,A_71,A_72,A_73,A_74,A_75,A_76,A_77,A_78,A_79,
+                                A_80,A_81,A_82,A_83,A_84,A_85,A_86,A_87,A_88,A_89,
+                                A_90,A_91,A_92,A_93,A_94,A_95,A_96,A_97,A_98,A_99,
+                                A_100,A_101,A_102,A_103,A_104,A_105,A_106,A_107,A_108,A_109,
+                                A_110,A_111,A_112,A_113,A_114,A_115,A_116,A_117,A_118,A_119,
+                                A_120,A_121,A_122,A_123,A_124,A_125,A_126,A_127,A_128,A_129,
+                                A_130,A_131,_132,A_133,A_134,A_135,A_136,A_137,A_138,A_139,
+                                A_140,A_141,A_142,A_143,A_144}
+    //</editor-fold>
+    
+
+    
+
+    
+    
 }

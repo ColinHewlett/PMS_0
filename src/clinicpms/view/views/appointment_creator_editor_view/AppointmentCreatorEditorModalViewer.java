@@ -323,7 +323,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
         ArrayList<Patient> patients = 
-                getEntityDescriptor().getThePatients();
+                getEntityDescriptor().getPatients();
         Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
             Patient patient = it.next();
@@ -541,7 +541,7 @@ public class AppointmentCreatorEditorModalViewer extends View {
         * check if a non zero duration value has been defined
         * check if no notes have been defined if still ok to save appointment
         */
-        if (getEntityDescriptor().getRequest().getThePatient()== null){
+        if (getEntityDescriptor().getRequest().getPatient()== null){
             JOptionPane.showMessageDialog(this, "A patient has not been selected for this appointment");
         }
         else if (getEntityDescriptor().getAppointment().getDuration().isZero()){

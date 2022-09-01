@@ -22,8 +22,7 @@ public class AppointmentDelegate extends Appointment{
         super.setNotes(appointment.getNotes());
         super.setPatient(appointment.getPatient());
         super.setStart(appointment.getStart());
-        //06/08/2022 08:49
-        //super.setStatus(appointment.getStatus());
+        super.setScope(appointment.getScope());
     }
     
     protected Integer getAppointmentKey(){

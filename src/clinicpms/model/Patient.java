@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package clinicpms.model;
-
+//<editor-fold defaultstate="collapsed" desc="Imports">
 import clinicpms.store.Store;
 import clinicpms.store.StoreException;
 import java.time.LocalDate;
@@ -13,13 +13,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import clinicpms.store.IStoreActions;
-//Scope
+//</editor-fold>
+
 /**
  *
- * @author colin
+ * @author colin.hewlett.solutions@gmail.com
  */
-public class Patient extends EntityStoreType {
+public class Patient extends Entity implements IEntityStoreActions {
     
+//<editor-fold defaultstate="collapsed" desc="Private and protected state">    
     private Boolean isPatientKeyDefined = null;
     private LocalDate dob = null;
     private Patient guardian = null;
@@ -29,102 +31,130 @@ public class Patient extends EntityStoreType {
     private String notes = null;
     private String phone1 = null;
     private String phone2 = null;
-    private InsertOperation insertOperation = null;
 
-    private Patient.AppointmentHistory appointmentHistory = null;
     private Patient.Address address = null;
     private Patient.Name name = null;
     private Patient.Recall recall = null;
-    private Patient.Collection collection = null;
-    
-    enum DenPatField {KEY,
-                              TITLE,
-                              FORENAMES,
-                              SURNAME,
-                              LINE1,
-                              LINE2,
-                              TOWN,
-                              COUNTY,
-                              POSTCODE,
-                              PHONE1,
-                              PHONE2,
-                              GENDER,
-                              DOB,
-                              IS_GUARDIAN_A_PATIENT,
-                              DENTAL_RECALL_FREQUENCY,
-                              DENTAL_RECALL_DATE,
-                              NOTES,
-                              GUARDIAN}
+    private ArrayList<Patient> collection = null;
     private static final DateTimeFormatter ddMMyyyyFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
-    /**
-     * Utility method involved in the "tidy up" of the imported patient's contact details
-     * @param value:String
-     * @param delimiter:String representing the character used to delimit in the context of the patient's name
-     * @return Sting; the processed patient's contact details
-     */
-    private String capitaliseFirstLetter(String value, String delimiter){
-        ArrayList<String> parts = new ArrayList<>();
-        String result = null;
-        //value = value.strip();
-        if (!delimiter.equals("")){
-            String[] values = value.split(delimiter);
-            for (int index = 0; index < values.length; index++){
-                parts.add(capitalisePart(values[index]));
-            }
-            for (int index = 0;index < parts.size();index++){
-                if (index == 0){
-                    result = parts.get(index);
-                }
-                else if (delimiter.equals("\\s+")){
-                    result = result + " " + parts.get(index);
-                }
-                else{
-                    result = result + delimiter + parts.get(index);
-                }
-            }
-        }
-        else{
-            result = capitalisePart(value);
-        }
-        return result;
+    protected Integer getKey(){
+        return key;
     }
     
-    /**
-     * Part of the convenience process used for tidying up the imported patient's contact details
-     * @param part:String; part of the string required to be processed
-     * @return String; processed part
-     */
-    private String capitalisePart(String part){
-        String firstLetter = part.substring(0,1).toUpperCase();
-        String otherLetters = part.substring(1).toLowerCase();
-        String result =  firstLetter + otherLetters;
-        return result;
+    protected void setKey(Integer key){
+        this.key = key;
+        if (key != null){
+            if (key!=0)
+                setIsKeyDefined(true);
+            else
+                setIsKeyDefined(false);
+        }        
     }
+//</editor-fold>
     
-    private Patient updateGender(Patient patient){
-        switch (patient.getGender()){
-            case "M":
-                patient.setGender("Male");
-                break;
-            case "F":
-                patient.setGender("Female");
-                break;
-        }
-        return patient;
+ //<editor-fold defaultstate="collapsed" desc="Public interface">
+    
+ //<editor-fold defaultstate="collapsed" desc="Persistent store-related operations">
+    
+    /**
+     * Counts the number of patients stored on the system
+     * @return Integer, total number of patients on the system
+     * @throws StoreException 
+     */
+    @Override
+    public Integer count()throws StoreException{
+        IStoreActions store = Store.FACTORY(this);
+        return store.count(this);
+    } 
+        
+    public void create()throws StoreException{
+        IStoreActions store = Store.FACTORY((Entity)this);
+        store.create(this);
     }
 
-    private void setInsertOperation(InsertOperation value){
-        insertOperation = value;
+    public void delete() throws StoreException{
+        IStoreActions store = Store.FACTORY((Entity)this);
+        store.delete(this);
+    }
+
+    /**
+     * Not currently implemented
+     * @throws StoreException 
+     */
+    @Override
+    public void drop() throws StoreException{
+        //IStoreActions store = Store.FACTORY((Entity)this);
+        //store.drop(this);        
     }
     
-    public InsertOperation getInsertOperation(){
-        return insertOperation;
+    public ArrayList<Appointment> getAppointmentHistory()throws StoreException{
+        Appointment appointment = new Appointment();
+        appointment.setPatient(this);
+        appointment.setScope(Scope.FOR_PATIENT);
+        appointment.read();
+        return appointment.get();
+    }
+
+    /**
+     * method inserts this Patient as a record in persistent store
+     * -- not key already in itialised is this is part of a data migration operation
+     * -- else if this is a new patient record being created the new key value is returned from persistent store and used to initialised this Patient object
+     * @throws StoreException 
+     */
+    public void insert() throws StoreException{
+        Integer key = null;
+        IStoreActions store = Store.FACTORY((Entity) this);
+        if (getIsKeyDefined()){//option followed if data migration is happening
+            key = store.insert(this,getKey());
+        }
+        else {
+            if (getIsGuardianAPatient())//this option taken if a new patient record is being created
+                key = store.insert(this, getGuardian().getKey());
+        }
+        setKey(key);        
     }
     
-    public enum InsertOperation {ON_CREATE, ON_IMPORT};
+    /**
+     * the read method interrogates the Patient object returned from store, thus
+     * -- if its getIsGuardianAKey() method returns true it reads the patient's guardian object in as well
+     * -- the returned patient AppointmentHistory's fetchDentalAppointments() method is called to include all appointments associated with this patient 
+     * @return -- if a SINGLE read a fully initialised Patient object appropriately with or without a guardian if one exists
+     *         -- else the Patient object state unchanged state on entry apart from the collection of patients returned by the read operation
+     * @throws StoreException 
+     */
+    public Patient read() throws StoreException{
+        Patient result = null;
+        Patient patient = null;
+        Patient patientGuardian = null;
+        IStoreActions store = Store.FACTORY((Entity) this);
+        switch (getScope()){
+            case SINGLE:
+                patient = store.read(this, getKey()); 
+                if (patient.getIsGuardianAPatient()){
+                    patientGuardian = patient.getGuardian();
+                    patientGuardian.setScope(Scope.SINGLE);
+                    patientGuardian = store.read(patientGuardian, patientGuardian.getKey());
+                    patient.setGuardian(patientGuardian);
+                }
+                result =  patient;
+                break;
+            default: // means request is for a collection of patients
+                result = store.read(this, null);
+                break;
+        }
+        return result;
+    }
+
+    public void update() throws StoreException{ 
+        IStoreActions store = Store.FACTORY((Entity)this);
+        if (getIsGuardianAPatient()) store.update(this, this.getKey(),this.getGuardian().getKey());
+        else store.update(this, this.getKey(),null);
+    }
+
+    //</editor-fold>
     
-    
+ //<editor-fold defaultstate="collapsed" desc="Public interface not including persistent storage related operatioms">
     public enum PatientField    {       ID,
                                         KEY,
                                         PHONE1,
@@ -134,35 +164,15 @@ public class Patient extends EntityStoreType {
                                         IS_GUARDIAN_A_PATIENT,
                                         PATIENT_GUARDIAN,
                                         NOTES;
-                    public enum Name    {   TITLE,
-                                            FORENAMES,
-                                            SURNAME
-                                        }
-                    public enum Address {   LINE1,
-                                            LINE2,
-                                            TOWN,
-                                            COUNTY,
-                                            POSTCODE
-                                        }
-                    public enum Recall  {   DENTAL_DATE,
-                                            HYGIENE_DATE,
-                                            DENTAL_FREQUENCY,
-                                            HYGIENE_FREQUENCY
-                                        }
-                    public enum Activity    {   LAST_DENTAL_APPOINTMENT,
-                                                NEXT_DENTAL_APPOINTMENT,
-                                                NEXT_HYGIENE_APPOINTMENT
-                                            }
+                    
                                 }
     
     public Patient(){
+    
         name = new Name();
         address = new Address();
         recall = new Recall();
-        appointmentHistory = new AppointmentHistory();
-        collection = new Collection(this);
         setIsGuardianAPatient(false);
-        getAppointmentHistory().set(new ArrayList<Appointment>());
         setIsKeyDefined(false);
         this.setIsPatient(true);
     } 
@@ -171,224 +181,17 @@ public class Patient extends EntityStoreType {
             name = new Name();
             address = new Address();
             recall = new Recall();
-            appointmentHistory = new AppointmentHistory();
-            collection = new Collection();
             setKey(key);
             setIsGuardianAPatient(false);
-            getAppointmentHistory().set(new ArrayList<Appointment>());
             this.setIsPatient(true);
     } 
     
-    public void create()throws StoreException{
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
-        store.create(this);
+    public ArrayList<Patient> get(){
+        return collection;
     }
 
-    public void insert() throws StoreException{
-        Integer key = null;
-        IStoreActions store = Store.FACTORY((EntityStoreType) this);
-        if (getIsKeyDefined()){
-            key = store.insert(this,getKey());
-        }
-        else {
-            if (getIsGuardianAPatient())
-                key = store.insert(this, getGuardian().getKey());
-        }
-        setKey(key);        
-    }
-
-    public void delete() throws StoreException{
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
-        store.delete(this);
-    }
-
-    public void drop() throws StoreException{
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
-        store.drop(this);        
-    }
-
-    /**
-     * the read method interrogates the Patient object returned from store, thus
-     * -- if its getIsGuardianAKey() method returns true it reads the patient's guardian object in as well
-     * -- the returned patient AppointmentHistory's fetchDentalAppointments() method is called to include all appointments associated with this patient 
-     * @return a fully initialised Patient object appropriately with or without a guardian if one exists
-     * @throws StoreException 
-     */
-    public Patient read() throws StoreException{
-        Patient patient = null;
-        Patient guardian = null;
-        IStoreActions store = Store.FACTORY((EntityStoreType) this);
-        patient = store.read(this, getKey()); 
-        if (patient.getIsGuardianAPatient()){
-            guardian = patient.getGuardian();
-            guardian = store.read(guardian, guardian.getKey());
-            patient.setGuardian(guardian);
-        }
-        patient.getAppointmentHistory().fetchDentalAppointments();
-        return patient;
-    }
-
-    public void update() throws StoreException{ 
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
-        if (getIsGuardianAPatient()) store.update(this, this.getKey(),this.getGuardian().getKey());
-        else store.update(this, this.getKey(),null);
-    }
-
-    public class Name {
-
-        private String forenames = null;
-        private String surname = null;
-        private String title = null;
-
-        public String getForenames() {
-            return forenames;
-        }
-
-        public void setForenames(String forenames) {
-            this.forenames = forenames;
-        }
-
-        public String getSurname() {
-            return surname;
-        }
-
-        public void setSurname(String surname) {
-            this.surname = surname;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-    }
-    
-    public class Address {
-
-        private String line1 = null;
-        private String line2 = null;
-        private String town = null;
-        private String county = null;
-        private String postcode = null;
-
-        public String getLine1() {
-            return line1;
-        }
-
-        public void setLine1(String line1) {
-            this.line1 = line1;
-        }
-
-        public String getLine2() {
-            return line2;
-        }
-
-        public void setLine2(String line2) {
-            this.line2 = line2;
-        }
-
-        public String getTown() {
-            return town;
-        }
-
-        public void setTown(String town) {
-            this.town = town;
-        }
-
-        public String getCounty() {
-            return county;
-        }
-
-        public void setCounty(String county) {
-            this.county = county;
-        }
-
-        public String getPostcode() {
-            return postcode;
-        }
-
-        public void setPostcode(String postcode) {
-            this.postcode = postcode;
-        }
-
-    }
-
-    public class Recall {
-
-        private LocalDate dentalDate = null;
-        private LocalDate hygieneDate = null;
-        private Integer dentalFrequency = null;
-        private Integer hygieneFrequency = null;
-
-        public LocalDate getDentalDate() {
-            return dentalDate;
-        }
-
-        public void setDentalDate(LocalDate dentalDate) {
-            this.dentalDate = dentalDate;
-        }
-
-        public Integer getDentalFrequency() {
-            return dentalFrequency;
-        }
-
-        public void setDentalFrequency(Integer dentalFrequency) {
-            this.dentalFrequency = dentalFrequency;
-        }
-
-        public LocalDate getHygieneDate() {
-            return hygieneDate;
-        }
-
-        public void setHygieneDate(LocalDate hygieneDate) {
-            this.hygieneDate = hygieneDate;
-        }
-
-        public Integer getHygieneFrequency() {
-            return hygieneFrequency;
-        }
-
-        public void setHygieneFrequency(Integer hygieneFrequency) {
-            this.hygieneFrequency = hygieneFrequency;
-        }
-    }
-    
-    public class AppointmentHistory{
-
-        private ArrayList<Appointment> dentalAppointments = null;
-        /**
-         * method constructs a new appointment object 
-         * -- with this patient defined as the appointee
-         * -- and calls the appointment's collection inner class read method to fetch all appointments associated with this patient
-         * -- the dental appointments returned from the appointment object are then accessed via the AppointmentHistory's get(0 and set() methods 
-         * @throws StoreException 
-         */
-        public void fetchDentalAppointments()throws StoreException{
-            if (Patient.this.getKey()!=null) {
-                Appointment appointment = new Appointment();
-                appointment.setPatient(new Patient(Patient.this.getKey()));
-                appointment.getCollection().setScope(Appointment.Scope.FOR_PATIENT);
-                appointment.getCollection().read();
-                set(appointment.getCollection().get());
-            }
-            else set(new ArrayList<Appointment>());
-        }
-        
-        public void set(ArrayList<Appointment> value){
-            dentalAppointments = value;
-        }
-        
-        public ArrayList<Appointment> get(){
-            return dentalAppointments;
-        }
-        
-        public ArrayList<Appointment> getHygieneAppointments()throws StoreException{
-            
-            return null;
-        }
+    public void set(ArrayList<Patient> value){
+        collection = value;
     }
     
     public String getGender() {
@@ -403,21 +206,6 @@ public class Patient extends EntityStoreType {
     }
     public void setDOB(LocalDate dob) {
         this.dob = dob;
-    }
-    
-    protected Integer getKey(){
-        return key;
-    }
-    
-    protected void setKey(Integer key){
-        this.key = key;
-        if (key != null){
-            if (key!=0)
-                setIsKeyDefined(true);
-            else
-                setIsKeyDefined(false);
-        }
-                
     }
     
     public Boolean getIsKeyDefined(){
@@ -492,22 +280,214 @@ public class Patient extends EntityStoreType {
     public void setRecall(Patient.Recall recall){
         this.recall = recall;
     }
-    
-    public Patient.AppointmentHistory getAppointmentHistory(){
-        return appointmentHistory;
+
+    //<editor-fold defaultstate="collapsed" desc="Patient Name inner class">
+    public class Name {
+
+        private String forenames = null;
+        private String surname = null;
+        private String title = null;
+
+        public String getForenames() {
+            return forenames;
+        }
+
+        public void setForenames(String forenames) {
+            this.forenames = forenames;
+        }
+
+        public String getSurname() {
+            return surname;
+        }
+
+        public void setSurname(String surname) {
+            this.surname = surname;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
     }
-    public void setAppointmentHistory(Patient.AppointmentHistory value){
-        this.appointmentHistory = value;
-    }
+    //</editor-fold>
     
-    public Patient.Collection getCollection(){
-        return collection;
+    //<editor-fold defaultstate="collapsed" desc="Patient Address inner class">
+    public class Address {
+
+        private String line1 = null;
+        private String line2 = null;
+        private String town = null;
+        private String county = null;
+        private String postcode = null;
+
+        public String getLine1() {
+            return line1;
+        }
+
+        public void setLine1(String line1) {
+            this.line1 = line1;
+        }
+
+        public String getLine2() {
+            return line2;
+        }
+
+        public void setLine2(String line2) {
+            this.line2 = line2;
+        }
+
+        public String getTown() {
+            return town;
+        }
+
+        public void setTown(String town) {
+            this.town = town;
+        }
+
+        public String getCounty() {
+            return county;
+        }
+
+        public void setCounty(String county) {
+            this.county = county;
+        }
+
+        public String getPostcode() {
+            return postcode;
+        }
+
+        public void setPostcode(String postcode) {
+            this.postcode = postcode;
+        }
+
     }
+    //</editor-fold>
     
-    public void setCollection(Patient.Collection value){
-        collection = value;
+    //<editor-fold defaultstate="collapsed" desc="Patient Recall inner class">
+    public class Recall {
+
+        private LocalDate dentalDate = null;
+        private LocalDate hygieneDate = null;
+        private Integer dentalFrequency = null;
+        private Integer hygieneFrequency = null;
+
+        public LocalDate getDentalDate() {
+            return dentalDate;
+        }
+
+        public void setDentalDate(LocalDate dentalDate) {
+            this.dentalDate = dentalDate;
+        }
+
+        public Integer getDentalFrequency() {
+            return dentalFrequency;
+        }
+
+        public void setDentalFrequency(Integer dentalFrequency) {
+            this.dentalFrequency = dentalFrequency;
+        }
+
+        public LocalDate getHygieneDate() {
+            return hygieneDate;
+        }
+
+        public void setHygieneDate(LocalDate hygieneDate) {
+            this.hygieneDate = hygieneDate;
+        }
+
+        public Integer getHygieneFrequency() {
+            return hygieneFrequency;
+        }
+
+        public void setHygieneFrequency(Integer hygieneFrequency) {
+            this.hygieneFrequency = hygieneFrequency;
+        }
     }
+    //</editor-fold>
     
+    
+    //</editor-fold>
+
+ //<editor-fold defaultstate="collapsed" desc="Object level methods overriden in Patient class">
+    @Override
+        public boolean equals(Object obj) 
+        { 
+            // if both the object references are  
+            // referring to the same object. 
+            if(this == obj) 
+                return true; 
+
+            // checks if the comparison involves 2 objecs of the same type 
+            /**
+             * issue arise if one of the objects is an entity (for example a Patient) and the other object is its delegate sub class
+             */
+            //if(obj == null || obj.getClass()!= this.getClass()) 
+                //return false; 
+            if (obj == null) return false;
+            // type casting of the argument.  
+            Patient patient = (Patient) obj; 
+
+            // comparing the state of argument with  
+            // the state of 'this' Object. 
+            return (patient.getKey().equals(this.getKey())); 
+        }
+    
+    @Override
+    /**
+     * re-defines default format patient name display
+     * -- basically: "surname, forename"
+     * -- first letter of surname and any subsequent part is capitalised
+     * -- first letter of forename and any subsequent part is capitalised 
+     * 
+     */
+    public String toString(){
+        String cappedName = null;
+        if (!getName().getSurname().isEmpty()){
+            //if (getData().getSurname().strip().contains("-")) 
+            if (getName().getSurname().contains("-"))
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "-");
+            //else if (getData().getSurname().strip().contains(" "))
+            else if (getName().getSurname().contains(" "))
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "\\s+");
+            else
+                cappedName = capitaliseFirstLetter(getName().getSurname(), "");
+        }
+        if (!getName().getForenames().isEmpty()){
+            if (cappedName!=null){
+                //if (getData().getForenames().strip().contains("-")) 
+                if (getName().getForenames().contains("-"))
+                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "-");
+                //else if (getData().getForenames().strip().contains(" ")) 
+                else if (getName().getForenames().contains(" "))
+                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
+                else cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "");
+            }
+            else{
+                //if (getData().getForenames().strip().contains("-")) 
+                if (getName().getForenames().contains("-")) 
+                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "-");
+                //else if (getData().getForenames().strip().contains(" ")) 
+                else if (getName().getForenames().contains(" "))
+                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
+                else cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "");
+            }
+        }
+        if (!getName().getTitle().isEmpty()){
+            if (cappedName!=null)
+                cappedName = cappedName + " (" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
+            else cappedName = "(" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
+        }
+        return cappedName;
+    }
+    //</editor-fold>
+    
+    //</editor-fold>
+
+ //<editor-fold defaultstate="collapsed" desc="Data migration operations">
     public void reformat(){
         String cappedForenames = "";
         String cappedSurname = "";
@@ -625,120 +605,7 @@ public class Patient extends EntityStoreType {
         getAddress().setTown(cappedTown);
         getAddress().setCounty(cappedCounty);
     }
-    
-    @Override
-        public boolean equals(Object obj) 
-        { 
-            // if both the object references are  
-            // referring to the same object. 
-            if(this == obj) 
-                return true; 
-
-            // checks if the comparison involves 2 objecs of the same type 
-            /**
-             * issue arise if one of the objects is an entity (for example a Patient) and the other object is its delegate sub class
-             */
-            //if(obj == null || obj.getClass()!= this.getClass()) 
-                //return false; 
-            if (obj == null) return false;
-            // type casting of the argument.  
-            Patient patient = (Patient) obj; 
-
-            // comparing the state of argument with  
-            // the state of 'this' Object. 
-            return (patient.getKey().equals(this.getKey())); 
-        }
-    
-    @Override
-    /**
-     * re-defines default format patient name display
-     * -- basically: "surname, forename"
-     * -- first letter of surname and any subsequent part is capitalised
-     * -- first letter of forename and any subsequent part is capitalised 
-     * 
-     */
-    public String toString(){
-        String cappedName = null;
-        if (!getName().getSurname().isEmpty()){
-            //if (getData().getSurname().strip().contains("-")) 
-            if (getName().getSurname().contains("-"))
-                cappedName = capitaliseFirstLetter(getName().getSurname(), "-");
-            //else if (getData().getSurname().strip().contains(" "))
-            else if (getName().getSurname().contains(" "))
-                cappedName = capitaliseFirstLetter(getName().getSurname(), "\\s+");
-            else
-                cappedName = capitaliseFirstLetter(getName().getSurname(), "");
-        }
-        if (!getName().getForenames().isEmpty()){
-            if (cappedName!=null){
-                //if (getData().getForenames().strip().contains("-")) 
-                if (getName().getForenames().contains("-"))
-                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "-");
-                //else if (getData().getForenames().strip().contains(" ")) 
-                else if (getName().getForenames().contains(" "))
-                    cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
-                else cappedName = cappedName + ", " + capitaliseFirstLetter(getName().getForenames(), "");
-            }
-            else{
-                //if (getData().getForenames().strip().contains("-")) 
-                if (getName().getForenames().contains("-")) 
-                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "-");
-                //else if (getData().getForenames().strip().contains(" ")) 
-                else if (getName().getForenames().contains(" "))
-                    cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "\\s+");
-                else cappedName = ", " + capitaliseFirstLetter(getName().getForenames(), "");
-            }
-        }
-        if (!getName().getTitle().isEmpty()){
-            if (cappedName!=null)
-                cappedName = cappedName + " (" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
-            else cappedName = "(" + capitaliseFirstLetter(getName().getTitle(), "") + ")";
-        }
-        return cappedName;
-    }
-    public class Collection extends EntityStoreType{
-        private ArrayList<Patient> collection = null;
-        private Patient patient = null;
-        
-        private Collection(){
-            this.setIsPatients(true);
-        }
-        
-        private Collection(Patient patient){
-            
-        }
-        
-        public Patient getPatient(){
-            return patient;
-        }
-        
-        public void setPatient(Patient p){
-            patient = p;
-        }
-        
-        public ArrayList<Patient> get(){
-            return collection;
-        }
-        
-        public void set(ArrayList<Patient> value){
-            collection = value;
-        }
-
-        public Integer count()throws StoreException{
-            IStoreActions store = Store.FACTORY(this);
-            return store.count(this);
-        }
-        
-        public void read()throws StoreException{
-            IStoreActions store = Store.FACTORY(this);
-            /**
-             * is the next line of code redundant?
-             * -- if the PatientNotification.Collection object is the same as "this" one
-             */
-            set(store.read(this).get());
-        }
-    }
-    
+   
     public List<String[]> importEntityFromCSV()throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         //setImportedDBFRecords(store.importFromCSV1(this));
@@ -947,4 +814,96 @@ public class Patient extends EntityStoreType {
         patient.setGuardian(null);
         return patient;
     }
+    
+    /**
+     * Utility method involved in the "tidy up" of the imported patient's contact details
+     * @param value:String
+     * @param delimiter:String representing the character used to delimit in the context of the patient's name
+     * @return Sting; the processed patient's contact details
+     */
+    private String capitaliseFirstLetter(String value, String delimiter){
+        ArrayList<String> parts = new ArrayList<>();
+        String result = null;
+        //value = value.strip();
+        if (!delimiter.equals("")){
+            String[] values = value.split(delimiter);
+            for (int index = 0; index < values.length; index++){
+                parts.add(capitalisePart(values[index]));
+            }
+            for (int index = 0;index < parts.size();index++){
+                if (index == 0){
+                    result = parts.get(index);
+                }
+                else if (delimiter.equals("\\s+")){
+                    result = result + " " + parts.get(index);
+                }
+                else{
+                    result = result + delimiter + parts.get(index);
+                }
+            }
+        }
+        else{
+            result = capitalisePart(value);
+        }
+        return result;
+    }
+    
+    /**
+     * Part of the convenience process used for tidying up the imported patient's contact details
+     * @param part:String; part of the string required to be processed
+     * @return String; processed part
+     */
+    private String capitalisePart(String part){
+        String firstLetter = part.substring(0,1).toUpperCase();
+        String otherLetters = part.substring(1).toLowerCase();
+        String result =  firstLetter + otherLetters;
+        return result;
+    }
+    /*
+    private Patient updateGender(Patient patient){
+        switch (patient.getGender()){
+            case "M":
+                patient.setGender("Male");
+                break;
+            case "F":
+                patient.setGender("Female");
+                break;
+        }
+        return patient;
+    }
+    */
+    enum DenPatField {  KEY,
+                        TITLE,
+                        FORENAMES,
+                        SURNAME,
+                        LINE1,
+                        LINE2,
+                        TOWN,
+                        COUNTY,
+                        POSTCODE,
+                        PHONE1,
+                        PHONE2,
+                        GENDER,
+                        DOB,
+                        IS_GUARDIAN_A_PATIENT,
+                        DENTAL_RECALL_FREQUENCY,
+                        DENTAL_RECALL_DATE,
+                        NOTES,
+                        GUARDIAN}
+    //</editor-fold>
+
+
+    
+    
+
+ 
+    
+   
+    
+    
+
+    
+    
+    
+    
 }

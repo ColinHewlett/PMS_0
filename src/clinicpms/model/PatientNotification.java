@@ -14,41 +14,46 @@ import java.util.Iterator;
 import clinicpms.store.IStoreActions;
 /**
  *
- * @author colin
+ * @author colin.hewlett.solutions@gmail.com
  */
-public class PatientNotification extends EntityStoreType {
-    private PatientNotification.Collection collection = null;
+public class PatientNotification extends Entity implements IEntityStoreActions {
+  
+//<editor-fold defaultstate="collapsed" desc="Private and protected state">
     private Integer key = null;
     private Patient patient = null;
     private LocalDate date = null;
     private String notification = null;
     private Boolean isActioned = false;
     private Boolean isDeleted = false;
-    private Scope scope = null;
-
-    public enum Scope{ALL,UNACTIONED,FOR_PATIENT};
+    private ArrayList<PatientNotification> collection = new ArrayList<>();
     
-    public PatientNotification getPatientNotification(){
-        return this;
-    }
-
-    public Collection getCollection(){
-        return collection;
-    }
-    private void setCollection(Collection value){
-        collection = value;
+    protected Integer getKey(){
+        return key;
     }
     
+    protected void setKey(int value){
+        key = value;
+    }
+//</editor-fold>
+    
+//<editor-fold defaultstate="collapsed" desc="Public interface">
+    
+//<editor-fold defaultstate="collapsed" desc="Public state and non-persistent store related operations">    
     public PatientNotification(){
-        this.setIsPatientNotification(true);
-        setCollection(new Collection(this));
-        
+        this.setIsPatientNotification(true);  
     }
     
     public PatientNotification(int key){
-        this.setIsPatientNotification(true);
-        setCollection(new Collection(this));
+        this.setIsPatientNotification(true);;
         setKey(key);
+    }
+    
+    public ArrayList<PatientNotification> get(){
+        return collection;
+    }
+        
+    public void set(ArrayList<PatientNotification> value){
+        collection = value;
     }
     
     public Boolean getIsActioned(){
@@ -62,11 +67,7 @@ public class PatientNotification extends EntityStoreType {
     public LocalDate getNotificationDate(){
         return date;
     }
-    
-    protected Integer getKey(){
-        return key;
-    }
-    
+
     public String getNotificationText(){
         return notification;
     }
@@ -87,10 +88,6 @@ public class PatientNotification extends EntityStoreType {
         date = value;
     }
     
-    protected void setKey(int value){
-        key = value;
-    }
-    
     public void setNotificationText(String value){
         notification = value;
     }
@@ -103,10 +100,47 @@ public class PatientNotification extends EntityStoreType {
         setIsActioned(true);
         this.update();
     }
+//</editor-fold>
     
+//<editor-fold defaultstate="collapsed" desc="Persistent storage related operations">  
+    
+    /**
+     * Counts the number of patient notifications stored on the system; which depends on the current setting of the object's scope setting (all notifications, or just unactioned ones etc)
+     * @return Integer, total number of the requested notification type 
+     * @throws StoreException 
+     */
+    @Override
+    public Integer count()throws StoreException{
+        IStoreActions store = Store.FACTORY(this);
+        return store.count(this);
+    }
+    
+    /**
+     * Creates a new PatientNotification table in persistent store
+     * @throws StoreException 
+     */
+    @Override
     public void create() throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         store.create(this);
+    }
+    
+    /**
+     * Method updates this notification's isDeleted property to true
+     * @throws StoreException 
+     */
+    @Override
+    public void delete() throws StoreException{
+        
+    }
+    
+    /**
+     * Not currently implemented
+     * @throws StoreException 
+     */
+    @Override
+    public void drop() throws StoreException{
+        
     }
     
     /**
@@ -118,83 +152,58 @@ public class PatientNotification extends EntityStoreType {
      * -- whereas this way a key value us expected back from the store
      * @throws StoreException 
      */
+    @Override
     public void insert() throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         setKey(store.insert(this));
     }
     
     /**
-     * method fetches from persistent store a patient notification object
-     * -- the concrete store class returns a patient object empty of all values except patient's key value
-     * -- to return a fully initialised patient per notification object, the key value must be used to fetch from store the patient object
+     * scope of entity fetch from store is specified on entry; thus
+     * -- SINGLE scope
+     * ---- fetches this patient notification from persistent store
+     * ---- fields in the returned notification's patient are uninitialised except for the key field
+     * -- FOR_PATIENT scope
+     * ---- fetches from persistent store patient notifications belonging to this patient notification
+     * ---- for all other scopes, fetches all notifications consistent with the scope (typically INACTIONED)
+     * 
      * @return PatientNotification
      * @throws StoreException 
      */
+    @Override
     public PatientNotification read() throws StoreException{
+        Patient p = null;
+        PatientNotification result = null;
+        PatientNotification patientNotification = null; 
         IStoreActions store = Store.FACTORY(this);
-        PatientNotification patientNotification = store.read(this, getKey());
-        Patient patient = new Patient(patientNotification.getPatient().getKey());
-        patientNotification.setPatient(patient.read());
+        switch (getScope()){
+            case SINGLE:
+                patientNotification = store.read(this, getKey());
+                p = new Patient(patientNotification.getPatient().getKey());
+                p.setScope(Scope.SINGLE);
+                patientNotification.setPatient(p.read());
+                break;
+            default:
+                if (getPatient()!=null) set(store.read(this, getPatient().getKey()).get());
+                else set(store.read(this, null).get());
+                Iterator it = get().iterator();
+                while(it.hasNext()){
+                    patientNotification = (PatientNotification)it.next();
+                    switch(getScope()){ 
+                        case FOR_PATIENT:                                
+                                patientNotification.setPatient(PatientNotification.this.getPatient());     
+                            break;
+                        default:
+                                p = new Patient(patientNotification.getPatient().getKey());
+                                p.setScope(Scope.SINGLE);
+                                patientNotification.setPatient(p.read());
+                            break;        
+                    }
+                }       
+        }
         return patientNotification;
     }
-    
-    public void update()throws StoreException{
-        IStoreActions store = Store.FACTORY(this);
-        store.update(this, getKey(), getPatient().getKey());
-    }
-    
-    public class Collection extends EntityStoreType{
-        private ArrayList<PatientNotification> collection = new ArrayList<>();
-        private PatientNotification patientNotification = null;
-        
-        private Collection(){
-            this.setIsPatientNotifications(true);
-        }
-        
-        private Collection(PatientNotification pn){
-            this.setIsPatientNotifications(true);
-            setPatientNotification(pn);
-        }
-        
-        public PatientNotification getPatientNotification(){
-            return patientNotification;
-        }
-        
-        private void setPatientNotification(PatientNotification pn){
-            patientNotification = pn;
-        }
-        
-        public Scope getScope(){
-            return scope;
-        }
-        
-        public void setScope(Scope value){
-            scope = value;
-        }
-        
-        public ArrayList<PatientNotification> get(){
-            return collection;
-        }
-        
-        public void set(ArrayList<PatientNotification> value){
-            collection = value;
-        }
-        
-        public Patient getPatient(){
-            return PatientNotification.this.getPatient();
-        }
-        
-        public Integer count()throws StoreException{
-            IStoreActions store = Store.FACTORY(this);
-            return store.count(this);
-        }
-
-        /**
-         * method fetches from  store either all notifications for this notification's patient; or all (typically unactioned only) patient notifications recorded on the system
-         * -- an additional read to fetch the patient details is not required for the former case
-         * -- in the latter case, an additional read from store fetches the patient details associated with the notification 
-         * @throws StoreException 
-         */
+/*
         public void read()throws StoreException{
             IStoreActions store = Store.FACTORY(this);
             //30/07/2022 09:26
@@ -218,5 +227,13 @@ public class PatientNotification extends EntityStoreType {
                     break;        
             }
         }
+    */
+    public void update()throws StoreException{
+        IStoreActions store = Store.FACTORY(this);
+        store.update(this, getKey(), getPatient().getKey());
     }
+//</editor-fold>
+    
+//</editor-fold>
+
 }

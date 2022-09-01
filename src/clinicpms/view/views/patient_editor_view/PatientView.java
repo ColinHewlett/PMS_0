@@ -236,7 +236,7 @@ public class PatientView extends View{
         DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
         ArrayList<Patient> patients = 
-                getEntityDescriptor().getThePatients();
+                getEntityDescriptor().getPatients();
         Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
             Patient patient = it.next();
@@ -283,7 +283,7 @@ public class PatientView extends View{
             EntityDescriptor ed = getEntityDescriptor();
             setViewMode(PatientView.ViewMode.Update_patient_details);
             initialisePatientViewComponentFromED(); 
-            String frameTitle = getEntityDescriptor().getThePatient().toString();
+            String frameTitle = getEntityDescriptor().getPatient().toString();
             this.setTitle(frameTitle);
             
             /**
@@ -326,7 +326,7 @@ public class PatientView extends View{
             setEntityDescriptor((EntityDescriptor)e.getNewValue());
             EntityDescriptor oldEntity = (EntityDescriptor)e.getOldValue();
             try{
-                crossCheck(getEntityDescriptor().getThePatient(),oldEntity.getThePatient());
+                crossCheck(getEntityDescriptor().getPatient(),oldEntity.getPatient());
             }
             catch (CrossCheckErrorException ex){
                 //UnpecifiedError action
@@ -558,8 +558,8 @@ public class PatientView extends View{
             this.cmbSelectGuardian.setEnabled(true);
             
             if (this.cmbSelectGuardian.getSelectedIndex()==-1){
-                if (getEntityDescriptor().getThePatient().getIsGuardianAPatient()){
-                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getThePatient().getGuardian());
+                if (getEntityDescriptor().getPatient().getIsGuardianAPatient()){
+                    this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getGuardian());
                 }   
             }
         }
@@ -573,15 +573,21 @@ public class PatientView extends View{
         Appointments3ColumnTableModel tableModel = 
                 (Appointments3ColumnTableModel)tblAppointmentHistory.getModel(); 
         tableModel.removeAllElements();
-        if (patient!=null){//if patient data in view has just been cleared
-            Iterator<Appointment> it = patient.getAppointmentHistory().get().iterator();
-            while (it.hasNext()){
-                tableModel.addElement(it.next());
+        try{
+            if (patient.getIsKeyDefined()){//if patient data in view has just been cleared  
+                Iterator<Appointment> it = patient.getAppointmentHistory().iterator();
+                while (it.hasNext()){
+                    tableModel.addElement(it.next());
+                }
             }
-        }
         this.tblAppointmentHistory.setDefaultRenderer(Duration.class, new AppointmentsTableDurationRenderer());
         this.tblAppointmentHistory.setDefaultRenderer(LocalDateTime.class, new AppointmentsTableLocalDateTimeRenderer());;
         this.tblAppointmentHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(this, "Following StoreException raised in PatientView::populateAppointmentsHistoryTable()\n"
+                    + ex.getMessage());
+        }
+        
     }
    
     private int getAge(LocalDate dob){
@@ -593,8 +599,8 @@ public class PatientView extends View{
      * current entity state
      */
     private void initialisePatientViewComponentFromED(){  
-        EntityDescriptor ed = getEntityDescriptor();
-        Patient patient = getEntityDescriptor().getThePatient();
+        //EntityDescriptor ed = getEntityDescriptor();
+        Patient patient = getEntityDescriptor().getPatient();
         this.setTitle(getSurname()); //Internal frame title
         setPatientTitle(patient.getName().getTitle());
         setForenames(patient.getName().getForenames());
@@ -613,8 +619,8 @@ public class PatientView extends View{
         setDOB(patient.getDOB());
         setIsGuardianAPatient(patient.getIsGuardianAPatient());
         //update 30/07/2021 09:05 applied
-        if(getEntityDescriptor().getThePatient().getGuardian()!=null)
-                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getThePatient().getGuardian());
+        if(getEntityDescriptor().getPatient().getGuardian()!=null)
+                this.cmbSelectGuardian.setSelectedItem(getEntityDescriptor().getPatient().getGuardian());
         else this.cmbSelectGuardian.setSelectedIndex(-1); 
         //following is new statement
         populateAppointmentsHistoryTable(patient);
@@ -642,7 +648,7 @@ public class PatientView extends View{
         if (getGuardian() != null){
             patient.setGuardian(getGuardian());
         }
-        getEntityDescriptor().getRequest().setThePatient(patient);
+        getEntityDescriptor().getRequest().setPatient(patient);
         
             
         
@@ -1738,7 +1744,7 @@ public class PatientView extends View{
         if (this.cmbSelectPatient.getSelectedItem()!=null){
             Patient patient = 
                     (Patient)this.cmbSelectPatient.getSelectedItem();
-            getEntityDescriptor().getRequest().setThePatient(patient);
+            getEntityDescriptor().getRequest().setPatient(patient);
             ActionEvent actionEvent = new ActionEvent(
                     this,ActionEvent.ACTION_PERFORMED,
                     EntityDescriptor.PatientViewControllerActionEvent.PATIENT_REQUEST.toString());

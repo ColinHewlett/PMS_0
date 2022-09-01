@@ -30,23 +30,25 @@ final class PatientDelegate extends Patient {
     }
     
     private void copyPatientState(Patient patient){
+        super.setScope(patient.getScope());
+        super.setDOB(patient.getDOB());
+        super.setGender(patient.getGender());
+        super.setIsGuardianAPatient(patient.getIsGuardianAPatient());
+        super.setGuardian(patient.getGuardian());
+        super.setNotes(patient.getNotes());
+        super.setPhone1(patient.getPhone1());
+        super.setPhone2(patient.getPhone2());
         super.getAddress().setLine1(patient.getAddress().getLine1());
         super.getAddress().setLine2(patient.getAddress().getLine2());
         super.getAddress().setTown(patient.getAddress().getTown());
         super.getAddress().setCounty(patient.getAddress().getCounty());
         super.getAddress().setPostcode(patient.getAddress().getPostcode());
-        super.setDOB(patient.getDOB());
-        super.setGender(patient.getGender());
-        super.setGuardian(patient.getGuardian());
-        super.setAppointmentHistory(patient.getAppointmentHistory());
-        super.setIsGuardianAPatient(patient.getIsGuardianAPatient());
         super.getName().setForenames(patient.getName().getForenames());
         super.getName().setSurname(patient.getName().getSurname());
         super.getName().setTitle(patient.getName().getTitle());
-        super.setNotes(patient.getNotes());
-        super.setPhone1(patient.getPhone1());
         super.getRecall().setDentalDate(patient.getRecall().getDentalDate());
         super.getRecall().setDentalFrequency(patient.getRecall().getDentalFrequency());
+        
     }
     
     protected Integer getPatientKey(){

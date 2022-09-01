@@ -105,7 +105,7 @@ public class PatientNotificationEditorModalViewer extends View {
         DefaultComboBoxModel<Patient> model = 
                 new DefaultComboBoxModel<>();
         ArrayList<Patient> patients = 
-                getEntityDescriptor().getThePatients();
+                getEntityDescriptor().getPatients();
         Iterator<Patient> it = patients.iterator();
         while (it.hasNext()){
             Patient patient = it.next();

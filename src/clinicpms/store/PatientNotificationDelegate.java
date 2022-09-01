@@ -24,6 +24,8 @@ public class PatientNotificationDelegate extends PatientNotification {
         super.setPatient(pn.getPatient());
         super.setIsActioned(pn.getIsActioned());
         super.setIsDeleted(pn.getIsDeleted());
+        super.set(pn.get());
+        super.setScope(pn.getScope());
     }
     
     protected void setKey(Integer key){

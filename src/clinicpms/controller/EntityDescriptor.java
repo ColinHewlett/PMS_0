@@ -21,12 +21,16 @@ import java.util.HashMap;
  */
 public class EntityDescriptor {
     
-    private PatientNotification patientNotification;
-    private ArrayList<PatientNotification> patientNotifications = null; 
+     
     private Appointment theAppointment = null;
-    private ArrayList<Appointment> theAppointments = null;
+    private PatientNotification patientNotification;
     private Patient thePatient = null;
+    
+    private ArrayList<Appointment> theAppointments = null;
     private ArrayList<Patient> thePatients = null;
+    private ArrayList<PatientNotification> patientNotifications = null;
+    
+    
     private HashMap<DayOfWeek,Boolean> surgeryDaysAssignment = null;
     private EntityDescriptor.Request request= null;
 
@@ -266,12 +270,12 @@ public class EntityDescriptor {
         theAppointments = value;
     }
     
-    public Patient getThePatient() {
+    public Patient getPatient() {
         return thePatient;
     }
     
    
-    protected void setThePatient(Patient value){
+    protected void setPatient(Patient value){
         thePatient = value;
     }
     
@@ -281,7 +285,7 @@ public class EntityDescriptor {
         return patients;
     }
     */
-    public ArrayList<Patient> getThePatients(){
+    public ArrayList<Patient> getPatients(){
         return thePatients;
     }
     
@@ -290,7 +294,7 @@ public class EntityDescriptor {
         patients = value;
     }
     */
-    public void setThePatients (ArrayList<Patient> value){
+    public void setPatients (ArrayList<Patient> value){
         thePatients = value;
     }
     
@@ -334,11 +338,11 @@ public class EntityDescriptor {
             theAppointment = value;
         }
         
-        public Patient getThePatient(){
+        public Patient getPatient(){
             return thePatient;
         }
         
-        public void setThePatient(Patient patient){
+        public void setPatient(Patient patient){
             thePatient = patient;
         }
         

@@ -10,37 +10,52 @@ import  java.util.ArrayList;
  *
  * @author colin
  */
-public class EntityStoreType{
+public class Entity implements IStoreClient{
     
     private Boolean isAppointment = false;
     private Boolean isAppointmentDate = false;
-    private Boolean isAppointments = false;
-    private Boolean isAppointmentTable = false;
-    private Boolean isAppointmentTableRowValue = false;
     private Boolean isPatient = false;
     private Boolean isPatientNotification = false;
-    private Boolean isPatientNotifications = false;
-    //private Boolean isPatientNotificationCollection = false;
-    private Boolean isPatients = false;
-    private Boolean isPatientTable = false;
     private Boolean isTableRowValue = false;
     private Boolean isPMSStore = false;
     private Boolean isSurgeryDaysAssignment = false;
+    private Scope scope = null;
+    private Integer value = null;
     
     private void resetAll(){
         setIsAppointment(false);
-        setIsAppointmentDate(false);
-        setIsAppointments(false);
-        setIsAppointmentTable(false);
-        setIsAppointmentTableRowValue(false);
         setIsPatient(false);
         setIsPatientNotification(false);
-        setIsPatientNotifications(false);
-        setIsPatients(false);
         setIsPMSStore(false);
-        setIsPatientTable(false);
         setIsTableRowValue(false); 
         setIsSurgeryDaysAssignment(false);
+    }
+    
+    /**
+     * defines the scope of the Entity.read() operation
+     */
+    public enum Scope { ALL,
+                        FOR_DAY,
+                        FOR_PATIENT,
+                        FROM_DAY,
+                        SINGLE,
+                        UNACTIONED,
+                        }
+    
+    public Integer getValue(){
+        return value;
+    }
+    
+    public void setValue(Integer v){
+        value = v;
+    }
+    
+    public Scope getScope(){
+        return scope;
+    }
+    
+    public void setScope(Scope value){
+        scope = value;
     }
     
     public Boolean getIsAppointment(){
@@ -49,30 +64,14 @@ public class EntityStoreType{
     public Boolean getIsAppointmentDate(){
         return isAppointmentDate;
     }
-    public Boolean getIsAppointments(){
-        return isAppointments;
-    }
-    public Boolean getIsAppointmentTable(){
-        return isAppointmentTable;
-    }
-    public Boolean getIsAppointmentTableRowValue(){
-        return isAppointmentTableRowValue;
-    }
+
     public Boolean getIsPatient(){
         return isPatient;
     }
     public Boolean getIsPatientNotification(){
         return isPatientNotification;
     }
-    public Boolean getIsPatientNotifications(){
-        return isPatientNotifications;
-    }
-    public Boolean getIsPatients(){
-        return isPatients;
-    }
-    public Boolean getIsPatientTable(){
-        return isPatientTable;
-    }
+
     public final Boolean getIsTableRowValue(){
         return isTableRowValue;
     }
@@ -91,18 +90,7 @@ public class EntityStoreType{
         if (value) resetAll();
         isAppointmentDate = value;
     }
-    protected void setIsAppointments(Boolean value){
-        if (value) resetAll();
-        isAppointments = value;
-    }
-    protected void setIsAppointmentTable(Boolean value){
-        if (value) resetAll();
-        isAppointmentTable = value;
-    }
-    protected void setIsAppointmentTableRowValue(Boolean value){
-        if (value) resetAll();
-        isAppointmentTableRowValue = value;
-    }
+
     protected void setIsPatient(Boolean value){
         if (value) resetAll();
         isPatient = value;
@@ -111,18 +99,7 @@ public class EntityStoreType{
         if (value) resetAll();
         isPatientNotification = value;
     }
-    protected void setIsPatientNotifications(Boolean value){
-        if (value) resetAll();
-        isPatientNotifications = value;
-    }
-    protected void setIsPatients(Boolean value){
-        if (value) resetAll();
-        isPatients = value;
-    }
-    protected void setIsPatientTable(Boolean value){
-        if (value) resetAll();
-        isPatientTable = value;
-    }
+
     protected final void setIsTableRowValue(Boolean value){
         if (value) resetAll();
         isTableRowValue = value;

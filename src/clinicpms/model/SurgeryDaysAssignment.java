@@ -15,7 +15,7 @@ import clinicpms.store.IStoreActions;
  *
  * @author colin
  */
-public class SurgeryDaysAssignment extends EntityStoreType {
+public class SurgeryDaysAssignment extends Entity implements IEntityStoreActions {
     private IStoreActions store = null;
     private String day = null;
     private boolean isSurgery = false;
@@ -28,7 +28,7 @@ public class SurgeryDaysAssignment extends EntityStoreType {
     public SurgeryDaysAssignment(){
         super.setIsSurgeryDaysAssignment(true);
     }
-    
+   
     public SurgeryDaysAssignment(HashMap<DayOfWeek,Boolean> value){
         set(value);
         super.setIsSurgeryDaysAssignment(true);
@@ -41,11 +41,18 @@ public class SurgeryDaysAssignment extends EntityStoreType {
     public void delete() throws StoreException{
         //not currently implemented
     }
+    
+    /**
+     * Total number of assignments stored on the system; typically 7, one for each day of the week but could return for example the number of days the surgery is open / or not open 
+     * @return Integer, total number of records stored on the system
+     * @throws StoreException 
+     */
     public Integer count() throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         return store.count(this);
     }
     
+    @Override
     public void create() throws StoreException{
         IStoreActions store = Store.FACTORY(this);
         store.create(this);        
@@ -60,6 +67,7 @@ public class SurgeryDaysAssignment extends EntityStoreType {
      * implemented for migration purposes only
      * -- 
      */
+    @Override
     public void insert() throws StoreException{
         get().put(DayOfWeek.MONDAY, Boolean.TRUE);
         get().put(DayOfWeek.TUESDAY, Boolean.TRUE);
@@ -68,63 +76,29 @@ public class SurgeryDaysAssignment extends EntityStoreType {
         get().put(DayOfWeek.FRIDAY, Boolean.TRUE);
         get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
         get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
+        IStoreActions store = Store.FACTORY((Entity)this);
         store.insert(this);
     }
     
-    /*
-    public void populate() throws StoreException{
-        //TheSurgeryDaysAssignment surgeryDaysValues = new SurgeryDaysAssignment();
-        //HashMap<DayOfWeek, Boolean> initialContents = new HashMap<>();
-        get().put(DayOfWeek.MONDAY, Boolean.TRUE);
-        get().put(DayOfWeek.TUESDAY, Boolean.TRUE);
-        get().put(DayOfWeek.WEDNESDAY, Boolean.TRUE);
-        get().put(DayOfWeek.THURSDAY, Boolean.TRUE);
-        get().put(DayOfWeek.FRIDAY, Boolean.TRUE);
-        get().put(DayOfWeek.SATURDAY, Boolean.FALSE);
-        get().put(DayOfWeek.SUNDAY, Boolean.FALSE);
-        
-        IStoreActions store = Store.FACTORY(this);
-        store.populate(this);
-    }
-    */
-    /*
-    public SurgeryDaysAssignmentx read() throws StoreException{
-        return null;
-    }
-*/
-    
-    public SurgeryDaysAssignment readTheSurgeryDaysAssignment() throws StoreException{
-        IStoreActions store = Store.FACTORY((EntityStoreType)this);
+    /**
+     * 
+     * @return
+     * @throws StoreException 
+     */
+    @Override
+    public SurgeryDaysAssignment read() throws StoreException{
+        IStoreActions store = Store.FACTORY((Entity)this);
         return store.read(this);
     }
-      
+     
+    /**
+     * 
+     * @throws StoreException 
+     */
+    @Override
     public void update() throws StoreException{
-        IStoreActions store = Store.FACTORY((EntityStoreType)this); 
+        IStoreActions store = Store.FACTORY((Entity)this); 
         store.update(this);
     }
-    
-    
 
-    public Integer count1()throws StoreException{
-        SurgeryDaysAssignment surgeryDaysAssignment = null;
-        try{
-            surgeryDaysAssignment = this.readTheSurgeryDaysAssignment();
-            
-        }catch (StoreException ex){
-            if (!ex.getErrorType().equals(StoreException.ExceptionType.SURGERY_DAYS_TABLE_MISSING_IN_PMS_DATABASE))
-                throw ex;
-        }
-        if (surgeryDaysAssignment==null) return null;
-        if (surgeryDaysAssignment.get().isEmpty()) return 0;
-        else return surgeryDaysAssignment.get().size();
-    }
-    
-    public String getDay(){
-        return this.day;
-    }
-    
-    public boolean getIsSurgery(){
-        return this.isSurgery;
-    }
 }
