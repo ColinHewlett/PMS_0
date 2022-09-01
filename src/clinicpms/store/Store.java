@@ -46,6 +46,7 @@ public abstract class Store implements IStoreActions {
                                 READ_APPOINTMENT_NEXT_HIGHEST_KEY,
                                 UPDATE_APPOINTMENT,
                                 
+                                COUNT_DELETED_PATIENT_NOTIFICATIONS,
                                 COUNT_PATIENT_NOTIFICATIONS,
                                 COUNT_UNACTIONED_PATIENT_NOTIFICATIONS,
                                 CREATE_PATIENT_NOTIFICATION_TABLE,

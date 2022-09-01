@@ -795,6 +795,28 @@ public class AccessStore extends Store {
    public void delete(Patient patient){
        
    }
+   
+   /**
+    * Method 'deletes' the specified PatientNotification record from the system via an update to the record's isDeleted field
+    * @param patientNotification
+    * @param key, Integer specifying the PatiwentNotification record to be updated to a deleted status
+    * @throws StoreException 
+    */
+   @Override
+   public void delete(PatientNotification patientNotification, Integer key)throws StoreException{
+        PatientNotificationDelegate delegate = new PatientNotificationDelegate(patientNotification);
+        if (key != null){
+            delegate.setKey(key);
+            runSQL(EntitySQL.PATIENT_NOTIFICATION,PMSSQL.DELETE_PATIENT_NOTIFICATION,delegate);
+        }
+        else{
+            String msg = "StoreException raised in method AccessStore::delete(PatientNotification, Integer key)\n"
+                    + "Cause -> null key value specified";
+            throw new StoreException(
+                    msg, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        } 
+   }
+   
     /**
      * 
      * @param a
@@ -1716,6 +1738,11 @@ public class AccessStore extends Store {
         Entity result = null;
         String sql = null;
         switch (q){
+            case COUNT_DELETED_PATIENT_NOTIFICATIONS:
+                sql = "SELECT COUNT(*) as row_count FROM PatientNotification "
+                        + "WHERE isDeleted = true;";
+                result = doCount(sql);
+                break;
             case COUNT_PATIENT_NOTIFICATIONS:
                 sql = "SELECT COUNT(*) as row_count FROM PatientNotification;";
                 result = doCount(sql);
@@ -1723,8 +1750,14 @@ public class AccessStore extends Store {
             case COUNT_UNACTIONED_PATIENT_NOTIFICATIONS:
                 sql = "SELECT COUNT(*) as record_count "
                         + "FROM PatientNotifications "
-                        + "WHERE isActioned = false;";
+                        + "WHERE isActioned = false "
+                        + "AND isDeleted = false;";
                 result = doCount(sql);
+            case DELETE_PATIENT_NOTIFICATION:
+                sql = "UPDATE PatientNotification "
+                        + "SET isDeleted = true "
+                        + "WHERE pid = ?;"; 
+                doDeletePatientNotification(sql, entity);
             case CREATE_PATIENT_NOTIFICATION_TABLE:
                 sql = "CREATE TABLE PatientNotification ("
                         + "pid LONG PRIMARY KEY, "
@@ -1749,23 +1782,28 @@ public class AccessStore extends Store {
             case READ_PATIENT_NOTIFICATION:
                 sql = "SELECT * "
                         + "FROM PatientNotification "
-                        + "WHERE pid = ?;";
+                        + "WHERE pid = ? "
+                        + "AND isDeleted = false;";
                 result = doReadPatientNotificationWithKey(sql, entity);
                 break;
             case READ_PATIENT_NOTIFICATIONS_FOR_PATIENT:
                 sql = "SELECT patientToNotify, notificationDate, notificationText, isActioned, isDeleted pid "
                         + "FROM PatientNotification "
-                        + "WHERE patientToNotify = ?;";
+                        + "WHERE patientToNotify = ?"
+                        + "AND isDeleted = false;";
                 result = doReadPatientNotificationsForPatient(sql, entity);
                 break;
             case READ_UNACTIONED_PATIENT_NOTIFICATIONS:
                 sql = "SELECT * FROM PatientNotification "
                         + "WHERE IsActioned = false "
+                        + "AND isDeleted = false"
                         + "ORDER BY notificationDate DESC;";
                 result = doReadPatientNotifications(sql, entity);
                 break;
             case READ_PATIENT_NOTIFICATIONS:
-                sql = "SELECT * FROM PatientNotification ORDER BY notificationDate DESC;";
+                sql = "SELECT * FROM PatientNotification "
+                        + "WHERE isDeleted = false "
+                        + "ORDER BY notificationDate DESC;";
                 result = doReadPatientNotifications(sql, entity);
                 break; 
             case UPDATE_PATIENT_NOTIFICATION:
@@ -1894,6 +1932,31 @@ public class AccessStore extends Store {
         }
     }
     
+    private void doDeletePatientNotification(String sql, Entity entity)throws StoreException{
+        PatientNotificationDelegate delegate = null;
+        if (entity != null){
+            if (entity.getIsPatientNotification()) {
+                delegate = (PatientNotificationDelegate) entity;
+                delegate.setKey(1);
+                try{
+                    PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
+                    preparedStatement.setBoolean(1, true);
+                    preparedStatement.setLong(2, delegate.getKey());
+                }catch (SQLException ex){
+                    throw new StoreException("SQLException message -> " + ex.getMessage() + "\n"
+                            + "StoreException message -> exception raised in AccessStore::doDeletePatientNotification(sql, entity)",
+                            StoreException.ExceptionType.SQL_EXCEPTION);
+                }
+            } else {
+                String message = "StoreException -> unexpected entity type in doDeletePatientNotification(sql, entity)";
+                throw new StoreException(message, StoreException.ExceptionType.UNEXPECTED_DATA_TYPE_ENCOUNTERED);
+            }
+        } else {
+            String message = "StoreException -> entity undefined in doUpdatePatientNotification(sql, entity)";
+            throw new StoreException(message, StoreException.ExceptionType.NULL_KEY_EXCEPTION);
+        }
+    }
+    
     private void doUpdatePatientNotification(String sql, Entity entity) throws StoreException{
         PatientDelegate pDelegate = null;
         PatientNotificationDelegate  delegate = null;
@@ -1901,7 +1964,6 @@ public class AccessStore extends Store {
             if (entity.getIsPatientNotification()) {
                 delegate = (PatientNotificationDelegate) entity;
                 pDelegate = (PatientDelegate)delegate.getPatient();
-                
                 try {
                     PreparedStatement preparedStatement = getPMSStoreConnection().prepareStatement(sql);
                     preparedStatement.setLong(1, pDelegate.getPatientKey());

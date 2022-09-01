@@ -32,7 +32,6 @@ public class PatientNotificationDelegate extends PatientNotification {
         super.setKey(key);
     }
     
-    @Override
     protected Integer getKey(){
         return super.getKey();
     }

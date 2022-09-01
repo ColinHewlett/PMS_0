@@ -131,7 +131,8 @@ public class PatientNotification extends Entity implements IEntityStoreActions {
      */
     @Override
     public void delete() throws StoreException{
-        
+        IStoreActions store = Store.FACTORY(this);
+        store.delete(this, getKey());
     }
     
     /**

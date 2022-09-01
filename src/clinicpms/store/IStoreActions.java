@@ -32,6 +32,7 @@ public interface IStoreActions {
     
     public void delete(Appointment a, Integer key) throws StoreException;
     public void delete(Patient p) throws StoreException;
+    public void delete(PatientNotification pn, Integer key)throws StoreException;
     
     public void drop(Appointment a)throws StoreException;
     public void drop(Patient p)throws StoreException;
